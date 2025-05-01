@@ -7,7 +7,7 @@ export default function Home() {
       {/* Register Button at top-right */}
       <div className="absolute top-4 right-4 bg-amber-50">
         <Link href="/register">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
             Register
           </button>
         </Link>
