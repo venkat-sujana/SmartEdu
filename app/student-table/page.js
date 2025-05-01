@@ -60,7 +60,7 @@ export default function StudentsPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-center">Students List</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">S.K.R.GOVERNMENT JUNIOR COLLEGE</h1>
 
       {/* Search + Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">

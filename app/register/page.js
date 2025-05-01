@@ -63,6 +63,7 @@ export default function RegisterPage() {
           <option value="MEC">MEC</option>
           <option value="M&AT">M&AT</option>
           <option value="MLT">MLT</option>
+          <option value="CET">CET</option>
         </select>
 
         <select name="caste" value={formData.caste} onChange={handleChange} className="w-full p-2 border rounded" required>
