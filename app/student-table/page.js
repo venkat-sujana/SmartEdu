@@ -10,10 +10,10 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Search,
+  
   Printer,
 } from "lucide-react";
-
+import Link from "next/link";
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -205,14 +205,13 @@ export default function StudentsPage() {
 
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <input
+        <input 
           type="text"
           placeholder="Search by Name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border p-2 rounded"
         />
-
         <select
           name="group"
           onChange={handleFilterChange}
@@ -270,6 +269,7 @@ export default function StudentsPage() {
 
       {/* Export & Print Buttons */}
       <div className="flex gap-4 mb-4">
+
         <button
           onClick={handleExportPDF}
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
@@ -277,6 +277,7 @@ export default function StudentsPage() {
           <FileSpreadsheet size={20} />
           &nbsp;Export to PDF
         </button>
+
         <button
           onClick={handleExportExcel}
           className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
@@ -284,6 +285,7 @@ export default function StudentsPage() {
           <FileDown size={20} />
           &nbsp;Export to Excel
         </button>
+
         <button
           onClick={handlePrint}
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
@@ -291,6 +293,17 @@ export default function StudentsPage() {
           <Printer size={20} />
           &nbsp;Print
         </button>
+
+               <Link href="/">
+                  {/* Dashboard Button */}
+                  <button className="bg-green-600 text-white px-4 py-2 mt-3 rounded absolute top-4 right-10 hover:bg-blue-700 transition cursor-pointer">
+                    Home
+                  </button>
+                </Link>
+
+                
+      
+      
       </div>
 
       {/* Students Table */}

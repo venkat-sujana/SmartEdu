@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-
+import Link from "next/link";
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -56,6 +56,13 @@ export default function RegisterPage() {
 
   return (
     <div className="relative">
+
+               <Link href="/">
+                  {/* Dashboard Button */}
+                  <button className="bg-green-600 text-white px-4 py-2 mt-3 rounded absolute top-4 right-10 hover:bg-blue-700 transition cursor-pointer">
+                    Home
+                  </button>
+                </Link>&nbsp;
       {/* Full Page Spinner Overlay */}
       {isLoading && (
         <div className="fixed inset-0 bg-white bg-opacity-80 flex flex-col items-center justify-center z-50">
@@ -85,6 +92,7 @@ export default function RegisterPage() {
 
       <div className="max-w-2xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6">
         <h2 className="text-2xl font-bold mb-4 text-center">Student Registration</h2>
+                
         <form onSubmit={handleSubmit} className="space-y-4">
           <input name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" className="w-full p-2 border rounded" required />
 
