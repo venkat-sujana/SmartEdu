@@ -3,6 +3,16 @@ import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import {
+  Users,
+  FileDown,
+  FileSpreadsheet,
+  Plus,
+  Pencil,
+  Trash2,
+  Search,
+  Printer,
+} from "lucide-react";
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
@@ -42,13 +52,10 @@ export default function StudentsPage() {
 
     if (filters.group)
       filtered = filtered.filter((s) => s.group === filters.group);
-
     if (filters.caste)
       filtered = filtered.filter((s) => s.caste === filters.caste);
-
     if (filters.gender)
       filtered = filtered.filter((s) => s.gender === filters.gender);
-
     if (filters.admissionYear)
       filtered = filtered.filter(
         (s) => String(s.admissionYear) === String(filters.admissionYear)
@@ -134,9 +141,67 @@ export default function StudentsPage() {
     printWindow.print();
   };
 
+  const handleDelete = async (id) => {
+    const confirmDelete = confirm("Are you sure you want to delete this student?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/students/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setStudents(students.filter((s) => s._id !== id));
+      }
+    } catch (err) {
+      console.error("Delete Error:", err);
+    }
+  };
+
+  const handleEdit = async (student) => {
+    const updatedName = prompt("Enter new name:", student.name);
+    const updatedMobile = prompt("Enter new mobile:", student.mobile);
+    const updatedGroup = prompt("Enter new group:", student.group);
+    const updatedCaste = prompt("Enter new caste:", student.caste);
+    const updatedGender = prompt("Enter new gender:", student.gender);
+    const updatedAdmissionYear = prompt("Enter new admission year:", student.admissionYear);
+    const updatedAddress = prompt("Enter new address:", student.address);
+
+    if (updatedName && updatedMobile) {
+      try {
+        const res = await fetch(`/api/students/${student._id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...student,
+            name: updatedName,
+            mobile: updatedMobile,
+            group: updatedGroup,
+            caste: updatedCaste,
+            gender: updatedGender,
+            admissionYear: updatedAdmissionYear,
+            address: updatedAddress,
+          }),
+        });
+
+        if (res.ok) {
+          const updated = await res.json();
+          setStudents(
+            students.map((s) => (s._id === student._id ? updated.data : s))
+          );
+        }
+      } catch (err) {
+        console.error("Update Error:", err);
+      }
+    }
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4 text-center">S.K.R.GOVERNMENT JUNIOR COLLEGE</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">
+        S.K.R.GOVERNMENT JUNIOR COLLEGE
+      </h1>
 
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
@@ -207,21 +272,24 @@ export default function StudentsPage() {
       <div className="flex gap-4 mb-4">
         <button
           onClick={handleExportPDF}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded cursor-pointer"
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
         >
-          Export to PDF
+          <FileSpreadsheet size={20} />
+          &nbsp;Export to PDF
         </button>
         <button
           onClick={handleExportExcel}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded cursor-pointer"
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
         >
-          Export to Excel
+          <FileDown size={20} />
+          &nbsp;Export to Excel
         </button>
         <button
           onClick={handlePrint}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded cursor-pointer"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
         >
-          Print
+          <Printer size={20} />
+          &nbsp;Print
         </button>
       </div>
 
@@ -239,23 +307,37 @@ export default function StudentsPage() {
               <th className="px-4 py-2">DOB</th>
               <th className="px-4 py-2">Admission Year</th>
               <th className="px-4 py-2">Address</th>
+              <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(filteredStudents) &&
-              filteredStudents.map((s, idx) => (
-                <tr key={s._id} className="border-t">
-                  <td className="px-4 py-2">{idx + 1}</td>
-                  <td className="px-4 py-2">{s.name}</td>
-                  <td className="px-4 py-2">{s.mobile}</td>
-                  <td className="px-4 py-2">{s.group}</td>
-                  <td className="px-4 py-2">{s.caste}</td>
-                  <td className="px-4 py-2">{s.gender}</td>
-                  <td className="px-4 py-2">{s.dob}</td>
-                  <td className="px-4 py-2">{s.admissionYear}</td>
-                  <td className="px-4 py-2">{s.address}</td>
-                </tr>
-              ))}
+            {filteredStudents.map((s, idx) => (
+              <tr key={s._id} className="border-t">
+                <td className="px-4 py-2">{idx + 1}</td>
+                <td className="px-4 py-2">{s.name}</td>
+                <td className="px-4 py-2">{s.mobile}</td>
+                <td className="px-4 py-2">{s.group}</td>
+                <td className="px-4 py-2">{s.caste}</td>
+                <td className="px-4 py-2">{s.gender}</td>
+                <td className="px-4 py-2">{s.dob}</td>
+                <td className="px-4 py-2">{s.admissionYear}</td>
+                <td className="px-4 py-2">{s.address}</td>
+                <td className="px-4 py-2 flex gap-2">
+                  <button
+                    onClick={() => handleEdit(s)}
+                    className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
+                  >
+                    <Pencil size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(s._id)}
+                    className="text-red-600 hover:text-red-800 cursor-pointer"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

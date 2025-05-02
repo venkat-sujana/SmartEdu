@@ -105,12 +105,16 @@ export default function RegisterPage() {
           <select name="caste" value={formData.caste} onChange={handleChange} className="w-full p-2 border rounded" required>
             <option value="">Select Caste</option>
             <option value="OC">OC</option>
+            <option value="BC-E">BC</option>
             <option value="BC-A">BC-A</option>
             <option value="BC-B">BC-B</option>
             <option value="BC-C">BC-C</option>
             <option value="BC-D">BC-D</option>
             <option value="BC-E">BC-E</option>
-            <option value="SC">SC</option>
+            <option value="BC-E">BC</option>
+            <option value="BC-E">SC-A</option>
+            <option value="BC-E">SC-B</option>
+            <option value="SC">SC-C</option>
             <option value="ST">ST</option>
             <option value="Others">Others</option>
           </select>

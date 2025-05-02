@@ -12,7 +12,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "osra",
+  title: "OSRA",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
   description: "Online student registration App",
 };
 
