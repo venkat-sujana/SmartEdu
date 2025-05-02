@@ -18,6 +18,13 @@ export default function Home() {
           <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
             Dashboard
           </button>
+        </Link>&nbsp;
+
+        <Link href="/admin">
+          {/* Admin Button */}
+          <button className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
+            Admin
+          </button>
         </Link>
 
 
