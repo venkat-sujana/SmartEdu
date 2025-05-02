@@ -10,10 +10,19 @@ export default function Home() {
           <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
             Register
           </button>
-        </Link>
-      </div>
+        </Link>&nbsp;
+         
 
-      {/* Main Heading */}
+        <Link href="/dashboard">
+          {/* Dashboard Button */}
+          <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
+            Dashboard
+          </button>
+        </Link>
+
+
+      </div>
+       {/* Main Heading */}
       <h1 className="text-4xl font-bold">Welcome to OSRA</h1>
     </div>
   );
