@@ -4,6 +4,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import Link from "next/link";
+import AdmissionCharts from "./components/AdmissionCharts";
+
 import {
   Users,
   FileDown,
@@ -13,6 +15,8 @@ import {
   Trash2,
   Printer,
 } from "lucide-react";
+import GenderWiseChart from "./components/GenderWiseChart";
+import CasteWiseChart from "./components/CasteWisechart";
 
 export default function GroupDashboard() {
   const [students, setStudents] = useState([]);
@@ -113,7 +117,7 @@ export default function GroupDashboard() {
               <table className="min-w-full table-auto">
                 <thead className="bg-blue-100">
                   <tr>
-                    <th className="border px-4 py-2 text-left" font-bold>S.No</th>
+                    <th className="border px-4 py-2 text-left font-bold" >S.No</th>
                     <th className="border px-4 py-2 text-left font-bold">{title.split(" ")[0]}</th>
                     <th className="border px-4 py-2 text-left font-bold">Count</th>
                   </tr>
@@ -176,7 +180,12 @@ export default function GroupDashboard() {
       {renderTable("Caste Wise Enrollment", casteCounts)}
       {renderTable("Gender Wise Enrollment", genderCounts)}
       {renderTable("Year Wise Enrollment", admissionYearCounts)}
+
+      <AdmissionCharts/>
+      <GenderWiseChart/>
+      <CasteWiseChart/>
       
     </div>
+    
   );
 }
