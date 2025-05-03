@@ -1,8 +1,11 @@
+//app/student-table/page.js
+
 "use client";
 import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import ReactPaginate from 'react-paginate';
 import {
   Users,
   FileDown,
@@ -10,10 +13,10 @@ import {
   Plus,
   Pencil,
   Trash2,
-  
   Printer,
 } from "lucide-react";
 import Link from "next/link";
+
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -24,6 +27,9 @@ export default function StudentsPage() {
     gender: "",
     admissionYear: "",
   });
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const studentsPerPage = 5;
 
   const tableRef = useRef();
 
@@ -62,6 +68,7 @@ export default function StudentsPage() {
       );
 
     setFilteredStudents(filtered);
+    setCurrentPage(0); // Reset to first page when filters change
   }, [search, filters, students]);
 
   const handleFilterChange = (e) => {
@@ -120,6 +127,8 @@ export default function StudentsPage() {
     XLSX.writeFile(workbook, "students.xlsx");
   };
 
+  const pageCount = Math.ceil(filteredStudents.length / studentsPerPage);
+
   const handlePrint = () => {
     const printContent = tableRef.current.innerHTML;
     const printWindow = window.open("", "", "height=800,width=1000");
@@ -139,6 +148,10 @@ export default function StudentsPage() {
     printWindow.document.write("</body></html>");
     printWindow.document.close();
     printWindow.print();
+  };
+
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
   };
 
   const handleDelete = async (id) => {
@@ -196,6 +209,10 @@ export default function StudentsPage() {
       }
     }
   };
+
+  // Get current students for pagination
+  const offset = currentPage * studentsPerPage;
+  const currentStudents = filteredStudents.slice(offset, offset + studentsPerPage);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -269,7 +286,6 @@ export default function StudentsPage() {
 
       {/* Export & Print Buttons */}
       <div className="flex gap-4 mb-4">
-
         <button
           onClick={handleExportPDF}
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
@@ -294,16 +310,17 @@ export default function StudentsPage() {
           &nbsp;Print
         </button>
 
-               <Link href="/">
-                  {/* Dashboard Button */}
-                  <button className="bg-green-600 text-white px-4 py-2 mt-3 rounded absolute top-4 right-10 hover:bg-blue-700 transition cursor-pointer">
-                    Home
-                  </button>
-                </Link>
+        <Link href="/">
+          <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer">
+            Home
+          </button>
+        </Link>
 
-                
-      
-      
+        <Link href="/dashboard">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer">
+            Dashboard
+          </button>
+        </Link>
       </div>
 
       {/* Students Table */}
@@ -324,15 +341,15 @@ export default function StudentsPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredStudents.map((s, idx) => (
+            {currentStudents.map((s, idx) => (
               <tr key={s._id} className="border-t">
-                <td className="px-4 py-2">{idx + 1}</td>
+                <td className="px-4 py-2">{offset + idx + 1}</td>
                 <td className="px-4 py-2">{s.name}</td>
                 <td className="px-4 py-2">{s.mobile}</td>
                 <td className="px-4 py-2">{s.group}</td>
                 <td className="px-4 py-2">{s.caste}</td>
                 <td className="px-4 py-2">{s.gender}</td>
-                <td className="px-4 py-2">{s.dob}</td>
+                <td className="px-4 py-2">{new Date(s.dob).toLocaleDateString()}</td>
                 <td className="px-4 py-2">{s.admissionYear}</td>
                 <td className="px-4 py-2">{s.address}</td>
                 <td className="px-4 py-2 flex gap-2">
@@ -353,6 +370,31 @@ export default function StudentsPage() {
             ))}
           </tbody>
         </table>
+        <div className="mt-4 text-center text-gray-600">
+          Page {currentPage + 1} of {pageCount} | Showing{" "}
+        Total:{filteredStudents.length} Students
+        </div>
+        {pageCount > 1 && (
+          <div className="mt-4 flex justify-center cursor-pointer">
+            <ReactPaginate
+              previousLabel={"Previous"}
+              nextLabel={"Next"}
+              breakLabel={"..."}
+              pageCount={pageCount}
+              marginPagesDisplayed={2}
+              pageRangeDisplayed={5}
+              onPageChange={handlePageChange}
+              containerClassName={"flex items-center space-x-2"}
+              pageClassName={"px-3 py-1 border rounded"}
+              pageLinkClassName={"text-blue-600"}
+              activeClassName={"bg-blue-500 text-white"}
+              previousClassName={"px-3 py-1 border rounded"}
+              nextClassName={"px-3 py-1 border rounded"}
+              disabledClassName={"opacity-50 cursor-not-allowed"}
+              forcePage={currentPage}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

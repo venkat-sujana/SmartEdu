@@ -13,12 +13,7 @@ export default function Home() {
         </Link>&nbsp;
          
 
-        <Link href="/dashboard">
-          {/* Dashboard Button */}
-          <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
-            Dashboard
-          </button>
-        </Link>&nbsp;
+        
 
         <Link href="/admin">
           {/* Admin Button */}

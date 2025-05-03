@@ -4,13 +4,15 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import Link from "next/link";
+
 export default function GroupDashboard() {
   const [students, setStudents] = useState([]);
   const [groupCounts, setGroupCounts] = useState([]);
   const [casteCounts, setCasteCounts] = useState([]);
   const [genderCounts, setGenderCounts] = useState([]);
-  const [total, setTotal] = useState(0);
   const [admissionYearCounts, setAdmissionYearCounts] = useState([]);
+  const [dateWiseCounts, setDateWiseCounts] = useState([]);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,6 +27,7 @@ export default function GroupDashboard() {
       setCasteCounts(getCounts(studentData, "caste"));
       setGenderCounts(getCounts(studentData, "gender"));
       setAdmissionYearCounts(getCounts(studentData, "admissionYear"));
+      setDateWiseCounts(getDateWiseCounts(studentData));
     };
 
     fetchData();
@@ -42,6 +45,27 @@ export default function GroupDashboard() {
       count,
     }));
   };
+
+  const getDateWiseCounts = (data) => {
+    const counts = {};
+    data.forEach((student) => {
+      if (student.createdAt) {
+        const dateObj = new Date(student.createdAt);
+        if (!isNaN(dateObj.getTime())) {
+          const date = dateObj.toLocaleDateString("en-IN");
+          counts[date] = (counts[date] || 0) + 1;
+        }
+      }
+    });
+  
+    return Object.entries(counts)
+      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+      .map(([key, count]) => ({
+        key,
+        count,
+      }));
+  };
+  
 
   const exportToPDF = (title, data) => {
     const doc = new jsPDF();
@@ -131,18 +155,19 @@ export default function GroupDashboard() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
       <Link href="/register">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
-            Register
-          </button>
-        </Link>&nbsp;
+        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
+          Register
+        </button>
+      </Link>
       <h2 className="text-xl font-bold text-center print:text-left">
         Admissions Enrolled as on {currentDate}
       </h2>
-
+      {renderTable("Date Wise Enrollment", dateWiseCounts)}
       {renderTable("Group Wise Enrollment", groupCounts)}
       {renderTable("Caste Wise Enrollment", casteCounts)}
       {renderTable("Gender Wise Enrollment", genderCounts)}
-      {renderTable("Admissions Year Wise Enrollment", admissionYearCounts)}
+      {renderTable("Year Wise Enrollment", admissionYearCounts)}
+      
     </div>
   );
 }
