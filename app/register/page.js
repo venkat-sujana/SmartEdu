@@ -95,8 +95,9 @@ export default function RegisterPage() {
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6 font-bold">
-        <h2 className="text-2xl font-bold mb-4 text-center"><Users className="inline mix-blend-color-dodge" /> Student Registration</h2>
+      <div className="max-w-2xl mx-auto mt-10 bg-cyan-100 shadow-lg rounded-xl p-6 font-bold border-x-black border-x-2 border-t-2 border-b-2 border-t-blue-600 border-b-blue-600">
+        <h1 className="text-lg font-bold mb-4 text-center  text-blue-600">S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR</h1>
+        <h2 className="text-2xl font-bold mb-4 text-white bg-blue-600 text-center"><Users className="inline" color="white" />&nbsp;Student Registration Form</h2>
                 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" className="w-full p-2 border rounded font-bold" required />
@@ -131,7 +132,7 @@ export default function RegisterPage() {
             <option value="ST">ST</option>
             <option value="Others">Others</option>
           </select>
-
+          <label className="text-sm text-gray-600">Date of Birth</label>
           <input type="date" name="dob" value={formData.dob} onChange={handleChange} className="w-full p-2 border rounded" required />
 
           <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-2 border rounded" required>
@@ -149,9 +150,9 @@ export default function RegisterPage() {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 cursor-pointer transition duration-200"
             disabled={isLoading}
-          ><Users Users className="inline mr-2" /> {/* Icon */}
-            {isLoading ? "Registering..." : "Register"}
-            Register Student
+          ><Users className="inline mr-2" /> {/* Icon */}
+           
+           Register Student
           </button>
         </form>
       </div>

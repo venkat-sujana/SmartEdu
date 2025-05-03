@@ -26,6 +26,12 @@ export default function Home() {
       </div>
        {/* Main Heading */}
       <h1 className="text-4xl font-bold">Welcome to OSRA</h1>
+      <h2 className="text-2xl font-semibold mt-4">Online Student Registration App</h2>
+      <p className="text-lg mt-2 text-center">
+        This is a simple online student registration app built with Next.js and Tailwind CSS.</p>
+      <p className="text-lg mt-2 text-center">
+        <a href="https://github.com/venkat-sujana/osra" className="text-blue-500 hover:text-blue-600">View on GitHub</a>
+      </p>
     </div>
   );
 }
