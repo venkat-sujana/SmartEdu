@@ -4,6 +4,15 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import Link from "next/link";
+import {
+  Users,
+  FileDown,
+  FileSpreadsheet,
+  Plus,
+  Pencil,
+  Trash2,
+  Printer,
+} from "lucide-react";
 
 export default function GroupDashboard() {
   const [students, setStudents] = useState([]);
@@ -104,24 +113,24 @@ export default function GroupDashboard() {
               <table className="min-w-full table-auto">
                 <thead className="bg-blue-100">
                   <tr>
-                    <th className="border px-4 py-2 text-left">S.No</th>
-                    <th className="border px-4 py-2 text-left">{title.split(" ")[0]}</th>
-                    <th className="border px-4 py-2 text-left">Count</th>
+                    <th className="border px-4 py-2 text-left" font-bold>S.No</th>
+                    <th className="border px-4 py-2 text-left font-bold">{title.split(" ")[0]}</th>
+                    <th className="border px-4 py-2 text-left font-bold">Count</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((item, idx) => (
                     <tr key={item.key} className="border-t">
-                      <td className="border px-4 py-2">{idx + 1}</td>
-                      <td className="border px-4 py-2">{item.key}</td>
-                      <td className="border px-4 py-2">{item.count}</td>
+                      <td className="border px-4 py-2 font-bold">{idx + 1}</td>
+                      <td className="border px-4 py-2 font-bold">{item.key}</td>
+                      <td className="border px-4 py-2 font-bold">{item.count}</td>
                     </tr>
                   ))}
                   <tr className="font-semibold bg-gray-100 border-t">
-                    <td className="border px-4 py-2 text-center" colSpan={2}>
+                    <td className="border px-4 py-2 text-center font-bold" colSpan={2}>
                       Total
                     </td>
-                    <td className="border px-4 py-2">{totalCount}</td>
+                    <td className="border px-4 py-2 font-bold">{totalCount}</td>
                   </tr>
                 </tbody>
               </table>
@@ -129,14 +138,14 @@ export default function GroupDashboard() {
             <div className="flex justify-end space-x-2 mt-2 print:hidden">
               <button
                 onClick={() => exportToPDF(title, data)}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded cursor-pointer"
-              >
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 font-bold rounded cursor-pointer"
+              ><FileDown className="mr-2 inline" size={16} />
                 Export to PDF
               </button>
               <button
                 onClick={() => exportToExcel(title, data)}
-                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded cursor-pointer"
-              >
+                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 font-bold rounded cursor-pointer"
+              ><FileSpreadsheet className="mr-2 inline" size={16} />
                 Export to Excel
               </button>
             </div>
@@ -155,12 +164,12 @@ export default function GroupDashboard() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
       <Link href="/register">
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
+        <button className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition cursor-pointer">
           Register
         </button>
       </Link>
-      <h2 className="text-xl font-bold text-center print:text-left">
-        Admissions Enrolled as on {currentDate}
+      <h2 className="text-xl font-bold text-center print:text-left ">
+       <Users className="mr-1 inline" size={20} /> Admissions Enrolled as on {currentDate}
       </h2>
       {renderTable("Date Wise Enrollment", dateWiseCounts)}
       {renderTable("Group Wise Enrollment", groupCounts)}

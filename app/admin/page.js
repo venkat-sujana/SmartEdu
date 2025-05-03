@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className=" bg-amber-100 flex flex-col items-center justify-center h-screen">
+    <div className=" bg-cyan-100 flex flex-col items-center justify-center h-screen">
       <h1 className="text-3xl font-bold mb-6">Admin Login</h1>
       <input
         type="password"
@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button onClick={handleLogin} className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer">
+      <button onClick={handleLogin} className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer font-bold">
         Login
       </button>
       {error && <p className="text-red-500 mt-2">{error}</p>}

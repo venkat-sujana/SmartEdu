@@ -3,6 +3,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -24,18 +26,19 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     try {
       const res = await fetch("/api/students", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
+  
       const data = await res.json();
-
+  
       if (res.ok) {
-        alert("Student Registered Successfully ✅");
+        toast.success("Student Registered Successfully ✅");
+  
         setFormData({
           name: "",
           mobile: "",
@@ -47,21 +50,21 @@ export default function RegisterPage() {
           address: "",
         });
       } else {
-        alert("Error: " + data.message);
+        toast.error("Error: " + data.message);
       }
     } catch (err) {
-      alert("Something went wrong.");
+      toast.error("Something went wrong.");
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <div className="relative">
 
                <Link href="/">
                   {/* Dashboard Button */}
-                  <button className="bg-green-600 text-white px-4 py-2 mt-3 rounded absolute top-4 right-10 hover:bg-blue-700 transition cursor-pointer">
+                  <button className="bg-green-600 text-white px-4 py-2 mt-3 font-bold rounded absolute top-4 right-10 hover:bg-blue-700 transition cursor-pointer">
                     Home
                   </button>
                 </Link>&nbsp;
@@ -92,15 +95,15 @@ export default function RegisterPage() {
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6">
-        <h2 className="text-2xl font-bold mb-4 text-center"><Users className="inline" /> Student Registration</h2>
+      <div className="max-w-2xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6 font-bold">
+        <h2 className="text-2xl font-bold mb-4 text-center"><Users className="inline mix-blend-color-dodge" /> Student Registration</h2>
                 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" className="w-full p-2 border rounded" required />
+          <input name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" className="w-full p-2 border rounded font-bold" required />
 
-          <input name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Mobile Number" className="w-full p-2 border rounded" required />
+          <input name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Mobile Number" className="w-full p-2 border rounded font-bold" required />
 
-          <select name="group" value={formData.group} onChange={handleChange} className="w-full p-2 border rounded" required>
+          <select name="group" value={formData.group} onChange={handleChange} className="w-full p-2 border rounded font-bold" required>
             <option value="">Select Group</option>
             <option value="MPC">MPC</option>
             <option value="BiPC">BiPC</option>
@@ -140,7 +143,7 @@ export default function RegisterPage() {
 
           <input type="number" name="admissionYear" value={formData.admissionYear} onChange={handleChange} placeholder="Admission Year" className="w-full p-2 border rounded" required />
 
-          <textarea name="address" value={formData.address} onChange={handleChange} placeholder="Address" className="w-full p-2 border rounded" required />
+          <textarea name="address" value={formData.address} onChange={handleChange} placeholder="Address" className="w-full p-2 border rounded font-bold" required />
 
           <button
             type="submit"

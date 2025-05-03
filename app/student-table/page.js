@@ -221,19 +221,19 @@ export default function StudentsPage() {
       </h1>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6 ">
         <input 
-          type="text"
+          type="text "
           placeholder="Search by Name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border p-2 rounded"
+          className="border p-2 rounded font-bold "
         />
         <select
           name="group"
           onChange={handleFilterChange}
           value={filters.group}
-          className="border p-2 rounded"
+          className="border p-2 rounded font-bold"
         >
           <option value="">All Groups</option>
           <option value="MPC">MPC</option>
@@ -249,7 +249,7 @@ export default function StudentsPage() {
           name="caste"
           onChange={handleFilterChange}
           value={filters.caste}
-          className="border p-2 rounded"
+          className="border p-2 rounded font-bold"
         >
           <option value="">All Castes</option>
           <option value="OC">OC</option>
@@ -266,7 +266,7 @@ export default function StudentsPage() {
           name="gender"
           onChange={handleFilterChange}
           value={filters.gender}
-          className="border p-2 rounded"
+          className="border p-2 rounded font-bold"
         >
           <option value="">All Genders</option>
           <option value="Male">Male</option>
@@ -280,7 +280,7 @@ export default function StudentsPage() {
           placeholder="Admission Year"
           value={filters.admissionYear}
           onChange={handleFilterChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded font-bold"
         />
       </div>
 
@@ -290,7 +290,7 @@ export default function StudentsPage() {
           onClick={handleExportPDF}
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
         >
-          <FileSpreadsheet size={20} />
+          <FileSpreadsheet size={20} color="white" fontWeight={"bold"} />
           &nbsp;Export to PDF
         </button>
 
@@ -298,7 +298,7 @@ export default function StudentsPage() {
           onClick={handleExportExcel}
           className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
         >
-          <FileDown size={20} />
+          <FileDown size={20} color="white" fontWeight={"bold"} />
           &nbsp;Export to Excel
         </button>
 
@@ -306,18 +306,18 @@ export default function StudentsPage() {
           onClick={handlePrint}
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
         >
-          <Printer size={20} />
+          <Printer size={20} color="white" fontWeight={"bold"} />
           &nbsp;Print
         </button>
 
         <Link href="/">
-          <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer">
+          <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer fontweight-bold">
             Home
           </button>
         </Link>
 
         <Link href="/dashboard">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer fontweight-bold">
             Dashboard
           </button>
         </Link>
@@ -325,7 +325,7 @@ export default function StudentsPage() {
 
       {/* Students Table */}
       <div className="overflow-x-auto" ref={tableRef}>
-        <table className="min-w-full table-auto border rounded shadow">
+        <table className="min-w-full table-auto border rounded shadow font-semibold">
           <thead className="bg-gray-200 text-left">
             <tr>
               <th className="px-4 py-2">S.No</th>
@@ -370,12 +370,12 @@ export default function StudentsPage() {
             ))}
           </tbody>
         </table>
-        <div className="mt-4 text-center text-gray-600">
+        <div className="mt-4 text-center text-gray-600 font-bold">
           Page {currentPage + 1} of {pageCount} | Showing{" "}
         Total:{filteredStudents.length} Students
         </div>
         {pageCount > 1 && (
-          <div className="mt-4 flex justify-center cursor-pointer">
+          <div className="mt-4 flex justify-center cursor-pointer font-bold">
             <ReactPaginate
               previousLabel={"Previous"}
               nextLabel={"Next"}
@@ -386,7 +386,7 @@ export default function StudentsPage() {
               onPageChange={handlePageChange}
               containerClassName={"flex items-center space-x-2"}
               pageClassName={"px-3 py-1 border rounded"}
-              pageLinkClassName={"text-blue-600"}
+              pageLinkClassName={"text-black-600"}
               activeClassName={"bg-blue-500 text-white"}
               previousClassName={"px-3 py-1 border rounded"}
               nextClassName={"px-3 py-1 border rounded"}
