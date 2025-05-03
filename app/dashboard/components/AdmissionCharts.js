@@ -28,7 +28,7 @@ const GroupwiseChart = () => {
 
   return (
     <div className="bg-white rounded-2xl shadow p-4">
-      <h2 className="text-lg font-semibold text-center mb-4 text-blue-600">Group-wise Admissions</h2>
+      <h2 className="text-lg font-semibold text-center mb-4 text-blue-600">🧑🧑Group-wise Admissions</h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={groupStats}

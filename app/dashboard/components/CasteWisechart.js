@@ -32,7 +32,7 @@ const CastewiseChart = () => {
 
   return (
     <div className="p-4 shadow rounded-xl bg-white">
-      <h2 className="text-xl font-semibold mb-4 text-center text-gray-700">Caste-wise Admissions</h2>
+      <h2 className="text-xl font-semibold mb-4 text-center text-gray-700">👨‍👩‍👧‍👦Caste-wise Admissions</h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={casteStats}
