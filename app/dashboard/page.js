@@ -61,23 +61,35 @@ export default function GroupDashboard() {
 
   const getDateWiseCounts = (data) => {
     const counts = {};
+  
     data.forEach((student) => {
-      if (student.createdAt) {
+      if (student.createdAt && student.group) {
         const dateObj = new Date(student.createdAt);
         if (!isNaN(dateObj.getTime())) {
           const date = dateObj.toLocaleDateString("en-IN");
-          counts[date] = (counts[date] || 0) + 1;
+          const group = student.group;
+          const key = `${date}__${group}`; // Combine with separator
+          counts[key] = (counts[key] || 0) + 1;
         }
       }
     });
   
-    return Object.entries(counts)
-      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
-      .map(([key, count]) => ({
-        key,
+    // Convert counts object to array of objects
+    const sortedEntries = Object.entries(counts).sort((a, b) => {
+      const dateA = new Date(a[0].split("__")[0]);
+      const dateB = new Date(b[0].split("__")[0]);
+      return dateA - dateB;
+    });
+  
+    return sortedEntries.map(([key, count]) => {
+      const [date, group] = key.split("__");
+      return {
+        key: `${date} - ${group}`, // Final display key: Date - Group
         count,
-      }));
+      };
+    });
   };
+  
   
 
   const exportToPDF = (title, data) => {
@@ -173,20 +185,28 @@ export default function GroupDashboard() {
         </button>
       </Link>
       <h2 className="text-xl font-bold text-center print:text-left ">
-       <Users className="mr-1 inline" size={20} /> Admissions Enrolled as on {currentDate}
+        <Users className="mr-1 inline" size={20} /> Admissions Enrolled as on{" "}
+        {currentDate}
       </h2>
-      {renderTable("Date Wise Enrollment", dateWiseCounts)}
-      {renderTable("Group Wise Enrollment", groupCounts)}
-      {renderTable("Caste Wise Enrollment", casteCounts)}
-      {renderTable("Gender Wise Enrollment", genderCounts)}
-      {renderTable("Year Wise Enrollment", admissionYearCounts)}
+      {renderTable("Date-Wise Enrollment", dateWiseCounts)}
+      {renderTable("Group-Wise Enrollment", groupCounts)}
+      {renderTable("Caste-Wise Enrollment", casteCounts)}
+      {renderTable("Gender-Wise Enrollment", genderCounts)}
+      {renderTable("Year-Wise Enrollment", admissionYearCounts)}
 
-      <AdmissionCharts/>
-      <GenderWiseChart/>
-      <CasteWiseChart/>
-      
+      <AdmissionCharts />
+      <GenderWiseChart />
+      <CasteWiseChart />
+
+      <div className="flex justify-end">
+        <button
+          onClick={() => window.print()}
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 font-bold rounded print:hidden cursor-pointer"
+        >
+          <Printer className="mr-2 inline" size={16} />
+          Print All Tables
+        </button>
+      </div>
     </div>
-    
-    
   );
 }
