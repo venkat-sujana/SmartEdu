@@ -85,6 +85,7 @@ export default function StudentsPage() {
         [
           "S.No",
           "Name",
+          "Father Name",
           "Mobile",
           "Group",
           "Caste",
@@ -97,6 +98,7 @@ export default function StudentsPage() {
       body: filteredStudents.map((s, idx) => [
         idx + 1,
         s.name,
+        s.fatherName,
         s.mobile,
         s.group,
         s.caste,
@@ -114,6 +116,7 @@ export default function StudentsPage() {
       filteredStudents.map((s, idx) => ({
         SNo: idx + 1,
         Name: s.name,
+        FatherName: s.fatherName,
         Mobile: s.mobile,
         Group: s.group,
         Caste: s.caste,
@@ -173,6 +176,7 @@ export default function StudentsPage() {
 
   const handleEdit = async (student) => {
     const updatedName = prompt("Enter new name:", student.name);
+    const updatedFatherName = prompt("Enter new father's name:", student.fatherName);
     const updatedMobile = prompt("Enter new mobile:", student.mobile);
     const updatedGroup = prompt("Enter new group:", student.group);
     const updatedCaste = prompt("Enter new caste:", student.caste);
@@ -190,6 +194,7 @@ export default function StudentsPage() {
           body: JSON.stringify({
             ...student,
             name: updatedName,
+            fatherName: updatedFatherName,
             mobile: updatedMobile,
             group: updatedGroup,
             caste: updatedCaste,
@@ -256,15 +261,18 @@ export default function StudentsPage() {
     doc.setFont("times", "bold");
     doc.text("Student Details", 20, y);
   
-    y += 10;
+    y += 5;
     doc.setFont("times", "normal");
     doc.text(`Name             : ${student.name}`, 30, y); y += 10;
-    // doc.text(`Father's Name    : ${student.fatherName}`, 30, y); y += 10;
+    doc.text(`Father's Name    : ${student.fatherName}`, 30, y); y += 10;
     doc.text(`Date of Birth    : ${new Date(student.dob).toLocaleDateString('en-GB')}`, 30, y); y += 10;
     doc.text(`Gender           : ${student.gender}`, 30, y); y += 10;
     doc.text(`Caste            : ${student.caste}`, 30, y); y += 10;
     doc.text(`Group            : ${student.group}`, 30, y); y += 10;
     doc.text(`Mobile Number    : ${student.mobile}`, 30, y);
+    y += 10;
+    doc.text(`Date of Admission: ${new Date(student.createdAt).toLocaleDateString('en-GB')}`, 30, y);
+
   
     y += 10;
     doc.setFont("times", "italic");
@@ -397,12 +405,14 @@ return (
             <tr>
               <th className="px-4 py-2">S.No</th>
               <th className="px-4 py-2">Name</th>
+              <th className="px-4 py-2">Father Name</th>
               <th className="px-4 py-2">Mobile</th>
               <th className="px-4 py-2">Group</th>
               <th className="px-4 py-2">Caste</th>
               <th className="px-4 py-2">Gender</th>
               <th className="px-4 py-2">DOB</th>
               <th className="px-4 py-2">Admission Year</th>
+              <th className="px-4 py-2">Admission Date</th>
               <th className="px-4 py-2">Address</th>
               <th className="px-4 py-2">Admission Certificate</th>
               <th className="px-4 py-2">Actions</th>
@@ -413,12 +423,14 @@ return (
               <tr key={s._id} className="border-t">
                 <td className="px-4 py-2">{offset + idx + 1}</td>
                 <td className="px-4 py-2">{s.name}</td>
+                <td className="px-4 py-2">{s.fatherName}</td>
                 <td className="px-4 py-2">{s.mobile}</td>
                 <td className="px-4 py-2">{s.group}</td>
                 <td className="px-4 py-2">{s.caste}</td>
                 <td className="px-4 py-2">{s.gender}</td>
                 <td className="px-4 py-2">{new Date(s.dob).toLocaleDateString()}</td>
                 <td className="px-4 py-2">{s.admissionYear}</td>
+                <td className="px-4 py-2">{new Date(s.createdAt).toLocaleDateString()}</td>
                 <td className="px-4 py-2">{s.address}</td>
 
                 <td className="px-4 py-2">
@@ -436,13 +448,13 @@ return (
                     onClick={() => handleEdit(s)}
                     className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
                   >
-                    <Pencil size={18} />
-                  </button>
+                    <Pencil size={20} />
+                  </button>&nbsp;
                   <button
                     onClick={() => handleDelete(s._id)}
                     className="text-red-600 hover:text-red-800 cursor-pointer"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={20} />
                   </button>
                 </td>
               </tr>

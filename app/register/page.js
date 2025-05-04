@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
+    fatherName: "",
     mobile: "",
     group: "",
     caste: "",
@@ -41,6 +42,7 @@ export default function RegisterPage() {
   
         setFormData({
           name: "",
+          fatherName: "",
           mobile: "",
           group: "",
           caste: "",
@@ -101,6 +103,7 @@ export default function RegisterPage() {
                 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" className="w-full p-2 border rounded font-bold" required />
+          <input name="fatherName" value={formData.fatherName} onChange={handleChange} placeholder="Father's Name" className="w-full p-2 border rounded font-bold" required />
 
           <input name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Mobile Number" className="w-full p-2 border rounded font-bold" required />
 
