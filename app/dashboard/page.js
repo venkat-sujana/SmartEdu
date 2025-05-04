@@ -66,7 +66,15 @@ export default function GroupDashboard() {
       if (student.createdAt && student.group) {
         const dateObj = new Date(student.createdAt);
         if (!isNaN(dateObj.getTime())) {
-          const date = dateObj.toLocaleDateString("en-IN");
+          const date = dateObj.toLocaleDateString("en-IN",{
+            timeZone: "Asia/Kolkata",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true
+          });
           const group = student.group;
           const key = `${date}__${group}`; // Combine with separator
           counts[key] = (counts[key] || 0) + 1;

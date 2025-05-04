@@ -430,7 +430,17 @@ return (
                 <td className="px-4 py-2">{s.gender}</td>
                 <td className="px-4 py-2">{new Date(s.dob).toLocaleDateString()}</td>
                 <td className="px-4 py-2">{s.admissionYear}</td>
-                <td className="px-4 py-2">{new Date(s.createdAt).toLocaleDateString()}</td>
+                <td className="px-4 py-2">
+                {new Date(s.createdAt).toLocaleString("en-IN", {
+                  timeZone: "Asia/Kolkata",
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true
+                })}
+              </td>
                 <td className="px-4 py-2">{s.address}</td>
 
                 <td className="px-4 py-2">
