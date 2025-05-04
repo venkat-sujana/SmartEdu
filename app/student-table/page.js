@@ -15,6 +15,7 @@ import {
   Trash2,
   Printer,
 } from "lucide-react";
+
 import Link from "next/link";
 
 export default function StudentsPage() {
@@ -209,12 +210,78 @@ export default function StudentsPage() {
       }
     }
   };
-
-  // Get current students for pagination
+// Get current students for pagination
   const offset = currentPage * studentsPerPage;
   const currentStudents = filteredStudents.slice(offset, offset + studentsPerPage);
 
-  return (
+
+
+  
+
+  const generateCertificatePDF = (student) => {
+    const doc = new jsPDF();
+  
+    // Title border box
+    doc.setDrawColor(0);
+    doc.setLineWidth(1);
+    doc.rect(10, 10, 190, 277); // outer border
+  
+    // College/School Name
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR ", 105, 30, { align: "center" });
+  
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "italic");
+    doc.text("THILAK NAGAR, GUDUR--524101", 105, 38, { align: "center" });
+  
+    // Horizontal line
+    doc.setLineWidth(0.5);
+    doc.line(20, 45, 190, 45);
+  
+    // Certificate Title
+    doc.setFontSize(18);
+    doc.setFont("times", "bold");
+    doc.text("ADMISSION CERTIFICATE", 105, 60, { align: "center" });
+  
+    let y = 70;
+    doc.setFontSize(12);
+    doc.setFont("times", "normal");
+  
+    doc.text(`This is to certify that the following student has been admitted`, 20, y);
+    y += 10;
+    doc.text(`into the institution for the academic year ${student.admissionYear}-${student.admissionYear + 1}`, 20, y);
+  
+    y += 10;
+    doc.setFont("times", "bold");
+    doc.text("Student Details", 20, y);
+  
+    y += 10;
+    doc.setFont("times", "normal");
+    doc.text(`Name             : ${student.name}`, 30, y); y += 10;
+    // doc.text(`Father's Name    : ${student.fatherName}`, 30, y); y += 10;
+    doc.text(`Date of Birth    : ${new Date(student.dob).toLocaleDateString('en-GB')}`, 30, y); y += 10;
+    doc.text(`Gender           : ${student.gender}`, 30, y); y += 10;
+    doc.text(`Caste            : ${student.caste}`, 30, y); y += 10;
+    doc.text(`Group            : ${student.group}`, 30, y); y += 10;
+    doc.text(`Mobile Number    : ${student.mobile}`, 30, y);
+  
+    y += 10;
+    doc.setFont("times", "italic");
+    doc.text("This certificate is issued on request of the student for official purposes.", 20, y);
+  
+    // Signature
+    y += 30;
+    doc.setFont("times", "bold");
+    doc.text("Signature", 160, y);
+    doc.setFont("times", "normal");
+    doc.text("(Principal/Head of Institution)", 130, y + 7);
+  
+    doc.save("admission-certificate.pdf");
+  };
+  
+
+return (
     <div className="p-6 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-center">
         S.K.R.GOVERNMENT JUNIOR COLLEGE
@@ -337,6 +404,7 @@ export default function StudentsPage() {
               <th className="px-4 py-2">DOB</th>
               <th className="px-4 py-2">Admission Year</th>
               <th className="px-4 py-2">Address</th>
+              <th className="px-4 py-2">Admission Certificate</th>
               <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
@@ -352,6 +420,17 @@ export default function StudentsPage() {
                 <td className="px-4 py-2">{new Date(s.dob).toLocaleDateString()}</td>
                 <td className="px-4 py-2">{s.admissionYear}</td>
                 <td className="px-4 py-2">{s.address}</td>
+
+                <td className="px-4 py-2">
+                <button
+                  onClick={() => generateCertificatePDF(s)}
+                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs cursor-pointer font-semibold"
+                >
+                  Certificate
+                </button>
+                  </td>
+                
+                
                 <td className="px-4 py-2 flex gap-2">
                   <button
                     onClick={() => handleEdit(s)}
