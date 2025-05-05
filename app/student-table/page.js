@@ -415,7 +415,7 @@ return (
               <th className="px-4 py-2">Admission Date</th>
               <th className="px-4 py-2">Address</th>
               <th className="px-4 py-2">Admission Certificate</th>
-              <th className="px-4 py-2">Actions</th>
+              <th className="px-4 py-2 hidden">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -453,10 +453,10 @@ return (
                   </td>
                 
                 
-                <td className="px-4 py-2 flex gap-2">
+                <td className="px-4 py-2 flex gap-2" style={{display: "none"}} >
                   <button
                     onClick={() => handleEdit(s)}
-                    className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
+                    className="text-yellow-600 hover:text-yellow-800 cursor-pointer "
                   >
                     <Pencil size={20} />
                   </button>&nbsp;
@@ -467,6 +467,8 @@ return (
                     <Trash2 size={20} />
                   </button>
                 </td>
+
+
               </tr>
             ))}
           </tbody>
