@@ -508,34 +508,53 @@ export default function StudentsPage() {
     doc.setFont("times", "normal");
     doc.text("(Signature of the Student)", 125, y + 15);
   
-    // ✅ Load and add image from public/uploads/
+    // Photo handling - Updated for Vercel compatibility
     if (student.photo) {
-      try {
-        const imagePath = student.photo.startsWith('/') ? student.photo.substring(1) : student.photo; //absolute path
-        const response = await fetch(imagePath);
-        const blob = await response.blob();
-        const reader = new FileReader();
-  
-        reader.onload = function () {
-          const base64Data = reader.result;
-          doc.addImage(base64Data, "JPEG", 160, 50, 30, 35);
-          doc.save("caretaker-certificate.pdf");
-        };
-  
-        reader.onerror = function () {
-          alert("Failed to read photo.");
-          doc.save("caretaker-certificate.pdf");
-        };
-  
-        reader.readAsDataURL(blob);
-      } catch (error) {
-        alert("Failed to load photo.");
-        doc.save("caretaker-certificate.pdf");
-      }
+        try {
+            // Option 1: If photo is a base64 string
+            if (student.photo.startsWith('data:image')) {
+                doc.addImage(student.photo, "JPEG", 160, 50, 30, 35);
+                doc.save("caretaker-certificate.pdf");
+                return;
+            }
+            
+            // Option 2: If photo is a URL (for remote storage)
+            let imageUrl = student.photo;
+            
+            // Ensure URL is absolute if stored as relative path
+            if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+                imageUrl = `/${imageUrl}`;
+            }
+            
+            // Handle Vercel public folder URLs
+            if (imageUrl.startsWith('/') && process.env.NODE_ENV === 'production') {
+                imageUrl = `https://${process.env.VERCEL_URL}${imageUrl}`;
+            }
+            
+            const response = await fetch(imageUrl);
+            if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+            
+            const blob = await response.blob();
+            const base64Data = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+            
+            doc.addImage(base64Data, "JPEG", 160, 50, 30, 35);
+        } catch (error) {
+            console.error("Photo loading error:", error);
+            doc.setFontSize(10);
+            doc.text("Photo not available", 160, 70);
+        }
     } else {
-      doc.save("caretaker-certificate.pdf");
+        doc.setFontSize(10);
+        doc.text("Photo not provided", 160, 70);
     }
-  };
+    
+    doc.save("caretaker-certificate.pdf");
+};
   
   
   
