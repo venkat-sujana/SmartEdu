@@ -3,15 +3,19 @@ import connectDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 
 
-export async function GET() {
+export async function GET(req, { params }) {
   try {
     await connectDB();
-    const students = await Student.find();
-    return Response.json(students); // ← Should return array directly
+    const student = await Student.findById(params.id);
+    if (!student) {
+      return NextResponse.json({ message: "Student not found" }, { status: 404 });
+    }
+    return NextResponse.json({ status: "success", data: student });
   } catch (error) {
-    return new Response("Error fetching students", { status: 500 });
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
+
 
 export async function PUT(req, { params }) {
   await connectDB();

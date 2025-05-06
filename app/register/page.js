@@ -5,7 +5,9 @@ import { Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
+
 export default function RegisterPage() {
+  const [photo, setPhoto] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     fatherName: "",
@@ -16,10 +18,15 @@ export default function RegisterPage() {
     gender: "",
     admissionYear: "",
     address: "",
+    photo: null,
   });
 
   const [isLoading, setIsLoading] = useState(false);
-
+ 
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, photo: e.target.files[0] });
+  };
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -27,19 +34,33 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+    
+    const form = new FormData();
+    form.append("name", formData.name);
+    form.append("fatherName", formData.fatherName);
+    form.append("mobile", formData.mobile);
+    form.append("group", formData.group);
+    form.append("caste", formData.caste);
+    form.append("dob", formData.dob);
+    form.append("gender", formData.gender);
+    form.append("admissionYear", formData.admissionYear);
+    form.append("address", formData.address);
+  
+    if (photo) {
+      form.append("photo", photo);
+    }
+  
     try {
       const res = await fetch("/api/students", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: form, // Don't set headers here. Browser sets it with correct boundary
       });
-
+  
       const data = await res.json();
-
+  
       if (res.ok) {
         toast.success("Student Registered Successfully ✅");
-
+  
         setFormData({
           name: "",
           fatherName: "",
@@ -51,6 +72,8 @@ export default function RegisterPage() {
           admissionYear: "",
           address: "",
         });
+        
+        setPhoto(null);
       } else {
         toast.error("Error: " + data.message);
       }
@@ -60,7 +83,7 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <div className="relative">
       <Link href="/">
@@ -213,6 +236,14 @@ export default function RegisterPage() {
             className="w-full p-2 border rounded font-bold"
             required
           />
+           <label className="text-sm text-gray-600">Upload Photo</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setPhoto(e.target.files[0])}
+            className="w-full p-2 border rounded font-bold"
+          />
+
 
           <button
             type="submit"

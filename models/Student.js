@@ -41,6 +41,10 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  photo: {  // New field for photo
+    type: String, // Will store the file path or URL
+    default: ""
+  },
   createdAt: {
     type: Date,
     default: Date.now,
