@@ -410,10 +410,14 @@ export default function StudentsPage() {
 
 
   const generateCaretakerCertificatePDF = async (student) => {
+    // Dynamically import required libraries
     const { jsPDF } = await import("jspdf");
     const autoTable = (await import("jspdf-autotable")).default;
+    
+    // Create new PDF document
     const doc = new jsPDF();
-  
+
+    // ===== DOCUMENT SETUP =====
     // Watermark
     doc.saveGraphicsState();
     doc.setFontSize(30);
@@ -421,34 +425,35 @@ export default function StudentsPage() {
     doc.setFont("helvetica", "bold");
     doc.text("S.K.R.GJC", 105, 120, { align: "center", angle: 45 });
     doc.restoreGraphicsState();
-  
+
     // Border
     doc.setDrawColor(0);
     doc.setLineWidth(1);
     doc.rect(10, 10, 190, 270);
-  
-    // Header
+
+    // ===== HEADER SECTION =====
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0);
     doc.text("S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR", 105, 25, { align: "center" });
-  
+
     doc.setFontSize(13);
     doc.setFont("helvetica", "italic");
     doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 32, { align: "center" });
-  
+
     // Title
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.text("CARE TAKER", 105, 42, { align: "center" });
-  
+
+    // ===== STUDENT INFORMATION =====
     // Photo Box
     doc.rect(160, 50, 30, 35);
-  
+
     let y = 55;
-    let x = 20;
+    const x = 20;
     const gap = 6;
-  
+
     // Student details
     doc.setFont("times", "normal");
     doc.setFontSize(11);
@@ -462,44 +467,53 @@ export default function StudentsPage() {
     doc.text(`Date of Birth        : ${new Date(student.dob).toLocaleDateString("en-GB")}`, x, y); y += gap;
     doc.text(`Address              : ${student.address}`, x, y); y += gap;
     doc.text(`Mobile No.           : ${student.mobile}`, x, y); y += gap;
-  
-    // Home Exams
+
+    // ===== EXAM PERFORMANCE TABLE =====
     y = 120;
     doc.setFont("times", "bold");
     doc.text("Home Examinations", 15, y);
+    
     const examHeaders = ["Exam", "Tel/Sansk", "English", "Math/Bot/Civ", "Math/Zool/His", "Phy/Eco", "Che/Com", "Total", "%", "Remarks"];
     const examData = Array(7).fill(["", "", "", "", "", "", "", "", "", ""]).map((row, i) => [ 
-      ["Unit-I", "Unit-II", "Qtrly", "Unit-III", "Unit-IV", "Half Yrly", "Pre-Final"][i], ...row 
+        ["Unit-I", "Unit-II", "Qtrly", "Unit-III", "Unit-IV", "Half Yrly", "Pre-Final"][i], ...row 
     ]);
+    
     autoTable(doc, {
-      startY: y + 5,
-      head: [examHeaders],
-      body: examData,
-      theme: "grid",
-      styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
-      headStyles: { fillColor: [50, 50, 50], textColor: [255, 255, 255], fontStyle: "bold", lineColor: [0, 0, 0] }
+        startY: y + 5,
+        head: [examHeaders],
+        body: examData,
+        theme: "grid",
+        styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
+        headStyles: { 
+            fillColor: [50, 50, 50], 
+            textColor: [255, 255, 255], 
+            fontStyle: "bold", 
+            lineColor: [0, 0, 0] 
+        }
     });
-  
-    // Attendance Table
+
+    // ===== ATTENDANCE TABLE =====
     y = doc.lastAutoTable.finalY + 5;
     doc.setFont("times", "bold");
     doc.text("Monthly Attendance", 20, y);
+    
     const monthHeaders = ["Month", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR", "TOTAL"];
     const attendanceData = [
-      ["Working Days", "", "", "", "", "", "", "", "", "", "", ""],
-      ["Present", "", "", "", "", "", "", "", "", "", "", ""],
-      ["Percent", "", "", "", "", "", "", "", "", "", "", ""]
+        ["Working Days", "", "", "", "", "", "", "", "", "", "", ""],
+        ["Present", "", "", "", "", "", "", "", "", "", "", ""],
+        ["Percent", "", "", "", "", "", "", "", "", "", "", ""]
     ];
+    
     autoTable(doc, {
-      startY: y + 5,
-      head: [monthHeaders],
-      body: attendanceData,
-      theme: "grid",
-      styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
-      headStyles: { lineColor: [0, 0, 0] }
+        startY: y + 5,
+        head: [monthHeaders],
+        body: attendanceData,
+        theme: "grid",
+        styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
+        headStyles: { lineColor: [0, 0, 0] }
     });
-  
-    // Footer
+
+    // ===== FOOTER SECTION =====
     y = doc.lastAutoTable.finalY + 10;
     doc.setFont("times", "bold");
     doc.text("Place: GUDUR", 20, y);
@@ -507,42 +521,43 @@ export default function StudentsPage() {
     doc.text("Signature", 150, y + 8);
     doc.setFont("times", "normal");
     doc.text("(Signature of the Student)", 125, y + 15);
-  
-    // Photo handling - Updated for Vercel compatibility
+
+    // ===== PHOTO HANDLING (VERCEL COMPATIBLE) =====
     if (student.photo) {
         try {
-            // Option 1: If photo is a base64 string
+            // Case 1: Photo is base64 encoded string
             if (student.photo.startsWith('data:image')) {
                 doc.addImage(student.photo, "JPEG", 160, 50, 30, 35);
-                doc.save("caretaker-certificate.pdf");
-                return;
+            } 
+            // Case 2: Photo is a URL
+            else {
+                let imageUrl = student.photo;
+                
+                // Handle relative paths in production
+                if (!imageUrl.startsWith('http') && process.env.NODE_ENV === 'production') {
+                    imageUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+                }
+                
+                // Handle relative paths in development
+                if (!imageUrl.startsWith('http') && process.env.NODE_ENV !== 'production') {
+                    imageUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+                }
+                
+                // Fetch image
+                const response = await fetch(imageUrl);
+                if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+                
+                // Convert to base64
+                const blob = await response.blob();
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+                
+                doc.addImage(base64Data, "JPEG", 160, 50, 30, 35);
             }
-            
-            // Option 2: If photo is a URL (for remote storage)
-            let imageUrl = student.photo;
-            
-            // Ensure URL is absolute if stored as relative path
-            if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-                imageUrl = `/${imageUrl}`;
-            }
-            
-            // Handle Vercel public folder URLs
-            if (imageUrl.startsWith('/') && process.env.NODE_ENV === 'production') {
-                imageUrl = `https://${process.env.VERCEL_URL}${imageUrl}`;
-            }
-            
-            const response = await fetch(imageUrl);
-            if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
-            
-            const blob = await response.blob();
-            const base64Data = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-            
-            doc.addImage(base64Data, "JPEG", 160, 50, 30, 35);
         } catch (error) {
             console.error("Photo loading error:", error);
             doc.setFontSize(10);
@@ -552,7 +567,8 @@ export default function StudentsPage() {
         doc.setFontSize(10);
         doc.text("Photo not provided", 160, 70);
     }
-    
+
+    // Save the PDF
     doc.save("caretaker-certificate.pdf");
 };
   
