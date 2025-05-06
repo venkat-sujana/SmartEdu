@@ -3,9 +3,6 @@ import "./globals.css";
 // app/layout.js or app/layout.tsx
 import { Toaster } from "react-hot-toast";
 
-
-
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,21 +27,31 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        
-        <Toaster
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <Toaster 
           position="top-right"
           toastOptions={{
-            className: "",
-            duration: 3000,
+            duration: 3000, // 4 seconds
             style: {
-              background: "#333",
-              color: "#fff",
+              background: "#0f766e", // teal-700
+              color: "white",
+              fontWeight: "bold",
+              borderRadius: "0.5rem",
+            },
+            success: {
+              icon: '✅',
+            },
+            error: {
+              style: {
+                background: "#dc2626", // red-600
+              },
+              icon: '❌',
             },
           }}
         />
         {children}
-
       </body>
     </html>
   );

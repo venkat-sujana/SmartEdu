@@ -3,9 +3,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import ReactPaginate from 'react-paginate';
+
+import autoTable from 'jspdf-autotable';
+import "jspdf-autotable";
+import ReactPaginate from "react-paginate";
+// Removed redundant import of 'jspdf-autotable'
 import {
   Users,
   FileDown,
@@ -159,7 +162,9 @@ export default function StudentsPage() {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = confirm("Are you sure you want to delete this student?");
+    const confirmDelete = confirm(
+      "Are you sure you want to delete this student?"
+    );
     if (!confirmDelete) return;
 
     try {
@@ -176,12 +181,18 @@ export default function StudentsPage() {
 
   const handleEdit = async (student) => {
     const updatedName = prompt("Enter new name:", student.name);
-    const updatedFatherName = prompt("Enter new father's name:", student.fatherName);
+    const updatedFatherName = prompt(
+      "Enter new father's name:",
+      student.fatherName
+    );
     const updatedMobile = prompt("Enter new mobile:", student.mobile);
     const updatedGroup = prompt("Enter new group:", student.group);
     const updatedCaste = prompt("Enter new caste:", student.caste);
     const updatedGender = prompt("Enter new gender:", student.gender);
-    const updatedAdmissionYear = prompt("Enter new admission year:", student.admissionYear);
+    const updatedAdmissionYear = prompt(
+      "Enter new admission year:",
+      student.admissionYear
+    );
     const updatedAddress = prompt("Enter new address:", student.address);
 
     if (updatedName && updatedMobile) {
@@ -215,81 +226,352 @@ export default function StudentsPage() {
       }
     }
   };
-// Get current students for pagination
+  // Get current students for pagination
   const offset = currentPage * studentsPerPage;
-  const currentStudents = filteredStudents.slice(offset, offset + studentsPerPage);
+  const currentStudents = filteredStudents.slice(
+    offset,
+    offset + studentsPerPage
+  );
 
-
-
-  
-
-  const generateCertificatePDF = (student) => {
+  const generateAdmissionCertificatePDF = (student) => {
     const doc = new jsPDF();
-  
+
     // Title border box
     doc.setDrawColor(0);
     doc.setLineWidth(1);
     doc.rect(10, 10, 190, 277); // outer border
-  
+
     // College/School Name
     doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
-    doc.text("S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR ", 105, 30, { align: "center" });
-  
+    doc.text("S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR ", 105, 30, {
+      align: "center",
+    });
+
     doc.setFontSize(14);
     doc.setFont("helvetica", "italic");
-    doc.text("THILAK NAGAR, GUDUR--524101", 105, 38, { align: "center" });
-  
+    doc.text("THILAK NAGAR, GUDUR--524101,TIRUPATI Dt", 105, 38, { align: "center" });
+
     // Horizontal line
     doc.setLineWidth(0.5);
     doc.line(20, 45, 190, 45);
-  
+
     // Certificate Title
     doc.setFontSize(18);
     doc.setFont("times", "bold");
     doc.text("ADMISSION CERTIFICATE", 105, 60, { align: "center" });
-  
+
     let y = 70;
     doc.setFontSize(12);
     doc.setFont("times", "normal");
-  
-    doc.text(`This is to certify that the following student has been admitted`, 20, y);
+
+    doc.text(
+      `This is to certify that the following student has been admitted`,
+      20,
+      y
+    );
     y += 10;
-    doc.text(`into the institution for the academic year ${student.admissionYear}-${student.admissionYear + 1}`, 20, y);
-  
+    doc.text(
+      `into the institution for the academic year ${student.admissionYear}-${
+        student.admissionYear + 1
+      }`,
+      20,
+      y
+    );
+
     y += 10;
     doc.setFont("times", "bold");
     doc.text("Student Details", 20, y);
-  
+
     y += 5;
     doc.setFont("times", "normal");
-    doc.text(`Name             : ${student.name}`, 30, y); y += 10;
-    doc.text(`Father's Name    : ${student.fatherName}`, 30, y); y += 10;
-    doc.text(`Date of Birth    : ${new Date(student.dob).toLocaleDateString('en-GB')}`, 30, y); y += 10;
-    doc.text(`Gender           : ${student.gender}`, 30, y); y += 10;
-    doc.text(`Caste            : ${student.caste}`, 30, y); y += 10;
-    doc.text(`Group            : ${student.group}`, 30, y); y += 10;
+    doc.text(`Name             : ${student.name}`, 30, y);
+    y += 10;
+    doc.text(`Father's Name    : ${student.fatherName}`, 30, y);
+    y += 10;
+    doc.text(
+      `Date of Birth    : ${new Date(student.dob).toLocaleDateString("en-GB")}`,
+      30,
+      y
+    );
+    y += 10;
+    doc.text(`Gender           : ${student.gender}`, 30, y);
+    y += 10;
+    doc.text(`Caste            : ${student.caste}`, 30, y);
+    y += 10;
+    doc.text(`Group            : ${student.group}`, 30, y);
+    y += 10;
     doc.text(`Mobile Number    : ${student.mobile}`, 30, y);
     y += 10;
-    doc.text(`Date of Admission: ${new Date(student.createdAt).toLocaleDateString('en-GB')}`, 30, y);
+    doc.text(
+      `Date of Admission: ${new Date(student.createdAt).toLocaleDateString(
+        "en-GB"
+      )}`,
+      30,
+      y
+    );
 
-  
     y += 10;
     doc.setFont("times", "italic");
-    doc.text("This certificate is issued on request of the student for official purposes.", 20, y);
-  
+    doc.text(
+      "This certificate is issued on request of the student for official purposes.",
+      20,
+      y
+    );
+
     // Signature
     y += 30;
     doc.setFont("times", "bold");
     doc.text("Signature", 160, y);
     doc.setFont("times", "normal");
     doc.text("(Principal/Head of Institution)", 130, y + 7);
-  
+
     doc.save("admission-certificate.pdf");
   };
+
+
+  const generateStudyCertificatePDF = (student) => {
+    const doc = new jsPDF();
+  
+    // Add Watermark
+    doc.saveGraphicsState(); // save current state
+    doc.setFontSize(40);
+    doc.setTextColor(200); // light grey
+    doc.setFont("helvetica", "bold");
+    doc.text("S.K.R.GJC", 105, 150, {
+      align: "center",
+      angle: 45, // diagonal
+    });
+    doc.restoreGraphicsState(); // restore normal state
+  
+    // Border
+    doc.setDrawColor(0);
+    doc.setLineWidth(1);
+    doc.rect(10, 10, 190, 270);
+  
+    // Header
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0); // reset text color
+    doc.text("S.K.R. GOVERNMENT JUNIOR COLLEGE - GUDUR", 105, 30, { align: "center" });
+  
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "italic");
+    doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 38, { align: "center" });
+  
+    doc.setLineWidth(0.5);
+    doc.line(20, 45, 190, 45);
+  
+    // Certificate Title
+    doc.setFontSize(18);
+    doc.setFont("times", "bold");
+    doc.text("STUDY & CONDUCT CERTIFICATE", 105, 60, { align: "center" });
+  
+    // Content
+    let y = 75;
+    const admissionYear = student.admissionYear;
+    const leavingYear = admissionYear + 2;
+    const currentDate = new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      timeZone: "Asia/Kolkata",
+    });
+  
+    const paragraph = `This is to certify that Mr/Mrs/Kum ${student.name}, Son/Daughter of ${student.fatherName}, was a bonafide student of this college during the academic years ${admissionYear} to ${leavingYear}. During this period, his/her academic performance and conduct were found to be good/satisfactory.`;
+  
+    doc.setFontSize(13);
+    doc.setFont("times", "normal");
+    doc.text(paragraph, 25, y, {
+      maxWidth: 160,
+      align: "justify"
+    });
+  
+    // Place & Date
+    y += 50;
+    doc.setFont("times", "bold");
+    doc.text("Place: GUDUR", 25, y);
+    doc.text(`Date: ${currentDate}`, 25, y + 10);
+  
+    // Signature
+    y += 40;
+    doc.setFont("times", "bold");
+    doc.text("Signature", 150, y);
+    doc.setFont("times", "normal");
+    doc.text("(Principal/Head of Institution)", 120, y + 7);
+  
+    doc.save("study-certificate.pdf");
+  };
+
+
+const generateCaretakerCertificatePDF = (student) => {
+  // Initialize PDF document
+  const doc = new jsPDF();
+
+  // Watermark
+  doc.saveGraphicsState();
+  doc.setFontSize(30);
+  doc.setTextColor(200);
+  doc.setFont("helvetica", "bold");
+  doc.text("S.K.R.GJC", 105, 120, { align: "center", angle: 45 });
+  doc.restoreGraphicsState();
+
+  // Border(reduced height from 277 to 270)
+  doc.setDrawColor(0);
+  doc.setLineWidth(1);
+  doc.rect(10, 10, 190, 270);
+
+  // Header
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0);
+  doc.text("S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR", 105, 25, { align: "center" });
+
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "italic");
+  doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 32, { align: "center" });
+
+  // Title
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("CARE TAKER", 105, 42, { align: "center" });
+
+  // Photo Box
+  doc.rect(160, 50, 30, 35);
+
+  let y = 55;
+  let x = 20;
+  const gap = 6;
+
+  // Student Details (Left)
+  doc.setFont("times", "normal");
+  doc.setFontSize(11);
+  doc.text(`Student Name         : ${student.name}`, x, y); y += gap;
+  doc.text(`Group                : ${student.group}`, x, y); y += gap;
+  doc.text(`Gender               : ${student.gender}`, x, y); y += gap;
+  doc.text(`Admission Date       : ${new Date(student.createdAt).toLocaleDateString("en-GB")}`, x, y); y += gap; // Use createdAt instead of admissionYear                : ${student.group}`, x, y); y += gap;
+  doc.text(`Admission No.        : ${student.admissionNo}`, x, y); y += gap;
+  doc.text(`Father Name          : ${student.fatherName}`, x, y); y += gap;
+  // doc.text(`Mother Name          : ${student.motherName}`, x, y); y += gap;
+  doc.text(`Caste                : ${student.caste}`, x, y); y += gap;
+  // doc.text(`SSC Marks/1st year   : ${student.marks}`, x, y); y += gap;
+  doc.text(`Date of Birth        : ${new Date(student.dob).toLocaleDateString("en-GB")}`, x, y); y += gap;
+  // doc.text(`Father's Occupation  : ${student.occupation}`, x, y); y += gap;
+  // doc.text(`Ration Card No.      : ${student.rationCard}`, x, y); y += gap;
+  // doc.text(`Annual Income        : ${student.income}`, x, y); y += gap;
+  doc.text(`Address              : ${student.address}`, x, y); y += gap;
+  doc.text(`Mobile No.           : ${student.mobile}`, x, y); y += gap;
+
+  // Right Side
+  y = 55;
+  x = 110;
   
 
-return (
+
+  // Home Examinations Table
+  y = 120;
+  doc.setFont("times", "bold");
+  doc.text("Home Examinations", 15, y);
+
+  const examHeaders = [
+    "Exam", "Tel/Sansk", "English", "Math/Bot/Civ", "Math/Zool/His",
+    "Phy/Eco", "Che/Com", "Total", "%", "Remarks"
+  ];
+  const examData = [
+    ["Unit-I", "", "", "", "", "", "", "", "", ""],
+    ["Unit-II", "", "", "", "", "", "", "", "", ""],
+    ["Qtrly", "", "", "", "", "", "", "", "", ""],
+    ["Unit-III", "", "", "", "", "", "", "", "", ""],
+    ["Unit-IV", "", "", "", "", "", "", "", "", ""],
+    ["Half Yrly", "", "", "", "", "", "", "", "", ""],
+    ["Pre-Final", "", "", "", "", "", "", "", "", ""]
+  ];
+
+  autoTable(doc, {
+    startY: y + 5,
+    head: [examHeaders],
+    body: examData,
+    theme: "grid",
+    styles: { 
+      fontSize: 9,
+      textColor: [0, 0, 0] , // Black text for body
+      lineWidth: 0.5,    // Added solid lines
+      lineColor: [0,0,0] // Black lines             
+      
+      },
+    headStyles: { 
+      fillColor: [50, 50, 50],          // Darker header background
+      textColor: [255, 255, 255] , 
+      fontStyle: "bold" ,
+      lineWidth: 0.5,    // Header borders
+      lineColor: [0,0,0 ]             // Black text for header
+
+     },
+     bodyStyles: {
+      lineWidth: 0.5,    // Body cell borders
+      lineColor: [0,0,0],
+     }
+  });
+
+  // Monthly Attendance Table
+  y = doc.lastAutoTable.finalY + 5;
+  doc.setFont("times", "bold");
+  doc.text("Monthly Attendance", 20, y);
+
+  const monthHeaders = ["Month", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR", "TOTAL"];
+  const attendanceData = [
+    ["Working Days", "", "", "", "", "", "", "", "", "", "", ""],
+    ["Present", "", "", "", "", "", "", "", "", "", "", ""],
+    ["Percent", "", "", "", "", "", "", "", "", "", "", ""]
+  ];
+
+  autoTable(doc, {
+    startY: y + 5,
+    head: [monthHeaders],
+    body: attendanceData,
+    theme: "grid",
+    styles: { 
+      fontSize: 9,
+      lineWidth: 0.5,
+      lineColor: [0,0,0] 
+    },
+    headStyles: { 
+      // ... existing styles
+      lineWidth: 0.5,
+      lineColor: [0,0,0] 
+    },
+    bodyStyles: {
+      lineWidth: 0.5,
+      lineColor: [0,0,0] 
+    }
+  });
+
+  // Footer
+  y = doc.lastAutoTable.finalY + 10;
+  doc.setFont("times", "bold");
+  doc.text("Place: GUDUR", 20, y);
+  doc.text(`Date: ${new Date().toLocaleDateString("en-GB")}`, 20, y + 8);
+  doc.text("Signature", 150, y + 8);
+  doc.setFont("times", "normal");
+  doc.text("(Signature of the Student)", 125, y + 15);
+
+  // Save the PDF
+  doc.save("caretaker-certificate.pdf");
+};
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+  return (
     <div className="p-6 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-center">
         S.K.R.GOVERNMENT JUNIOR COLLEGE
@@ -297,7 +579,7 @@ return (
 
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6 ">
-        <input 
+        <input
           type="text "
           placeholder="Search by Name"
           value={search}
@@ -415,7 +697,9 @@ return (
               <th className="px-4 py-2">Admission Date</th>
               <th className="px-4 py-2">Address</th>
               <th className="px-4 py-2">Admission Certificate</th>
-              <th className="px-4 py-2 hidden">Actions</th>
+              <th className="px-4 py-2">Study Certificate</th>
+              <th className="px-4 py-2">Care taker Form</th>
+              <th className="px-4 py-2 hidden ">Actions</th>{" "}
             </tr>
           </thead>
           <tbody>
@@ -428,38 +712,66 @@ return (
                 <td className="px-4 py-2">{s.group}</td>
                 <td className="px-4 py-2">{s.caste}</td>
                 <td className="px-4 py-2">{s.gender}</td>
-                <td className="px-4 py-2">{new Date(s.dob).toLocaleDateString()}</td>
+                <td className="px-4 py-2">
+                  {new Date(s.dob).toLocaleDateString()}
+                </td>
                 <td className="px-4 py-2">{s.admissionYear}</td>
                 <td className="px-4 py-2">
-                {new Date(s.createdAt).toLocaleString("en-IN", {
-                  timeZone: "Asia/Kolkata",
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true
-                })}
-              </td>
+                  {new Date(s.createdAt).toLocaleString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
+                </td>
                 <td className="px-4 py-2">{s.address}</td>
 
+
+                
+
                 <td className="px-4 py-2">
-                <button
-                  onClick={() => generateCertificatePDF(s)}
-                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs cursor-pointer font-semibold"
+                  <button
+                    onClick={() => generateAdmissionCertificatePDF(s)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs cursor-pointer font-semibold"
+                  >
+                    Download
+                  </button>
+                </td>
+
+
+                <td className="px-4 py-2">
+                  <button
+                    onClick={() => generateStudyCertificatePDF(s)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs cursor-pointer font-semibold"
+                  >
+                    Download
+                  </button>
+                </td>
+
+                <td className="px-4 py-2">
+                  <button
+                    onClick={() => generateCaretakerCertificatePDF(s)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs cursor-pointer font-semibold"
+                  >
+                    Download
+                  </button>
+                </td>
+
+
+                <td
+                  className="px-4 py-2 flex gap-2"
+                  style={{ display: "none" }}
                 >
-                  Certificate
-                </button>
-                  </td>
-                
-                
-                <td className="px-4 py-2 flex gap-2" style={{display: "none"}} >
                   <button
                     onClick={() => handleEdit(s)}
                     className="text-yellow-600 hover:text-yellow-800 cursor-pointer "
                   >
                     <Pencil size={20} />
-                  </button>&nbsp;
+                  </button>
+                  &nbsp;
                   <button
                     onClick={() => handleDelete(s._id)}
                     className="text-red-600 hover:text-red-800 cursor-pointer"
@@ -467,15 +779,13 @@ return (
                     <Trash2 size={20} />
                   </button>
                 </td>
-
-
               </tr>
             ))}
           </tbody>
         </table>
         <div className="mt-4 text-center text-gray-600 font-bold">
-          Page {currentPage + 1} of {pageCount} | Showing{" "}
-        Total:{filteredStudents.length} Students
+          Page {currentPage + 1} of {pageCount} | Showing Total:
+          {filteredStudents.length} Students
         </div>
         {pageCount > 1 && (
           <div className="mt-4 flex justify-center cursor-pointer font-bold">
@@ -485,7 +795,7 @@ return (
               breakLabel={"..."}
               pageCount={pageCount}
               marginPagesDisplayed={2}
-              pageRangeDisplayed={5}
+              pageRangeDisplayed={10}
               onPageChange={handlePageChange}
               containerClassName={"flex items-center space-x-2"}
               pageClassName={"px-3 py-1 border rounded"}

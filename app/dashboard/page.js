@@ -61,19 +61,19 @@ export default function GroupDashboard() {
 
   const getDateWiseCounts = (data) => {
     const counts = {};
-  
+
     data.forEach((student) => {
       if (student.createdAt && student.group) {
         const dateObj = new Date(student.createdAt);
         if (!isNaN(dateObj.getTime())) {
-          const date = dateObj.toLocaleDateString("en-IN",{
+          const date = dateObj.toLocaleDateString("en-IN", {
             timeZone: "Asia/Kolkata",
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
             hour: "2-digit",
             minute: "2-digit",
-            hour12: true
+            hour12: true,
           });
           const group = student.group;
           const key = `${date}__${group}`; // Combine with separator
@@ -81,14 +81,14 @@ export default function GroupDashboard() {
         }
       }
     });
-  
+
     // Convert counts object to array of objects
     const sortedEntries = Object.entries(counts).sort((a, b) => {
       const dateA = new Date(a[0].split("__")[0]);
       const dateB = new Date(b[0].split("__")[0]);
       return dateA - dateB;
     });
-  
+
     return sortedEntries.map(([key, count]) => {
       const [date, group] = key.split("__");
       return {
@@ -97,8 +97,6 @@ export default function GroupDashboard() {
       };
     });
   };
-  
-  
 
   const exportToPDF = (title, data) => {
     const doc = new jsPDF();
@@ -137,9 +135,15 @@ export default function GroupDashboard() {
               <table className="min-w-full table-auto">
                 <thead className="bg-blue-100">
                   <tr>
-                    <th className="border px-4 py-2 text-left font-bold" >S.No</th>
-                    <th className="border px-4 py-2 text-left font-bold">{title.split(" ")[0]}</th>
-                    <th className="border px-4 py-2 text-left font-bold">Count</th>
+                    <th className="border px-4 py-2 text-left font-bold">
+                      S.No
+                    </th>
+                    <th className="border px-4 py-2 text-left font-bold">
+                      {title.split(" ")[0]}
+                    </th>
+                    <th className="border px-4 py-2 text-left font-bold">
+                      Count
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -147,11 +151,16 @@ export default function GroupDashboard() {
                     <tr key={item.key} className="border-t">
                       <td className="border px-4 py-2 font-bold">{idx + 1}</td>
                       <td className="border px-4 py-2 font-bold">{item.key}</td>
-                      <td className="border px-4 py-2 font-bold">{item.count}</td>
+                      <td className="border px-4 py-2 font-bold">
+                        {item.count}
+                      </td>
                     </tr>
                   ))}
                   <tr className="font-semibold bg-gray-100 border-t">
-                    <td className="border px-4 py-2 text-center font-bold" colSpan={2}>
+                    <td
+                      className="border px-4 py-2 text-center font-bold"
+                      colSpan={2}
+                    >
                       Total
                     </td>
                     <td className="border px-4 py-2 font-bold">{totalCount}</td>
@@ -163,13 +172,15 @@ export default function GroupDashboard() {
               <button
                 onClick={() => exportToPDF(title, data)}
                 className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 font-bold rounded cursor-pointer"
-              ><FileDown className="mr-2 inline" size={16} />
+              >
+                <FileDown className="mr-2 inline" size={16} />
                 Export to PDF
               </button>
               <button
                 onClick={() => exportToExcel(title, data)}
                 className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 font-bold rounded cursor-pointer"
-              ><FileSpreadsheet className="mr-2 inline" size={16} />
+              >
+                <FileSpreadsheet className="mr-2 inline" size={16} />
                 Export to Excel
               </button>
             </div>
@@ -202,10 +213,6 @@ export default function GroupDashboard() {
       {renderTable("Gender-Wise Enrollment", genderCounts)}
       {renderTable("Year-Wise Enrollment", admissionYearCounts)}
 
-      <AdmissionCharts />
-      <GenderWiseChart />
-      <CasteWiseChart />
-
       <div className="flex justify-end">
         <button
           onClick={() => window.print()}
@@ -215,6 +222,10 @@ export default function GroupDashboard() {
           Print All Tables
         </button>
       </div>
+
+      <AdmissionCharts />
+      <GenderWiseChart />
+      <CasteWiseChart />
     </div>
   );
 }
