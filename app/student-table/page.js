@@ -712,7 +712,7 @@ export default function StudentsPage() {
               <th className="px-4 py-2">Admission Certificate</th>
               <th className="px-4 py-2">Study Certificate</th>
               <th className="px-4 py-2">Care taker Form</th>
-              <th className="px-4 py-2 hidden ">Actions</th>{" "}
+              <th className="px-4 py-2">Actions</th>{" "}
             </tr>
           </thead>
           <tbody>
@@ -776,7 +776,7 @@ export default function StudentsPage() {
 
                 <td
                   className="px-4 py-2 flex gap-2"
-                  style={{ display: "none" }}
+                  
                 >
                   <button
                     onClick={() => handleEdit(s)}

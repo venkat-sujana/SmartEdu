@@ -236,8 +236,9 @@ export default function RegisterPage() {
             className="w-full p-2 border rounded font-bold"
             required
           />
-           <label className="text-sm text-gray-600">Upload Photo</label>
-          <input
+
+           <label className="text-sm text-gray-600" style={{display: "none"}}>Upload Photo</label>
+          <input style={{display: "none"}}
             type="file"
             accept="image/*"
             onChange={(e) => setPhoto(e.target.files[0])}
