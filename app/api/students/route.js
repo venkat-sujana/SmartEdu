@@ -32,7 +32,10 @@ export const config = {
 
 
 
-export const dynamic = "force-dynamic"; // ← Edge Runtime ను డిస్‌ఎబుల్ చేస్తుంది
+
+
+
+export const dynamic = "force-dynamic"; // Edge runtime డిసేబుల్
 
 export async function POST(req) {
   try {
@@ -41,26 +44,22 @@ export async function POST(req) {
     const formData = await req.formData();
     const fields = Object.fromEntries(formData.entries());
 
-    let photoPath = "";
-    let tempFilePath = ""; // Declare tempFilePath here
     const file = formData.get("photo");
+    let photoUrl = "";
 
-    if (file && file.name) {
+    if (file && typeof file === "object") {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
+      const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-      // Save temporarily
-      tempFilePath = path.join(process.cwd(), "public", "temp-" + Date.now() + "-" + file.name);
-      await writeFile(tempFilePath, buffer);
+      // Upload to Cloudinary
+      const cloudinaryResponse = await cloudinary.uploader.upload(base64Image, {
+        folder: "students",
+      });
+
+      photoUrl = cloudinaryResponse.secure_url;
     }
-    let photoUrl = ""; // ✅ Define this variable outside
-     // Upload to Cloudinary
-     const cloudinaryResponse = await cloudinary.uploader.upload(tempFilePath, {
-      folder: "students", // optional folder
-    });
 
-    photoUrl = cloudinaryResponse.secure_url;
-  
     const student = await Student.create({
       ...fields,
       photo: photoUrl,
@@ -69,11 +68,10 @@ export async function POST(req) {
     return Response.json({ status: "success", data: student }, { status: 201 });
   } catch (error) {
     console.error("Upload error:", error);
-
-
     return Response.json({ status: "error", message: error.message }, { status: 500 });
   }
 }
+
 
 
 
