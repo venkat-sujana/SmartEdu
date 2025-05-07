@@ -4,16 +4,16 @@
 import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
-
-import autoTable from 'jspdf-autotable';
+import toast from "react-hot-toast";
+import autoTable from "jspdf-autotable";
 import "jspdf-autotable";
 import ReactPaginate from "react-paginate";
-// Removed redundant import of 'jspdf-autotable'
+
+import Image from "next/image";
+
 import {
-  Users,
   FileDown,
   FileSpreadsheet,
-  Plus,
   Pencil,
   Trash2,
   Printer,
@@ -52,7 +52,7 @@ export default function StudentsPage() {
   }, []);
 
   useEffect(() => {
-    let filtered = Array.isArray(students) ? students : [];
+    let filtered = [...students];
 
     if (search) {
       filtered = filtered.filter((s) =>
@@ -60,19 +60,23 @@ export default function StudentsPage() {
       );
     }
 
-    if (filters.group)
+    if (filters.group) {
       filtered = filtered.filter((s) => s.group === filters.group);
-    if (filters.caste)
+    }
+    if (filters.caste) {
       filtered = filtered.filter((s) => s.caste === filters.caste);
-    if (filters.gender)
+    }
+    if (filters.gender) {
       filtered = filtered.filter((s) => s.gender === filters.gender);
-    if (filters.admissionYear)
+    }
+    if (filters.admissionYear) {
       filtered = filtered.filter(
         (s) => String(s.admissionYear) === String(filters.admissionYear)
       );
+    }
 
     setFilteredStudents(filtered);
-    setCurrentPage(0); // Reset to first page when filters change
+    setCurrentPage(0);
   }, [search, filters, students]);
 
   const handleFilterChange = (e) => {
@@ -134,8 +138,6 @@ export default function StudentsPage() {
     XLSX.writeFile(workbook, "students.xlsx");
   };
 
-  const pageCount = Math.ceil(filteredStudents.length / studentsPerPage);
-
   const handlePrint = () => {
     const printContent = tableRef.current.innerHTML;
     const printWindow = window.open("", "", "height=800,width=1000");
@@ -146,6 +148,7 @@ export default function StudentsPage() {
       th, td { border: 1px solid #ccc; padding: 6px; font-size: 12px; }
       th { background-color: #f2f2f2; }
       body { font-family: sans-serif; margin: 20px; }
+      img { max-width: 50px; height: auto; }
     `);
     printWindow.document.write("</style></head><body>");
     printWindow.document.write(
@@ -171,11 +174,18 @@ export default function StudentsPage() {
       const res = await fetch(`/api/students/${id}`, {
         method: "DELETE",
       });
+
+      const result = await res.json();
+
       if (res.ok) {
-        setStudents(students.filter((s) => s._id !== id));
+        setStudents((prev) => prev.filter((s) => s._id !== id));
+        toast.success("Student deleted successfully 🗑️");
+      } else {
+        toast.error("Error deleting student: " + result.message);
       }
     } catch (err) {
       console.error("Delete Error:", err);
+      toast.error("Something went wrong while deleting.");
     }
   };
 
@@ -203,7 +213,6 @@ export default function StudentsPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            ...student,
             name: updatedName,
             fatherName: updatedFatherName,
             mobile: updatedMobile,
@@ -212,26 +221,26 @@ export default function StudentsPage() {
             gender: updatedGender,
             admissionYear: updatedAdmissionYear,
             address: updatedAddress,
+            photo: student.photo,
           }),
         });
 
         if (res.ok) {
           const updated = await res.json();
-          setStudents(
-            students.map((s) => (s._id === student._id ? updated.data : s))
+          setStudents((prev) =>
+            prev.map((s) => (s._id === student._id ? updated.data : s))
           );
+          toast.success("Student updated successfully ✅");
+        } else {
+          const err = await res.json();
+          toast.error("Error updating student: " + err.message);
         }
       } catch (err) {
         console.error("Update Error:", err);
+        toast.error("Something went wrong while updating.");
       }
     }
   };
-  // Get current students for pagination
-  const offset = currentPage * studentsPerPage;
-  const currentStudents = filteredStudents.slice(
-    offset,
-    offset + studentsPerPage
-  );
 
   const generateAdmissionCertificatePDF = (student) => {
     const doc = new jsPDF();
@@ -239,7 +248,7 @@ export default function StudentsPage() {
     // Title border box
     doc.setDrawColor(0);
     doc.setLineWidth(1);
-    doc.rect(10, 10, 190, 277); // outer border
+    doc.rect(10, 10, 190, 277);
 
     // College/School Name
     doc.setFontSize(20);
@@ -250,7 +259,9 @@ export default function StudentsPage() {
 
     doc.setFontSize(14);
     doc.setFont("helvetica", "italic");
-    doc.text("THILAK NAGAR, GUDUR--524101,TIRUPATI Dt", 105, 38, { align: "center" });
+    doc.text("THILAK NAGAR, GUDUR--524101,TIRUPATI Dt", 105, 38, {
+      align: "center",
+    });
 
     // Horizontal line
     doc.setLineWidth(0.5);
@@ -329,49 +340,47 @@ export default function StudentsPage() {
     doc.save("admission-certificate.pdf");
   };
 
-
-
-
-
-
-
   const generateStudyCertificatePDF = (student) => {
     const doc = new jsPDF();
-  
+
     // Add Watermark
-    doc.saveGraphicsState(); // save current state
+    doc.saveGraphicsState();
     doc.setFontSize(40);
-    doc.setTextColor(200); // light grey
+    doc.setTextColor(200);
     doc.setFont("helvetica", "bold");
     doc.text("S.K.R.GJC", 105, 150, {
       align: "center",
-      angle: 45, // diagonal
+      angle: 45,
     });
-    doc.restoreGraphicsState(); // restore normal state
-  
+    doc.restoreGraphicsState();
+
     // Border
     doc.setDrawColor(0);
     doc.setLineWidth(1);
     doc.rect(10, 10, 190, 270);
-  
+
     // Header
     doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(0); // reset text color
-    doc.text("S.K.R. GOVERNMENT JUNIOR COLLEGE - GUDUR", 105, 30, { align: "center" });
-  
+    doc.setTextColor(0);
+    doc.text("S.K.R. GOVERNMENT JUNIOR COLLEGE - GUDUR", 105, 30, {
+      align: "center",
+    });
+
     doc.setFontSize(14);
     doc.setFont("helvetica", "italic");
-    doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 38, { align: "center" });
-  
+    doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 38, {
+      align: "center",
+    });
+
     doc.setLineWidth(0.5);
     doc.line(20, 45, 190, 45);
-  
+
     // Certificate Title
     doc.setFontSize(18);
     doc.setFont("times", "bold");
     doc.text("STUDY & CONDUCT CERTIFICATE", 105, 60, { align: "center" });
-  
+
     // Content
     let y = 75;
     const admissionYear = student.admissionYear;
@@ -382,42 +391,38 @@ export default function StudentsPage() {
       year: "numeric",
       timeZone: "Asia/Kolkata",
     });
-  
+
     const paragraph = `This is to certify that Mr/Mrs/Kum ${student.name}, Son/Daughter of ${student.fatherName}, was a bonafide student of this college during the academic years ${admissionYear} to ${leavingYear}. During this period, his/her academic performance and conduct were found to be good/satisfactory.`;
-  
+
     doc.setFontSize(13);
     doc.setFont("times", "normal");
     doc.text(paragraph, 25, y, {
       maxWidth: 160,
-      align: "justify"
+      align: "justify",
     });
-  
+
     // Place & Date
     y += 50;
     doc.setFont("times", "bold");
     doc.text("Place: GUDUR", 25, y);
     doc.text(`Date: ${currentDate}`, 25, y + 10);
-  
+
     // Signature
     y += 40;
     doc.setFont("times", "bold");
     doc.text("Signature", 150, y);
     doc.setFont("times", "normal");
     doc.text("(Principal/Head of Institution)", 120, y + 7);
-  
+
     doc.save("study-certificate.pdf");
   };
 
-
   const generateCaretakerCertificatePDF = async (student) => {
-    // Dynamically import required libraries
     const { jsPDF } = await import("jspdf");
     const autoTable = (await import("jspdf-autotable")).default;
-    
-    // Create new PDF document
+
     const doc = new jsPDF();
 
-    // ===== DOCUMENT SETUP =====
     // Watermark
     doc.saveGraphicsState();
     doc.setFontSize(30);
@@ -431,89 +436,148 @@ export default function StudentsPage() {
     doc.setLineWidth(1);
     doc.rect(10, 10, 190, 270);
 
-    // ===== HEADER SECTION =====
+    // Header
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0);
-    doc.text("S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR", 105, 25, { align: "center" });
+    doc.text("S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR", 105, 25, {
+      align: "center",
+    });
 
     doc.setFontSize(13);
     doc.setFont("helvetica", "italic");
-    doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 32, { align: "center" });
+    doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 32, {
+      align: "center",
+    });
 
     // Title
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.text("CARE TAKER", 105, 42, { align: "center" });
 
-    // ===== STUDENT INFORMATION =====
-    // Photo Box
+    // Student Information
     doc.rect(160, 50, 30, 35);
 
     let y = 55;
     const x = 20;
     const gap = 6;
 
-    // Student details
     doc.setFont("times", "normal");
     doc.setFontSize(11);
-    doc.text(`Student Name         : ${student.name}`, x, y); y += gap;
-    doc.text(`Group                : ${student.group}`, x, y); y += gap;
-    doc.text(`Gender               : ${student.gender}`, x, y); y += gap;
-    doc.text(`Admission Date       : ${new Date(student.createdAt).toLocaleDateString("en-GB")}`, x, y); y += gap;
-    doc.text(`Admission No.        : ${student.admissionNo}`, x, y); y += gap;
-    doc.text(`Father Name          : ${student.fatherName}`, x, y); y += gap;
-    doc.text(`Caste                : ${student.caste}`, x, y); y += gap;
-    doc.text(`Date of Birth        : ${new Date(student.dob).toLocaleDateString("en-GB")}`, x, y); y += gap;
-    doc.text(`Address              : ${student.address}`, x, y); y += gap;
-    doc.text(`Mobile No.           : ${student.mobile}`, x, y); y += gap;
+    doc.text(`Student Name         : ${student.name}`, x, y);
+    y += gap;
+    doc.text(`Group                : ${student.group}`, x, y);
+    y += gap;
+    doc.text(`Gender               : ${student.gender}`, x, y);
+    y += gap;
+    doc.text(
+      `Admission Date       : ${new Date(student.createdAt).toLocaleDateString(
+        "en-GB"
+      )}`,
+      x,
+      y
+    );
+    y += gap;
+    doc.text(`Admission No.        : ${student.admissionNo}`, x, y);
+    y += gap;
+    doc.text(`Father Name          : ${student.fatherName}`, x, y);
+    y += gap;
+    doc.text(`Caste                : ${student.caste}`, x, y);
+    y += gap;
+    doc.text(
+      `Date of Birth        : ${new Date(student.dob).toLocaleDateString(
+        "en-GB"
+      )}`,
+      x,
+      y
+    );
+    y += gap;
+    doc.text(`Address              : ${student.address}`, x, y);
+    y += gap;
+    doc.text(`Mobile No.           : ${student.mobile}`, x, y);
+    y += gap;
 
-    // ===== EXAM PERFORMANCE TABLE =====
+    // Exam Performance Table
     y = 120;
     doc.setFont("times", "bold");
     doc.text("Home Examinations", 15, y);
-    
-    const examHeaders = ["Exam", "Tel/Sansk", "English", "Math/Bot/Civ", "Math/Zool/His", "Phy/Eco", "Che/Com", "Total", "%", "Remarks"];
-    const examData = Array(7).fill(["", "", "", "", "", "", "", "", "", ""]).map((row, i) => [ 
-        ["Unit-I", "Unit-II", "Qtrly", "Unit-III", "Unit-IV", "Half Yrly", "Pre-Final"][i], ...row 
-    ]);
-    
+
+    const examHeaders = [
+      "Exam",
+      "Tel/Sansk",
+      "English",
+      "Math/Bot/Civ",
+      "Math/Zool/His",
+      "Phy/Eco",
+      "Che/Com",
+      "Total",
+      "%",
+      "Remarks",
+    ];
+    const examData = Array(7)
+      .fill(["", "", "", "", "", "", "", "", "", ""])
+      .map((row, i) => [
+        [
+          "Unit-I",
+          "Unit-II",
+          "Qtrly",
+          "Unit-III",
+          "Unit-IV",
+          "Half Yrly",
+          "Pre-Final",
+        ][i],
+        ...row,
+      ]);
+
     autoTable(doc, {
-        startY: y + 5,
-        head: [examHeaders],
-        body: examData,
-        theme: "grid",
-        styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
-        headStyles: { 
-            fillColor: [50, 50, 50], 
-            textColor: [255, 255, 255], 
-            fontStyle: "bold", 
-            lineColor: [0, 0, 0] 
-        }
+      startY: y + 5,
+      head: [examHeaders],
+      body: examData,
+      theme: "grid",
+      styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
+      headStyles: {
+        fillColor: [50, 50, 50],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        lineColor: [0, 0, 0],
+      },
     });
 
-    // ===== ATTENDANCE TABLE =====
+    // Attendance Table
     y = doc.lastAutoTable.finalY + 5;
     doc.setFont("times", "bold");
     doc.text("Monthly Attendance", 20, y);
-    
-    const monthHeaders = ["Month", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR", "TOTAL"];
-    const attendanceData = [
-        ["Working Days", "", "", "", "", "", "", "", "", "", "", ""],
-        ["Present", "", "", "", "", "", "", "", "", "", "", ""],
-        ["Percent", "", "", "", "", "", "", "", "", "", "", ""]
+
+    const monthHeaders = [
+      "Month",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEP",
+      "OCT",
+      "NOV",
+      "DEC",
+      "JAN",
+      "FEB",
+      "MAR",
+      "TOTAL",
     ];
-    
+    const attendanceData = [
+      ["Working Days", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Present", "", "", "", "", "", "", "", "", "", "", ""],
+      ["Percent", "", "", "", "", "", "", "", "", "", "", ""],
+    ];
+
     autoTable(doc, {
-        startY: y + 5,
-        head: [monthHeaders],
-        body: attendanceData,
-        theme: "grid",
-        styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
-        headStyles: { lineColor: [0, 0, 0] }
+      startY: y + 5,
+      head: [monthHeaders],
+      body: attendanceData,
+      theme: "grid",
+      styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
+      headStyles: { lineColor: [0, 0, 0] },
     });
 
-    // ===== FOOTER SECTION =====
+    // Footer
     y = doc.lastAutoTable.finalY + 10;
     doc.setFont("times", "bold");
     doc.text("Place: GUDUR", 20, y);
@@ -522,67 +586,61 @@ export default function StudentsPage() {
     doc.setFont("times", "normal");
     doc.text("(Signature of the Student)", 125, y + 15);
 
-    // ===== PHOTO HANDLING (VERCEL COMPATIBLE) =====
+    // Photo Handling
     if (student.photo) {
-        try {
-            // Case 1: Photo is base64 encoded string
-            if (student.photo.startsWith('data:image')) {
-                doc.addImage(student.photo, "JPEG", 160, 50, 30, 35);
-            } 
-            // Case 2: Photo is a URL
-            else {
-                let imageUrl = student.photo;
-                
-                // Handle relative paths in production
-                if (!imageUrl.startsWith('http') && process.env.NODE_ENV === 'production') {
-                    imageUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
-                }
-                
-                // Handle relative paths in development
-                if (!imageUrl.startsWith('http') && process.env.NODE_ENV !== 'production') {
-                    imageUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-                }
-                
-                // Fetch image
-                const response = await fetch(imageUrl);
-                if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
-                
-                // Convert to base64
-                const blob = await response.blob();
-                const base64Data = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(blob);
-                });
-                
-                doc.addImage(base64Data, "JPEG", 160, 50, 30, 35);
-            }
-        } catch (error) {
-            console.error("Photo loading error:", error);
-            doc.setFontSize(10);
-            doc.text("Photo not available", 160, 70);
+      try {
+        if (student.photo.startsWith("data:image")) {
+          doc.addImage(student.photo, "JPEG", 160, 50, 30, 35);
+        } else {
+          let imageUrl = student.photo;
+
+          if (
+            !imageUrl.startsWith("http") &&
+            process.env.NODE_ENV === "production"
+          ) {
+            imageUrl = `https://${
+              process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL
+            }${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+          }
+
+          if (
+            !imageUrl.startsWith("http") &&
+            process.env.NODE_ENV !== "production"
+          ) {
+            imageUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+          }
+
+          const response = await fetch(imageUrl);
+          if (!response.ok)
+            throw new Error(`Failed to fetch image: ${response.status}`);
+
+          const blob = await response.blob();
+          const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+
+          doc.addImage(base64Data, "JPEG", 160, 50, 30, 35);
         }
-    } else {
+      } catch (error) {
+        console.error("Photo loading error:", error);
         doc.setFontSize(10);
-        doc.text("Photo not provided", 160, 70);
+        doc.text("Photo not available", 160, 70);
+      }
+    } else {
+      doc.setFontSize(10);
+      doc.text("Photo not provided", 160, 70);
     }
 
-    // Save the PDF
-    doc.save("caretaker-certificate.pdf");
-};
-  
-  
-  
+    doc.save("caretaker-form.pdf");
+  };
 
-
-
-  
-
-
-
-
-
+  // Calculate paginated students
+  const offset = currentPage * studentsPerPage;
+  const paginatedStudents = filteredStudents.slice(offset, offset + studentsPerPage);
+  const pageCount = Math.ceil(filteredStudents.length / studentsPerPage);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -591,13 +649,13 @@ export default function StudentsPage() {
       </h1>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6 ">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <input
-          type="text "
+          type="text"
           placeholder="Search by Name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border p-2 rounded font-bold "
+          className="border p-2 rounded font-bold"
         />
         <select
           name="group"
@@ -655,7 +713,7 @@ export default function StudentsPage() {
       </div>
 
       {/* Export & Print Buttons */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex gap-4 mb-4 flex-wrap">
         <button
           onClick={handleExportPDF}
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center cursor-pointer"
@@ -681,13 +739,13 @@ export default function StudentsPage() {
         </button>
 
         <Link href="/">
-          <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer fontweight-bold">
+          <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold">
             Home
           </button>
         </Link>
 
         <Link href="/dashboard">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer fontweight-bold">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
             Dashboard
           </button>
         </Link>
@@ -709,14 +767,15 @@ export default function StudentsPage() {
               <th className="px-4 py-2">Admission Year</th>
               <th className="px-4 py-2">Admission Date</th>
               <th className="px-4 py-2">Address</th>
+              <th className="px-3 py-2 border">Photo</th>
               <th className="px-4 py-2">Admission Certificate</th>
               <th className="px-4 py-2">Study Certificate</th>
               <th className="px-4 py-2">Care taker Form</th>
-              <th className="px-4 py-2">Actions</th>{" "}
+              <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {currentStudents.map((s, idx) => (
+            {paginatedStudents.map((s, idx) => (
               <tr key={s._id} className="border-t">
                 <td className="px-4 py-2">{offset + idx + 1}</td>
                 <td className="px-4 py-2">{s.name}</td>
@@ -742,8 +801,19 @@ export default function StudentsPage() {
                 </td>
                 <td className="px-4 py-2">{s.address}</td>
 
-
-                
+                <td className="px-3 py-2 border text-center">
+                  {s.photo ? (
+                    <Image
+                      src={s.photo}
+                      alt={s.name || "Student Photo"}
+                      width={50}
+                      height={50}
+                      className="rounded-md border"
+                    />
+                  ) : (
+                    <span className="text-gray-400 text-sm">No Photo</span>
+                  )}
+                </td>
 
                 <td className="px-4 py-2">
                   <button
@@ -753,7 +823,6 @@ export default function StudentsPage() {
                     Download
                   </button>
                 </td>
-
 
                 <td className="px-4 py-2">
                   <button
@@ -773,18 +842,13 @@ export default function StudentsPage() {
                   </button>
                 </td>
 
-
-                <td
-                  className="px-4 py-2 flex gap-2"
-                  
-                >
+                <td className="px-4 py-2 flex gap-2">
                   <button
                     onClick={() => handleEdit(s)}
-                    className="text-yellow-600 hover:text-yellow-800 cursor-pointer "
+                    className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
                   >
                     <Pencil size={20} />
                   </button>
-                  &nbsp;
                   <button
                     onClick={() => handleDelete(s._id)}
                     className="text-red-600 hover:text-red-800 cursor-pointer"
@@ -797,8 +861,7 @@ export default function StudentsPage() {
           </tbody>
         </table>
         <div className="mt-4 text-center text-gray-600 font-bold">
-          Page {currentPage + 1} of {pageCount} | Showing Total:
-          {filteredStudents.length} Students
+          Page {currentPage + 1} of {pageCount} | Showing {filteredStudents.length} Students
         </div>
         {pageCount > 1 && (
           <div className="mt-4 flex justify-center cursor-pointer font-bold">
@@ -808,7 +871,7 @@ export default function StudentsPage() {
               breakLabel={"..."}
               pageCount={pageCount}
               marginPagesDisplayed={2}
-              pageRangeDisplayed={10}
+              pageRangeDisplayed={5}
               onPageChange={handlePageChange}
               containerClassName={"flex items-center space-x-2"}
               pageClassName={"px-3 py-1 border rounded"}

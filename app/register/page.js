@@ -255,8 +255,7 @@ export default function RegisterPage() {
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 cursor-pointer transition duration-200"
             disabled={isLoading}
           >
-            <Users className="inline mr-2" /> {/* Icon */}
-            Register Student
+            Submit
           </button>
         </form>
       </div>
