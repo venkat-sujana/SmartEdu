@@ -34,7 +34,8 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+  
+
     const form = new FormData();
     form.append("name", formData.name);
     form.append("fatherName", formData.fatherName);
@@ -53,14 +54,16 @@ export default function RegisterPage() {
     try {
       const res = await fetch("/api/students", {
         method: "POST",
-        body: form, // Don't set headers here. Browser sets it with correct boundary
+        body: form, // ✅ Correct formData sent here
       });
   
-      const data = await res.json();
+      const result = await res.json(); // ✅ No duplicate parsing
+      console.log(result);
   
       if (res.ok) {
         toast.success("Student Registered Successfully ✅");
   
+        // Reset the form
         setFormData({
           name: "",
           fatherName: "",
@@ -72,17 +75,18 @@ export default function RegisterPage() {
           admissionYear: "",
           address: "",
         });
-        
         setPhoto(null);
       } else {
-        toast.error("Error: " + data.message);
+        toast.error("Error: " + result.message);
       }
     } catch (err) {
       toast.error("Something went wrong.");
+      console.error("Submit error:", err);
     } finally {
       setIsLoading(false);
     }
   };
+  
   
   return (
     <div className="relative">
@@ -237,8 +241,8 @@ export default function RegisterPage() {
             required
           />
 
-           <label className="text-sm text-gray-600" style={{display: "none"}}>Upload Photo</label>
-          <input style={{display: "none"}}
+           <label className="text-sm text-gray-600" >Upload Photo</label>
+          <input 
             type="file"
             accept="image/*"
             onChange={(e) => setPhoto(e.target.files[0])}

@@ -41,9 +41,10 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  photo: {  // New field for photo
-    type: String, // Will store the file path or URL
-    default: ""
+  // ✅ Photo stored as Cloudinary URL
+  photo: {
+    type: String,
+    default: "", // This should contain a Cloudinary secure_url like https://res.cloudinary.com/...
   },
   createdAt: {
     type: Date,

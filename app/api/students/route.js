@@ -1,7 +1,7 @@
 // app/api/students/route.js
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
-
+import cloudinary from "@/lib/cloudinary";
 import { writeFile } from "fs/promises";
 import path from "path";
 
@@ -42,20 +42,28 @@ export async function POST(req) {
     const fields = Object.fromEntries(formData.entries());
 
     let photoPath = "";
+    let tempFilePath = ""; // Declare tempFilePath here
     const file = formData.get("photo");
 
     if (file && file.name) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const filename = Date.now() + "-" + file.name;
-      const filepath = path.join(process.cwd(), "public", "uploads", filename);
-      await writeFile(filepath, buffer);
-      photoPath = "/uploads/" + filename;
-    }
 
+      // Save temporarily
+      tempFilePath = path.join(process.cwd(), "public", "temp-" + Date.now() + "-" + file.name);
+      await writeFile(tempFilePath, buffer);
+    }
+    let photoUrl = ""; // ✅ Define this variable outside
+     // Upload to Cloudinary
+     const cloudinaryResponse = await cloudinary.uploader.upload(tempFilePath, {
+      folder: "students", // optional folder
+    });
+
+    photoUrl = cloudinaryResponse.secure_url;
+  
     const student = await Student.create({
       ...fields,
-      photo: photoPath,
+      photo: photoUrl,
     });
 
     return Response.json({ status: "success", data: student }, { status: 201 });
