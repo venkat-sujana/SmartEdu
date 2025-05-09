@@ -1,5 +1,4 @@
 //app/student-table/page.js
-
 "use client";
 import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
@@ -11,7 +10,7 @@ import ReactPaginate from "react-paginate";
 // StudentTable కంపోనెంట్ లో టాప్ లో ఇలా ఇంపోర్ట్ చేయండి
 import StudentEditForm from "../student-edit-form/page"; // సరైన పాత్ ను ఉపయోగించండి
 import Image from "next/image";
-
+import generateAdmissionCertificatePDF from "../admission-certificate/page";
 import {
   FileDown,
   FileSpreadsheet,
@@ -192,216 +191,40 @@ export default function StudentsPage() {
     }
   };
 
-
-
   const uploadToCloudinary = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", "osra-preset"); // Cloudinary upload preset
-    formData.append("cloud_name", "dlwxpzc83");       // Cloudinary cloud name
-  
-    const res = await fetch("https://api.cloudinary.com/v1_1/dlwxpzc83/image/upload", {
-      method: "POST",
-      body: formData,
-    });
-  
+    formData.append("cloud_name", "dlwxpzc83"); // Cloudinary cloud name
+
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dlwxpzc83/image/upload",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
     if (!res.ok) {
       throw new Error("Failed to upload image to Cloudinary");
     }
-  
+
     const data = await res.json();
     return data.secure_url;
   };
-  
-
 
   // ఎడిట్ ఫంక్షన్ మెరుగుపరచబడింది
-const handleEdit = (student) => {
-  setEditingStudent(student);
-};
+  const handleEdit = (student) => {
+    setEditingStudent(student);
+  };
 
-// అప్డేట్ ఫంక్షన్
-const handleUpdate = (updatedStudent) => {
-  setStudents(prev => prev.map(s => 
-    s._id === updatedStudent._id ? updatedStudent : s
-  ));
-  setEditingStudent(null);
-  toast.success('Student updated successfully');
-};
-  
-
- 
-// const handleEdit = async (student) => {
-//   const updatedName = prompt("Enter new name:", student.name);
-//   const updatedFatherName = prompt("Enter new father's name:", student.fatherName);
-//   const updatedMobile = prompt("Enter new mobile:", student.mobile);
-//   const updatedGroup = prompt("Enter new group:", student.group);
-//   const updatedCaste = prompt("Enter new caste:", student.caste);
-//   const updatedGender = prompt("Enter new gender:", student.gender);
-//   const updatedAdmissionYear = prompt("Enter new admission year:", student.admissionYear);
-//   const updatedAddress = prompt("Enter new address:", student.address);
-
-//   const newPhotoFile = window.confirm("Do you want to upload a new photo?")
-//     ? await new Promise((resolve) => {
-//         const input = document.createElement("input");
-//         input.type = "file";
-//         input.accept = "image/*";
-//         input.onchange = () => resolve(input.files[0]);
-//         input.click();
-//       })
-//     : null;
-
-//   let newPhotoUrl = student.photo;
-
-//   if (newPhotoFile) {
-//     try {
-//       toast.loading("Uploading photo...");
-//       newPhotoUrl = await uploadToCloudinary(newPhotoFile);
-//       toast.dismiss();
-//       toast.success("Photo uploaded successfully");
-//       console.log("New photo URL:", newPhotoUrl); // Add this for debugging
-//     } catch (err) {
-//       toast.dismiss();
-//       toast.error(`Failed to upload photo: ${err.message}`);
-//       console.error("Upload error:", err); // Detailed error logging
-//       return;
-//     }
-//   }
-
-//   if (updatedName && updatedMobile) {
-//     try {
-//       const res = await fetch(`/api/students/${student._id}`, {
-//         method: "PUT",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           name: updatedName,
-//           fatherName: updatedFatherName,
-//           mobile: updatedMobile,
-//           group: updatedGroup,
-//           caste: updatedCaste,
-//           gender: updatedGender,
-//           admissionYear: updatedAdmissionYear,
-//           address: updatedAddress,
-//           photo: newPhotoUrl,
-//         }),
-//       });
-
-//       const data = await res.json();
-
-//       if (res.ok) {
-//         setStudents((prev) =>
-//           prev.map((s) => (s._id === student._id ? data.data : s))
-//         );
-//         toast.success("Student updated successfully ✅");
-//       } else {
-//         toast.error("Error updating student: " + data.message);
-//       }
-//     } catch (err) {
-//       toast.error("Something went wrong while updating.");
-//     }
-//   }
-// };
-
-
-
-  const generateAdmissionCertificatePDF = (student) => {
-    const doc = new jsPDF();
-
-    // Title border box
-    doc.setDrawColor(0);
-    doc.setLineWidth(1);
-    doc.rect(10, 10, 190, 277);
-
-    // College/School Name
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.text("S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR ", 105, 30, {
-      align: "center",
-    });
-
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "italic");
-    doc.text("THILAK NAGAR, GUDUR--524101,TIRUPATI Dt", 105, 38, {
-      align: "center",
-    });
-
-    // Horizontal line
-    doc.setLineWidth(0.5);
-    doc.line(20, 45, 190, 45);
-
-    // Certificate Title
-    doc.setFontSize(18);
-    doc.setFont("times", "bold");
-    doc.text("ADMISSION CERTIFICATE", 105, 60, { align: "center" });
-
-    let y = 70;
-    doc.setFontSize(12);
-    doc.setFont("times", "normal");
-
-    doc.text(
-      `This is to certify that the following student has been admitted`,
-      20,
-      y
+  // అప్డేట్ ఫంక్షన్
+  const handleUpdate = (updatedStudent) => {
+    setStudents((prev) =>
+      prev.map((s) => (s._id === updatedStudent._id ? updatedStudent : s))
     );
-    y += 10;
-    doc.text(
-      `into the institution for the academic year ${student.admissionYear}-${
-        student.admissionYear + 1
-      }`,
-      20,
-      y
-    );
-
-    y += 10;
-    doc.setFont("times", "bold");
-    doc.text("Student Details", 20, y);
-
-    y += 5;
-    doc.setFont("times", "normal");
-    doc.text(`Name             : ${student.name}`, 30, y);
-    y += 10;
-    doc.text(`Father's Name    : ${student.fatherName}`, 30, y);
-    y += 10;
-    doc.text(
-      `Date of Birth    : ${new Date(student.dob).toLocaleDateString("en-GB")}`,
-      30,
-      y
-    );
-    y += 10;
-    doc.text(`Gender           : ${student.gender}`, 30, y);
-    y += 10;
-    doc.text(`Caste            : ${student.caste}`, 30, y);
-    y += 10;
-    doc.text(`Group            : ${student.group}`, 30, y);
-    y += 10;
-    doc.text(`Mobile Number    : ${student.mobile}`, 30, y);
-    y += 10;
-    doc.text(
-      `Date of Admission: ${new Date(student.createdAt).toLocaleDateString(
-        "en-GB"
-      )}`,
-      30,
-      y
-    );
-
-    y += 10;
-    doc.setFont("times", "italic");
-    doc.text(
-      "This certificate is issued on request of the student for official purposes.",
-      20,
-      y
-    );
-
-    // Signature
-    y += 30;
-    doc.setFont("times", "bold");
-    doc.text("Signature", 160, y);
-    doc.setFont("times", "normal");
-    doc.text("(Principal/Head of Institution)", 130, y + 7);
-
-    doc.save("admission-certificate.pdf");
+    setEditingStudent(null);
+    toast.success("Student updated successfully");
   };
 
   const generateStudyCertificatePDF = (student) => {
@@ -703,7 +526,10 @@ const handleUpdate = (updatedStudent) => {
 
   // Calculate paginated students
   const offset = currentPage * studentsPerPage;
-  const paginatedStudents = filteredStudents.slice(offset, offset + studentsPerPage);
+  const paginatedStudents = filteredStudents.slice(
+    offset,
+    offset + studentsPerPage
+  );
   const pageCount = Math.ceil(filteredStudents.length / studentsPerPage);
 
   return (
@@ -907,7 +733,7 @@ const handleUpdate = (updatedStudent) => {
                 </td>
 
                 <td className="px-4 py-2 flex gap-2">
-                <button
+                  <button
                     onClick={() => handleEdit(s)}
                     className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50"
                     aria-label="Edit student"
@@ -915,7 +741,6 @@ const handleUpdate = (updatedStudent) => {
                     <Pencil size={20} />
                   </button>
 
-                  
                   <button
                     onClick={() => handleDelete(s._id)}
                     className="text-red-600 hover:text-red-800 cursor-pointer"
@@ -928,10 +753,10 @@ const handleUpdate = (updatedStudent) => {
           </tbody>
         </table>
 
-                {editingStudent && (
+        {editingStudent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-              <StudentEditForm 
+              <StudentEditForm
                 student={editingStudent}
                 onSave={handleUpdate}
                 onCancel={() => setEditingStudent(null)}
@@ -939,18 +764,10 @@ const handleUpdate = (updatedStudent) => {
             </div>
           </div>
         )}
-      
-          
-
-
-
-
-
-
-
 
         <div className="mt-4 text-center text-gray-600 font-bold">
-          Page {currentPage + 1} of {pageCount} | Showing {filteredStudents.length} Students
+          Page {currentPage + 1} of {pageCount} | Showing{" "}
+          {filteredStudents.length} Students
         </div>
         {pageCount > 1 && (
           <div className="mt-4 flex justify-center cursor-pointer font-bold">
