@@ -223,9 +223,9 @@ export default function GroupDashboard() {
         </button>
       </div>
 
-      <AdmissionCharts />
+      {/* <AdmissionCharts />
       <GenderWiseChart />
-      <CasteWiseChart />
+      <CasteWiseChart /> */}
     </div>
   );
 }

@@ -11,6 +11,8 @@ import ReactPaginate from "react-paginate";
 import StudentEditForm from "../student-edit-form/page"; // సరైన పాత్ ను ఉపయోగించండి
 import Image from "next/image";
 import generateAdmissionCertificatePDF from "../admission-certificate/page";
+import generateStudyCertificatePDF from "../study-certificate/page";
+import generateCaretakerCertificatePDF from "../caretaker-form/page";
 import {
   FileDown,
   FileSpreadsheet,
@@ -227,302 +229,230 @@ export default function StudentsPage() {
     toast.success("Student updated successfully");
   };
 
-  const generateStudyCertificatePDF = (student) => {
-    const doc = new jsPDF();
 
-    // Add Watermark
-    doc.saveGraphicsState();
-    doc.setFontSize(40);
-    doc.setTextColor(200);
-    doc.setFont("helvetica", "bold");
-    doc.text("S.K.R.GJC", 105, 150, {
-      align: "center",
-      angle: 45,
-    });
-    doc.restoreGraphicsState();
 
-    // Border
-    doc.setDrawColor(0);
-    doc.setLineWidth(1);
-    doc.rect(10, 10, 190, 270);
 
-    // Header
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0);
-    doc.text("S.K.R. GOVERNMENT JUNIOR COLLEGE - GUDUR", 105, 30, {
-      align: "center",
-    });
 
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "italic");
-    doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 38, {
-      align: "center",
-    });
 
-    doc.setLineWidth(0.5);
-    doc.line(20, 45, 190, 45);
+  // const generateCaretakerCertificatePDF = async (student) => {
+  //   const { jsPDF } = await import("jspdf");
+  //   const autoTable = (await import("jspdf-autotable")).default;
 
-    // Certificate Title
-    doc.setFontSize(18);
-    doc.setFont("times", "bold");
-    doc.text("STUDY & CONDUCT CERTIFICATE", 105, 60, { align: "center" });
+  //   const doc = new jsPDF();
 
-    // Content
-    let y = 75;
-    const admissionYear = student.admissionYear;
-    const leavingYear = admissionYear + 2;
-    const currentDate = new Date().toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      timeZone: "Asia/Kolkata",
-    });
+  //   // Watermark
+  //   doc.saveGraphicsState();
+  //   doc.setFontSize(30);
+  //   doc.setTextColor(200);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text("S.K.R.GJC", 105, 120, { align: "center", angle: 45 });
+  //   doc.restoreGraphicsState();
 
-    const paragraph = `This is to certify that Mr/Mrs/Kum ${student.name}, Son/Daughter of ${student.fatherName}, was a bonafide student of this college during the academic years ${admissionYear} to ${leavingYear}. During this period, his/her academic performance and conduct were found to be good/satisfactory.`;
+  //   // Border
+  //   doc.setDrawColor(0);
+  //   doc.setLineWidth(1);
+  //   doc.rect(10, 10, 190, 270);
 
-    doc.setFontSize(13);
-    doc.setFont("times", "normal");
-    doc.text(paragraph, 25, y, {
-      maxWidth: 160,
-      align: "justify",
-    });
+  //   // Header
+  //   doc.setFontSize(18);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.setTextColor(0);
+  //   doc.text("S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR", 105, 25, {
+  //     align: "center",
+  //   });
 
-    // Place & Date
-    y += 50;
-    doc.setFont("times", "bold");
-    doc.text("Place: GUDUR", 25, y);
-    doc.text(`Date: ${currentDate}`, 25, y + 10);
+  //   doc.setFontSize(13);
+  //   doc.setFont("helvetica", "italic");
+  //   doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 32, {
+  //     align: "center",
+  //   });
 
-    // Signature
-    y += 40;
-    doc.setFont("times", "bold");
-    doc.text("Signature", 150, y);
-    doc.setFont("times", "normal");
-    doc.text("(Principal/Head of Institution)", 120, y + 7);
+  //   // Title
+  //   doc.setFontSize(16);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text("CARE TAKER", 105, 42, { align: "center" });
 
-    doc.save("study-certificate.pdf");
-  };
+  //   // Student Information
+  //   doc.rect(160, 50, 30, 35);
 
-  const generateCaretakerCertificatePDF = async (student) => {
-    const { jsPDF } = await import("jspdf");
-    const autoTable = (await import("jspdf-autotable")).default;
+  //   let y = 55;
+  //   const x = 20;
+  //   const gap = 6;
 
-    const doc = new jsPDF();
+  //   doc.setFont("times", "normal");
+  //   doc.setFontSize(11);
+  //   doc.text(`Student Name         : ${student.name}`, x, y);
+  //   y += gap;
+  //   doc.text(`Group                : ${student.group}`, x, y);
+  //   y += gap;
+  //   doc.text(`Gender               : ${student.gender}`, x, y);
+  //   y += gap;
+  //   doc.text(
+  //     `Admission Date       : ${new Date(student.createdAt).toLocaleDateString(
+  //       "en-GB"
+  //     )}`,
+  //     x,
+  //     y
+  //   );
+  //   y += gap;
+  //   doc.text(`Admission No.        : ${student.admissionNo}`, x, y);
+  //   y += gap;
+  //   doc.text(`Father Name          : ${student.fatherName}`, x, y);
+  //   y += gap;
+  //   doc.text(`Caste                : ${student.caste}`, x, y);
+  //   y += gap;
+  //   doc.text(
+  //     `Date of Birth        : ${new Date(student.dob).toLocaleDateString(
+  //       "en-GB"
+  //     )}`,
+  //     x,
+  //     y
+  //   );
+  //   y += gap;
+  //   doc.text(`Address              : ${student.address}`, x, y);
+  //   y += gap;
+  //   doc.text(`Mobile No.           : ${student.mobile}`, x, y);
+  //   y += gap;
 
-    // Watermark
-    doc.saveGraphicsState();
-    doc.setFontSize(30);
-    doc.setTextColor(200);
-    doc.setFont("helvetica", "bold");
-    doc.text("S.K.R.GJC", 105, 120, { align: "center", angle: 45 });
-    doc.restoreGraphicsState();
+  //   // Exam Performance Table
+  //   y = 120;
+  //   doc.setFont("times", "bold");
+  //   doc.text("Home Examinations", 15, y);
 
-    // Border
-    doc.setDrawColor(0);
-    doc.setLineWidth(1);
-    doc.rect(10, 10, 190, 270);
+  //   const examHeaders = [
+  //     "Exam",
+  //     "Tel/Sansk",
+  //     "English",
+  //     "Math/Bot/Civ",
+  //     "Math/Zool/His",
+  //     "Phy/Eco",
+  //     "Che/Com",
+  //     "Total",
+  //     "%",
+  //     "Remarks",
+  //   ];
+  //   const examData = Array(7)
+  //     .fill(["", "", "", "", "", "", "", "", "", ""])
+  //     .map((row, i) => [
+  //       [
+  //         "Unit-I",
+  //         "Unit-II",
+  //         "Qtrly",
+  //         "Unit-III",
+  //         "Unit-IV",
+  //         "Half Yrly",
+  //         "Pre-Final",
+  //       ][i],
+  //       ...row,
+  //     ]);
 
-    // Header
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0);
-    doc.text("S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR", 105, 25, {
-      align: "center",
-    });
+  //   autoTable(doc, {
+  //     startY: y + 5,
+  //     head: [examHeaders],
+  //     body: examData,
+  //     theme: "grid",
+  //     styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
+  //     headStyles: {
+  //       fillColor: [50, 50, 50],
+  //       textColor: [255, 255, 255],
+  //       fontStyle: "bold",
+  //       lineColor: [0, 0, 0],
+  //     },
+  //   });
 
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "italic");
-    doc.text("THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt", 105, 32, {
-      align: "center",
-    });
+  //   // Attendance Table
+  //   y = doc.lastAutoTable.finalY + 5;
+  //   doc.setFont("times", "bold");
+  //   doc.text("Monthly Attendance", 20, y);
 
-    // Title
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text("CARE TAKER", 105, 42, { align: "center" });
+  //   const monthHeaders = [
+  //     "Month",
+  //     "JUN",
+  //     "JUL",
+  //     "AUG",
+  //     "SEP",
+  //     "OCT",
+  //     "NOV",
+  //     "DEC",
+  //     "JAN",
+  //     "FEB",
+  //     "MAR",
+  //     "TOTAL",
+  //   ];
+  //   const attendanceData = [
+  //     ["Working Days", "", "", "", "", "", "", "", "", "", "", ""],
+  //     ["Present", "", "", "", "", "", "", "", "", "", "", ""],
+  //     ["Percent", "", "", "", "", "", "", "", "", "", "", ""],
+  //   ];
 
-    // Student Information
-    doc.rect(160, 50, 30, 35);
+  //   autoTable(doc, {
+  //     startY: y + 5,
+  //     head: [monthHeaders],
+  //     body: attendanceData,
+  //     theme: "grid",
+  //     styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
+  //     headStyles: { lineColor: [0, 0, 0] },
+  //   });
 
-    let y = 55;
-    const x = 20;
-    const gap = 6;
+  //   // Footer
+  //   y = doc.lastAutoTable.finalY + 10;
+  //   doc.setFont("times", "bold");
+  //   doc.text("Place: GUDUR", 20, y);
+  //   doc.text(`Date: ${new Date().toLocaleDateString("en-GB")}`, 20, y + 8);
+  //   doc.text("Signature", 150, y + 8);
+  //   doc.setFont("times", "normal");
+  //   doc.text("(Signature of the Student)", 125, y + 15);
 
-    doc.setFont("times", "normal");
-    doc.setFontSize(11);
-    doc.text(`Student Name         : ${student.name}`, x, y);
-    y += gap;
-    doc.text(`Group                : ${student.group}`, x, y);
-    y += gap;
-    doc.text(`Gender               : ${student.gender}`, x, y);
-    y += gap;
-    doc.text(
-      `Admission Date       : ${new Date(student.createdAt).toLocaleDateString(
-        "en-GB"
-      )}`,
-      x,
-      y
-    );
-    y += gap;
-    doc.text(`Admission No.        : ${student.admissionNo}`, x, y);
-    y += gap;
-    doc.text(`Father Name          : ${student.fatherName}`, x, y);
-    y += gap;
-    doc.text(`Caste                : ${student.caste}`, x, y);
-    y += gap;
-    doc.text(
-      `Date of Birth        : ${new Date(student.dob).toLocaleDateString(
-        "en-GB"
-      )}`,
-      x,
-      y
-    );
-    y += gap;
-    doc.text(`Address              : ${student.address}`, x, y);
-    y += gap;
-    doc.text(`Mobile No.           : ${student.mobile}`, x, y);
-    y += gap;
+  //   // Photo Handling
+  //   if (student.photo) {
+  //     try {
+  //       if (student.photo.startsWith("data:image")) {
+  //         doc.addImage(student.photo, "JPEG", 160, 50, 30, 35);
+  //       } else {
+  //         let imageUrl = student.photo;
 
-    // Exam Performance Table
-    y = 120;
-    doc.setFont("times", "bold");
-    doc.text("Home Examinations", 15, y);
+  //         if (
+  //           !imageUrl.startsWith("http") &&
+  //           process.env.NODE_ENV === "production"
+  //         ) {
+  //           imageUrl = `https://${
+  //             process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL
+  //           }${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+  //         }
 
-    const examHeaders = [
-      "Exam",
-      "Tel/Sansk",
-      "English",
-      "Math/Bot/Civ",
-      "Math/Zool/His",
-      "Phy/Eco",
-      "Che/Com",
-      "Total",
-      "%",
-      "Remarks",
-    ];
-    const examData = Array(7)
-      .fill(["", "", "", "", "", "", "", "", "", ""])
-      .map((row, i) => [
-        [
-          "Unit-I",
-          "Unit-II",
-          "Qtrly",
-          "Unit-III",
-          "Unit-IV",
-          "Half Yrly",
-          "Pre-Final",
-        ][i],
-        ...row,
-      ]);
+  //         if (
+  //           !imageUrl.startsWith("http") &&
+  //           process.env.NODE_ENV !== "production"
+  //         ) {
+  //           imageUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+  //         }
 
-    autoTable(doc, {
-      startY: y + 5,
-      head: [examHeaders],
-      body: examData,
-      theme: "grid",
-      styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
-      headStyles: {
-        fillColor: [50, 50, 50],
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        lineColor: [0, 0, 0],
-      },
-    });
+  //         const response = await fetch(imageUrl);
+  //         if (!response.ok)
+  //           throw new Error(`Failed to fetch image: ${response.status}`);
 
-    // Attendance Table
-    y = doc.lastAutoTable.finalY + 5;
-    doc.setFont("times", "bold");
-    doc.text("Monthly Attendance", 20, y);
+  //         const blob = await response.blob();
+  //         const base64Data = await new Promise((resolve, reject) => {
+  //           const reader = new FileReader();
+  //           reader.onload = () => resolve(reader.result);
+  //           reader.onerror = reject;
+  //           reader.readAsDataURL(blob);
+  //         });
 
-    const monthHeaders = [
-      "Month",
-      "JUN",
-      "JUL",
-      "AUG",
-      "SEP",
-      "OCT",
-      "NOV",
-      "DEC",
-      "JAN",
-      "FEB",
-      "MAR",
-      "TOTAL",
-    ];
-    const attendanceData = [
-      ["Working Days", "", "", "", "", "", "", "", "", "", "", ""],
-      ["Present", "", "", "", "", "", "", "", "", "", "", ""],
-      ["Percent", "", "", "", "", "", "", "", "", "", "", ""],
-    ];
+  //         doc.addImage(base64Data, "JPEG", 160, 50, 30, 35);
+  //       }
+  //     } catch (error) {
+  //       console.error("Photo loading error:", error);
+  //       doc.setFontSize(10);
+  //       doc.text("Photo not available", 160, 70);
+  //     }
+  //   } else {
+  //     doc.setFontSize(10);
+  //     doc.text("Photo not provided", 160, 70);
+  //   }
 
-    autoTable(doc, {
-      startY: y + 5,
-      head: [monthHeaders],
-      body: attendanceData,
-      theme: "grid",
-      styles: { fontSize: 9, lineWidth: 0.5, lineColor: [0, 0, 0] },
-      headStyles: { lineColor: [0, 0, 0] },
-    });
-
-    // Footer
-    y = doc.lastAutoTable.finalY + 10;
-    doc.setFont("times", "bold");
-    doc.text("Place: GUDUR", 20, y);
-    doc.text(`Date: ${new Date().toLocaleDateString("en-GB")}`, 20, y + 8);
-    doc.text("Signature", 150, y + 8);
-    doc.setFont("times", "normal");
-    doc.text("(Signature of the Student)", 125, y + 15);
-
-    // Photo Handling
-    if (student.photo) {
-      try {
-        if (student.photo.startsWith("data:image")) {
-          doc.addImage(student.photo, "JPEG", 160, 50, 30, 35);
-        } else {
-          let imageUrl = student.photo;
-
-          if (
-            !imageUrl.startsWith("http") &&
-            process.env.NODE_ENV === "production"
-          ) {
-            imageUrl = `https://${
-              process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL
-            }${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
-          }
-
-          if (
-            !imageUrl.startsWith("http") &&
-            process.env.NODE_ENV !== "production"
-          ) {
-            imageUrl = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
-          }
-
-          const response = await fetch(imageUrl);
-          if (!response.ok)
-            throw new Error(`Failed to fetch image: ${response.status}`);
-
-          const blob = await response.blob();
-          const base64Data = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-
-          doc.addImage(base64Data, "JPEG", 160, 50, 30, 35);
-        }
-      } catch (error) {
-        console.error("Photo loading error:", error);
-        doc.setFontSize(10);
-        doc.text("Photo not available", 160, 70);
-      }
-    } else {
-      doc.setFontSize(10);
-      doc.text("Photo not provided", 160, 70);
-    }
-
-    doc.save("caretaker-form.pdf");
-  };
+  //   doc.save(`caretaker-form-${student.name}.pdf`);
+  // };
 
   // Calculate paginated students
   const offset = currentPage * studentsPerPage;

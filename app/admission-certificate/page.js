@@ -70,9 +70,10 @@ const generateAdmissionCertificatePDF = async (student) => {
     doc.text("No Photo", 150, 90);
   }
   
-  doc.setFontSize(10);
+  doc.setFontSize(12);
   doc.text(`${student.name}`, 148, 104);
   doc.setFont("helvetica", "normal");
+
 
 
 
