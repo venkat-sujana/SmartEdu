@@ -61,7 +61,7 @@ export default function RegisterPage() {
       console.log(result);
   
       if (res.ok) {
-        toast.success("Student Registered Successfully ✅");
+        toast.success("స్టూడెంట్ విజయవంతంగా  రిజిస్టర్ అయ్యాడు 👍 ✅");
   
         // Reset the form
         setFormData({

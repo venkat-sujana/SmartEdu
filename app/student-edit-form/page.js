@@ -102,9 +102,9 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
 
       const updatedStudent = await res.json();
       onSave(updatedStudent);
-      toast.success("విద్యార్థి వివరాలు విజయవంతంగా నవీకరించబడ్డాయి");
+      toast.success("విద్యార్థి వివరాలు విజయవంతంగా అప్డేట్ చేయబడ్డాయి");
     } catch (err) {
-      toast.error("నవీకరణ విఫలమైంది: " + err.message);
+      toast.error("అప్డేట్ విఫలమైంది: " + err.message);
     } finally {
       setIsUploading(false);
     }
