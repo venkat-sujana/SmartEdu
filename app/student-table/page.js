@@ -8,7 +8,8 @@ import toast from "react-hot-toast";
 import autoTable from "jspdf-autotable";
 import "jspdf-autotable";
 import ReactPaginate from "react-paginate";
-
+// StudentTable కంపోనెంట్ లో టాప్ లో ఇలా ఇంపోర్ట్ చేయండి
+import StudentEditForm from "../student-edit-form/page"; // సరైన పాత్ ను ఉపయోగించండి
 import Image from "next/image";
 
 import {
@@ -31,6 +32,8 @@ export default function StudentsPage() {
     gender: "",
     admissionYear: "",
   });
+
+  const [editingStudent, setEditingStudent] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(0);
   const studentsPerPage = 5;
@@ -189,58 +192,119 @@ export default function StudentsPage() {
     }
   };
 
-  const handleEdit = async (student) => {
-    const updatedName = prompt("Enter new name:", student.name);
-    const updatedFatherName = prompt(
-      "Enter new father's name:",
-      student.fatherName
-    );
-    const updatedMobile = prompt("Enter new mobile:", student.mobile);
-    const updatedGroup = prompt("Enter new group:", student.group);
-    const updatedCaste = prompt("Enter new caste:", student.caste);
-    const updatedGender = prompt("Enter new gender:", student.gender);
-    const updatedAdmissionYear = prompt(
-      "Enter new admission year:",
-      student.admissionYear
-    );
-    const updatedAddress = prompt("Enter new address:", student.address);
 
-    if (updatedName && updatedMobile) {
-      try {
-        const res = await fetch(`/api/students/${student._id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: updatedName,
-            fatherName: updatedFatherName,
-            mobile: updatedMobile,
-            group: updatedGroup,
-            caste: updatedCaste,
-            gender: updatedGender,
-            admissionYear: updatedAdmissionYear,
-            address: updatedAddress,
-            photo: student.photo,
-          }),
-        });
 
-        if (res.ok) {
-          const updated = await res.json();
-          setStudents((prev) =>
-            prev.map((s) => (s._id === student._id ? updated.data : s))
-          );
-          toast.success("Student updated successfully ✅");
-        } else {
-          const err = await res.json();
-          toast.error("Error updating student: " + err.message);
-        }
-      } catch (err) {
-        console.error("Update Error:", err);
-        toast.error("Something went wrong while updating.");
-      }
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "osra-preset"); // Cloudinary upload preset
+    formData.append("cloud_name", "dlwxpzc83");       // Cloudinary cloud name
+  
+    const res = await fetch("https://api.cloudinary.com/v1_1/dlwxpzc83/image/upload", {
+      method: "POST",
+      body: formData,
+    });
+  
+    if (!res.ok) {
+      throw new Error("Failed to upload image to Cloudinary");
     }
+  
+    const data = await res.json();
+    return data.secure_url;
   };
+  
+
+
+  // ఎడిట్ ఫంక్షన్ మెరుగుపరచబడింది
+const handleEdit = (student) => {
+  setEditingStudent(student);
+};
+
+// అప్డేట్ ఫంక్షన్
+const handleUpdate = (updatedStudent) => {
+  setStudents(prev => prev.map(s => 
+    s._id === updatedStudent._id ? updatedStudent : s
+  ));
+  setEditingStudent(null);
+  toast.success('Student updated successfully');
+};
+  
+
+ 
+// const handleEdit = async (student) => {
+//   const updatedName = prompt("Enter new name:", student.name);
+//   const updatedFatherName = prompt("Enter new father's name:", student.fatherName);
+//   const updatedMobile = prompt("Enter new mobile:", student.mobile);
+//   const updatedGroup = prompt("Enter new group:", student.group);
+//   const updatedCaste = prompt("Enter new caste:", student.caste);
+//   const updatedGender = prompt("Enter new gender:", student.gender);
+//   const updatedAdmissionYear = prompt("Enter new admission year:", student.admissionYear);
+//   const updatedAddress = prompt("Enter new address:", student.address);
+
+//   const newPhotoFile = window.confirm("Do you want to upload a new photo?")
+//     ? await new Promise((resolve) => {
+//         const input = document.createElement("input");
+//         input.type = "file";
+//         input.accept = "image/*";
+//         input.onchange = () => resolve(input.files[0]);
+//         input.click();
+//       })
+//     : null;
+
+//   let newPhotoUrl = student.photo;
+
+//   if (newPhotoFile) {
+//     try {
+//       toast.loading("Uploading photo...");
+//       newPhotoUrl = await uploadToCloudinary(newPhotoFile);
+//       toast.dismiss();
+//       toast.success("Photo uploaded successfully");
+//       console.log("New photo URL:", newPhotoUrl); // Add this for debugging
+//     } catch (err) {
+//       toast.dismiss();
+//       toast.error(`Failed to upload photo: ${err.message}`);
+//       console.error("Upload error:", err); // Detailed error logging
+//       return;
+//     }
+//   }
+
+//   if (updatedName && updatedMobile) {
+//     try {
+//       const res = await fetch(`/api/students/${student._id}`, {
+//         method: "PUT",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           name: updatedName,
+//           fatherName: updatedFatherName,
+//           mobile: updatedMobile,
+//           group: updatedGroup,
+//           caste: updatedCaste,
+//           gender: updatedGender,
+//           admissionYear: updatedAdmissionYear,
+//           address: updatedAddress,
+//           photo: newPhotoUrl,
+//         }),
+//       });
+
+//       const data = await res.json();
+
+//       if (res.ok) {
+//         setStudents((prev) =>
+//           prev.map((s) => (s._id === student._id ? data.data : s))
+//         );
+//         toast.success("Student updated successfully ✅");
+//       } else {
+//         toast.error("Error updating student: " + data.message);
+//       }
+//     } catch (err) {
+//       toast.error("Something went wrong while updating.");
+//     }
+//   }
+// };
+
+
 
   const generateAdmissionCertificatePDF = (student) => {
     const doc = new jsPDF();
@@ -843,12 +907,15 @@ export default function StudentsPage() {
                 </td>
 
                 <td className="px-4 py-2 flex gap-2">
-                  <button
+                <button
                     onClick={() => handleEdit(s)}
-                    className="text-yellow-600 hover:text-yellow-800 cursor-pointer"
+                    className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50"
+                    aria-label="Edit student"
                   >
                     <Pencil size={20} />
                   </button>
+
+                  
                   <button
                     onClick={() => handleDelete(s._id)}
                     className="text-red-600 hover:text-red-800 cursor-pointer"
@@ -860,6 +927,28 @@ export default function StudentsPage() {
             ))}
           </tbody>
         </table>
+
+                {editingStudent && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+              <StudentEditForm 
+                student={editingStudent}
+                onSave={handleUpdate}
+                onCancel={() => setEditingStudent(null)}
+              />
+            </div>
+          </div>
+        )}
+      
+          
+
+
+
+
+
+
+
+
         <div className="mt-4 text-center text-gray-600 font-bold">
           Page {currentPage + 1} of {pageCount} | Showing {filteredStudents.length} Students
         </div>

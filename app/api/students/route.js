@@ -11,30 +11,6 @@ export const config = {
   },
 };
 
-
-
-// export async function POST(req) {
-//   try {
-//     await connectMongoDB();
-//     console.log("body:", req.body);
-//     const body = await req.json();
-//     console.log("body:", body);
-//     const student = await Student.create(body);
-//     console.log("student:", student);
-//     return Response.json({ status: "success", data: student }, { status: 201 });
-//   } catch (error) {
-//     console.log("error:", error.message);
-//     return Response.json({ status: "error", message: error.message }, { status: 500 });
-//   }
-// }
-
-// app/api/students/route.js
-
-
-
-
-
-
 export const dynamic = "force-dynamic"; // Edge runtime డిసేబుల్
 
 export async function POST(req) {
@@ -50,7 +26,9 @@ export async function POST(req) {
     if (file && typeof file === "object") {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
+      const base64Image = `data:${file.type};base64,${buffer.toString(
+        "base64"
+      )}`;
 
       // Upload to Cloudinary
       const cloudinaryResponse = await cloudinary.uploader.upload(base64Image, {
@@ -68,11 +46,12 @@ export async function POST(req) {
     return Response.json({ status: "success", data: student }, { status: 201 });
   } catch (error) {
     console.error("Upload error:", error);
-    return Response.json({ status: "error", message: error.message }, { status: 500 });
+    return Response.json(
+      { status: "error", message: error.message },
+      { status: 500 }
+    );
   }
 }
-
-
 
 export async function GET() {
   try {
@@ -84,6 +63,9 @@ export async function GET() {
     return Response.json({ status: "success", data: students });
   } catch (error) {
     console.log("error:", error.message);
-    return Response.json({ status: "error", message: error.message }, { status: 500 });
+    return Response.json(
+      { status: "error", message: error.message },
+      { status: 500 }
+    );
   }
 }

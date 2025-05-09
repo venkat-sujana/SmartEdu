@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Users } from "lucide-react";
-import { useRouter } from "next/navigation";
+
 import toast from "react-hot-toast";
 
 
