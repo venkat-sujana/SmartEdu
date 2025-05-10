@@ -20,6 +20,15 @@ export default function Home() {
         </Link>
       </div>
       {/* Main Heading */}
+      <div>
+        <Image
+          src="/images/skrlogo.png"
+          alt="OSRA Logo"
+          width={300}
+          height={300}
+          className="full mb-4 border-2 border-gray-300 rounded-lg shadow-lg"
+        />
+      </div>
       <h1 className="text-4xl font-bold">Welcome to OSRA</h1>
       <h2 className="text-2xl font-semibold mt-4">
         Online Student Registration App

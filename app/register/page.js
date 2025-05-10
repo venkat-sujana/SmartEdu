@@ -5,7 +5,6 @@ import { Users } from "lucide-react";
 
 import toast from "react-hot-toast";
 
-
 export default function RegisterPage() {
   const [photo, setPhoto] = useState(null);
   const [formData, setFormData] = useState({
@@ -16,17 +15,18 @@ export default function RegisterPage() {
     caste: "",
     dob: "",
     gender: "",
+    admissionNo: "",
     admissionYear: "",
     address: "",
     photo: null,
   });
 
   const [isLoading, setIsLoading] = useState(false);
- 
+
   const handleFileChange = (e) => {
     setFormData({ ...formData, photo: e.target.files[0] });
   };
-  
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -34,7 +34,6 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-  
 
     const form = new FormData();
     form.append("name", formData.name);
@@ -44,25 +43,26 @@ export default function RegisterPage() {
     form.append("caste", formData.caste);
     form.append("dob", formData.dob);
     form.append("gender", formData.gender);
+    form.append("admissionNo", formData.admissionNo);
     form.append("admissionYear", formData.admissionYear);
     form.append("address", formData.address);
-  
+
     if (photo) {
       form.append("photo", photo);
     }
-  
+
     try {
       const res = await fetch("/api/students", {
         method: "POST",
         body: form, // ✅ Correct formData sent here
       });
-  
+
       const result = await res.json(); // ✅ No duplicate parsing
       console.log(result);
-  
+
       if (res.ok) {
         toast.success("స్టూడెంట్ విజయవంతంగా  రిజిస్టర్ అయ్యాడు 👍 ✅");
-  
+
         // Reset the form
         setFormData({
           name: "",
@@ -72,6 +72,7 @@ export default function RegisterPage() {
           caste: "",
           dob: "",
           gender: "",
+          admissionNo: "",
           admissionYear: "",
           address: "",
         });
@@ -86,8 +87,7 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
-  
-  
+
   return (
     <div className="relative">
       <Link href="/">
@@ -171,7 +171,7 @@ export default function RegisterPage() {
             <option value="BiPC">BiPC</option>
             <option value="CEC">CEC</option>
             <option value="HEC">HEC</option>
-            <option value="MEC">MEC</option>
+
             <option value="M&AT">M&AT</option>
             <option value="MLT">MLT</option>
             <option value="CET">CET</option>
@@ -223,6 +223,16 @@ export default function RegisterPage() {
           </select>
 
           <input
+            style={{ display: "none" }}
+            name="admissionNo"
+            value={formData.admissionNo}
+            onChange={handleChange}
+            placeholder="Admiassion Number"
+            className="w-full p-2 border rounded font-bold"
+            required
+          />
+
+          <input
             type="number"
             name="admissionYear"
             value={formData.admissionYear}
@@ -241,14 +251,13 @@ export default function RegisterPage() {
             required
           />
 
-           <label className="text-sm text-gray-600" >Upload Photo</label>
-          <input 
+          <label className="text-sm text-gray-600">Upload Photo</label>
+          <input
             type="file"
             accept="image/*"
             onChange={(e) => setPhoto(e.target.files[0])}
             className="w-full p-2 border rounded font-bold"
           />
-
 
           <button
             type="submit"

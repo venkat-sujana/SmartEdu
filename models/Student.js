@@ -33,6 +33,11 @@ const studentSchema = new mongoose.Schema({
     required: true,
     enum: ["Male", "Female", "Other"],
   },
+  admissionNo: {
+  type: String,
+  required: true,
+  unique: true,
+  },
   admissionYear: {
     type: Number,
     required: true,

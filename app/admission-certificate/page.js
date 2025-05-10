@@ -120,6 +120,9 @@ const generateAdmissionCertificatePDF = async (student) => {
   y += 10;
   doc.text(`Mobile Number    : ${student.mobile}`, 30, y);
   y += 10;
+  doc.text(`Admission No    : ${student.admissionNo}`, 30, y);
+
+  y += 10;
   doc.text(
     `Date of Admission: ${new Date(student.createdAt).toLocaleDateString(
       "en-GB"

@@ -9,7 +9,9 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
     mobile: student?.mobile || "",
     group: student?.group || "",
     caste: student?.caste || "",
+    dob: student?.dob || "",
     gender: student?.gender || "",
+    admissionNo: student?.admissionNo || "",
     admissionYear: student?.admissionYear || "",
     address: student?.address || "",
     photo: student?.photo || "",
@@ -85,7 +87,9 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
         mobile: formData.mobile,
         group: formData.group,
         caste: formData.caste,
+        dob: formData.dob,
         gender: formData.gender,
+        admissionNo: formData.admissionNo,
         admissionYear: formData.admissionYear,
         address: formData.address,
         photo: photoUrl,
@@ -154,10 +158,24 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
           className="input-field"
         />
         <input
+          name="dob"
+          value={formData.dob}
+          onChange={handleChange}
+          placeholder="Date of Birth"
+          className="input-field"
+        />
+        <input
           name="gender"
           value={formData.gender}
           onChange={handleChange}
           placeholder="Gender"
+          className="input-field"
+        />
+        <input
+          name="admissionNo"
+          value={formData.admissionNo}
+          onChange={handleChange}
+          placeholder="Admission Number"
           className="input-field"
         />
         <input
