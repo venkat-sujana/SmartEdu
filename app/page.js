@@ -5,15 +5,15 @@ export default function Home() {
   return (
     <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gray-100">
       {/* Button Cards */}
-      <div className="absolute top-4 right-4 flex flex-col md:flex-row gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-300">
+      <div className="absolute top-2 right-4 flex flex-col md:flex-row gap-2">
+        <div className="bg-white p-1 rounded-xl shadow-md border border-gray-300">
           <Link href="/register">
             <button className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
               Admission Form
             </button>
           </Link>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-300">
+        <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/admin">
             <button className="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition cursor-pointer font-bold">
               Admin
@@ -29,11 +29,11 @@ export default function Home() {
           alt="OSRA Logo"
           width={300}
           height={300}
-          className="mb-4 border-2 border-gray-300 rounded-lg shadow-lg"
+          className="mt-20 border-2 border-gray-300 rounded-lg shadow-lg"
           priority
         />
       </div>
-      <h1 className="text-4xl text-black font-bold">Welcome to OSRA</h1>
+      <h1 className="text-4xl text-black font-bold mt-2">Welcome to OSRA</h1>
       <h2 className="text-2xl text-black font-semibold mt-4">
         Online Student Registration App
       </h2>
