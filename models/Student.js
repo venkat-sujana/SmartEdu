@@ -22,7 +22,7 @@ const studentSchema = new mongoose.Schema({
   caste: {
     type: String,
     required: true,
-    enum: ["OC", "BC-A", "BC-B", "BC-C", "BC-D", "BC-E", "SC-A", "SC-B","SC-C","SC","ST", "OTHER"],
+    enum: ["OC","OBC","BC-A", "BC-B", "BC-C", "BC-D", "BC-E", "SC-A", "SC-B","SC-C","SC","ST","OTHER"],
   },
   dob: {
     type: Date,

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Users } from "lucide-react";
+import { Users,Home } from "lucide-react";
 
 import toast from "react-hot-toast";
 
@@ -92,8 +92,17 @@ export default function RegisterPage() {
     <div className="relative">
       <Link href="/">
         {/* Dashboard Button */}
-        <button className="bg-green-600 text-white px-4 py-2 mb-4 font-bold  rounded absolute top-4 right-10 hover:bg-blue-700 transition cursor-pointer">
-          Home
+        <button className="bg-green-600
+         text-white 
+         px-4 py-2 mb-4 
+         font-bold  
+         rounded absolute top-4
+          right-10 hover:bg-blue-700 
+          transition cursor-pointer
+           border-b-black 
+           border-b-2"
+           >
+         <Home className="inline mr-2" size={21} /> Home
         </button>
       </Link>
       &nbsp;
@@ -138,7 +147,7 @@ export default function RegisterPage() {
             value={formData.name}
             onChange={handleChange}
             placeholder="Full Name"
-            className="w-full p-2 border rounded font-bold"
+            className="w-full p-1 border rounded font-bold"
             required
           />
           <input
@@ -146,7 +155,7 @@ export default function RegisterPage() {
             value={formData.fatherName}
             onChange={handleChange}
             placeholder="Father's Name"
-            className="w-full p-2 border rounded font-bold"
+            className="w-full p-1 border rounded font-bold"
             required
           />
 
@@ -155,7 +164,7 @@ export default function RegisterPage() {
             value={formData.mobile}
             onChange={handleChange}
             placeholder="Mobile Number"
-            className="w-full p-2 border rounded font-bold"
+            className="w-full p-1 border rounded font-bold"
             required
           />
 
@@ -163,7 +172,7 @@ export default function RegisterPage() {
             name="group"
             value={formData.group}
             onChange={handleChange}
-            className="w-full p-2 border rounded font-bold"
+            className="w-full p-1 border rounded font-bold"
             required
           >
             <option value="">Select Group</option>
@@ -181,23 +190,24 @@ export default function RegisterPage() {
             name="caste"
             value={formData.caste}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-1 border rounded"
             required
           >
             <option value="">Select Caste</option>
             <option value="OC">OC</option>
+            <option value="OBC">OBC</option>
             <option value="BC-E">BC</option>
             <option value="BC-A">BC-A</option>
             <option value="BC-B">BC-B</option>
             <option value="BC-C">BC-C</option>
             <option value="BC-D">BC-D</option>
             <option value="BC-E">BC-E</option>
-            <option value="BC-E">BC</option>
-            <option value="BC-E">SC-A</option>
-            <option value="BC-E">SC-B</option>
-            <option value="SC">SC-C</option>
+            <option value="SC">SC</option>
+            <option value="SC-A">SC-A</option>
+            <option value="SC_B">SC-B</option>
+            <option value="SC-C">SC-C</option>
             <option value="ST">ST</option>
-            <option value="Others">Others</option>
+            <option value="OTHER">OTHER</option>
           </select>
           <label className="text-sm text-gray-600">Date of Birth</label>
           <input
@@ -205,7 +215,7 @@ export default function RegisterPage() {
             name="dob"
             value={formData.dob}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-1 border rounded"
             required
           />
 
@@ -213,7 +223,7 @@ export default function RegisterPage() {
             name="gender"
             value={formData.gender}
             onChange={handleChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-1 border rounded"
             required
           >
             <option value="">Select Gender</option>
@@ -222,23 +232,23 @@ export default function RegisterPage() {
             <option value="Other">Other</option>
           </select>
 
+          <label className="text-sm text-gray-600">Admission Number</label>
           <input
-            
             name="admissionNo"
             value={formData.admissionNo}
             onChange={handleChange}
             placeholder="Admiassion Number"
-            className="w-full p-2 border rounded font-bold"
+            className="w-full p-1 border rounded font-bold"
             required
           />
-
+          <label className="text-sm text-gray-600">Admission Year</label>
           <input
             type="number"
             name="admissionYear"
             value={formData.admissionYear}
             onChange={handleChange}
             placeholder="Admission Year"
-            className="w-full p-2 border rounded"
+            className="w-full p-1 border rounded"
             required
           />
 
@@ -247,7 +257,7 @@ export default function RegisterPage() {
             value={formData.address}
             onChange={handleChange}
             placeholder="Address"
-            className="w-full p-2 border rounded font-bold"
+            className="w-full p-1 border rounded font-bold"
             required
           />
 
@@ -256,7 +266,7 @@ export default function RegisterPage() {
             type="file"
             accept="image/*"
             onChange={(e) => setPhoto(e.target.files[0])}
-            className="w-full p-2 border rounded font-bold"
+            className="w-full p-0 border rounded font-bold"
           />
 
           <button

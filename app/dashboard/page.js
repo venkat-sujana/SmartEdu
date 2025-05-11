@@ -125,7 +125,7 @@ export default function GroupDashboard() {
     const totalCount = data.reduce((sum, item) => sum + item.count, 0);
     return (
       <div className="mb-10 border shadow rounded-lg p-4 bg-white">
-        <h3 className="text-lg font-semibold text-center mb-4">{title}</h3>
+        <h3 className="text-lg font-semibold text-center mb-4"><Users className="inline mr-2 " />{title}</h3>
 
         {data.length === 0 ? (
           <p className="text-center text-red-500 font-medium">No data found</p>
@@ -156,7 +156,7 @@ export default function GroupDashboard() {
                       </td>
                     </tr>
                   ))}
-                  <tr className="font-semibold bg-gray-100 border-t">
+                  <tr className="font-semibold bg-blue-100 border-t">
                     <td
                       className="border px-4 py-2 text-center font-bold"
                       colSpan={2}
@@ -171,14 +171,14 @@ export default function GroupDashboard() {
             <div className="flex justify-end space-x-2 mt-2 print:hidden">
               <button
                 onClick={() => exportToPDF(title, data)}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 font-bold rounded cursor-pointer"
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 font-bold rounded cursor-pointer border-b-black border-b-2"
               >
                 <FileDown className="mr-2 inline" size={16} />
                 Export to PDF
               </button>
               <button
                 onClick={() => exportToExcel(title, data)}
-                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 font-bold rounded cursor-pointer"
+                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 font-bold rounded cursor-pointer border-b-black border-b-2"
               >
                 <FileSpreadsheet className="mr-2 inline" size={16} />
                 Export to Excel
@@ -199,12 +199,12 @@ export default function GroupDashboard() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
       <Link href="/register">
-        <button className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition cursor-pointer">
-          Register
+        <button className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition cursor-pointer border-b-black border-b-2">
+          <Plus className="mr-2 inline" size={18} />Register
         </button>
       </Link>
-      <h2 className="text-xl font-bold text-center print:text-left ">
-        <Users className="mr-1 inline" size={20} /> Admissions Enrolled as on{" "}
+      <h2 className="text-xl font-bold text-center print:text-left bg-amber-100 border-2 border-b-black border-b-2 p-4 rounded-lg mt-2">
+        <Users className="mr-1 inline" size={25} color="green" /> Admissions Enrolled as on{" "}
         {currentDate}
       </h2>
       {renderTable("Date-Wise Enrollment", dateWiseCounts)}
@@ -216,7 +216,7 @@ export default function GroupDashboard() {
       <div className="flex justify-end">
         <button
           onClick={() => window.print()}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 font-bold rounded print:hidden cursor-pointer"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 font-bold rounded print:hidden cursor-pointer border-b-black border-b-2"
         >
           <Printer className="mr-2 inline" size={16} />
           Print All Tables
