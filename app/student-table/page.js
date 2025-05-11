@@ -367,7 +367,7 @@ export default function StudentsPage() {
               
               <th className="px-4 py-2">Admission Year</th>
               <th className="px-4 py-2">Admission Date</th>
-              <th className="px-4 py-2" style={{ display: "none" }}>Admission No</th>
+              <th className="px-4 py-2" >Admission No</th>
               
               <th className="px-4 py-2">Address</th>
               <th className="px-3 py-2 border">Photo</th>
@@ -405,7 +405,7 @@ export default function StudentsPage() {
                 </td>
 
 
-                <td className="px-4 py-2" style={{ display: "none" }}>{s.admissionNo}</td>
+                <td className="px-4 py-2" >{s.admissionNo}</td>
                 <td className="px-4 py-2">{s.address}</td>
 
                 <td className="px-3 py-2 border text-center">

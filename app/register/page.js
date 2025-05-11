@@ -223,7 +223,7 @@ export default function RegisterPage() {
           </select>
 
           <input
-            style={{ display: "none" }}
+            
             name="admissionNo"
             value={formData.admissionNo}
             onChange={handleChange}
