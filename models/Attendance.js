@@ -1,14 +1,6 @@
-import mongoose from "mongoose";
-
-const AttendanceSchema = new mongoose.Schema({
-  date: {
-    type: Date,
-    default: Date.now,
-  },
-  records: {
-    type: Map,
-    of: String, // studentId: "Present"/"Absent"
-  },
+const attendanceSchema = new mongoose.Schema({
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
+  date: { type: Date, required: true },
+  status: { type: String, enum: ["Present", "Absent"], required: true },
+  group: { type: String, required: true },
 });
-
-export default mongoose.models.Attendance || mongoose.model("Attendance", AttendanceSchema);
