@@ -1,6 +1,6 @@
 // ✅ BACKEND CODE (/pages/api/attendance/summary/daily-group.js)
 
-import connectDB from "@/lib/mongodb";
+import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 
 export default async function handler(req, res) {
