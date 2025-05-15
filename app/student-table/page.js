@@ -13,6 +13,9 @@ import Image from "next/image";
 import generateAdmissionCertificatePDF from "../admission-certificate/page";
 import generateStudyCertificatePDF from "../study-certificate/page";
 import generateCaretakerCertificatePDF from "../caretaker-form/page";
+import AttendanceRecords from "../attendance-records/page";
+
+
 import {
   FileDown,
   FileSpreadsheet,
@@ -349,6 +352,16 @@ export default function StudentsPage() {
             Dashboard
           </button>
         </Link>
+
+        <Link href="/attendance-records">
+          <button className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
+            Attendance Records
+          </button>
+        </Link>
+      
+      
+      
+      
       </div>
 
       {/* Students Table */}

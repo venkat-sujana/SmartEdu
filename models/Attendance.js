@@ -1,6 +1,37 @@
-const attendanceSchema = new mongoose.Schema({
-  studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
-  date: { type: Date, required: true },
-  status: { type: String, enum: ["Present", "Absent"], required: true },
-  group: { type: String, required: true },
+import mongoose, { Schema } from "mongoose";
+
+const attendanceSchema = new Schema({
+  studentId: {
+    type: Schema.Types.ObjectId,
+    ref: "Student",
+    required: true,
+  },
+  date: {
+    type: Date,
+    required: true,
+  },
+  status: {
+    type: String,
+    enum: ["Present", "Absent"],
+    default: "Absent",
+  },
+  group: {
+    type: String,
+    enum: ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"],
+    required: true,
+  },
+  month: {
+    type: String,
+    enum: [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ],
+  },
+  year: {
+    type: Number,
+  }
+}, {
+  timestamps: true,
 });
+
+export default mongoose.models.Attendance || mongoose.model("Attendance", attendanceSchema);

@@ -1,17 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
+import Link from "next/link";
 const AttendanceForm = () => {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [attendanceData, setAttendanceData] = useState({});
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
 
   const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
+  const monthsList = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const currentYear = new Date().getFullYear();
+  const yearsList = Array.from({ length: 6 }, (_, i) => currentYear - 2 + i);
 
-  // Fetch all students once
   useEffect(() => {
     fetch("/api/students")
       .then((res) => res.json())
@@ -23,7 +30,6 @@ const AttendanceForm = () => {
       .catch((err) => console.error("Error fetching students", err));
   }, []);
 
-  // Filter students by group on dropdown change
   useEffect(() => {
     if (selectedGroup) {
       const filtered = students.filter((s) => s.group === selectedGroup);
@@ -41,46 +47,48 @@ const AttendanceForm = () => {
   };
 
   const handleSubmit = async () => {
-  console.log("handleSubmit called");
-  
-  if (!selectedDate || !selectedGroup || filteredStudents.length === 0) {
-    console.log("Validation failed: date, group, or students missing");
-    alert("Please select a date, group, and ensure students are visible.");
-    return;
-  }
+    if (!selectedDate || !selectedGroup || filteredStudents.length === 0) {
+      alert("Please select a date, group, and ensure students are visible.");
+      return;
+    }
 
-  const attendanceRecords = filteredStudents.map((student) => ({
-    studentId: student._id,
-    date: selectedDate,
-    status: attendanceData[student._id] || "Absent",
-    group: selectedGroup,
-  }));
+    const dateObj = new Date(selectedDate);
+    const month = monthsList[dateObj.getMonth()];
+    const year = dateObj.getFullYear();
 
-  console.log("Submitting attendance:", attendanceRecords);
+    const attendanceRecords = filteredStudents.map((student) => ({
+      studentId: student._id,
+      date: selectedDate,
+      status: attendanceData[student._id] || "Absent",
+      group: selectedGroup,
+      month,
+      year,
+    }));
 
-  try {
-    const response = await fetch("/api/attendance", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(attendanceRecords),
-    });
+    try {
+      const response = await fetch("/api/attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(attendanceRecords),
+      });
 
-    console.log("Response received:", response);
-
-    const result = await response.json();
-    console.log("Result from server:", result);
-    alert(result.message || "Attendance submitted");
-  } catch (error) {
-    console.error("Submit error", error);
-  }
-};
-
+      const result = await response.json();
+      alert(result.message || "Attendance submitted");
+    } catch (error) {
+      console.error("Submit error", error);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-xl font-bold mb-4">Mark Attendance</h2>
 
-      {/* Date Picker */}
+      <Link href="/attendance-records">
+        <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
+          Attendance-Records
+        </button>
+      </Link>
+
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Date</label>
         <input
@@ -92,7 +100,6 @@ const AttendanceForm = () => {
         />
       </div>
 
-      {/* Group Dropdown */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Group</label>
         <select
@@ -109,7 +116,43 @@ const AttendanceForm = () => {
         </select>
       </div>
 
-      {/* Students Toggle */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Month
+          </label>
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="mt-1 block w-full border rounded-md px-3 py-2"
+          >
+            <option value="">Select Month</option>
+            {monthsList.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Year
+          </label>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className="mt-1 block w-full border rounded-md px-3 py-2"
+          >
+            <option value="">Select Year</option>
+            {yearsList.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {filteredStudents.length > 0 && (
         <div className="mt-4">
           <h3 className="font-semibold mb-2">Students List</h3>
@@ -148,7 +191,6 @@ const AttendanceForm = () => {
         </div>
       )}
 
-      {/* Submit Button */}
       {filteredStudents.length > 0 && (
         <div className="mt-6 text-right">
           <button

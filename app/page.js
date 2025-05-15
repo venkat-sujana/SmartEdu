@@ -6,13 +6,24 @@ export default function Home() {
     <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gray-100">
       {/* Button Cards */}
       <div className="absolute top-2 right-4 flex flex-col md:flex-row gap-2">
-        <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300">
+
+
+        <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
+          <Link href="/attendance-form">
+            <button className="w-full bg-cyan-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+              Attendance Form
+            </button>
+          </Link>
+        </div>
+
+        <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/register">
             <button className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
               Admission Form
             </button>
           </Link>
         </div>
+
         <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/admin">
             <button className="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition cursor-pointer font-bold">
