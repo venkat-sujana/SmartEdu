@@ -1,10 +1,10 @@
 // ✅ BACKEND CODE (/pages/api/attendance/summary/daily-group.js)
 
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 
 export default async function handler(req, res) {
-  await connectDB();
+  await connectMongoDB();
 
   try {
     const summary = await Attendance.aggregate([
