@@ -1,117 +1,117 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Link from "next/link";
+import {
+  FileDown,
+  FileSpreadsheet,
+  Pencil,
+  Trash2,
+  Printer,
+} from "lucide-react";
 
 export default function AttendanceRecords() {
   const [records, setRecords] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [group, setGroup] = useState("");
-  
+
   const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 
   const fetchData = async () => {
-    let query = "/api/attendance?";
-    if (startDate) query += `start=${startDate}&`;
-    if (endDate) query += `end=${endDate}&`;
-    if (group) query += `group=${group}&`;
+  let query = "/api/attendance/summary/daily-group?";
+  if (startDate) query += `start=${startDate}&`;
+  if (endDate) query += `end=${endDate}&`;
+  if (group) query += `group=${encodeURIComponent(group)}&`; // ✅ fixed here
 
+  try {
     const res = await fetch(query);
-    const data = await res.json();
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("API Error Response:", text);
+      return;
+    }
 
+    const data = await res.json();
     if (Array.isArray(data.data)) {
       setRecords(data.data);
-    } else if (Array.isArray(data)) {
-      setRecords(data);
     } else {
-      console.error("Unexpected format", data);
+      console.error("Unexpected response format", data);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
 
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(records.map((r, index) => ({
-      SNo: index + 1,
-      Name: r.studentId?.name || "N/A",
-      Date: r.date?.slice(0, 10),
-      Status: r.status,
-      Group: r.group,
-    })));
-
+    const worksheet = XLSX.utils.json_to_sheet(
+      records.map((r, i) => ({
+        SNo: i + 1,
+        Date: r.date,
+        Group: r.group,
+        Present: r.present,
+        Absent: r.absent,
+        Total: r.total,
+        Percentage: `${r.percentage.toFixed(2)}%`,
+      }))
+    );
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance Summary");
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "AttendanceRecords.xlsx");
+    saveAs(data, "GroupwiseAttendanceSummary.xlsx");
   };
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-    doc.text("Attendance Records", 14, 10);
-
-    const tableData = records.map((r, index) => [
-      index + 1,
-      r.studentId?.name || "N/A",
-      r.date?.slice(0, 10),
-      r.status,
-      r.group || "N/A",
+    doc.text("Group-wise Attendance Summary", 14, 10);
+    const tableData = records.map((r, i) => [
+      i + 1,
+      r.date,
+      r.group,
+      r.present,
+      r.absent,
+      r.total,
+      `${r.percentage.toFixed(2)}%`,
     ]);
 
     autoTable(doc, {
-      head: [["S.No", "Name", "Date", "Status", "Group"]],
+      head: [["S.No", "Date", "Group", "Present", "Absent", "Total", "%"]],
       body: tableData,
       startY: 20,
     });
 
-    doc.save("AttendanceRecords.pdf");
+    doc.save("GroupwiseAttendanceSummary.pdf");
   };
 
-  // Calculate the daily attendance summary (for each group)
-  const calculateDailySummary = () => {
-    const summary = {};
-    let totalPresent = 0;
-    let totalAbsent = 0;
 
-    records.forEach((record) => {
-      const { date, group, status } = record;
 
-      if (!summary[date]) {
-        summary[date] = {};
-      }
+  // Calculate totals
+const totalPresent = records.reduce((sum, r) => sum + (r.present || 0), 0);
+const totalAbsent = records.reduce((sum, r) => sum + (r.absent || 0), 0);
+const totalAll = totalPresent + totalAbsent;
+const collegePercentage = totalAll === 0 ? 0 : ((totalPresent / totalAll) * 100).toFixed(2);
 
-      if (!summary[date][group]) {
-        summary[date][group] = { present: 0, absent: 0 };
-      }
 
-      if (status === "Present") {
-        summary[date][group].present += 1;
-        totalPresent += 1;
-      } else if (status === "Absent") {
-        summary[date][group].absent += 1;
-        totalAbsent += 1;
-      }
-    });
+// Inside AttendanceRecords component
+const today = new Date().toLocaleDateString("en-IN", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
 
-    return { summary, totalPresent, totalAbsent };
-  };
 
-  const { summary, totalPresent, totalAbsent } = calculateDailySummary();
-
-  // Calculate the percentage of attendance
-  const totalStudents = totalPresent + totalAbsent;
-  const percentage = totalStudents > 0 ? ((totalPresent / totalStudents) * 100).toFixed(2) : 0;
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Attendance Records</h2>
+      <h2 className="text-2xl font-bold mb-4">
+        Group-wise Daily Attendance Summary
+      </h2>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
@@ -151,35 +151,83 @@ export default function AttendanceRecords() {
         <div className="flex items-end">
           <button
             onClick={fetchData}
-            className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer"
+            className="bg-blue-600 text-white px-4 py-2 rounded"
           >
             Apply Filters
           </button>
         </div>
       </div>
 
+      {/* Export Buttons */}
       <div className="mb-4">
         <button
           onClick={exportToExcel}
-          className="bg-yellow-500 text-white px-4 py-2 rounded mr-2 cursor-pointer"
+          className="bg-yellow-500 text-white px-4 py-2 rounded mr-2"
         >
+          <FileSpreadsheet className="inline mr-2" />
           Export to Excel
         </button>
         <button
           onClick={exportToPDF}
-          className="bg-red-500 text-white px-4 py-2 rounded mr-2 cursor-pointer"
+          className="bg-red-500 text-white px-4 py-2 rounded mr-2"
         >
+          <FileDown className="inline mr-2" />
           Export to PDF
         </button>
-        
-          <Link href="/attendance-form">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
-            Attendance-Form
+        <Link href="/attendance-form">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2">
+            Attendance Form
           </button>
         </Link>
-        
 
+        <button
+          onClick={() => window.print()}
+          className="bg-green-600 text-white px-4 py-2 rounded mr-2"
+        >
+          <Printer className="inline mr-2" /> Print Table
+        </button>
       </div>
+
+      {/* Global Print Style */}
+      <style jsx global>{`
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+
+    .print-area, .print-area * {
+      visibility: visible;
+    }
+
+    .print-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+    }
+  }
+`}</style>
+
+
+
+
+      <div className="print-area">
+  {/* Header Section */}
+  <div className="text-center mb-6">
+    <h1 className="text-xl font-bold uppercase">
+      S.K.R. GOVERNMENT JUNIOR COLLEGE
+    </h1>
+    <p className="text-sm font-semibold">
+      Attendance as on {today}
+    </p>
+  
+
+  
+
+
+
+
+
 
       {/* Records Table */}
       <table className="table-auto w-full border mb-8">
@@ -190,32 +238,48 @@ export default function AttendanceRecords() {
             <th className="border px-4 py-2">Group</th>
             <th className="border px-4 py-2">Present</th>
             <th className="border px-4 py-2">Absent</th>
+            <th className="border px-4 py-2">Total</th>
+            <th className="border px-4 py-2">%</th>
           </tr>
         </thead>
         <tbody>
-          {Object.entries(summary).map(([date, groups]) => (
-            Object.entries(groups).map(([group, counts], index) => (
-              <tr key={index}>
-                <td className="border px-4 py-2">{index + 1}</td>
-                <td className="border px-4 py-2">{date}</td>
-                <td className="border px-4 py-2">{group}</td>
-                <td className="border px-4 py-2">{counts.present}</td>
-                <td className="border px-4 py-2">{counts.absent}</td>
-              </tr>
-            ))
+          {records.map((record, i) => (
+            <tr key={`${record.date}-${record.group}`}>
+              <td className="border px-4 py-2">{i + 1}</td>
+              <td className="border px-4 py-2">{record.date}</td>
+              <td className="border px-4 py-2">{record.group}</td>
+              <td className="border px-4 py-2">{record.present}</td>
+              <td className="border px-4 py-2">{record.absent}</td>
+              <td className="border px-4 py-2">{record.total}</td>
+              <td className="border px-4 py-2">
+                {record.percentage.toFixed(2)}%
+              </td>
+            </tr>
           ))}
-          {/* Totals and Percentage Row */}
-          <tr className="bg-gray-200">
-            <td colSpan={3} className="border px-4 py-2 font-bold">Total</td>
-            <td className="border px-4 py-2 font-bold">{totalPresent}</td>
-            <td className="border px-4 py-2 font-bold">{totalAbsent}</td>
-          </tr>
-          <tr className="bg-gray-200">
-            <td colSpan={3} className="border px-4 py-2 font-bold">%</td>
-            <td colSpan={2} className="border px-4 py-2 font-bold">{percentage}%</td>
+
+          {/* ✅ College Total Row */}
+          <tr className="bg-green-100 font-semibold">
+            <td colSpan={3} className="border px-4 py-2 text-right">
+              College Total Attendance
+            </td>
+            <td className="border px-4 py-2">{totalPresent}</td>
+            <td className="border px-4 py-2">{totalAbsent}</td>
+            <td className="border px-4 py-2">{totalAll}</td>
+            <td className="border px-4 py-2">{collegePercentage}%</td>
           </tr>
         </tbody>
       </table>
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-semibold">
+          Note: This is a computer-generated report and does not require a signature.
+        </p>
+        <p className="text-sm font-semibold">
+          For any discrepancies, please contact the administration.
+        </p>
+      </div>
+    </div>
+      {/* End of Header Section */}
     </div>
   );
 }

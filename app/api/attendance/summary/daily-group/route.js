@@ -1,13 +1,35 @@
-// ✅ BACKEND CODE (/pages/api/attendance/summary/daily-group.js)
-
+import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 
-export default async function handler(req, res) {
+export async function GET(req) {
   await connectMongoDB();
 
+  const { searchParams } = new URL(req.url);
+  const start = searchParams.get("start");
+  const end = searchParams.get("end");
+  const group = searchParams.get("group");
+
   try {
+    const matchStage = {};
+
+    if (start && end) {
+      matchStage.date = {
+        $gte: new Date(start),
+        $lte: new Date(end),
+      };
+    } else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      matchStage.date = { $gte: today, $lt: tomorrow };
+    }
+
+    if (group) matchStage.group = group;
+
     const summary = await Attendance.aggregate([
+      { $match: matchStage },
       {
         $group: {
           _id: {
@@ -79,7 +101,12 @@ export default async function handler(req, res) {
               0,
               {
                 $multiply: [
-                  { $divide: ["$present.count", { $add: ["$present.count", "$absent.count"] }] },
+                  {
+                    $divide: [
+                      "$present.count",
+                      { $add: ["$present.count", "$absent.count"] },
+                    ],
+                  },
                   100,
                 ],
               },
@@ -90,9 +117,12 @@ export default async function handler(req, res) {
       { $sort: { date: -1, group: 1 } },
     ]);
 
-    res.status(200).json(summary);
-  } catch (err) {
-    console.error("Error in daily group summary:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    return NextResponse.json({ data: summary });
+  } catch (error) {
+    console.error("API error:", error);
+   return NextResponse.json({ data: summary });
+
   }
 }
+
+
