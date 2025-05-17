@@ -151,7 +151,7 @@ const today = new Date().toLocaleDateString("en-IN", {
         <div className="flex items-end">
           <button
             onClick={fetchData}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer"
           >
             Apply Filters
           </button>
@@ -162,30 +162,50 @@ const today = new Date().toLocaleDateString("en-IN", {
       <div className="mb-4">
         <button
           onClick={exportToExcel}
-          className="bg-yellow-500 text-white px-4 py-2 rounded mr-2"
+          className="bg-yellow-500 text-white px-4 py-2 rounded mr-2 cursor-pointer"
         >
           <FileSpreadsheet className="inline mr-2" />
           Export to Excel
         </button>
         <button
           onClick={exportToPDF}
-          className="bg-red-500 text-white px-4 py-2 rounded mr-2"
+          className="bg-red-500 text-white px-4 py-2 rounded mr-2 cursor-pointer"
         >
           <FileDown className="inline mr-2" />
           Export to PDF
         </button>
         <Link href="/attendance-form">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
             Attendance Form
           </button>
         </Link>
 
         <button
           onClick={() => window.print()}
-          className="bg-green-600 text-white px-4 py-2 rounded mr-2"
+          className="bg-green-600 text-white px-4 py-2 rounded mr-2 cursor-pointer"
         >
           <Printer className="inline mr-2" /> Print Table
         </button>
+
+        <Link href="/attendance-records/individual">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
+           Individual Attendance 
+          </button>
+        </Link>
+
+        <Link href="/attendance-records/attendance-calendar">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
+            Monthly Attendance 
+          </button>
+        </Link>
+
+        <Link href="/attendance-records/monthly-summary">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 mt-2 cursor-pointer">
+            Monthly Summary 
+          </button>
+        </Link>
+
+
       </div>
 
       {/* Global Print Style */}
@@ -211,7 +231,7 @@ const today = new Date().toLocaleDateString("en-IN", {
 
 
 
-      <div className="print-area">
+  <div className="print-area">
   {/* Header Section */}
   <div className="text-center mb-6">
     <h1 className="text-xl font-bold uppercase">
