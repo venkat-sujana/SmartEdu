@@ -71,7 +71,7 @@ export default function MonthlySummary() {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Monthly Attendance Summary</h2>
+      <h2 className="text-2xl font-bold mb-4  items-center">Monthly Attendance Summary-2025</h2>
 
       <div className="mb-4 flex gap-4 items-center">
         <select
@@ -89,7 +89,7 @@ export default function MonthlySummary() {
 
         <button
           onClick={handlePrint}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer "
         >
           <Printer className="inline mr-2" /> Print
         </button>
@@ -119,7 +119,8 @@ export default function MonthlySummary() {
         <table className="table-auto w-full border border-gray-300 shadow text-sm">
           <thead className="bg-green-600 text-white">
             <tr>
-              <th className="p-2 border">🧑‍🎓🧑‍🎓🧑‍🎓Students</th>
+              <th className="p-2 border">S.No</th>
+              <th className="p-2 border">🧑‍🎓 Students</th>
               {months.map((month) => (
                 <th key={month} className="p-2 border">
                   {month}
@@ -131,7 +132,9 @@ export default function MonthlySummary() {
           <tbody>
             {filteredData.map((student, idx) => (
               <React.Fragment key={idx}>
+                {/* Working Days Row */}
                 <tr className="bg-gray-100">
+                  <td className="p-2 border font-semibold"></td>
                   <td className="p-2 border font-semibold">Working Days</td>
                   {months.map((m) => (
                     <td key={m + "-work"} className="p-2 border">
@@ -145,7 +148,15 @@ export default function MonthlySummary() {
                     )}
                   </td>
                 </tr>
+
+                {/* Empty row for spacing */}
+                {/* <tr>
+                  <td colSpan={months.length + 3} className="p-2"></td>
+                </tr> */}
+
+                {/* Present Row */}
                 <tr>
+                  <td className="p-2 border">{idx + 1}</td>
                   <td className="p-2 border">{student.name}</td>
                   {months.map((m) => (
                     <td key={m + "-present"} className="p-2 border">
@@ -159,7 +170,10 @@ export default function MonthlySummary() {
                     )}
                   </td>
                 </tr>
+
+                {/* Percent Row */}
                 <tr className="bg-yellow-100 font-semibold">
+                  <td className="p-2 border"></td>
                   <td className="p-2 border font-medium">Percent</td>
                   {months.map((m) => {
                     const present = student.present?.[m] || 0;
@@ -188,7 +202,11 @@ export default function MonthlySummary() {
                     })()}
                   </td>
                 </tr>
-              
+
+                {/* Optional spacing row after each block */}
+                <tr>
+                  <td colSpan={months.length + 3} className="h-4"></td>
+                </tr>
               </React.Fragment>
             ))}
           </tbody>
