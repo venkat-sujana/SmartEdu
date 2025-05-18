@@ -23,30 +23,29 @@ export default function AttendanceRecords() {
   const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 
   const fetchData = async () => {
-  let query = "/api/attendance/summary/daily-group?";
-  if (startDate) query += `start=${startDate}&`;
-  if (endDate) query += `end=${endDate}&`;
-  if (group) query += `group=${encodeURIComponent(group)}&`; // ✅ fixed here
+    let query = "/api/attendance/summary/daily-group?";
+    if (startDate) query += `start=${startDate}&`;
+    if (endDate) query += `end=${endDate}&`;
+    if (group) query += `group=${encodeURIComponent(group)}&`; // ✅ fixed here
 
-  try {
-    const res = await fetch(query);
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("API Error Response:", text);
-      return;
+    try {
+      const res = await fetch(query);
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("API Error Response:", text);
+        return;
+      }
+
+      const data = await res.json();
+      if (Array.isArray(data.data)) {
+        setRecords(data.data);
+      } else {
+        console.error("Unexpected response format", data);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
-
-    const data = await res.json();
-    if (Array.isArray(data.data)) {
-      setRecords(data.data);
-    } else {
-      console.error("Unexpected response format", data);
-    }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-};
-
+  };
 
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
@@ -62,7 +61,10 @@ export default function AttendanceRecords() {
     );
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance Summary");
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "GroupwiseAttendanceSummary.xlsx");
   };
@@ -89,28 +91,30 @@ export default function AttendanceRecords() {
     doc.save("GroupwiseAttendanceSummary.pdf");
   };
 
-
-
   // Calculate totals
-const totalPresent = records.reduce((sum, r) => sum + (r.present || 0), 0);
-const totalAbsent = records.reduce((sum, r) => sum + (r.absent || 0), 0);
-const totalAll = totalPresent + totalAbsent;
-const collegePercentage = totalAll === 0 ? 0 : ((totalPresent / totalAll) * 100).toFixed(2);
+  const totalPresent = records.reduce((sum, r) => sum + (r.present || 0), 0);
+  const totalAbsent = records.reduce((sum, r) => sum + (r.absent || 0), 0);
+  const totalAll = totalPresent + totalAbsent;
+  const collegePercentage =
+    totalAll === 0 ? 0 : ((totalPresent / totalAll) * 100).toFixed(2);
 
-
-// Inside AttendanceRecords component
-const today = new Date().toLocaleDateString("en-IN", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-});
-
-
+  // Inside AttendanceRecords component
+  const today = new Date().toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 
   return (
     <div className="max-w-6xl mx-auto p-4">
+
+      👉note: this is a computer generated report and does not require signature
+      <p className="text-sm font-semibold mb-4">
+        Date: {today} | Time: {new Date().toLocaleTimeString()}
+      </p>
+      
       <h2 className="text-2xl font-bold mb-4">
-        Group-wise Daily Attendance Summary
+        🧾Group-wise Daily Attendance Summary
       </h2>
 
       {/* Filters */}
@@ -153,7 +157,7 @@ const today = new Date().toLocaleDateString("en-IN", {
             onClick={fetchData}
             className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer"
           >
-            Apply Filters
+            🧃&nbsp;Apply Filters
           </button>
         </div>
       </div>
@@ -176,7 +180,7 @@ const today = new Date().toLocaleDateString("en-IN", {
         </button>
         <Link href="/attendance-form">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-            Attendance Form
+           📝&nbsp; Attendance Form
           </button>
         </Link>
 
@@ -189,116 +193,103 @@ const today = new Date().toLocaleDateString("en-IN", {
 
         <Link href="/attendance-records/individual">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-           Individual Attendance 
+            👤&nbsp;Individual Attendance
           </button>
         </Link>
 
         <Link href="/attendance-records/attendance-calendar">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-            Monthly Attendance 
+            📅&nbsp;Monthly Attendance
           </button>
         </Link>
 
         <Link href="/attendance-records/monthly-summary">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 mt-2 cursor-pointer">
-            Monthly Summary 
+           🧾&nbsp; Monthly Summary
           </button>
         </Link>
-
-
       </div>
 
       {/* Global Print Style */}
       <style jsx global>{`
-  @media print {
-    body * {
-      visibility: hidden;
-    }
+        @media print {
+          body * {
+            visibility: hidden;
+          }
 
-    .print-area, .print-area * {
-      visibility: visible;
-    }
+          .print-area,
+          .print-area * {
+            visibility: visible;
+          }
 
-    .print-area {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-    }
-  }
-`}</style>
+          .print-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+          }
+        }
+      `}</style>
 
+      <div className="print-area">
+        {/* Header Section */}
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-bold uppercase">
+            S.K.R. GOVERNMENT JUNIOR COLLEGE
+          </h1>
+          <p className="text-sm font-semibold">Attendance as on {today}</p>
 
+          {/* Records Table */}
+          <table className="table-auto w-full border mb-8">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border px-4 py-2">S.No</th>
+                <th className="border px-4 py-2">Date</th>
+                <th className="border px-4 py-2">Group</th>
+                <th className="border px-4 py-2">Present</th>
+                <th className="border px-4 py-2">Absent</th>
+                <th className="border px-4 py-2">Total</th>
+                <th className="border px-4 py-2">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((record, i) => (
+                <tr key={`${record.date}-${record.group}`}>
+                  <td className="border px-4 py-2">{i + 1}</td>
+                  <td className="border px-4 py-2">{record.date}</td>
+                  <td className="border px-4 py-2">{record.group}</td>
+                  <td className="border px-4 py-2">{record.present}</td>
+                  <td className="border px-4 py-2">{record.absent}</td>
+                  <td className="border px-4 py-2">{record.total}</td>
+                  <td className="border px-4 py-2">
+                    {record.percentage.toFixed(2)}%
+                  </td>
+                </tr>
+              ))}
 
-
-  <div className="print-area">
-  {/* Header Section */}
-  <div className="text-center mb-6">
-    <h1 className="text-xl font-bold uppercase">
-      S.K.R. GOVERNMENT JUNIOR COLLEGE
-    </h1>
-    <p className="text-sm font-semibold">
-      Attendance as on {today}
-    </p>
-  
-
-  
-
-
-
-
-
-
-      {/* Records Table */}
-      <table className="table-auto w-full border mb-8">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="border px-4 py-2">S.No</th>
-            <th className="border px-4 py-2">Date</th>
-            <th className="border px-4 py-2">Group</th>
-            <th className="border px-4 py-2">Present</th>
-            <th className="border px-4 py-2">Absent</th>
-            <th className="border px-4 py-2">Total</th>
-            <th className="border px-4 py-2">%</th>
-          </tr>
-        </thead>
-        <tbody>
-          {records.map((record, i) => (
-            <tr key={`${record.date}-${record.group}`}>
-              <td className="border px-4 py-2">{i + 1}</td>
-              <td className="border px-4 py-2">{record.date}</td>
-              <td className="border px-4 py-2">{record.group}</td>
-              <td className="border px-4 py-2">{record.present}</td>
-              <td className="border px-4 py-2">{record.absent}</td>
-              <td className="border px-4 py-2">{record.total}</td>
-              <td className="border px-4 py-2">
-                {record.percentage.toFixed(2)}%
-              </td>
-            </tr>
-          ))}
-
-          {/* ✅ College Total Row */}
-          <tr className="bg-green-100 font-semibold">
-            <td colSpan={3} className="border px-4 py-2 text-right">
-              College Total Attendance
-            </td>
-            <td className="border px-4 py-2">{totalPresent}</td>
-            <td className="border px-4 py-2">{totalAbsent}</td>
-            <td className="border px-4 py-2">{totalAll}</td>
-            <td className="border px-4 py-2">{collegePercentage}%</td>
-          </tr>
-        </tbody>
-      </table>
+              {/* ✅ College Total Row */}
+              <tr className="bg-green-100 font-semibold">
+                <td colSpan={3} className="border px-4 py-2 text-right">
+                  College Total Attendance
+                </td>
+                <td className="border px-4 py-2">{totalPresent}</td>
+                <td className="border px-4 py-2">{totalAbsent}</td>
+                <td className="border px-4 py-2">{totalAll}</td>
+                <td className="border px-4 py-2">{collegePercentage}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-semibold">
+            Note: This is a computer-generated report and does not require a
+            signature.
+          </p>
+          <p className="text-sm font-semibold">
+            For any discrepancies, please contact the administration.
+          </p>
+        </div>
       </div>
-      <div className="text-center">
-        <p className="text-sm font-semibold">
-          Note: This is a computer-generated report and does not require a signature.
-        </p>
-        <p className="text-sm font-semibold">
-          For any discrepancies, please contact the administration.
-        </p>
-      </div>
-    </div>
       {/* End of Header Section */}
     </div>
   );

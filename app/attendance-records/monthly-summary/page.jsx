@@ -91,37 +91,35 @@ export default function MonthlySummary() {
           onClick={handlePrint}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
         >
-          Print
+          <Printer className="inline mr-2" /> Print
         </button>
 
         <Link href="/attendance-form">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold cursor-pointer">
-            Attendance Form
+            📝&nbsp;Attendance Form
           </button>
         </Link>
 
         <Link href="/attendance-records">
           <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold cursor-pointer">
-            Attendance Records
+            🧾&nbsp;Attendance Records
           </button>
         </Link>
 
         <input
           type="text"
-          placeholder="Search Student"
+          placeholder="🔍&nbsp;Search Student"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="border px-3 py-2 rounded"
         />
-
-        
       </div>
 
       <div id="print-area">
         <table className="table-auto w-full border border-gray-300 shadow text-sm">
           <thead className="bg-green-600 text-white">
             <tr>
-              <th className="p-2 border">Student</th>
+              <th className="p-2 border">🧑‍🎓🧑‍🎓🧑‍🎓Students</th>
               {months.map((month) => (
                 <th key={month} className="p-2 border">
                   {month}
@@ -190,6 +188,7 @@ export default function MonthlySummary() {
                     })()}
                   </td>
                 </tr>
+              
               </React.Fragment>
             ))}
           </tbody>

@@ -11,7 +11,7 @@ export default function Home() {
         <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/attendance-form">
             <button className="w-full bg-cyan-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-              Attendance Form
+             📝&nbsp; Attendance Form
             </button>
           </Link>
         </div>
@@ -19,7 +19,7 @@ export default function Home() {
         <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/register">
             <button className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-              Admission Form
+              📝&nbsp;Admission Form
             </button>
           </Link>
         </div>
@@ -27,7 +27,7 @@ export default function Home() {
         <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/admin">
             <button className="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition cursor-pointer font-bold">
-              Admin
+             👤&nbsp; Admin
             </button>
           </Link>
         </div>

@@ -255,7 +255,7 @@ export default function StudentsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <input
           type="text"
-          placeholder="Search by Name"
+          placeholder="🔍&nbsp;Search by Name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border p-2 rounded font-bold"
@@ -343,19 +343,19 @@ export default function StudentsPage() {
 
         <Link href="/">
           <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold">
-            Home
+            🏠&nbsp;Home
           </button>
         </Link>
 
         <Link href="/dashboard">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
-            Dashboard
+           📊&nbsp; Dashboard
           </button>
         </Link>
 
         <Link href="/attendance-records">
           <button className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
-            Attendance Records
+            🧾&nbsp;Attendance Records
           </button>
         </Link>
       

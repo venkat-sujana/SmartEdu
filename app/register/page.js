@@ -102,7 +102,7 @@ export default function RegisterPage() {
            border-b-black 
            border-b-2"
            >
-         <Home className="inline mr-2" size={21} /> Home
+         <Home className="inline mr-2" size={21} color="yellow" /> Home
         </button>
       </Link>
       &nbsp;

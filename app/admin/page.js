@@ -18,7 +18,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className=" bg-cyan-100 flex flex-col items-center justify-center h-screen">
-      <h1 className="text-3xl font-bold mb-6">Admin Login</h1>
+      <h1 className="text-3xl font-bold mb-6">👤&nbsp;Admin Login</h1>
       <input
         type="password"
         placeholder="Enter Admin Password"
