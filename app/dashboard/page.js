@@ -125,7 +125,7 @@ export default function GroupDashboard() {
     const totalCount = data.reduce((sum, item) => sum + item.count, 0);
     return (
       <div className="mb-10 border shadow rounded-lg p-4 bg-white">
-        <h3 className="text-lg font-semibold text-center mb-4"><Users className="inline mr-2 " />{title}</h3>
+        <h3 className="text-lg font-semibold text-center mb-4">🧑‍🎓🧑‍🎓🧑‍🎓<Users className="inline mr-2 " />{title}</h3>
 
         {data.length === 0 ? (
           <p className="text-center text-red-500 font-medium">No data found</p>
@@ -203,7 +203,7 @@ export default function GroupDashboard() {
           <Plus className="mr-2 inline" size={18} />Register
         </button>
       </Link>
-      <h2 className="text-xl font-bold text-center print:text-left bg-amber-100 border-2 border-b-black border-b-2 p-4 rounded-lg mt-2">
+      <h2 className="text-xl font-bold text-center print:text-left bg-amber-100 border-2 border-b-black border-b-2 p-4 rounded-lg mt-2">🧑‍🎓🧑‍🎓🧑‍🎓
         <Users className="mr-1 inline" size={25} color="green" /> Admissions Enrolled as on{" "}
         {currentDate}
       </h2>

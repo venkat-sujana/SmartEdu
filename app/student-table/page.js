@@ -349,7 +349,7 @@ export default function StudentsPage() {
 
         <Link href="/dashboard">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
-           📊&nbsp; Dashboard
+            📊&nbsp; Dashboard
           </button>
         </Link>
 
@@ -358,10 +358,13 @@ export default function StudentsPage() {
             🧾&nbsp;Attendance Records
           </button>
         </Link>
-      
-      
-      
-      
+
+        <Link href="/exam-report">
+          <button className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+            📝&nbsp; Exam Report
+          </button>
+        </Link>
+
       </div>
 
       {/* Students Table */}
@@ -377,11 +380,11 @@ export default function StudentsPage() {
               <th className="px-4 py-2">Caste</th>
               <th className="px-4 py-2">Gender</th>
               <th className="px-4 py-2">DOB</th>
-              
+
               <th className="px-4 py-2">Admission Year</th>
               <th className="px-4 py-2">Admission Date</th>
-              <th className="px-4 py-2" >Admission No</th>
-              
+              <th className="px-4 py-2">Admission No</th>
+
               <th className="px-4 py-2">Address</th>
               <th className="px-3 py-2 border">Photo</th>
               <th className="px-4 py-2">Admission Certificate</th>
@@ -401,7 +404,6 @@ export default function StudentsPage() {
                 <td className="px-4 py-2">{s.caste}</td>
                 <td className="px-4 py-2">{s.gender}</td>
                 <td className="px-4 py-2">
-
                   {new Date(s.dob).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-2">{s.admissionYear}</td>
@@ -417,8 +419,7 @@ export default function StudentsPage() {
                   })}
                 </td>
 
-
-                <td className="px-4 py-2" >{s.admissionNo}</td>
+                <td className="px-4 py-2">{s.admissionNo}</td>
                 <td className="px-4 py-2">{s.address}</td>
 
                 <td className="px-3 py-2 border text-center">
