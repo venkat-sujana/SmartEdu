@@ -205,6 +205,7 @@ export default function GroupDashboard() {
         </button>
       </Link>
 
+      
       <a
         href="https://advanced-question-paper-tailwindcss.netlify.app/"
         target="_blank"
@@ -212,6 +213,33 @@ export default function GroupDashboard() {
         className="text-blue-600 underline hover:text-blue-800"
       >
         Visit Question Paper Generator App
+      </a>&emsp;&emsp;
+
+      <a
+        href="https://skr-learn-portal.netlify.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 underline hover:text-blue-800"
+      >
+        Visit skr learn portal App
+      </a>&emsp;&emsp;
+
+        <a
+        href="https://contract-salary-app.netlify.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 underline hover:text-blue-800"
+      >
+        Visit skr contract salary portal App
+      </a>&emsp;&emsp;
+
+      <a
+        href="https://skr-study-certificate.netlify.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 underline hover:text-blue-800"
+      >
+        Visit Study Certificate App
       </a>
 
 
