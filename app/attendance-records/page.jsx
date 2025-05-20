@@ -199,7 +199,7 @@ export default function AttendanceRecords() {
 
         <Link href="/attendance-records/attendance-calendar">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-            📅&nbsp;Monthly Attendance
+            📅&nbsp;Monthly Calendar View
           </button>
         </Link>
 

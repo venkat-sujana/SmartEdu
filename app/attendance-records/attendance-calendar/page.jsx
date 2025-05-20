@@ -81,7 +81,7 @@ export default function CalendarView() {
         👉Note:Attendance records are shown for the selected month and year.
       </p>
       <Link href="/attendance-form">
-        <button className="bg-cyan-600 text-white px-4 py-2 mb-2 rounded hover:bg-cyan-700 font-bold mr-2">
+        <button className="bg-cyan-600 text-white px-4 py-2 mb-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
          📝&nbsp; Attendance Form
         </button>
       </Link>

@@ -7,24 +7,21 @@ export default function Home() {
       {/* Button Cards */}
       <div className="absolute top-2 right-4 flex flex-col md:flex-row gap-2">
 
-        <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
-          
+        {/* <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/exams-form">
-            <button className="w-full bg-teal-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-             📝&nbsp; Exams Form
+            <button className="w-full bg-amber-900 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+              📝&nbsp;Marks Entry Form
             </button>
           </Link>
-        </div>
+        </div> */}
 
-
-
-        <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
+        {/* <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/attendance-form">
             <button className="w-full bg-cyan-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-             📝&nbsp; Attendance Form
+              📝&nbsp; Attendance Form
             </button>
           </Link>
-        </div>
+        </div> */}
 
         <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/register">
@@ -37,7 +34,7 @@ export default function Home() {
         <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/admin">
             <button className="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition cursor-pointer font-bold">
-             👤&nbsp; Admin
+              👤&nbsp; Admin
             </button>
           </Link>
         </div>

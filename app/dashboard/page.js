@@ -199,13 +199,26 @@ export default function GroupDashboard() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
       <Link href="/register">
-        <button className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition cursor-pointer border-b-black border-b-2">
-          <Plus className="mr-2 inline" size={18} />Register
+        <button className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition cursor-pointer border-b-black border-b-2 mr-2">
+          <Plus className="mr-2 inline" size={18} />
+          Register
         </button>
       </Link>
-      <h2 className="text-xl font-bold text-center print:text-left bg-amber-100 border-2 border-b-black border-b-2 p-4 rounded-lg mt-2">🧑‍🎓🧑‍🎓🧑‍🎓
-        <Users className="mr-1 inline" size={25} color="green" /> Admissions Enrolled as on{" "}
-        {currentDate}
+
+      <a
+        href="https://advanced-question-paper-tailwindcss.netlify.app/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 underline hover:text-blue-800"
+      >
+        Visit Question Paper Generator App
+      </a>
+
+
+      <h2 className="text-xl font-bold text-center print:text-left bg-amber-100 border-2 border-b-black border-b-2 p-4 rounded-lg mt-2">
+        🧑‍🎓🧑‍🎓🧑‍🎓
+        <Users className="mr-1 inline" size={25} color="green" /> Admissions
+        Enrolled as on {currentDate}
       </h2>
       {renderTable("Date-Wise Enrollment", dateWiseCounts)}
       {renderTable("Group-Wise Enrollment", groupCounts)}
