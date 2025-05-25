@@ -1,40 +1,40 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function ExamReportPage() {
   // const [students, setStudents] = useState([]);
   const [reports, setReports] = useState([]);
   const [filters, setFilters] = useState({
-    studentName: '',
-    stream: '',
-    academicYear: '',
-    examType: '',
+    studentName: "",
+    stream: "",
+    academicYear: "",
+    examType: "",
   });
 
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await fetch('/api/exams');
+        const res = await fetch("/api/exams");
         const data = await res.json();
         if (data.success) {
           setReports(data.data);
         }
       } catch (err) {
-        console.error('Error loading reports:', err);
+        console.error("Error loading reports:", err);
       }
     };
 
     const fetchStudents = async () => {
       try {
-        const res = await fetch('/api/students');
+        const res = await fetch("/api/students");
         const data = await res.json();
         // if (data.data) {
         //   setStudents(data.data);
         // }
       } catch (err) {
-        console.error('Error loading students:', err);
+        console.error("Error loading students:", err);
       }
     };
 
@@ -44,31 +44,81 @@ export default function ExamReportPage() {
 
   const filteredReports = reports.filter((report) => {
     const studentNameMatch = filters.studentName
-      ? report.student?.name?.toLowerCase().includes(filters.studentName.toLowerCase())
+      ? report.student?.name
+          ?.toLowerCase()
+          .includes(filters.studentName.toLowerCase())
       : true;
-    const streamMatch = filters.stream ? report.stream === filters.stream : true;
-    const yearMatch = filters.academicYear ? report.academicYear === filters.academicYear : true;
-    const examMatch = filters.examType ? report.examType === filters.examType : true;
+    const streamMatch = filters.stream
+      ? report.stream === filters.stream
+      : true;
+    const yearMatch = filters.academicYear
+      ? report.academicYear === filters.academicYear
+      : true;
+    const examMatch = filters.examType
+      ? report.examType === filters.examType
+      : true;
 
     return studentNameMatch && streamMatch && yearMatch && examMatch;
   });
 
-  const examTypes = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4', 'QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2'];
-  const columns = ['Tel/Sansk', 'English', 'Math/Bot/Civ', 'Math/Zool/His', 'Phy/Eco', 'Che/Com'];
+  const examTypes = [
+    "UNIT-1",
+    "UNIT-2",
+    "UNIT-3",
+    "UNIT-4",
+    "QUARTERLY",
+    "HALFYEARLY",
+    "PRE-PUBLIC-1",
+    "PRE-PUBLIC-2",
+  ];
+  // columns arrays based on stream
+  const generalColumns = [
+    "Tel/Sansk",
+    "English",
+    "Math/Bot/Civ",
+    "Math/Zool/His",
+    "Phy/Eco",
+    "Che/Com",
+  ];
+  const vocationalColumns = ["GFC", "English", "V1/V4", "V2/V5", "V3/V6"];
 
   return (
     <div className="p-6">
-                    <Link href="/student-table">
-                      <button className="w-50 bg-cyan-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
-                        📝&nbsp; Student-Table
-                      </button>
-                    </Link>
+      <Link href="/student-table">
+        <button className="w-50 bg-cyan-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
+          📝&nbsp; Student-Table
+        </button>
+      </Link>
       <Link href="/exams-form">
-        <button className="w-50 bg-teal-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+        <button className="w-50 bg-teal-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
           📝&nbsp; Exams Form
         </button>
       </Link>
-      <h2 className="text-2xl font-bold mb-4">Home Examinations Report</h2>
+      
+      <button
+        onClick={() => window.print()}
+        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition font-bold mb-4 cursor-pointer"
+      >
+        🖨️ Print Report
+      </button>
+<h2 className="text-2xl font-bold mb-4 ">Home Examinations Report</h2>
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #print-section,
+          #print-section * {
+            visibility: visible;
+          }
+          #print-section {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+        }
+      `}</style>
 
       {/* Filters */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -117,55 +167,152 @@ export default function ExamReportPage() {
           ))}
         </select>
       </div>
+      <div id="print-section">
+        {/* Report Table */}
+        <table className="table-auto w-full border border-black">
+          <thead>
+            <tr className="bg-black text-white">
+              <th className="border p-1">S.No</th>
+              <th className="border p-1">Name</th>
+              <th className="border p-1">Exam</th>
+              {(filteredReports[0]?.stream &&
+              ["M&AT", "CET", "MLT"].includes(filteredReports[0].stream)
+                ? vocationalColumns
+                : generalColumns
+              ).map((col, i) => (
+                <th key={i} className="border p-1">
+                  {col}
+                </th>
+              ))}
+              <th className="border p-1">Total</th>
+              <th className="border p-1">%</th>
+              <th className="border p-1">Status</th>
+            </tr>
+          </thead>
 
-      {/* Report Table */}
-      <table className="table-auto w-full border border-black">
-        <thead>
-          <tr className="bg-black text-white">
-            <th className="border p-1">S.No</th>
-            <th className="border p-1">Name</th>
-            <th className="border p-1">Exam</th>
-            {columns.map((col) => (
-              <th key={col} className="border p-1">
-                {col}
-              </th>
-            ))}
-            <th className="border p-1">Total</th>
-            <th className="border p-1">%</th>
-            <th className="border p-1">Remarks</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredReports.map((report, idx) => {
-            const subjectMarks =
-              report.generalSubjects || report.vocationalSubjects || {};
-            const total = Object.values(subjectMarks).reduce(
-              (sum, val) => sum + Number(val || 0),
-              0
-            );
-            const percentage =
-              Object.keys(subjectMarks).length > 0
-                ? (total / Object.keys(subjectMarks).length).toFixed(2)
-                : 0;
+          <tbody>
+            {filteredReports.map((report, idx) => {
+              const subjectMarks =
+                report.generalSubjects || report.vocationalSubjects || {};
+              const isVocational = ["M&AT", "CET", "MLT"].includes(
+                report.stream
+              );
+              const columnsToRender = isVocational
+                ? vocationalColumns
+                : generalColumns;
 
-            return (
-              <tr key={idx} className="text-center border">
-                <td className="border p-1">{idx + 1}</td>
-                <td className="border p-1">{report.student?.name || "N/A"}</td>
-                <td className="border p-1">{report.examType}</td>
-                {columns.map((sub, i) => (
-                  <td key={i} className="border p-1">
-                    {subjectMarks[`subject${i + 1}`] || ""}
+              // Check for "A", "AB", or 0
+              let isFail = false;
+
+              for (const mark of Object.values(subjectMarks)) {
+                const markStr = String(mark).toUpperCase();
+
+                // Check for absent (A/AB) or zero marks
+                if (markStr === "A" || markStr === "AB" || Number(mark) === 0) {
+                  isFail = true;
+                  break;
+                }
+
+                const numericMark = Number(mark);
+                if (!isNaN(numericMark)) {
+                  // Unit tests (max marks 25) - fail if <9
+                  if (
+                    ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(
+                      report.examType
+                    ) &&
+                    numericMark < 9
+                  ) {
+                    isFail = true;
+                    break;
+                  }
+
+                  // Quarterly/Halfyearly (max marks 50) - fail if <18
+                  if (
+                    ["QUARTERLY", "HALFYEARLY"].includes(report.examType) &&
+                    numericMark < 18
+                  ) {
+                    isFail = true;
+                    break;
+                  }
+
+                  // Pre-public (max marks 100) - fail if <35
+                  if (
+                    ["PRE-PUBLIC-1", "PRE-PUBLIC-2"].includes(
+                      report.examType
+                    ) &&
+                    numericMark < 35
+                  ) {
+                    isFail = true;
+                    break;
+                  }
+                }
+              }
+
+              // Calculate subjectCount once before percentage calculation
+
+              // Step 1: Total marks
+              const total = Object.values(subjectMarks).reduce((sum, val) => {
+                if (val === "A" || val === "AB") return sum;
+                return sum + Number(val || 0);
+              }, 0);
+
+              // Step 2: Subjects shown in UI
+              const subjectCount = columnsToRender.length;
+
+              // Step 3: Max marks per subject
+              let maxMarksPerSubject = 0;
+              if (
+                ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(
+                  report.examType
+                )
+              ) {
+                maxMarksPerSubject = 25;
+              } else if (
+                ["QUARTERLY", "HALFYEARLY"].includes(report.examType)
+              ) {
+                maxMarksPerSubject = 50;
+              } else {
+                maxMarksPerSubject = 100;
+              }
+
+              // Step 4: Calculate and format percentage in one line
+              const percentage =
+                subjectCount > 0
+                  ? (
+                      (total / (subjectCount * maxMarksPerSubject)) *
+                      100
+                    ).toFixed(2)
+                  : "0.00"; 
+
+              const status = isFail ? "Fail" : "Pass";
+
+              const rowClass =
+                status === "Fail" ? "bg-red-100" : "bg-green-100";
+
+              return (
+                <tr key={idx} className={`text-center border ${rowClass}`}>
+                  <td className="border p-1">{idx + 1}</td>
+                  <td className="border p-1">
+                    {report.student?.name || "N/A"}
                   </td>
-                ))}
-                <td className="border p-1">{total}</td>
-                <td className="border p-1">{percentage}</td>
-                <td className="border p-1">{report.remarks || ""}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  <td className="border p-1">{report.examType}</td>
+                  {columnsToRender.map((_, i) => (
+                    <td key={i} className="border p-1">
+                      {subjectMarks[`subject${i + 1}`] !== undefined &&
+                      subjectMarks[`subject${i + 1}`] !== null
+                        ? subjectMarks[`subject${i + 1}`]
+                        : ""}
+                    </td>
+                  ))}
+                  <td className="border p-1">{total}</td>
+                  <td className="border p-1">{percentage}</td>
+                  <td className="border p-1">{status}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+
 export default function ExamsFormPage() {
   const [students, setStudents] = useState([]);
   const [formData, setFormData] = useState({
@@ -10,25 +11,25 @@ export default function ExamsFormPage() {
     academicYear: "",
     examType: "",
     examDate: "",
-    subjects: {}, // dynamic subjects
+    subjects: {},
     total: 0,
     percentage: 0,
   });
   const [message, setMessage] = useState("");
 
-  // Fetch student list
+  const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
+  const vocationalStreams = ["M&AT", "CET", "MLT"];
+
+  const generalSubjects = ["subject1", "subject2", "subject3", "subject4", "subject5", "subject6"];
+  const vocationalSubjects = ["subject1", "subject2", "subject3", "subject4", "subject5"];
+
+  // Fetch students
   useEffect(() => {
-    console.log("Form Data Changed:", formData);
     const fetchStudents = async () => {
       try {
         const res = await fetch("/api/students");
         const json = await res.json();
-        if (Array.isArray(json.data)) {
-          setStudents(json.data);
-        } else {
-          console.error("Invalid student format", json);
-          setStudents([]);
-        }
+        setStudents(Array.isArray(json.data) ? json.data : []);
       } catch (err) {
         console.error("Error fetching students:", err);
       }
@@ -36,32 +37,41 @@ export default function ExamsFormPage() {
     fetchStudents();
   }, []);
 
+  const filteredStudents = formData.stream
+    ? students.filter(
+        (s) => s.group?.toLowerCase() === formData.stream.toLowerCase()
+      )
+    : [];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Subjects logic
     if (name.startsWith("subject_")) {
       const subjectKey = name.replace("subject_", "");
-      const subjectValue = Number(value);
+      const subjectValue = value.toUpperCase();
 
       setFormData((prev) => {
         const updatedSubjects = {
           ...prev.subjects,
-          [subjectKey]: subjectValue,
+          [subjectKey]:
+            subjectValue === "A" || subjectValue === "AB"
+              ? subjectValue
+              : Number(subjectValue),
         };
+
         const subjectMarks = Object.values(updatedSubjects);
-        const totalMarks = subjectMarks.reduce(
-          (sum, val) => sum + (Number(val) || 0),
-          0
-        );
+        const validMarks = subjectMarks.filter((v) => typeof v === "number");
+        const totalMarks = validMarks.reduce((sum, val) => sum + val, 0);
         const percent =
-          subjectMarks.length > 0 ? totalMarks / subjectMarks.length : 0;
+          validMarks.length > 0
+            ? (totalMarks / validMarks.length).toFixed(2)
+            : 0;
 
         return {
           ...prev,
           subjects: updatedSubjects,
           total: totalMarks,
-          percentage: percent.toFixed(2),
+          percentage: percent,
         };
       });
     } else {
@@ -102,46 +112,24 @@ export default function ExamsFormPage() {
     }
   };
 
+  // Choose subjects based on stream
+  const subjectsToRender = generalStreams.includes(formData.stream)
+    ? generalSubjects
+    : vocationalStreams.includes(formData.stream)
+    ? vocationalSubjects
+    : [];
+
   return (
     <div className="max-w-2xl mx-auto p-4 bg-white shadow rounded">
       <Link href="/">
-        <button className="w-50 bg-cyan-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
-          🏠&nbsp;Home
+        <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition font-bold mb-4">
+          🏠 Home
         </button>
       </Link>
 
-      {/* <Link href="/student-table">
-        <button className="w-50 bg-cyan-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
-          📝&nbsp; Student-Table
-        </button>
-      </Link>
-
-      <Link href="/exam-report">
-        <button className="w-50 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-          📝&nbsp; Exam Report
-        </button>
-      </Link> */}
       <h2 className="text-xl font-bold mb-4">Home Exam Marks Entry Form</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Student */}
-        <div>
-          <label className="block font-medium">Student</label>
-          <select
-            name="studentId"
-            value={formData.studentId}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          >
-            <option value="">-- Select Student --</option>
-            {students.map((s) => (
-              <option key={s._id} value={s._id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {/* Stream */}
         <div>
           <label className="block font-medium">Stream</label>
@@ -152,13 +140,34 @@ export default function ExamsFormPage() {
             className="w-full border p-2 rounded"
           >
             <option value="">-- Select Stream --</option>
-            {["MPC", "BIPC", "CEC", "HEC", "M&AT", "CET", "MLT"].map(
-              (stream) => (
-                <option key={stream} value={stream}>
-                  {stream}
-                </option>
-              )
-            )}
+            {[...generalStreams, ...vocationalStreams].map((stream) => (
+              <option key={stream} value={stream}>
+                {stream}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Student */}
+        <div>
+          <label className="block font-medium">Student</label>
+          <select
+            name="studentId"
+            value={formData.studentId}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+            disabled={!formData.stream}
+          >
+            <option value="">
+              {formData.stream
+                ? "-- Select Student --"
+                : "-- Select Stream First --"}
+            </option>
+            {filteredStudents.map((s) => (
+              <option key={s._id} value={s._id}>
+                {s.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -216,40 +225,26 @@ export default function ExamsFormPage() {
           />
         </div>
 
-        {/* Subjects */}
+        {/* Subjects based on Stream */}
         <div>
           <label className="block font-medium mb-1">Subjects & Marks</label>
-          {[
-            "subject1",
-            "subject2",
-            "subject3",
-            "subject4",
-            "subject5",
-            "subject6",
-          ].map((subject) => (
+          {subjectsToRender.map((subject) => (
             <input
               key={subject}
-              type="number"
+              type="text"
               name={`subject_${subject}`}
               placeholder={`Enter ${subject} marks`}
-              value={formData.subjects[subject] || ""}
+              value={
+                formData.subjects[subject] === 0 ||
+                formData.subjects[subject] === "0"
+                  ? "0"
+                  : formData.subjects[subject] || ""
+              }
               onChange={handleChange}
               className="w-full border p-2 rounded mb-2"
             />
           ))}
         </div>
-
-        {/* Total and Percentage */}
-        {/* <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block font-medium">Total</label>
-            <input type="text" value={formData.total} readOnly className="w-full border p-2 bg-gray-100 rounded" />
-          </div>
-          <div className="flex-1">
-            <label className="block font-medium">Percentage</label>
-            <input type="text" value={formData.percentage} readOnly className="w-full border p-2 bg-gray-100 rounded" />
-          </div>
-        </div> */}
 
         <button
           type="submit"
