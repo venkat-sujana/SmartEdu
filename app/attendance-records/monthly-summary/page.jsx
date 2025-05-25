@@ -71,7 +71,7 @@ export default function MonthlySummary() {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4  items-center">Monthly Attendance Summary-2025</h2>
+      <h2 className="text-2xl font-bold mb-8 flex items-center justify-center">Monthly Attendance Summary-2025</h2>
 
       <div className="mb-4 flex gap-4 items-center">
         <select

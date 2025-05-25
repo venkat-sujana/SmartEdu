@@ -137,8 +137,8 @@ export default function RegisterPage() {
           S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR
         </h1>
         <h2 className="text-xl font-bold mb-4 text-white bg-blue-600 text-center">
-          <Users className="inline" color="white" />
-          &nbsp;Student Admission Form
+          
+          🧑‍🎓🧑‍🎓&nbsp;Student Admission Form-2025
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -109,12 +109,14 @@ export default function AttendanceRecords() {
     <div className="max-w-6xl mx-auto p-4">
 
       👉note: this is a computer generated report and does not require signature
-      <p className="text-sm font-semibold mb-4">
+      <p className="text-sm font-semibold mb-4 flex items-center justify-center">
+        <span className="text-gray-600">Generated on</span>
         Date: {today} | Time: {new Date().toLocaleTimeString()}
       </p>
       
-      <h2 className="text-2xl font-bold mb-4">
-        🧾Group-wise Daily Attendance Summary
+      <h2 className="text-2xl font-bold mb-4 flex items-center justify-center">
+        
+        🧾Group-wise Daily Attendance Summary-2025
       </h2>
 
       {/* Filters */}

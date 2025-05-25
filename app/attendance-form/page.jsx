@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,17 +11,13 @@ const AttendanceForm = () => {
   const [attendanceData, setAttendanceData] = useState({});
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // 🔄 Spinner state
+  const [isLoading, setIsLoading] = useState(false);
 
   const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
   const monthsList = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
   ];
-  const currentYear = new Date().getFullYear();
-  const yearsList = Array.from({ length: 6 }, (_, i) => currentYear - 2 + i);
 
   useEffect(() => {
     fetch("/api/students")
@@ -68,7 +65,7 @@ const AttendanceForm = () => {
       year,
     }));
 
-    setIsLoading(true); // Show spinner
+    setIsLoading(true);
     const toastId = toast.loading("Submitting attendance...");
 
     try {
@@ -91,8 +88,7 @@ const AttendanceForm = () => {
   };
 
   return (
-    <div className="relative">
-      {/* 🔄 Full Page Overlay Spinner */}
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-100 to-white ">
       {isLoading && (
         <div className="fixed inset-0 z-50 bg-white bg-opacity-80 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
@@ -101,21 +97,19 @@ const AttendanceForm = () => {
 
       <Toaster position="top-center" />
 
-              
-
       <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
-        <h1 className="text-2xl font-bold mb-4">Attendance Form</h1>
+        <h1 className="text-2xl font-bold mb-4 flex items-center justify-center">Attendance Form-2025</h1>
         <p className="text-gray-600 mb-4">
           👉 Note:-Please select a date, group, and ensure students are visible.
         </p>
 
         <h2 className="text-xl font-bold mb-4">Mark Attendance</h2>
 
-              <Link href="/">
-                <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-                 🏠&nbsp; Home
-                </button>
-              </Link>
+        <Link href="/">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
+            🏠&nbsp; Home
+          </button>
+        </Link>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Date</label>
@@ -142,40 +136,6 @@ const AttendanceForm = () => {
               </option>
             ))}
           </select>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Month</label>
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="mt-1 block w-full border rounded-md px-3 py-2"
-            >
-              <option value="">Select Month</option>
-              {monthsList.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Year</label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="mt-1 block w-full border rounded-md px-3 py-2"
-            >
-              <option value="">Select Year</option>
-              {yearsList.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {filteredStudents.length > 0 && (
