@@ -246,7 +246,7 @@ export default function StudentsPage() {
   const pageCount = Math.ceil(filteredStudents.length / studentsPerPage);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-8xl mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-center">
         S.K.R.GOVERNMENT JUNIOR COLLEGE
       </h1>
@@ -348,8 +348,8 @@ export default function StudentsPage() {
         </Link>
 
         <Link href="/dashboard">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
-            📊&nbsp; Dashboard
+          <button className="bg-lime-800 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
+            🖥️&nbsp; Dashboard
           </button>
         </Link>
 

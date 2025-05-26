@@ -24,6 +24,14 @@ export default function Home() {
         </div> */}
 
         <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
+          <Link href="/login">
+            <button className="w-full bg-slate-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+              📝&nbsp; Lecturer Login
+            </button>
+          </Link>
+        </div>
+
+        <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
           <Link href="/register">
             <button className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
               📝&nbsp;Admission Form
@@ -51,7 +59,7 @@ export default function Home() {
           priority
         />
       </div>
-      <h1 className="text-4xl text-black font-bold mt-2">Welcome to OSRA</h1>
+      <h1 className="text-4xl text-black font-bold mt-2">Welcome to 🧑‍🏫&nbsp;OSRA</h1>
       <h2 className="text-2xl text-black font-semibold mt-4">
         Online Student Registration App
       </h2>

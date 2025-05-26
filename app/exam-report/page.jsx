@@ -85,12 +85,12 @@ export default function ExamReportPage() {
   return (
     <div className="p-6">
       <Link href="/student-table">
-        <button className="w-50 bg-cyan-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
+        <button className="w-50 bg-cyan-600 mb-2 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
           📝&nbsp; Student-Table
         </button>
       </Link>
       <Link href="/exams-form">
-        <button className="w-50 bg-teal-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
+        <button className="w-50 bg-teal-600 mb-2 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
           📝&nbsp; Exams Form
         </button>
       </Link>
@@ -101,7 +101,7 @@ export default function ExamReportPage() {
       >
         🖨️ Print Report
       </button>
-<h2 className="text-2xl font-bold mb-4 ">Home Examinations Report</h2>
+<h1 className="text-2xl font-bold mb-4 flex items-center justify-center ">Home Examinations Report</h1>
       <style jsx global>{`
         @media print {
           body * {
@@ -171,7 +171,7 @@ export default function ExamReportPage() {
         {/* Report Table */}
         <table className="table-auto w-full border border-black">
           <thead>
-            <tr className="bg-black text-white">
+            <tr className="bg-blue-600 text-white">
               <th className="border p-1">S.No</th>
               <th className="border p-1">Name</th>
               <th className="border p-1">Exam</th>

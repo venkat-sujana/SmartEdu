@@ -99,6 +99,9 @@ const generateCaretakerCertificatePDF = async (student) => {
       "%",
       "Remarks",
     ];
+
+
+    
     const examData = Array(7)
       .fill(["", "", "", "", "", "", "", "", "", ""])
       .map((row, i) => [
