@@ -14,18 +14,20 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    const res = await fetch("/api/lecturers/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      localStorage.setItem("token", data.token);
-      router.push("/lecturer/dashboard");
-    } else {
-      setError(data.message || "Login failed. Please try again.");
+      if (res?.error) {
+        setError(res.error);
+      } else {
+        router.push("/lecturer/dashboard");
+      }
+    } catch (err) {
+      setError("Login failed. Please try again.");
     }
   };
 
