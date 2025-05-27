@@ -1,4 +1,4 @@
-// next.config.js (ESM style)
+//next.config.js (ESM style)
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -11,3 +11,4 @@ const nextConfig = {
 };
 
 export default nextConfig;
+
