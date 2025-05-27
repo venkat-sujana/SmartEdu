@@ -6,7 +6,10 @@
 
 import { NextResponse } from 'next/server';
 import connectMongoDB from '@/lib/mongodb';
-import Exam from '@/models/Exam';
+import Exam from "@/models/Exam"; // ✅ CORRECT
+
+
+
 
 export async function POST(req) {
   try {

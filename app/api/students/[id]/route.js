@@ -1,4 +1,4 @@
-import connectDB from "@/lib/mongodb";
+import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
@@ -30,7 +30,7 @@ function getPublicIdFromUrl(url) {
 
 export async function GET(req, { params }) {
   try {
-    await connectDB();
+    await connectMongoDB();
     const student = await Student.findById(params.id);
     if (!student) {
       return NextResponse.json(
