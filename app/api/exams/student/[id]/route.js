@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
-import Exam from "@/models/Exam"; // ✅ CORRECT
+import Exam from "@/models/Exam"; 
 
 
 

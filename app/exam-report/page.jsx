@@ -1,3 +1,5 @@
+//app/exam-report/page.jsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -30,9 +32,6 @@ export default function ExamReportPage() {
       try {
         const res = await fetch("/api/students");
         const data = await res.json();
-        // if (data.data) {
-        //   setStudents(data.data);
-        // }
       } catch (err) {
         console.error("Error loading students:", err);
       }
@@ -71,6 +70,8 @@ export default function ExamReportPage() {
     "PRE-PUBLIC-1",
     "PRE-PUBLIC-2",
   ];
+
+  // Define general and vocational
   // columns arrays based on stream
   const generalColumns = [
     "Tel/Sansk",
@@ -94,14 +95,16 @@ export default function ExamReportPage() {
           📝&nbsp; Exams Form
         </button>
       </Link>
-      
+
       <button
         onClick={() => window.print()}
         className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition font-bold mb-4 cursor-pointer"
       >
         🖨️ Print Report
       </button>
-<h1 className="text-2xl font-bold mb-4 flex items-center justify-center ">Home Examinations Report</h1>
+      <h1 className="text-2xl font-bold mb-4 flex items-center justify-center ">
+        Home Examinations Report
+      </h1>
       <style jsx global>{`
         @media print {
           body * {
@@ -282,7 +285,7 @@ export default function ExamReportPage() {
                       (total / (subjectCount * maxMarksPerSubject)) *
                       100
                     ).toFixed(2)
-                  : "0.00"; 
+                  : "0.00";
 
               const status = isFail ? "Fail" : "Pass";
 

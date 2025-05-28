@@ -20,8 +20,8 @@ export default function ExamsFormPage() {
 
   const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
   const vocationalStreams = ["M&AT", "CET", "MLT"];
-  const generalSubjects = ["subject1", "subject2", "subject3", "subject4", "subject5", "subject6"];
-  const vocationalSubjects = ["subject1", "subject2", "subject3", "subject4", "subject5"];
+  const generalSubjects = ["Tel/Sansk", "English", "Math/Bot/Civ", "Math/Zoo/His", "Phy/Com", "Che/Com"];
+  const vocationalSubjects = ["GFC", "Eng", "V1/V4", "V2/V5", "V3/V6"];
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -40,35 +40,36 @@ export default function ExamsFormPage() {
     ? students.filter((s) => s.group?.toLowerCase() === formData.stream.toLowerCase())
     : [];
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+const handleChange = (e) => {
+  const { name, value } = e.target;
 
-    if (name.startsWith("subject_")) {
-      const subjectKey = name.replace("subject_", "");
-      const subjectValue = value.toUpperCase();
+  if (name.startsWith("subject_")) {
+    const subjectKey = name.replace("subject_", "");
+    const subjectValue = value.toUpperCase().trim();
 
-      setFormData((prev) => {
-        const updatedSubjects = {
-          ...prev.subjects,
-          [subjectKey]: subjectValue === "A" || subjectValue === "AB" ? subjectValue : Number(subjectValue),
-        };
+    setFormData((prev) => {
+      const updatedSubjects = {
+        ...prev.subjects,
+        [subjectKey]: subjectValue === "A" || subjectValue === "AB" ? subjectValue : isNaN(Number(subjectValue)) ? "" : Number(subjectValue),
+      };
 
-        const subjectMarks = Object.values(updatedSubjects);
-        const validMarks = subjectMarks.filter((v) => typeof v === "number");
-        const totalMarks = validMarks.reduce((sum, val) => sum + val, 0);
-        const percent = validMarks.length > 0 ? (totalMarks / validMarks.length).toFixed(2) : 0;
+      const subjectMarks = Object.values(updatedSubjects);
+      const validMarks = subjectMarks.filter((v) => typeof v === "number" && !isNaN(v));
+      const totalMarks = validMarks.reduce((sum, val) => sum + val, 0);
+      const percent = validMarks.length > 0 ? (totalMarks / validMarks.length).toFixed(2) : 0;
 
-        return {
-          ...prev,
-          subjects: updatedSubjects,
-          total: totalMarks,
-          percentage: percent,
-        };
-      });
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
+      return {
+        ...prev,
+        subjects: updatedSubjects,
+        total: totalMarks,
+        percentage: percent,
+      };
+    });
+  } else {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
