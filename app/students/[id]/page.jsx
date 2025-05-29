@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 // import Lecturer from "@/models/Lecturer";
+import Link from "next/link";
 
 export default function StudentProfilePage() {
   const { id } = useParams();
@@ -69,7 +70,11 @@ export default function StudentProfilePage() {
   return (
     <div className="p-6 max-w-6xl mx-auto">
 
-    
+            <Link href="/">
+              <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold">
+                🏠&nbsp;Home
+              </button>
+            </Link>
       {/* College Header */}
 <div className="text-center mb-6">
   

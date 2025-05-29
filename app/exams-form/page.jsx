@@ -20,7 +20,7 @@ export default function ExamsFormPage() {
 
   const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
   const vocationalStreams = ["M&AT", "CET", "MLT"];
-  const generalSubjects = ["Tel/Sansk", "English", "Math/Bot/Civ", "Math/Zoo/His", "Phy/Com", "Che/Com"];
+  const generalSubjects = ["Tel/Sansk", "English", "Math/Bot/Civ", "Math/Zoo/His", "Phy/Eco", "Che/Com"];
   const vocationalSubjects = ["GFC", "Eng", "V1/V4", "V2/V5", "V3/V6"];
 
   useEffect(() => {

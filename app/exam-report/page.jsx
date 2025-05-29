@@ -77,11 +77,11 @@ export default function ExamReportPage() {
     "Tel/Sansk",
     "English",
     "Math/Bot/Civ",
-    "Math/Zool/His",
+    "Math/Zoo/His",
     "Phy/Eco",
     "Che/Com",
   ];
-  const vocationalColumns = ["GFC", "English", "V1/V4", "V2/V5", "V3/V6"];
+  const vocationalColumns = ["GFC", "Eng", "V1/V4", "V2/V5", "V3/V6"];
 
   return (
     <div className="p-6">
@@ -299,14 +299,16 @@ export default function ExamReportPage() {
                     {report.student?.name || "N/A"}
                   </td>
                   <td className="border p-1">{report.examType}</td>
-                  {columnsToRender.map((_, i) => (
-                    <td key={i} className="border p-1">
-                      {subjectMarks[`subject${i + 1}`] !== undefined &&
-                      subjectMarks[`subject${i + 1}`] !== null
-                        ? subjectMarks[`subject${i + 1}`]
-                        : ""}
-                    </td>
-                  ))}
+
+{columnsToRender.map((subject, i) => (
+  <td key={i} className="border p-1">
+    {subjectMarks[subject] !== undefined &&
+    subjectMarks[subject] !== null
+      ? subjectMarks[subject]
+      : ""}
+  </td>
+))}
+
                   <td className="border p-1">{total}</td>
                   <td className="border p-1">{percentage}</td>
                   <td className="border p-1">{status}</td>
