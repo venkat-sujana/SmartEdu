@@ -2,15 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-// import Lecturer from "@/models/Lecturer";
 import Link from "next/link";
+import AttendanceSummaryTable from "@/app/attendance-summary-table/page";
 
 export default function StudentProfilePage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params.id; // Get id from useParams()
   const [student, setStudent] = useState(null);
   const [exams, setExams] = useState([]);
   const [attendance, setAttendance] = useState([]);
-
 
   useEffect(() => {
     if (!id) return;
@@ -25,7 +25,10 @@ export default function StudentProfilePage() {
 
     fetch(`/api/attendance/student/${id}`)
       .then((res) => res.json())
-      .then((data) => setAttendance(data));
+      .then((data) => {
+        console.log("Attendance response:", data);
+        setAttendance(data.data || []);
+      });
   }, [id]);
 
   const isGeneral = (group) =>
@@ -38,11 +41,10 @@ export default function StudentProfilePage() {
     const type = examType.toLowerCase();
 
     if (["unit-1", "unit-2", "unit-3", "unit-4"].includes(type)) return 25;
-    if (["quarterly", "half-yearly","halfyearly"].includes(type)) return 50;
+    if (["quarterly", "half-yearly", "halfyearly"].includes(type)) return 50;
     if (["pre-public-1", "pre-public-2"].includes(type)) {
       return streamType === "general" ? 100 : 50;
     }
-
     return 0;
   };
 
@@ -69,59 +71,61 @@ export default function StudentProfilePage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      <Link href="/">
+        <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold mr-2">
+          🏠&nbsp;Home
+        </button>
+      </Link>
 
-            <Link href="/">
-              <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold">
-                🏠&nbsp;Home
-              </button>
-            </Link>
-      {/* College Header */}
-<div className="text-center mb-6">
-  
-  <h1 className="text-xl md:text-2xl font-bold uppercase">
-    S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR
-  </h1>
-  <p className="italic text-sm">
-    THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt
-  </p>
-  <h2 className="font-bold mt-1 uppercase">Care Taker</h2>
-</div>
+      <Link href="/exams-form">
+        <button className="bg-slate-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold mr-2 ">
+          🏠&nbsp;Exam Form
+        </button>
+      </Link>
+
+      <Link href="/attendance-form">
+        <button className="bg-amber-800 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold mr-2">
+          🏠&nbsp;Attendance Form
+        </button>
+      </Link>
+
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h1 className="text-xl md:text-2xl font-bold uppercase">
+          S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR
+        </h1>
+        <p className="italic text-sm">THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt</p>
+        <h2 className="font-bold mt-1 uppercase">Care Taker</h2>
+      </div>
 
       <h1 className="text-2xl font-bold mb-6">Student Profile</h1>
 
-      {/* Profile Info Section */}
+      {/* Student Info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start mb-8">
-  {/* Left: Student Info */}
-  <div className="space-y-1 text-sm">
-    <p><strong>Name:</strong> {student.name}</p>
-    <p><strong>Father:</strong> {student.fatherName}</p>
-    <p><strong>Group:</strong> {student.group}</p>
-    <p><strong>Admission No:</strong> {student.admissionNo}</p>
-    <p><strong>Mobile:</strong> {student.mobile}</p>
-    <p><strong>Caste:</strong> {student.caste}</p>
-    <p><strong>Address:</strong> {student.address}</p>
-  </div>
+        <div className="space-y-1 text-sm">
+          <p><strong>Name:</strong> {student.name}</p>
+          <p><strong>Father:</strong> {student.fatherName}</p>
+          <p><strong>Group:</strong> {student.group}</p>
+          <p><strong>Admission No:</strong> {student.admissionNo}</p>
+          <p><strong>Mobile:</strong> {student.mobile}</p>
+          <p><strong>Caste:</strong> {student.caste}</p>
+          <p><strong>Address:</strong> {student.address}</p>
+        </div>
 
-  {/* Center: Logo */}
-  <div className="flex justify-center items-center">
-    <img
-      src="/images/apbise.png"
-      alt="Board Logo"
-      className="w-30  h-30 object-contain"
-    />
-  </div>
+        <div className="flex justify-center items-center">
+          <img src="/images/apbise.png" alt="Board Logo" className="w-30 h-30 object-contain" />
+        </div>
 
-  {/* Right: Student Photo */}
-  <div className="flex justify-end">
-    <img
-      src={student.photo || "/student-placeholder.png"}
-      alt="Student"
-      className="w-40 h-48 object-cover border rounded"
-    />
-  </div>
-</div>
+        <div className="flex justify-end">
+          <img
+            src={student.photo || "/student-placeholder.png"}
+            alt="Student"
+            className="w-40 h-48 object-cover border rounded"
+          />
+        </div>
+      </div>
 
-      {/* Exams in 3x3 grid */}
+      {/* Exams Summary */}
       <h2 className="text-lg font-semibold mb-3">Exam Summary</h2>
       {exams.length === 0 ? (
         <p className="text-gray-500">No exam records available.</p>
@@ -140,10 +144,7 @@ export default function StudentProfilePage() {
             );
 
             return (
-              <div
-                key={i}
-                className="border rounded-lg p-3 shadow-sm bg-white"
-              >
+              <div key={i} className="border rounded-lg p-3 shadow-sm bg-white">
                 <h3 className="font-bold text-sm mb-2">{e.examType}</h3>
                 <p><strong>Total:</strong> {total}</p>
                 <p><strong>Percentage:</strong> {percentage}%</p>
@@ -182,32 +183,10 @@ export default function StudentProfilePage() {
         </div>
       )}
 
-      {/* Attendance Summary */}
-      <h2 className="text-lg font-semibold mb-2">Attendance Summary</h2>
-      {attendance.length === 0 ? (
-        <p className="text-gray-500">No attendance data available.</p>
-      ) : (
-        <table className="w-full border text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border p-1">Date</th>
-              <th className="border p-1">Status</th>
-              <th className="border p-1">Group</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendance.map((a, i) => (
-              <tr key={i}>
-                <td className="border p-1">{new Date(a.date).toLocaleDateString()}</td>
-                <td className={`border p-1 ${a.status === "Present" ? "text-green-600" : "text-red-500"}`}>
-                  {a.status}
-                </td>
-                <td className="border p-1">{a.group}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <div className="p-4">
+        <h1 className="text-xl font-bold mb-2">Monthly Attendance Summary</h1>
+        <AttendanceSummaryTable studentId={id} />
+      </div>
     </div>
   );
 }

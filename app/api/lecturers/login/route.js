@@ -32,6 +32,8 @@ export async function POST(req) {
     name: lecturer.name,   // ✅ add this
     email: lecturer.email,
     role: lecturer.role,
+    subject: lecturer.subject, // ✅ add this
+    assignedGroups: lecturer.assignedGroups, // ✅ add this
   },
   JWT_SECRET,
   { expiresIn: "1d" }
@@ -43,6 +45,8 @@ export async function POST(req) {
       name: lecturer.name,
       email: lecturer.email,
       role: lecturer.role,
+      subject: lecturer.subject,
+      assignedGroups: lecturer.assignedGroups,
     }});
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });

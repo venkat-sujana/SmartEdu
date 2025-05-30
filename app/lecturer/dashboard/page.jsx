@@ -42,12 +42,12 @@ export default function LecturerDashboard() {
   }, []);
 
   if (!lecturer) return <div className="p-4">Loading dashboard...</div>;
-
+  
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-4 flex items-center justify-center">
-        Welcome, {lecturer.name}
-      </h1>
+        Welcome, {lecturer.name} - {lecturer.email} ({lecturer.role})
+       </h1>
 
       <div className="bg-white shadow rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-2 flex items-center justify-center">
@@ -79,7 +79,7 @@ export default function LecturerDashboard() {
               {students.map((s, index) => (
                 <tr key={s._id} className="border-b">
                   <td className="p-2 border text-center">{index + 1}</td>{" "}
-                  {/* ✅ S. No */}
+                
                   <td className="p-2 border">{s.name}</td>
                   <td className="p-2 border">{s.fatherName}</td>
                   <td className="p-2 border">

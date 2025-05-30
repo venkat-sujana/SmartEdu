@@ -19,6 +19,7 @@ const lecturerSchema = new mongoose.Schema({
   },
   subject: {
     type: String,
+    required: true,
   },
   assignedGroups: {
     type: [String], // Example: ["MPC", "HEC"]
