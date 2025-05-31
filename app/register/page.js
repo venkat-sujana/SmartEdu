@@ -1,3 +1,4 @@
+//app/register/page.jsx
 "use client";
 import { useState } from "react";
 import Link from "next/link";
@@ -16,6 +17,7 @@ export default function RegisterPage() {
     dob: "",
     gender: "",
     admissionNo: "",
+    yearOfStudy: "",
     admissionYear: "",
     address: "",
     photo: null,
@@ -44,6 +46,7 @@ export default function RegisterPage() {
     form.append("dob", formData.dob);
     form.append("gender", formData.gender);
     form.append("admissionNo", formData.admissionNo);
+    form.append("yearOfStudy", formData.yearOfStudy);
     form.append("admissionYear", formData.admissionYear);
     form.append("address", formData.address);
 
@@ -92,7 +95,8 @@ export default function RegisterPage() {
     <div className="relative">
       <Link href="/">
         {/* Dashboard Button */}
-        <button className="bg-green-600
+        <button
+          className="bg-green-600
          text-white 
          px-4 py-2 mb-4 
          font-bold  
@@ -101,8 +105,8 @@ export default function RegisterPage() {
           transition cursor-pointer
            border-b-black 
            border-b-2"
-           >
-         <Home className="inline mr-2" size={21} color="yellow" /> Home
+        >
+          <Home className="inline mr-2" size={21} color="yellow" /> Home
         </button>
       </Link>
       &nbsp;
@@ -137,7 +141,6 @@ export default function RegisterPage() {
           S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR
         </h1>
         <h2 className="text-xl font-bold mb-4 text-white bg-blue-600 text-center">
-          
           🧑‍🎓🧑‍🎓&nbsp;Student Admission Form-2025
         </h2>
 
@@ -241,6 +244,19 @@ export default function RegisterPage() {
             className="w-full p-1 border rounded font-bold"
             required
           />
+
+          <select
+            name="yearOfStudy"
+            value={formData.yearOfStudy}
+            onChange={handleChange}
+            className="w-full p-1 border rounded"
+            required
+          >
+            <option value="">Select Year of Study</option>
+            <option value="First Year">First Year</option>
+            <option value="Second Year">Second Year</option>
+          </select>
+
           <label className="text-sm text-gray-600">Admission Year</label>
           <input
             type="number"

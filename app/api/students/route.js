@@ -1,9 +1,8 @@
 // app/api/students/route.js
+
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 import cloudinary from "@/lib/cloudinary";
-import { writeFile } from "fs/promises";
-import path from "path";
 
 export const config = {
   api: {

@@ -13,7 +13,7 @@ import Image from "next/image";
 import generateAdmissionCertificatePDF from "../admission-certificate/page";
 import generateStudyCertificatePDF from "../study-certificate/page";
 import generateCaretakerCertificatePDF from "../caretaker-form/page";
-import AttendanceRecords from "../attendance-records/page";
+
 
 
 import {
@@ -34,7 +34,7 @@ export default function StudentsPage() {
     group: "",
     caste: "",
     gender: "",
-    admissionYear: "",
+    yearOfStudy: "",
   });
 
   const [editingStudent, setEditingStudent] = useState(null);
@@ -76,9 +76,9 @@ export default function StudentsPage() {
     if (filters.gender) {
       filtered = filtered.filter((s) => s.gender === filters.gender);
     }
-    if (filters.admissionYear) {
+    if (filters.yearOfStudy) {
       filtered = filtered.filter(
-        (s) => String(s.admissionYear) === String(filters.admissionYear)
+        (s) => String(s.yearOfStudy) === String(filters.yearOfStudy)
       );
     }
 
@@ -105,6 +105,7 @@ export default function StudentsPage() {
           "Caste",
           "Gender",
           "DOB",
+          "Year of Study",
           "Admission Number",
           "Admission Year",
           "Address",
@@ -119,6 +120,7 @@ export default function StudentsPage() {
         s.caste,
         s.gender,
         s.dob,
+        s.yearOfStudy === "First Year" ? "First Year" : "Second Year",
         s.admissionNo,
         s.admissionYear,
         s.address,
@@ -138,6 +140,16 @@ export default function StudentsPage() {
         Caste: s.caste,
         Gender: s.gender,
         DOB: s.dob,
+        YearOfStudy: s.yearOfStudy === "First Year" ? "First Year" : "Second Year",
+        AdmissionDate: new Date(s.createdAt).toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
         AdmissionNo: s.admissionNo,
         AdmissionYear: s.admissionYear,
         Address: s.address,
@@ -305,14 +317,19 @@ export default function StudentsPage() {
           <option value="Other">Other</option>
         </select>
 
-        <input
-          type="number"
-          name="admissionYear"
-          placeholder="Admission Year"
-          value={filters.admissionYear}
+        <select
+          name="yearOfStudy"
           onChange={handleFilterChange}
+          value={filters.yearOfStudy}
           className="border p-2 rounded font-bold"
-        />
+        >
+          <option value="">Study of Years</option>
+          <option value="First Year">First year</option>
+          <option value="Second Year">Second year</option>
+          
+        </select>
+
+
       </div>
 
       {/* Export & Print Buttons */}
@@ -347,9 +364,15 @@ export default function StudentsPage() {
           </button>
         </Link>
 
-        <Link href="/dashboard">
+        <Link href="/dashboard/first-year">
           <button className="bg-lime-800 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
-            🖥️&nbsp; Dashboard
+            🖥️&nbsp; First Year Dashboard
+          </button>
+        </Link>
+
+        <Link href="/dashboard/second-year">
+          <button className="bg-lime-800 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
+            🖥️&nbsp; Second Year Dashboard
           </button>
         </Link>
 
@@ -387,7 +410,7 @@ export default function StudentsPage() {
               <th className="px-4 py-2">Caste</th>
               <th className="px-4 py-2">Gender</th>
               <th className="px-4 py-2">DOB</th>
-
+              <th className="px-4 py-2">Year of study</th>
               <th className="px-4 py-2">Admission Year</th>
               <th className="px-4 py-2">Admission Date</th>
               <th className="px-4 py-2">Admission No</th>
@@ -412,6 +435,9 @@ export default function StudentsPage() {
                 <td className="px-4 py-2">{s.gender}</td>
                 <td className="px-4 py-2">
                   {new Date(s.dob).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-2">
+                  {s.yearOfStudy === "First Year" ? "First Year" : "Second Year"}
                 </td>
                 <td className="px-4 py-2">{s.admissionYear}</td>
                 <td className="px-4 py-2">

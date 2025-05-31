@@ -12,6 +12,8 @@ export default function ExamReportPage() {
     studentName: "",
     stream: "",
     academicYear: "",
+ 
+    // yearOfStudy: "", // Uncomment if you want to filter by year of study
     examType: "",
   });
 
@@ -19,7 +21,13 @@ export default function ExamReportPage() {
     const fetchReports = async () => {
       try {
         const res = await fetch("/api/exams");
-        const data = await res.json();
+        let data = {};
+        try {
+          const text = await res.text();
+          data = text ? JSON.parse(text) : {};
+        } catch (e) {
+          data = {};
+        }
         if (data.success) {
           setReports(data.data);
         }
@@ -56,8 +64,11 @@ export default function ExamReportPage() {
     const examMatch = filters.examType
       ? report.examType === filters.examType
       : true;
+    const yearOfStudyMatch = filters.yearOfStudy
+      ? report.yearOfStudy === filters.yearOfStudy
+      : true;  
 
-    return studentNameMatch && streamMatch && yearMatch && examMatch;
+    return studentNameMatch && streamMatch && yearMatch && examMatch && yearOfStudyMatch;
   });
 
   const examTypes = [
@@ -74,12 +85,12 @@ export default function ExamReportPage() {
   // Define general and vocational
   // columns arrays based on stream
   const generalColumns = [
-    "Tel/Sansk",
+    "Telugu/Sanskrit",
     "English",
-    "Math/Bot/Civ",
-    "Math/Zoo/His",
-    "Phy/Eco",
-    "Che/Com",
+    "Maths/Botany/Civics",
+    "Maths/Zoology/History",
+    "Physics/Economics",
+    "Chemistry/Commerce",
   ];
   const vocationalColumns = ["GFC", "Eng", "V1/V4", "V2/V5", "V3/V6"];
 
@@ -178,6 +189,8 @@ export default function ExamReportPage() {
               <th className="border p-1">S.No</th>
               <th className="border p-1">Name</th>
               <th className="border p-1">Exam</th>
+              <th className="border p-1">Year</th>
+              
               {(filteredReports[0]?.stream &&
               ["M&AT", "CET", "MLT"].includes(filteredReports[0].stream)
                 ? vocationalColumns
@@ -299,6 +312,9 @@ export default function ExamReportPage() {
                     {report.student?.name || "N/A"}
                   </td>
                   <td className="border p-1">{report.examType}</td>
+                  <td className="border p-1">
+                    {report.yearOfStudy || "N/A"}
+                  </td>
 
 {columnsToRender.map((subject, i) => (
   <td key={i} className="border p-1">

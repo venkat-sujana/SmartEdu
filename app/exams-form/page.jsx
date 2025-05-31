@@ -1,5 +1,5 @@
 "use client";
-
+import { useMemo } from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
@@ -10,6 +10,7 @@ export default function ExamsFormPage() {
   const [formData, setFormData] = useState({
     studentId: "",
     stream: "",
+    yearOfStudy: "",
     academicYear: "",
     examType: "",
     examDate: "",
@@ -40,8 +41,21 @@ export default function ExamsFormPage() {
     ? students.filter((s) => s.group?.toLowerCase() === formData.stream.toLowerCase())
     : [];
 
+
+
 const handleChange = (e) => {
   const { name, value } = e.target;
+
+    if (name === "studentId") {
+    const selectedStudent = students.find((s) => s._id === value);
+
+    setFormData((prev) => ({
+      ...prev,
+      studentId: value,
+      yearOfStudy: selectedStudent?.yearOfStudy || "", // ✅ yearOfStudy ను తీసుకుంటున్నాం
+    }));
+    return;
+  }
 
   if (name.startsWith("subject_")) {
     const subjectKey = name.replace("subject_", "");
@@ -50,13 +64,24 @@ const handleChange = (e) => {
     setFormData((prev) => {
       const updatedSubjects = {
         ...prev.subjects,
-        [subjectKey]: subjectValue === "A" || subjectValue === "AB" ? subjectValue : isNaN(Number(subjectValue)) ? "" : Number(subjectValue),
+        [subjectKey]:
+          subjectValue === "A" || subjectValue === "AB"
+            ? subjectValue
+            : isNaN(Number(subjectValue))
+            ? ""
+            : Number(subjectValue),
       };
 
       const subjectMarks = Object.values(updatedSubjects);
-      const validMarks = subjectMarks.filter((v) => typeof v === "number" && !isNaN(v));
+      const validMarks = subjectMarks.filter(
+        (v) => typeof v === "number" && !isNaN(v)
+      );
+
       const totalMarks = validMarks.reduce((sum, val) => sum + val, 0);
-      const percent = validMarks.length > 0 ? (totalMarks / validMarks.length).toFixed(2) : 0;
+      const percent =
+        validMarks.length > 0
+          ? parseFloat((totalMarks / validMarks.length).toFixed(2))
+          : 0;
 
       return {
         ...prev,
@@ -66,9 +91,18 @@ const handleChange = (e) => {
       };
     });
   } else {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // ✅ yearOfStudy, academicYear, examType, examDate, studentId, stream
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   }
 };
+
+
+
+
+
 
 
   const handleSubmit = async (e) => {
@@ -86,9 +120,10 @@ const handleChange = (e) => {
       if (res.ok) {
         toast.success("✅ Exam saved successfully!");
         setFormData({
+          yearOfStudy: "",
+          academicYear: "",
           studentId: "",
           stream: "",
-          academicYear: "",
           examType: "",
           examDate: "",
           subjects: {},
@@ -106,11 +141,20 @@ const handleChange = (e) => {
     }
   };
 
-  const subjectsToRender = generalStreams.includes(formData.stream)
-    ? generalSubjects
-    : vocationalStreams.includes(formData.stream)
-    ? vocationalSubjects
-    : [];
+// Inside your component
+const subjectsToRender = useMemo(() => {
+  if (!formData.stream) return [];
+
+  if (generalStreams.includes(formData.stream)) {
+    return ["Telugu/Sanskrit", "English", "Maths/Botany/Civics", "Maths/Zoology/History", "Physics/Economics", "Chemistry/Commerce"];
+  }
+
+  if (vocationalStreams.includes(formData.stream)) {
+    return ["GFC", "English", "V1/V4", "V2/V5", "V3/V6"];
+  }
+
+  return [];
+}, [formData.stream]);
 
   return (
     <div className="relative min-h-screen bg-gray-100 p-4">
@@ -130,6 +174,12 @@ const handleChange = (e) => {
 
         <h2 className="text-xl font-bold mb-4 flex items-center justify-center">Home Exam Marks Entry Form-2025</h2>
 
+        {formData.yearOfStudy && (
+  <div className="text-green-600 font-semibold">
+    Year of Study: {formData.yearOfStudy}
+  </div>
+)}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block font-medium">Stream</label>
@@ -148,25 +198,32 @@ const handleChange = (e) => {
             </select>
           </div>
 
-          <div>
-            <label className="block font-medium">Student</label>
-            <select
-              name="studentId"
-              value={formData.studentId}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-              disabled={!formData.stream}
-            >
-              <option value="">
-                {formData.stream ? "-- Select Student --" : "-- Select Stream First --"}
-              </option>
-              {filteredStudents.map((s) => (
-                <option key={s._id} value={s._id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
+<div>
+  <label className="block font-medium">Student</label>
+  <select
+    name="studentId"
+    value={formData.studentId}
+    onChange={handleChange} // ✅ updated here
+    className="w-full border p-2 rounded"
+    disabled={!formData.stream}
+  >
+    <option value="">
+      {formData.stream ? "-- Select Student --" : "-- Select Stream First --"}
+    </option>
+    {filteredStudents.map((s) => (
+      <option key={s._id} value={s._id}>
+        {s.name}
+      </option>
+    ))}
+  </select>
+</div>
+
+{formData.yearOfStudy && (
+  <div className="text-green-600 font-semibold">
+    Year of Study: {formData.yearOfStudy}
+  </div>
+)}
+
 
           <div>
             <label className="block font-medium">Academic Year</label>
@@ -220,27 +277,25 @@ const handleChange = (e) => {
           </div>
 
           {/* Subjects Grid */}
-          <div>
-            <label className="block font-medium mb-1">Subjects & Marks</label>
-            <div className="grid grid-cols-2 gap-2">
-              {subjectsToRender.map((subject) => (
-                <input
-                  key={subject}
-                  type="text"
-                  name={`subject_${subject}`}
-                  placeholder={`Enter ${subject} marks`}
-                  value={
-                    formData.subjects[subject] === 0 ||
-                    formData.subjects[subject] === "0"
-                      ? "0"
-                      : formData.subjects[subject] || ""
-                  }
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-              ))}
-            </div>
-          </div>
+<div className="grid grid-cols-2 gap-2">
+  {subjectsToRender.map((subject) => (
+    <input
+      key={subject}
+      type="text"
+      name={`subject_${subject}`}
+      placeholder={`Enter ${subject} marks`}
+      value={
+        formData.subjects[subject] === 0 ||
+        formData.subjects[subject] === "0"
+          ? "0"
+          : formData.subjects[subject] || ""
+      }
+      onChange={handleChange}
+      className="border p-2 rounded"
+    />
+  ))}
+</div>
+
 
           <button
             type="submit"

@@ -46,7 +46,7 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   try {
-    await connectDB();
+    await connectMongoDB();
     const body = await req.json();
 
     const existingStudent = await Student.findById(params.id);
@@ -83,7 +83,7 @@ export async function PUT(req, { params }) {
 
 export async function DELETE(req, { params }) {
   try {
-    await connectDB();
+    await connectMongoDB();
     const student = await Student.findById(params.id);
     
     if (!student) {

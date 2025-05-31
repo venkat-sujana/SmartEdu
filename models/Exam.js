@@ -14,6 +14,11 @@ const examSchema = new Schema({
     required: true,
     enum: ['MPC', 'BIPC', 'CEC', 'HEC', 'M&AT', 'CET', 'MLT'],
   },
+  yearOfStudy: {
+    type: String,
+    required: true,
+    enum: ["First Year", "Second Year"],
+  },
   academicYear: {
     type: String,
     required: true,

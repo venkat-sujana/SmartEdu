@@ -106,6 +106,8 @@ export default function StudentProfilePage() {
           <p><strong>Name:</strong> {student.name}</p>
           <p><strong>Father:</strong> {student.fatherName}</p>
           <p><strong>Group:</strong> {student.group}</p>
+          <p><strong>Stream:</strong> {isGeneral(student.group) ? "General" : "Vocational"}</p>
+          <p><strong>Year:</strong> {student.yearOfStudy}</p>
           <p><strong>Admission No:</strong> {student.admissionNo}</p>
           <p><strong>Mobile:</strong> {student.mobile}</p>
           <p><strong>Caste:</strong> {student.caste}</p>

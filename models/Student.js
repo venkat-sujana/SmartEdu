@@ -38,6 +38,12 @@ const studentSchema = new mongoose.Schema({
   required: true,
   unique: true,
   },
+  yearOfStudy: {
+    type: String,
+    required: true,
+    enum: ["First Year", "Second Year"], 
+  },
+  
   admissionYear: {
     type: Number,
     required: true,
@@ -49,7 +55,7 @@ const studentSchema = new mongoose.Schema({
   // ✅ Photo stored as Cloudinary URL
   photo: {
     type: String,
-    default: "", // This should contain a Cloudinary secure_url like https://res.cloudinary.com/...
+    default: "", 
   },
   createdAt: {
     type: Date,

@@ -41,6 +41,11 @@ export default function LecturerDashboard() {
     }
   }, []);
 
+  const isGeneral = (group) =>
+    ["MPC", "BiPC", "CEC", "HEC"].includes(group);
+  const isVocational = (group) =>
+    ["M&AT", "MLT", "CET"].includes(group);
+
   if (!lecturer) return <div className="p-4">Loading dashboard...</div>;
   
   return (
@@ -67,7 +72,9 @@ export default function LecturerDashboard() {
                 <th className="p-2 border">Father Name</th>
                 <th className="p-2 border">DOB</th>
                 <th className="p-2 border">Admission No</th>
+                <th className="p-2 border">Stream</th>
                 <th className="p-2 border">Group</th>
+                <th className="p-2 border">year</th>
                 <th className="p-2 border">Mobile</th>
                 <th className="p-2 border">Caste</th>
                 <th className="p-2 border">Address</th>
@@ -86,7 +93,9 @@ export default function LecturerDashboard() {
                     {new Date(s.dob).toLocaleDateString()}
                   </td>
                   <td className="p-2 border">{s.admissionNo}</td>
+                  <td className="p-2 border">{isGeneral(s.group) ? "General" : "Vocational"}</td>
                   <td className="p-2 border">{s.group}</td>
+                  <td className="p-2 border">{s.yearOfStudy}</td>
                   <td className="p-2 border">{s.mobile}</td>
                   <td className="p-2 border">{s.caste}</td>
                   <td className="p-2 border">{s.address}</td>

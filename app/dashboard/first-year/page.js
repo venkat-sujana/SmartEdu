@@ -36,14 +36,19 @@ export default function GroupDashboard() {
       const data = await res.json();
       const studentData = data.data || [];
 
-      setStudents(studentData);
-      setTotal(studentData.length);
+      // First Year students filter
+    const filteredData = studentData.filter(
+      (student) => student.yearOfStudy === "First Year"
+    );
 
-      setGroupCounts(getCounts(studentData, "group"));
-      setCasteCounts(getCounts(studentData, "caste"));
-      setGenderCounts(getCounts(studentData, "gender"));
-      setAdmissionYearCounts(getCounts(studentData, "admissionYear"));
-      setDateWiseCounts(getDateWiseCounts(studentData));
+      setStudents(filteredData);
+      setTotal(filteredData.length);
+
+      setGroupCounts(getCounts(filteredData, "group"));
+      setCasteCounts(getCounts(filteredData, "caste"));
+      setGenderCounts(getCounts(filteredData, "gender"));
+      setAdmissionYearCounts(getCounts(filteredData, "admissionYear"));
+      setDateWiseCounts(getDateWiseCounts(filteredData));
     };
 
     fetchData();
@@ -248,7 +253,7 @@ export default function GroupDashboard() {
 
       <h2 className="text-xl font-bold text-center print:text-left bg-amber-100 border-2 border-b-black border-b-2 p-4 rounded-lg mt-2">
         🧑‍🎓🧑‍🎓🧑‍🎓
-        <Users className="mr-1 inline" size={25} color="green" /> Admissions
+        <Users className="mr-1 inline" size={25} color="green" /> First Year Admissions
         Enrolled as on {currentDate}
       </h2>
       {renderTable("Date-Wise Enrollment", dateWiseCounts)}
