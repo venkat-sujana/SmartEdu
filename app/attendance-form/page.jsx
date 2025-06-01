@@ -9,15 +9,18 @@ const AttendanceForm = () => {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [attendanceData, setAttendanceData] = useState({});
+  const [selectedYearOfStudy, setSelectedYearOfStudy] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  
   const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
   const monthsList = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
   ];
+  const yearsList = ["First Year", "Second Year"];
+
 
   useEffect(() => {
     fetch("/api/students")
@@ -30,14 +33,17 @@ const AttendanceForm = () => {
       .catch((err) => console.error("Error fetching students", err));
   }, []);
 
-  useEffect(() => {
-    if (selectedGroup) {
-      const filtered = students.filter((s) => s.group === selectedGroup);
-      setFilteredStudents(filtered);
-    } else {
-      setFilteredStudents([]);
-    }
-  }, [selectedGroup, students]);
+useEffect(() => {
+  if (selectedGroup && selectedYearOfStudy) {
+    const filtered = students.filter(
+      (s) => s.group === selectedGroup && s.yearOfStudy === selectedYearOfStudy
+    );
+    setFilteredStudents(filtered);
+  } else {
+    setFilteredStudents([]);
+  }
+}, [selectedGroup, selectedYearOfStudy, students]);
+
 
   const handleToggleChange = (studentId, status) => {
     setAttendanceData((prev) => ({
@@ -56,14 +62,16 @@ const AttendanceForm = () => {
     const month = monthsList[dateObj.getMonth()];
     const year = dateObj.getFullYear();
 
-    const attendanceRecords = filteredStudents.map((student) => ({
-      studentId: student._id,
-      date: selectedDate,
-      status: attendanceData[student._id] || "Absent",
-      group: selectedGroup,
-      month,
-      year,
-    }));
+const attendanceRecords = filteredStudents.map((student) => ({
+  studentId: student._id,
+  date: selectedDate,
+  status: attendanceData[student._id] || "Absent",
+  group: selectedGroup,
+  month,
+  year,
+  yearOfStudy: selectedYearOfStudy, // 🔥 Add this line
+}));
+
 
     setIsLoading(true);
     const toastId = toast.loading("Submitting attendance...");
@@ -123,6 +131,23 @@ const AttendanceForm = () => {
         </div>
 
         <div className="mb-4">
+  <label className="block text-sm font-medium text-gray-700">Year of Study</label>
+  <select
+    value={selectedYearOfStudy}
+    onChange={(e) => setSelectedYearOfStudy(e.target.value)}
+    className="mt-1 block w-full border rounded-md px-3 py-2"
+  >
+    <option value="">Select Year</option>
+    {yearsList.map((year) => (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    ))}
+  </select>
+</div>
+
+
+        <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Group</label>
           <select
             value={selectedGroup}
@@ -137,6 +162,8 @@ const AttendanceForm = () => {
             ))}
           </select>
         </div>
+
+        
 
         {filteredStudents.length > 0 && (
           <div className="mt-4">
@@ -175,6 +202,8 @@ const AttendanceForm = () => {
             </div>
           </div>
         )}
+
+        
 
         {filteredStudents.length > 0 && (
           <div className="mt-6 text-right">

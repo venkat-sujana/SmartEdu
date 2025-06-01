@@ -81,4 +81,3 @@ export async function GET(req) {
     return NextResponse.json({ message: "Error fetching attendance", status: "error" }, { status: 500 });
   }
 }
-

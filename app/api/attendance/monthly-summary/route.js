@@ -8,15 +8,22 @@ import Student from "@/models/Student";
 export async function GET(req) {
   await connectMongoDB();
   const { searchParams } = new URL(req.url);
+
   const group = searchParams.get("group");
+const yearOfStudy = searchParams.get("yearOfStudy");
+
 
   if (!group) return NextResponse.json({ error: "Missing group" });
 
   try {
-    const students = await Student.find({ group }).select("_id name");
+    const studentQuery = { group };
+if (yearOfStudy) studentQuery.yearOfStudy = yearOfStudy;
+
+
+    const students = await Student.find(studentQuery).select("_id name");
+
 
     const months = [
-      
       { label: "JUN", key: "June" },
       { label: "JUL", key: "July" },
       { label: "AUG", key: "August" },
@@ -84,3 +91,4 @@ export async function GET(req) {
     return NextResponse.json({ error: "Failed to generate summary" });
   }
 }
+

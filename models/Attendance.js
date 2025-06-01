@@ -20,6 +20,11 @@ const attendanceSchema = new Schema({
     enum: ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"],
     required: true,
   },
+    yearOfStudy: {
+    type: String,
+    enum: ['First Year', 'Second Year'],
+    required: true,
+  },
   month: {
     type: String,
     enum: [
