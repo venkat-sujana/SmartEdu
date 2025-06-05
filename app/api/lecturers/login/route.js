@@ -1,22 +1,16 @@
-// /app/api/lecturers/login/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";
 import jwt from "jsonwebtoken";
-import { redirect } from 'next/navigation'
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret1229";
-
-export function GET() {
-  return redirect('/login')
-}
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export async function POST(req) {
   try {
     await connectMongoDB();
     const { email, password } = await req.json();
 
-    const lecturer = await Lecturer.findOne({ email });
+    const lecturer = await Lecturer.findOne({ email: email.toLowerCase() }).select("+password");
     if (!lecturer) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
@@ -26,29 +20,29 @@ export async function POST(req) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
-   const token = jwt.sign(
-  {
-    id: lecturer._id,
-    name: lecturer.name,   // ✅ add this
-    email: lecturer.email,
-    role: lecturer.role,
-    subject: lecturer.subject, // ✅ add this
-    assignedGroups: lecturer.assignedGroups, // ✅ add this
-  },
-  JWT_SECRET,
-  { expiresIn: "1d" }
-);
+    const token = jwt.sign(
+      {
+        id: lecturer._id,
+        email: lecturer.email,
+        name: lecturer.name,
+        role: lecturer.role,
+        subject: lecturer.subject,
+      },
+      JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
-
-    return NextResponse.json({ message: "Login successful", token, lecturer: {
-      id: lecturer._id,
-      name: lecturer.name,
-      email: lecturer.email,
-      role: lecturer.role,
-      subject: lecturer.subject,
-      assignedGroups: lecturer.assignedGroups,
-    }});
+    return NextResponse.json({
+      message: "Login successful",
+      token,
+      lecturer: {
+        id: lecturer._id,
+        name: lecturer.name,
+        email: lecturer.email,
+        subject: lecturer.subject,
+      },
+    });
   } catch (error) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return NextResponse.json({ message: "Login failed", error: error.message }, { status: 500 });
   }
 }

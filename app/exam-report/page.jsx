@@ -92,7 +92,7 @@ export default function ExamReportPage() {
     "Physics/Economics",
     "Chemistry/Commerce",
   ];
-  const vocationalColumns = ["GFC", "Eng", "V1/V4", "V2/V5", "V3/V6"];
+  const vocationalColumns = ["GFC", "English", "V1/V4", "V2/V5", "V3/V6"];
 
   return (
     <div className="p-6">

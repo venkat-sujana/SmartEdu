@@ -8,18 +8,19 @@ export default function AssignStudentsPage() {
   const [lecturers, setLecturers] = useState([]);
   const [lecturerId, setLecturerId] = useState("");
   const [students, setStudents] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
   const [selectedStudents, setSelectedStudents] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Fetching lecturers and students...");
-        
         const [lecturersRes, studentsRes] = await Promise.all([
           fetch("/api/lecturers"),
-          fetch("/api/students")
+          fetch("/api/students"),
         ]);
 
         const lecturersData = await lecturersRes.json();
@@ -27,7 +28,6 @@ export default function AssignStudentsPage() {
 
         setLecturers(Array.isArray(lecturersData) ? lecturersData : lecturersData?.data || []);
         setStudents(Array.isArray(studentsData) ? studentsData : studentsData?.data || []);
-        
       } catch (error) {
         console.error("Error fetching data:", error);
         setMessage("Failed to load data");
@@ -36,6 +36,19 @@ export default function AssignStudentsPage() {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // Filter students when group or year changes
+    if (selectedGroup && selectedYear) {
+      const filtered = students.filter(
+        (stu) => stu.group === selectedGroup && stu.yearOfStudy === selectedYear
+      );
+      setFilteredStudents(filtered);
+      setSelectedStudents([]); // Reset selected students when filter changes
+    } else {
+      setFilteredStudents([]);
+    }
+  }, [selectedGroup, selectedYear, students]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,9 +63,9 @@ export default function AssignStudentsPage() {
       const res = await fetch("/api/lecturers/assign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          lecturerId, 
-          studentIds: selectedStudents 
+        body: JSON.stringify({
+          lecturerId,
+          studentIds: selectedStudents,
         }),
       });
 
@@ -63,13 +76,10 @@ export default function AssignStudentsPage() {
       }
 
       setMessage("Students assigned successfully!");
-      console.log("Assignment successful:", data);
-      
-      // Redirect after 2 seconds
+
       setTimeout(() => {
         router.push("/lecturer/dashboard");
       }, 2000);
-
     } catch (error) {
       console.error("Assignment error:", error);
       setMessage(error.message);
@@ -84,8 +94,8 @@ export default function AssignStudentsPage() {
 
       {message && (
         <div className={`mb-4 p-3 rounded ${
-          message.includes("success") 
-            ? "bg-green-100 text-green-700" 
+          message.includes("success")
+            ? "bg-green-100 text-green-700"
             : "bg-red-100 text-red-700"
         }`}>
           {message}
@@ -93,6 +103,7 @@ export default function AssignStudentsPage() {
       )}
 
       <form onSubmit={handleSubmit}>
+        {/* Lecturer Dropdown */}
         <div className="mb-4">
           <label className="block font-medium mb-1">Select Lecturer</label>
           <select
@@ -111,46 +122,85 @@ export default function AssignStudentsPage() {
           </select>
         </div>
 
+        {/* Group Dropdown */}
         <div className="mb-4">
-          <label className="block font-medium mb-1">Select Students</label>
-          <div className="h-48 overflow-y-auto border rounded p-2">
-            {students.length > 0 ? (
-              students.map((stu) => (
-                <div key={stu._id} className="flex items-center space-x-2 mb-1">
-                  <input
-                    type="checkbox"
-                    id={`student-${stu._id}`}
-                    value={stu._id}
-                    checked={selectedStudents.includes(stu._id)}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      setSelectedStudents((prev) =>
-                        prev.includes(id)
-                          ? prev.filter((s) => s !== id)
-                          : [...prev, id]
-                      );
-                    }}
-                    disabled={isSubmitting}
-                    className="h-4 w-4"
-                  />
-                  <label htmlFor={`student-${stu._id}`} className="select-none">
-                    {stu.name} ({stu.rollNumber || stu.email})
-                  </label>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">No students available</p>
-            )}
-          </div>
+          <label className="block font-medium mb-1">Select Group</label>
+          <select
+            value={selectedGroup}
+            onChange={(e) => setSelectedGroup(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+            required
+            disabled={isSubmitting}
+          >
+            <option value="">-- Select Group --</option>
+            {Array.from(new Set(students.map((s) => s.group))).map((group) => (
+              <option key={group} value={group}>
+                {group}
+              </option>
+            ))}
+          </select>
         </div>
 
+        {/* Year of Study Dropdown */}
+        <div className="mb-4">
+          <label className="block font-medium mb-1">Select Year of Study</label>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+            required
+            disabled={isSubmitting}
+          >
+            <option value="">-- Select Year --</option>
+            <option value="First Year">First Year</option>
+            <option value="Second Year">Second Year</option>
+          </select>
+        </div>
+
+        {/* Student Checkboxes */}
+        {selectedGroup && selectedYear && (
+          <div className="mb-4">
+            <label className="block font-medium mb-1">
+              Select Students ({selectedGroup} - {selectedYear})
+            </label>
+            <div className="h-48 overflow-y-auto border rounded p-2">
+              {filteredStudents.length > 0 ? (
+                filteredStudents.map((stu) => (
+                  <div key={stu._id} className="flex items-center space-x-2 mb-1">
+                    <input
+                      type="checkbox"
+                      id={`student-${stu._id}`}
+                      value={stu._id}
+                      checked={selectedStudents.includes(stu._id)}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        setSelectedStudents((prev) =>
+                          prev.includes(id)
+                            ? prev.filter((s) => s !== id)
+                            : [...prev, id]
+                        );
+                      }}
+                      disabled={isSubmitting}
+                      className="h-4 w-4"
+                    />
+                    <label htmlFor={`student-${stu._id}`} className="select-none">
+                      {stu.name} ({stu.rollNumber || stu.email})
+                    </label>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500">No students found for this group and year</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting || !lecturerId || selectedStudents.length === 0}
           className={`px-4 py-2 rounded text-white ${
-            isSubmitting
-              ? "bg-gray-400"
-              : "bg-blue-600 hover:bg-blue-700"
+            isSubmitting ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
           }`}
         >
           {isSubmitting ? "Assigning..." : "Assign Students"}
