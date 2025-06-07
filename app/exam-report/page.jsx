@@ -12,7 +12,7 @@ export default function ExamReportPage() {
     studentName: "",
     stream: "",
     academicYear: "",
- 
+
     // yearOfStudy: "", // Uncomment if you want to filter by year of study
     examType: "",
   });
@@ -66,9 +66,15 @@ export default function ExamReportPage() {
       : true;
     const yearOfStudyMatch = filters.yearOfStudy
       ? report.yearOfStudy === filters.yearOfStudy
-      : true;  
+      : true;
 
-    return studentNameMatch && streamMatch && yearMatch && examMatch && yearOfStudyMatch;
+    return (
+      studentNameMatch &&
+      streamMatch &&
+      yearMatch &&
+      examMatch &&
+      yearOfStudyMatch
+    );
   });
 
   const examTypes = [
@@ -96,7 +102,26 @@ export default function ExamReportPage() {
 
   return (
     <div className="p-6">
-      <Link href="/student-table">
+      <h1 className="text-2xl font-bold mb-2 flex items-center justify-center">
+        Exam Summary Report
+      </h1>
+      <strong><p className="mb-4">
+        Note:-This page displays a summary of exams conducted by the
+        institution. You can filter the results using the dropdowns below.
+        To print the report, click on the &quot;Print Report&quot; button above.
+        You can also filter the results by selecting a specific academic year,
+        stream, or year of study from the dropdown menus below.
+    
+      </p></strong>
+
+      <strong><p className="mb-4">
+        The user should be able to:<br/> 1. View exam name, date, total marks,
+        percentage.<br/> 2. See PASS/FAIL status based on marks.<br/>  3. Subjects
+        should show “Pass” or “Fail” beside each mark based on rules.<br/> 4. Display
+        red color for failed subjects and green for passed ones.
+      </p></strong>
+
+            <Link href="/student-table">
         <button className="w-50 bg-cyan-600 mb-2 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
           📝&nbsp; Student-Table
         </button>
@@ -190,7 +215,7 @@ export default function ExamReportPage() {
               <th className="border p-1">Name</th>
               <th className="border p-1">Exam</th>
               <th className="border p-1">Year</th>
-              
+
               {(filteredReports[0]?.stream &&
               ["M&AT", "CET", "MLT"].includes(filteredReports[0].stream)
                 ? vocationalColumns
@@ -312,18 +337,16 @@ export default function ExamReportPage() {
                     {report.student?.name || "N/A"}
                   </td>
                   <td className="border p-1">{report.examType}</td>
-                  <td className="border p-1">
-                    {report.yearOfStudy || "N/A"}
-                  </td>
+                  <td className="border p-1">{report.yearOfStudy || "N/A"}</td>
 
-{columnsToRender.map((subject, i) => (
-  <td key={i} className="border p-1">
-    {subjectMarks[subject] !== undefined &&
-    subjectMarks[subject] !== null
-      ? subjectMarks[subject]
-      : ""}
-  </td>
-))}
+                  {columnsToRender.map((subject, i) => (
+                    <td key={i} className="border p-1">
+                      {subjectMarks[subject] !== undefined &&
+                      subjectMarks[subject] !== null
+                        ? subjectMarks[subject]
+                        : ""}
+                    </td>
+                  ))}
 
                   <td className="border p-1">{total}</td>
                   <td className="border p-1">{percentage}</td>

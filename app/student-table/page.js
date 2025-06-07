@@ -24,6 +24,13 @@ import {
 
 import Link from "next/link";
 
+/**
+ * StudentsPage Component
+ *
+ * A page that displays all students in a table with options to
+ * filter, sort, edit, delete, and export to PDF and Excel.
+ */
+
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
@@ -255,10 +262,13 @@ export default function StudentsPage() {
   const pageCount = Math.ceil(filteredStudents.length / studentsPerPage);
 
   return (
+    
     <div className="p-6 max-w-8xl mx-auto">
+
       <h1 className="text-2xl font-bold mb-4 text-center">
         S.K.R.GOVERNMENT JUNIOR COLLEGE
       </h1>
+      
 
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
@@ -382,6 +392,7 @@ export default function StudentsPage() {
           </button>
         </Link>
       </div>
+      
 
       {/* Students Table */}
       <div className="overflow-x-auto" ref={tableRef}>

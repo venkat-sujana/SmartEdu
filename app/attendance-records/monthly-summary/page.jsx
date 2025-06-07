@@ -71,7 +71,26 @@ export default function MonthlySummary() {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
+
       <h2 className="text-2xl font-bold mb-8 flex items-center justify-center">Monthly Attendance Summary-2025</h2>
+                  <strong>
+        <p className="mb-4">
+          Features:
+          <br />
+          - Shows monthly columns from JUN to MAR (or April to March).
+          <br />
+          - Three rows: Working Days, Present Days, Percentage.
+          <br />
+          - Last column “TOTAL” shows cumulative values.
+          <br />
+          - Place and Date fields shown at the bottom.
+          <br />
+          - Signature area for student.
+          <br />
+          - Designed for A4 printing.
+          <br />
+        </p>
+      </strong>
 
       <div className="mb-4 flex gap-4 items-center">
         <select
@@ -149,10 +168,7 @@ export default function MonthlySummary() {
                   </td>
                 </tr>
 
-                {/* Empty row for spacing */}
-                {/* <tr>
-                  <td colSpan={months.length + 3} className="p-2"></td>
-                </tr> */}
+              
 
                 {/* Present Row */}
                 <tr>
