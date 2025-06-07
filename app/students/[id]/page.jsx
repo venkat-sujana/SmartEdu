@@ -4,10 +4,23 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import AttendanceSummaryTable from "@/app/attendance-summary-table/page";
+import {
+  Home,
+  PenSquare,
+  CalendarCheck,
+  Printer,
+  User,
+  Phone,
+  MapPin,
+  Landmark,
+  BadgeIndianRupee,
+  GraduationCap,
+  Users,
+} from "lucide-react";
 
 export default function StudentProfilePage() {
   const params = useParams();
-  const id = params.id; // Get id from useParams()
+  const id = params.id;
   const [student, setStudent] = useState(null);
   const [exams, setExams] = useState([]);
   const [attendance, setAttendance] = useState([]);
@@ -25,21 +38,15 @@ export default function StudentProfilePage() {
 
     fetch(`/api/attendance/student/${id}`)
       .then((res) => res.json())
-      .then((data) => {
-        console.log("Attendance response:", data);
-        setAttendance(data.data || []);
-      });
+      .then((data) => setAttendance(data.data || []));
   }, [id]);
 
-  const isGeneral = (group) =>
-    ["MPC", "BiPC", "CEC", "HEC"].includes(group);
-  const isVocational = (group) =>
-    ["M&AT", "MLT", "CET"].includes(group);
+  const isGeneral = (group) => ["MPC", "BiPC", "CEC", "HEC"].includes(group);
+  const isVocational = (group) => ["M&AT", "MLT", "CET"].includes(group);
 
   const getMaxMarks = (examType, streamType) => {
     if (!examType) return 0;
     const type = examType.toLowerCase();
-
     if (["unit-1", "unit-2", "unit-3", "unit-4"].includes(type)) return 25;
     if (["quarterly", "half-yearly", "halfyearly"].includes(type)) return 50;
     if (["pre-public-1", "pre-public-2"].includes(type)) {
@@ -70,69 +77,76 @@ export default function StudentProfilePage() {
   const subjectCount = stream === "general" ? 6 : 5;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <Link href="/">
-        <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold mr-2">
-          🏠&nbsp;Home
+    <div className="p-4 md:p-6 max-w-6xl mx-auto text-gray-800">
+      {/* Top Actions */}
+      <div className="flex flex-wrap gap-2 mb-4 print:hidden">
+        <Link href="/">
+          <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center gap-2">
+            <Home size={18} /> Home
+          </button>
+        </Link>
+        <Link href="/exams-form">
+          <button className="bg-slate-700 text-white px-4 py-2 rounded-md hover:bg-slate-800 flex items-center gap-2">
+            <PenSquare size={18} /> Exam Form
+          </button>
+        </Link>
+        <Link href="/attendance-form">
+          <button className="bg-amber-700 text-white px-4 py-2 rounded-md hover:bg-amber-800 flex items-center gap-2">
+            <CalendarCheck size={18} /> Attendance Form
+          </button>
+        </Link>
+        <button
+          onClick={() => window.print()}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
+        >
+          <Printer size={18} /> Print
         </button>
-      </Link>
-
-      <Link href="/exams-form">
-        <button className="bg-slate-600 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold mr-2 ">
-          🏠&nbsp;Exam Form
-        </button>
-      </Link>
-
-      <Link href="/attendance-form">
-        <button className="bg-amber-800 text-white px-4 py-2 rounded hover:bg-green-700 transition cursor-pointer font-bold mr-2">
-          🏠&nbsp;Attendance Form
-        </button>
-      </Link>
-
-      {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-xl md:text-2xl font-bold uppercase">
-          S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR
-        </h1>
-        <p className="italic text-sm">THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt</p>
-        <h2 className="font-bold mt-1 uppercase">Care Taker</h2>
       </div>
 
-      <h1 className="text-2xl font-bold mb-6">Student Profile</h1>
+      {/* Header */}
+      <div className="text-center my-4">
+        <h1 className="text-2xl font-bold uppercase text-green-700">
+          S.K.R GOVERNMENT JUNIOR COLLEGE, GUDUR
+        </h1>
+        <p className="italic text-sm text-gray-600">
+          THILAK NAGAR, GUDUR - 524101, TIRUPATI Dt
+        </p>
+        <h2 className="font-semibold text-lg mt-1 text-slate-700 uppercase">Care Taker</h2>
+      </div>
 
-      {/* Student Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start mb-8">
-        <div className="space-y-1 text-sm">
-          <p><strong>Name:</strong> {student.name}</p>
-          <p><strong>Father:</strong> {student.fatherName}</p>
-          <p><strong>Group:</strong> {student.group}</p>
-          <p><strong>Stream:</strong> {isGeneral(student.group) ? "General" : "Vocational"}</p>
+      {/* Profile */}
+      <div className="bg-white shadow-md rounded-lg p-4 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-2 text-sm">
+          <p><User className="inline mr-1" size={16} /> <strong>Name:</strong> {student.name}</p>
+          <p><Users className="inline mr-1" size={16} /> <strong>Father:</strong> {student.fatherName}</p>
+          <p><GraduationCap className="inline mr-1" size={16} /> <strong>Group:</strong> {student.group}</p>
+          <p><Landmark className="inline mr-1" size={16} /> <strong>Stream:</strong> {stream}</p>
+          <p><BadgeIndianRupee className="inline mr-1" size={16} /> <strong>Admission No:</strong> {student.admissionNo}</p>
+          <p><Phone className="inline mr-1" size={16} /> <strong>Mobile:</strong> {student.mobile}</p>
           <p><strong>Year:</strong> {student.yearOfStudy}</p>
-          <p><strong>Admission No:</strong> {student.admissionNo}</p>
-          <p><strong>Mobile:</strong> {student.mobile}</p>
           <p><strong>Caste:</strong> {student.caste}</p>
-          <p><strong>Address:</strong> {student.address}</p>
+          <p><MapPin className="inline mr-1" size={16} /> <strong>Address:</strong> {student.address}</p>
         </div>
 
         <div className="flex justify-center items-center">
-          <img src="/images/apbise.png" alt="Board Logo" className="w-30 h-30 object-contain" />
+          <img src="/images/apbise.png" alt="Board Logo" className="w-28 h-28 object-contain" />
         </div>
 
         <div className="flex justify-end">
           <img
             src={student.photo || "/student-placeholder.png"}
             alt="Student"
-            className="w-40 h-48 object-cover border rounded"
+            className="w-40 h-48 object-cover border rounded-md shadow-sm"
           />
         </div>
       </div>
 
-      {/* Exams Summary */}
-      <h2 className="text-lg font-semibold mb-3">Exam Summary</h2>
+      {/* Exam Summary */}
+      <h2 className="text-lg font-bold text-slate-800 mb-2">Exam Summary</h2>
       {exams.length === 0 ? (
         <p className="text-gray-500">No exam records available.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {exams.map((e, i) => {
             const subjects = e.generalSubjects || e.vocationalSubjects || {};
             const maxMark = getMaxMarks(e.examType, stream);
@@ -141,52 +155,59 @@ export default function StudentProfilePage() {
             );
             const total = marksArray.reduce((a, b) => a + (isNaN(b) ? 0 : b), 0);
             const percentage = ((total / (subjectCount * maxMark)) * 100).toFixed(2);
-            const hasFail = Object.entries(subjects).some(
-              ([_, m]) => isFail(m, maxMark, stream, e.examType)
+            const hasFail = Object.entries(subjects).some(([_, m]) =>
+              isFail(m, maxMark, stream, e.examType)
             );
 
             return (
-              <div key={i} className="border rounded-lg p-3 shadow-sm bg-white">
-                <h3 className="font-bold text-sm mb-2">{e.examType}</h3>
-                <p><strong>Total:</strong> {total}</p>
-                <p><strong>Percentage:</strong> {percentage}%</p>
-                <p className={hasFail ? "text-red-600 font-semibold" : "text-green-600 font-semibold"}>
-                  {hasFail ? "FAIL" : "PASS"}
-                </p>
-                <details className="mt-2">
-                  <summary className="cursor-pointer text-blue-600 text-xs">View Subject-wise</summary>
-                  <table className="w-full text-xs mt-2 border">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border p-1">Subject</th>
-                        <th className="border p-1">Marks</th>
-                        <th className="border p-1">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(subjects).map(([sub, mark], idx) => {
-                        const fail = isFail(mark, maxMark, stream, e.examType);
-                        return (
-                          <tr key={idx}>
-                            <td className="border p-1 capitalize">{sub}</td>
-                            <td className="border p-1">{mark}</td>
-                            <td className={`border p-1 ${fail ? "text-red-500" : "text-green-600"}`}>
-                              {fail ? "Fail" : "Pass"}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </details>
-              </div>
+<div key={i} className="border rounded-lg p-3 shadow bg-white">
+  <h3 className="font-bold text-sm text-blue-700 mb-2">{e.examType}</h3>
+
+  {/* 👉 Exam Date */}
+  <p><strong>Date:</strong> {new Date(e.examDate).toLocaleDateString()}</p>
+
+  <p><strong>Total:</strong> {total}</p>
+  <p><strong>Percentage:</strong> {percentage}%</p>
+  <p className={hasFail ? "text-red-600 font-semibold" : "text-green-600 font-semibold"}>
+    {hasFail ? "FAIL" : "PASS"}
+  </p>
+
+  <details className="mt-2 text-xs">
+    <summary className="cursor-pointer text-blue-600">View Subject-wise</summary>
+    <table className="w-full mt-2 text-xs border">
+      <thead>
+        <tr className="bg-gray-100">
+          <th className="border p-1">Subject</th>
+          <th className="border p-1">Marks</th>
+          <th className="border p-1">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Object.entries(subjects).map(([sub, mark], idx) => {
+          const fail = isFail(mark, maxMark, stream, e.examType);
+          return (
+            <tr key={idx}>
+              <td className="border p-1 capitalize">{sub}</td>
+              <td className="border p-1">{mark}</td>
+              <td className={`border p-1 ${fail ? "text-red-500" : "text-green-600"}`}>
+                {fail ? "Fail" : "Pass"}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </details>
+</div>
+
             );
           })}
         </div>
       )}
 
-      <div className="p-4">
-        <h1 className="text-xl font-bold mb-2">Monthly Attendance Summary</h1>
+      {/* Attendance Summary */}
+      <div className="bg-white shadow rounded-lg p-4">
+        <h2 className="text-xl font-bold mb-2 text-slate-700">📅 Monthly Attendance Summary</h2>
         <AttendanceSummaryTable studentId={id} />
       </div>
     </div>

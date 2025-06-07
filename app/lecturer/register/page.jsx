@@ -12,6 +12,7 @@ export default function LecturerRegisterPage() {
     subject: "",
     password: "",
   });
+  const [photo, setPhoto] = useState(null); // file state
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -21,14 +22,25 @@ export default function LecturerRegisterPage() {
     setSuccess("");
   };
 
+  const handlePhotoChange = (e) => {
+    setPhoto(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await fetch("/api/lecturers/register", {
+      const form = new FormData();
+      for (const key in formData) {
+        form.append(key, formData[key]);
+      }
+      if (photo) {
+        form.append("photo", photo);
+      }
+
+      const res = await fetch("/api/lecturers", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: form,
       });
 
       const data = await res.json();
@@ -36,7 +48,7 @@ export default function LecturerRegisterPage() {
       if (!res.ok) {
         setError(data.message || "Registration failed");
       } else {
-        setSuccess("Registration successful! Redirecting to login...");
+        setSuccess("Registration successful! Redirecting to student  assign...");
         setTimeout(() => router.push("/login"), 1500);
       }
     } catch (err) {
@@ -53,7 +65,7 @@ export default function LecturerRegisterPage() {
         {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
         {success && <p className="text-green-600 text-sm mb-4">{success}</p>}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
           <input
             type="text"
             name="name"
@@ -96,8 +108,15 @@ export default function LecturerRegisterPage() {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full mb-4 px-3 py-2 border rounded"
+            className="w-full mb-3 px-3 py-2 border rounded"
             required
+          />
+          <input
+            type="file"
+            name="photo"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            className="w-full mb-4"
           />
 
           <button

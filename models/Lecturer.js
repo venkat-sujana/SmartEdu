@@ -9,6 +9,7 @@ const lecturerSchema = new mongoose.Schema({
   assignedGroups: { type: [String], default: [] },
   assignedStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
   password: { type: String, required: true, select: false },
+   photo: { type: String, default: "" }, // ✅ Added photo field
   role: { type: String, default: "lecturer" },
   createdAt: { type: Date, default: Date.now },
 });

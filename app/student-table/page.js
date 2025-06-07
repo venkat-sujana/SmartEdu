@@ -14,8 +14,6 @@ import generateAdmissionCertificatePDF from "../admission-certificate/page";
 import generateStudyCertificatePDF from "../study-certificate/page";
 import generateCaretakerCertificatePDF from "../caretaker-form/page";
 
-
-
 import {
   FileDown,
   FileSpreadsheet,
@@ -140,7 +138,8 @@ export default function StudentsPage() {
         Caste: s.caste,
         Gender: s.gender,
         DOB: s.dob,
-        YearOfStudy: s.yearOfStudy === "First Year" ? "First Year" : "Second Year",
+        YearOfStudy:
+          s.yearOfStudy === "First Year" ? "First Year" : "Second Year",
         AdmissionDate: new Date(s.createdAt).toLocaleString("en-IN", {
           timeZone: "Asia/Kolkata",
           day: "2-digit",
@@ -247,8 +246,6 @@ export default function StudentsPage() {
     toast.success("Student updated successfully");
   };
 
-
-
   // Calculate paginated students
   const offset = currentPage * studentsPerPage;
   const paginatedStudents = filteredStudents.slice(
@@ -326,10 +323,7 @@ export default function StudentsPage() {
           <option value="">Study of Years</option>
           <option value="First Year">First year</option>
           <option value="Second Year">Second year</option>
-          
         </select>
-
-
       </div>
 
       {/* Export & Print Buttons */}
@@ -387,14 +381,6 @@ export default function StudentsPage() {
             📝&nbsp; Exam Report
           </button>
         </Link>
-
-        
-        <Link href="/lecturer/assign">
-          <button className="w-full bg-sky-900 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-            📝&nbsp; Assign Students
-          </button>
-        </Link>
-
       </div>
 
       {/* Students Table */}
@@ -437,7 +423,9 @@ export default function StudentsPage() {
                   {new Date(s.dob).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-2">
-                  {s.yearOfStudy === "First Year" ? "First Year" : "Second Year"}
+                  {s.yearOfStudy === "First Year"
+                    ? "First Year"
+                    : "Second Year"}
                 </td>
                 <td className="px-4 py-2">{s.admissionYear}</td>
                 <td className="px-4 py-2">
