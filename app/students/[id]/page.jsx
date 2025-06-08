@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import AttendanceSummaryTable from "@/app/attendance-summary-table/page";
+
 import {
   Home,
   PenSquare,
@@ -16,7 +17,9 @@ import {
   BadgeIndianRupee,
   GraduationCap,
   Users,
+  ClipboardList
 } from "lucide-react";
+import PulseDots from "@/app/animations/pulse-dots/page";
 
 export default function StudentProfilePage() {
   const params = useParams();
@@ -71,7 +74,7 @@ export default function StudentProfilePage() {
     return false;
   };
 
-  if (!student) return <div className="p-4">Loading student info...</div>;
+  if (!student) return <PulseDots />;
 
   const stream = isGeneral(student.group) ? "general" : "vocational";
   const subjectCount = stream === "general" ? 6 : 5;
@@ -116,6 +119,7 @@ export default function StudentProfilePage() {
 
       {/* Profile */}
       <div className="bg-white shadow-md rounded-lg p-4 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        
         <div className="space-y-2 text-sm">
           <p><User className="inline mr-1" size={16} /> <strong>Name:</strong> {student.name}</p>
           <p><Users className="inline mr-1" size={16} /> <strong>Father:</strong> {student.fatherName}</p>
@@ -142,9 +146,9 @@ export default function StudentProfilePage() {
       </div>
 
       {/* Exam Summary */}
-      <h2 className="text-lg font-bold text-slate-800 mb-2">Exam Summary</h2>
+      <h1 className="text-lg font-bold text-slate-800 mb-2 "><ClipboardList className="inline mr-1" color="green" size={25} /> Exam Summary</h1>
       {exams.length === 0 ? (
-        <p className="text-gray-500">No exam records available.</p>
+        <p className="text-red-500 text-lg ">No exam records available.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {exams.map((e, i) => {
@@ -207,7 +211,7 @@ export default function StudentProfilePage() {
 
       {/* Attendance Summary */}
       <div className="bg-white shadow rounded-lg p-4">
-        <h2 className="text-xl font-bold mb-2 text-slate-700">📅 Monthly Attendance Summary</h2>
+        <h2 className="text-xl font-bold mb-2 text-slate-700 flex items-center justify-center">📅 Monthly Attendance Summary</h2>
         <AttendanceSummaryTable studentId={id} />
       </div>
     </div>

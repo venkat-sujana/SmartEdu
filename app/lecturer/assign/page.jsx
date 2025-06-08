@@ -38,13 +38,12 @@ export default function AssignStudentsPage() {
   }, []);
 
   useEffect(() => {
-    // Filter students when group or year changes
     if (selectedGroup && selectedYear) {
       const filtered = students.filter(
         (stu) => stu.group === selectedGroup && stu.yearOfStudy === selectedYear
       );
       setFilteredStudents(filtered);
-      setSelectedStudents([]); // Reset selected students when filter changes
+      setSelectedStudents([]);
     } else {
       setFilteredStudents([]);
     }
@@ -89,8 +88,8 @@ export default function AssignStudentsPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow rounded">
-      <h2 className="text-2xl font-bold mb-4">Assign Students to Lecturer</h2>
+    <div className="max-w-5xl mx-auto mt-10 p-6 bg-white shadow rounded">
+      <h2 className="text-2xl font-bold mb-6 text-center">Assign Students to Lecturer</h2>
 
       {message && (
         <div className={`mb-4 p-3 rounded ${
@@ -141,7 +140,7 @@ export default function AssignStudentsPage() {
           </select>
         </div>
 
-        {/* Year of Study Dropdown */}
+        {/* Year Dropdown */}
         <div className="mb-4">
           <label className="block font-medium mb-1">Select Year of Study</label>
           <select
@@ -157,41 +156,50 @@ export default function AssignStudentsPage() {
           </select>
         </div>
 
-        {/* Student Checkboxes */}
+        {/* Student Grid */}
         {selectedGroup && selectedYear && (
-          <div className="mb-4">
-            <label className="block font-medium mb-1">
+          <div className="mb-6">
+            <h3 className="font-semibold text-lg mb-2">
               Select Students ({selectedGroup} - {selectedYear})
-            </label>
-            <div className="h-48 overflow-y-auto border rounded p-2">
-              {filteredStudents.length > 0 ? (
-                filteredStudents.map((stu) => (
-                  <div key={stu._id} className="flex items-center space-x-2 mb-1">
-                    <input
-                      type="checkbox"
-                      id={`student-${stu._id}`}
-                      value={stu._id}
-                      checked={selectedStudents.includes(stu._id)}
-                      onChange={(e) => {
-                        const id = e.target.value;
-                        setSelectedStudents((prev) =>
-                          prev.includes(id)
-                            ? prev.filter((s) => s !== id)
-                            : [...prev, id]
-                        );
-                      }}
-                      disabled={isSubmitting}
-                      className="h-4 w-4"
-                    />
-                    <label htmlFor={`student-${stu._id}`} className="select-none">
-                      {stu.name} ({stu.rollNumber || stu.email})
-                    </label>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500">No students found for this group and year</p>
-              )}
-            </div>
+            </h3>
+            {filteredStudents.length > 0 ? (
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+  {filteredStudents.map((stu) => (
+    <div key={stu._id} className="flex items-center gap-4 p-3 bg-gray-100 rounded shadow">
+      <img
+        src={stu.photo}
+        alt={stu.name}
+        className="w-16 h-16 object-cover rounded-full border"
+      />
+      <div>
+        <p className="font-semibold">{stu.name}</p>
+        <p className="text-sm text-gray-600">{stu.rollNumber || "No Roll"}</p>
+        <label className="inline-flex items-center mt-1">
+          <input
+            type="checkbox"
+            value={stu._id}
+            checked={selectedStudents.includes(stu._id)}
+            onChange={(e) => {
+              const id = e.target.value;
+              setSelectedStudents((prev) =>
+                prev.includes(id)
+                  ? prev.filter((s) => s !== id)
+                  : [...prev, id]
+              );
+            }}
+            disabled={isSubmitting}
+            className="h-4 w-4 mr-2"
+          />
+          Select
+        </label>
+      </div>
+    </div>
+  ))}
+</div>
+
+            ) : (
+              <p className="text-gray-500">No students found for this group and year.</p>
+            )}
           </div>
         )}
 
@@ -199,7 +207,7 @@ export default function AssignStudentsPage() {
         <button
           type="submit"
           disabled={isSubmitting || !lecturerId || selectedStudents.length === 0}
-          className={`px-4 py-2 rounded text-white ${
+          className={`px-6 py-2 rounded text-white font-semibold ${
             isSubmitting ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
           }`}
         >

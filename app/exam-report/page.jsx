@@ -101,7 +101,7 @@ export default function ExamReportPage() {
   const vocationalColumns = ["GFC", "English", "V1/V4", "V2/V5", "V3/V6"];
 
   return (
-    <div className="p-6">
+    <div className="p-6 ">
       <h1 className="text-2xl font-bold mb-2 flex items-center justify-center">
         Exam Summary Report
       </h1>

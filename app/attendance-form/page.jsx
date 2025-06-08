@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,14 +12,23 @@ const AttendanceForm = () => {
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
   const monthsList = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const yearsList = ["First Year", "Second Year"];
-
 
   useEffect(() => {
     fetch("/api/students")
@@ -33,17 +41,17 @@ const AttendanceForm = () => {
       .catch((err) => console.error("Error fetching students", err));
   }, []);
 
-useEffect(() => {
-  if (selectedGroup && selectedYearOfStudy) {
-    const filtered = students.filter(
-      (s) => s.group === selectedGroup && s.yearOfStudy === selectedYearOfStudy
-    );
-    setFilteredStudents(filtered);
-  } else {
-    setFilteredStudents([]);
-  }
-}, [selectedGroup, selectedYearOfStudy, students]);
-
+  useEffect(() => {
+    if (selectedGroup && selectedYearOfStudy) {
+      const filtered = students.filter(
+        (s) =>
+          s.group === selectedGroup && s.yearOfStudy === selectedYearOfStudy
+      );
+      setFilteredStudents(filtered);
+    } else {
+      setFilteredStudents([]);
+    }
+  }, [selectedGroup, selectedYearOfStudy, students]);
 
   const handleToggleChange = (studentId, status) => {
     setAttendanceData((prev) => ({
@@ -54,7 +62,9 @@ useEffect(() => {
 
   const handleSubmit = async () => {
     if (!selectedDate || !selectedGroup || filteredStudents.length === 0) {
-      toast.error("Please select a date, group, and ensure students are visible.");
+      toast.error(
+        "Please select a date, group, and ensure students are visible."
+      );
       return;
     }
 
@@ -62,16 +72,15 @@ useEffect(() => {
     const month = monthsList[dateObj.getMonth()];
     const year = dateObj.getFullYear();
 
-const attendanceRecords = filteredStudents.map((student) => ({
-  studentId: student._id,
-  date: selectedDate,
-  status: attendanceData[student._id] || "Absent",
-  group: selectedGroup,
-  month,
-  year,
-  yearOfStudy: selectedYearOfStudy, // 🔥 Add this line
-}));
-
+    const attendanceRecords = filteredStudents.map((student) => ({
+      studentId: student._id,
+      date: selectedDate,
+      status: attendanceData[student._id] || "Absent",
+      group: selectedGroup,
+      month,
+      year,
+      yearOfStudy: selectedYearOfStudy, // 🔥 Add this line
+    }));
 
     setIsLoading(true);
     const toastId = toast.loading("Submitting attendance...");
@@ -96,7 +105,7 @@ const attendanceRecords = filteredStudents.map((student) => ({
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-100 to-white ">
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-100 to-white mt-4 ">
       {isLoading && (
         <div className="fixed inset-0 z-50 bg-white bg-opacity-80 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
@@ -106,7 +115,9 @@ const attendanceRecords = filteredStudents.map((student) => ({
       <Toaster position="top-center" />
 
       <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
-        <h1 className="text-2xl font-bold mb-4 flex items-center justify-center">Attendance Form-2025</h1>
+        <h1 className="text-2xl font-bold mb-4 flex items-center justify-center text-blue-800">
+          Attendance Form-2025
+        </h1>
         <p className="text-gray-600 mb-4">
           👉 Note:-Please select a date, group, and ensure students are visible.
         </p>
@@ -120,7 +131,9 @@ const attendanceRecords = filteredStudents.map((student) => ({
         </Link>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Date</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Date
+          </label>
           <input
             type="date"
             value={selectedDate}
@@ -131,24 +144,27 @@ const attendanceRecords = filteredStudents.map((student) => ({
         </div>
 
         <div className="mb-4">
-  <label className="block text-sm font-medium text-gray-700">Year of Study</label>
-  <select
-    value={selectedYearOfStudy}
-    onChange={(e) => setSelectedYearOfStudy(e.target.value)}
-    className="mt-1 block w-full border rounded-md px-3 py-2"
-  >
-    <option value="">Select Year</option>
-    {yearsList.map((year) => (
-      <option key={year} value={year}>
-        {year}
-      </option>
-    ))}
-  </select>
-</div>
-
+          <label className="block text-sm font-medium text-gray-700">
+            Year of Study
+          </label>
+          <select
+            value={selectedYearOfStudy}
+            onChange={(e) => setSelectedYearOfStudy(e.target.value)}
+            className="mt-1 block w-full border rounded-md px-3 py-2"
+          >
+            <option value="">Select Year</option>
+            {yearsList.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Group</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Group
+          </label>
           <select
             value={selectedGroup}
             onChange={(e) => setSelectedGroup(e.target.value)}
@@ -163,47 +179,50 @@ const attendanceRecords = filteredStudents.map((student) => ({
           </select>
         </div>
 
-        
-
         {filteredStudents.length > 0 && (
           <div className="mt-4">
             <h3 className="font-semibold mb-2">Students List</h3>
-            <div className="space-y-2">
-              {filteredStudents.map((student) => (
-                <div
-                  key={student._id}
-                  className="flex items-center justify-between bg-gray-100 p-2 rounded-md"
-                >
-                  <span>{student.name}</span>
-                  <div>
-                    <button
-                      onClick={() => handleToggleChange(student._id, "Present")}
-                      className={`px-3 py-1 rounded-md text-white mr-2 ${
-                        attendanceData[student._id] === "Present"
-                          ? "bg-green-600"
-                          : "bg-gray-400"
-                      }`}
-                    >
-                      Present
-                    </button>
-                    <button
-                      onClick={() => handleToggleChange(student._id, "Absent")}
-                      className={`px-3 py-1 rounded-md text-white ${
-                        attendanceData[student._id] === "Absent"
-                          ? "bg-red-600"
-                          : "bg-gray-400"
-                      }`}
-                    >
-                      Absent
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+  {filteredStudents.map((student) => (
+    <div
+      key={student._id}
+      className="bg-white border border-gray-200 rounded-xl shadow p-4 flex flex-col items-center space-y-2"
+    >
+      <img
+        src={student.photo || "/default-avatar.png"}
+        alt={student.name}
+        className="w-24 h-24 object-cover rounded-full border-2 border-blue-400"
+      />
+      <h4 className="text-lg font-semibold text-gray-800">{student.name}</h4>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => handleToggleChange(student._id, "Present")}
+          className={`px-3 py-1 rounded-full text-white text-sm ${
+            attendanceData[student._id] === "Present"
+              ? "bg-green-600"
+              : "bg-gray-400"
+          }`}
+        >
+          Present
+        </button>
+        <button
+          onClick={() => handleToggleChange(student._id, "Absent")}
+          className={`px-3 py-1 rounded-full text-white text-sm ${
+            attendanceData[student._id] === "Absent"
+              ? "bg-red-600"
+              : "bg-gray-400"
+          }`}
+        >
+          Absent
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
+
           </div>
         )}
-
-        
 
         {filteredStudents.length > 0 && (
           <div className="mt-6 text-right">

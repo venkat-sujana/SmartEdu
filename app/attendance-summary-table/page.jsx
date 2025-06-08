@@ -3,6 +3,8 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+
+
 const monthsOrder = [
   "June", "July", "August", "September", "October",
   "November", "December", "January", "February", "March"
@@ -43,7 +45,7 @@ useEffect(() => {
 }, [studentId]);
 
 
-  if (!summary) return <p>Loading...</p>;
+  if (!summary) return <p className="text-center text-2xl text-green-300">loading......</p>;
 
   return (
     <div className="overflow-x-auto border rounded-lg mt-4">

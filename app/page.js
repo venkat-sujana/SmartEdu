@@ -60,8 +60,8 @@ export default function Home() {
         <Image
           src="/images/skrlogo.png"
           alt="OSRA Logo"
-          width={500}
-          height={500}
+          width={600}
+          height={600}
           className="mt-20 border-2 border-gray-300 rounded-lg shadow-lg"
           priority
         />
@@ -74,32 +74,32 @@ export default function Home() {
         Online Student Registration & Analysis
       </h2>
 
-      <p className="text-lg mt-4 text-center text-black max-w-2xl">
+      <p className="text-lg mt-4  text-left text-black max-w-2xl">
         🏫 <strong>OSRA</strong> – Online Student Registration & Analysis OSRA is a modern,
         full-stack web application designed to streamline student registration,
-        attendance tracking, and examination analysis for Junior Colleges.
+        attendance tracking, and examination analysis for Junior Colleges.<br/>
         Developed using <strong>Next.js</strong> and <strong>Tailwind CSS</strong>, <strong>OSRA</strong> empowers lecturers and
         administrators to efficiently manage student data, academic performance,
         and attendance across academic years and streams.
       </p>
 
-      <strong><p className="text-md mt-3 text-center text-black">
-        🔑 Key Features:<br/> 📝 Student Registration: Easy-to-use form for
+      <strong><p className="text-md mt-3 text-black flex items-center justify-left gap-2">
+        🔑 Key Features:<br/><br/> 📝 Student Registration: Easy-to-use form for
         registering students with personal details, photos, and stream
-        allocation (General/Vocational). <br/>📅 Attendance Management: Track daily,
+        allocation (General/Vocational). <br/><br/>📅 Attendance Management: Track daily,
         monthly, and year-wise attendance; generate printable attendance
-        summaries.<br/> 🧮 Exam Management: Enter subject-wise marks for each exam
-        type (Unit, Quarterly, Half-Yearly, Pre-Public); calculate totals,
-        percentages, and pass/fail status based on dynamic rules.<br/> 📊 Performance
+        summaries.<br/><br/> 🧮 Exam Management: Enter subject-wise marks for each exam
+        type (Unit, Quarterly, Half-Yearly, Pre-Public); <br/>calculate totals,
+        percentages, and pass/fail status based on dynamic rules.<br/><br/> 📊 Performance
         Reports: Generate A4-format profiles with photo, attendance, and exam
-        summaries; exportable as PDF. <br/>🔒 Lecturer Login: Secure access for
-        lecturers with individual profile photo support.<br/> ☁️ Cloud Integration:
+        summaries; exportable as PDF. <br/><br/>🔒 Lecturer Login: Secure access for
+        lecturers with individual profile photo support.<br/><br/> ☁️ Cloud Integration:
         Cloudinary used for managing student and lecturer photos.
       </p></strong>
 
-     <strong> <p className="text-md mt-3 text-center text-black">
-        🎯 Why OSRA? Simplifies administrative tasks in government junior
-        colleges. Offers real-time, visual insights into student performance.
+     <strong> <p className="text-md mt-3 flex items-center justify-left text-black">
+        🎯 Why OSRA?<br/> Simplifies administrative tasks in government junior
+        colleges. Offers real-time, visual insights into student performance.<br/><br/>
         Reduces paperwork and enhances digital record-keeping. Tailored for both
         General (MPC, BiPC, CEC, HEC) and Vocational (MLT, M&AT, CET) streams.
       </p></strong>

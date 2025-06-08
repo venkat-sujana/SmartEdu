@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode"; // ✅ named export
 import Link from "next/link";
+import AnimatePulse from "@/app/animations/animate-pulse/page";
+import { Eye } from "lucide-react";
 
 export default function LecturerDashboard() {
   const [lecturer, setLecturer] = useState(null);
@@ -59,13 +61,13 @@ useEffect(() => {
     router.push("/login");
   };
 
-  if (!lecturer) return <div className="p-4">Loading dashboard...</div>;
+  if (!lecturer) return <AnimatePulse />;
 
   return (
     // Main Dashboard Layout
     <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-slate-100 to-slate-50 min-h-screen">
       <h1 className="text-4xl font-extrabold text-center text-amber-900 mb-6 drop-shadow-md">
-        🧑‍🏫 Lecturer Dashboard
+        🧑‍🏫 LECTURER DASHBOARD
       </h1>
 
       {/* Top Action Buttons */}
@@ -181,9 +183,9 @@ useEffect(() => {
                     <td className="p-2 border">{s.address}</td>
                     <td className="p-2 border">
                       <button
-                        className="bg-blue-500 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-600 transition"
+                        className="bg-blue-500 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-600 transition cursor-pointer"
                         onClick={() => router.push(`/students/${s._id}`)}
-                      >
+                      ><Eye className="inline mr-1" />
                         View
                       </button>
                     </td>

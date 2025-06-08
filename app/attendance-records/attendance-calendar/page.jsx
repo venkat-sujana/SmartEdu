@@ -1,18 +1,14 @@
+// app/attendance-records/attendance-calendar/page.jsx
 "use client";
 import { useEffect, useState } from "react";
+import '@/app/styles/globals.css'; // 👉 ఇది ఉంటే styles లో ఉందని అర్థం
 
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 
 import Link from "next/link";
-import {
-  FileDown,
-  FileSpreadsheet,
-  Pencil,
-  Trash2,
-  Printer,
-} from "lucide-react";
+
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthNames = [
@@ -29,6 +25,9 @@ const monthNames = [
   "November",
   "December",
 ];
+
+
+
 
 export default function CalendarView() {
   const [group, setGroup] = useState("");
@@ -70,9 +69,11 @@ export default function CalendarView() {
     attendanceData.map((r) => [new Date(r.date).getDate(), r.status])
   );
 
+  
+
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4 flex items-center justify-center">Monthly Attendance Calendar-2025</h2>
+      <h1 className="text-2xl font-bold mb-4 flex items-center justify-center text-blue-500">Monthly Attendance Calendar-2025</h1>
       <p className="mb-4">
         👉Note:-Select a group and student to view their attendance.
       </p>
@@ -153,25 +154,41 @@ export default function CalendarView() {
       </div>
 
       {/* Calendar Grid */}
-      <div id="calendar-grid" className="grid grid-cols-7 gap-2 text-center">
-        {[...Array(daysInMonth)].map((_, day) => {
-          const date = day + 1;
-          const status = attendanceMap[date] || "N/A";
-          const color =
-            status === "Present"
-              ? "bg-green-300"
-              : status === "Absent"
-              ? "bg-red-300"
-              : "bg-gray-200";
+<div id="calendar-grid" className="grid grid-cols-7 gap-2 text-center">
+  {[...Array(daysInMonth)].map((_, day) => {
+    const date = day + 1;
+    const status = attendanceMap[date] || "N/A";
+    const color =
+      status === "Present"
+        ? "bg-green-300"
+        : status === "Absent"
+        ? "bg-red-300"
+        : "bg-gray-200";
 
-          return (
-            <div key={date} className={`p-2 border rounded ${color}`}>
-              <div className="font-bold">{date}</div>
-              <div className="text-sm">{status}</div>
-            </div>
-          );
-        })}
+    return (
+      <div key={date} className={`p-2 border rounded ${color}`}>
+
+        
+        <div className="font-bold">{date}</div>
+{status === "Present" ? (
+  <img
+    src={
+      students.find((s) => s._id === studentId)?.photo ||
+      "/default-avatar.png"
+    }
+    alt="Student Photo"
+    className="mx-auto mt-1 w-10 h-10 rounded-full object-cover border border-gray-400 
+               transition-all duration-300 ease-in-out transform hover:scale-110 opacity-0 animate-fade-in"
+  />
+) : (
+  <div className="text-sm">{status}</div>
+)}
+
       </div>
+    );
+  })}
+</div>
+
     </div>
   );
 }
