@@ -1,7 +1,7 @@
 // app/attendance-records/attendance-calendar/page.jsx
 "use client";
 import { useEffect, useState } from "react";
-import '@/app/styles/globals.css'; // 👉 ఇది ఉంటే styles లో ఉందని అర్థం
+
 
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
