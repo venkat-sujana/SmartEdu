@@ -2,7 +2,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Users,Home } from "lucide-react";
+import { Users, Home } from "lucide-react";
 
 import toast from "react-hot-toast";
 
@@ -136,162 +136,173 @@ export default function RegisterPage() {
           <p className="text-blue-600 font-semibold text-xl">Registering...</p>
         </div>
       )}
-      <div className="max-w-2xl mx-auto mt-10 bg-cyan-100 shadow-lg rounded-xl p-6 font-bold border-x-black border-x-2 border-t-2 border-b-2 border-t-blue-600 border-b-blue-600">
+      <div className="max-w-2xl mx-auto mt-10 bg-gray-100 shadow-lg rounded-xl p-6 font-bold border-x-black border-x-2 border-t-2 border-b-2 border-t-blue-600 border-b-blue-600">
         <h1 className="text-lg font-bold mb-4 text-center  text-blue-600">
           S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR
         </h1>
-        <h2 className="text-xl font-bold mb-4 text-white bg-blue-600 text-center">
+        <h2 className="text-xl font-bold mb-4 text-white bg-teal-600 text-center">
           🧑‍🎓🧑‍🎓&nbsp;Student Admission Form-2025
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Full Name"
-            className="w-full p-1 border rounded font-bold"
-            required
-          />
-          <input
-            name="fatherName"
-            value={formData.fatherName}
-            onChange={handleChange}
-            placeholder="Father's Name"
-            className="w-full p-1 border rounded font-bold"
-            required
-          />
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          {/* Column 1 */}
+          <div className="space-y-4">
+            <input 
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="w-full p-2 border rounded-md "
+              required
+            />
+            <input
+              name="fatherName"
+              value={formData.fatherName}
+              onChange={handleChange}
+              placeholder="Father's Name"
+              className="w-full p-2 border rounded-md"
+              required
+            />
+            <input
+              name="mobile"
+              value={formData.mobile}
+              onChange={handleChange}
+              placeholder="Mobile Number"
+              className="w-full p-2 border rounded-md"
+              required
+            />
+            <select
+              name="group"
+              value={formData.group}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-md"
+              required
+            >
+              <option value="">Select Group</option>
+              <option value="MPC">MPC</option>
+              <option value="BiPC">BiPC</option>
+              <option value="CEC">CEC</option>
+              <option value="HEC">HEC</option>
+              <option value="M&AT">M&AT</option>
+              <option value="MLT">MLT</option>
+              <option value="CET">CET</option>
+            </select>
+            <select
+              name="caste"
+              value={formData.caste}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-md"
+              required
+            >
+              <option value="">Select Caste</option>
+              <option value="OC">OC</option>
+              <option value="OBC">OBC</option>
+              <option value="BC-A">BC-A</option>
+              <option value="BC-B">BC-B</option>
+              <option value="BC-C">BC-C</option>
+              <option value="BC-D">BC-D</option>
+              <option value="BC-E">BC-E</option>
+              <option value="SC">SC</option>
+              <option value="SC-A">SC-A</option>
+              <option value="SC-B">SC-B</option>
+              <option value="SC-C">SC-C</option>
+              <option value="ST">ST</option>
+              <option value="OTHER">OTHER</option>
+            </select>
+            <div>
+              <label className="text-sm text-gray-600">Date of Birth</label>
+              <input
+                type="date"
+                name="dob"
+                value={formData.dob}
+                onChange={handleChange}
+                className="w-full p-2 border rounded-md"
+                required
+              />
+            </div>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-md"
+              required
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
 
-          <input
-            name="mobile"
-            value={formData.mobile}
-            onChange={handleChange}
-            placeholder="Mobile Number"
-            className="w-full p-1 border rounded font-bold"
-            required
-          />
+          {/* Column 2 */}
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-gray-600">Admission Number</label>
+              <input
+                name="admissionNo"
+                value={formData.admissionNo}
+                onChange={handleChange}
+                placeholder="Admission Number"
+                className="w-full p-2 border rounded-md"
+                required
+              />
+            </div>
+            <select
+              name="yearOfStudy"
+              value={formData.yearOfStudy}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-md"
+              required
+            >
+              <option value="">Select Year of Study</option>
+              <option value="First Year">First Year</option>
+              <option value="Second Year">Second Year</option>
+            </select>
+            <div>
+              <label className="text-sm text-gray-600">Admission Year</label>
+              <input
+                type="number"
+                name="admissionYear"
+                value={formData.admissionYear}
+                onChange={handleChange}
+                placeholder="Admission Year"
+                className="w-full p-2 border rounded-md"
+                required
+              />
+            </div>
+            <textarea
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              placeholder="Address"
+              className="w-full p-2 border rounded-md"
+              rows={4}
+              required
+            />
+            <div>
+              <label className="text-sm text-gray-600">Upload Photo</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPhoto(e.target.files[0])}
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+          </div>
 
-          <select
-            name="group"
-            value={formData.group}
-            onChange={handleChange}
-            className="w-full p-1 border rounded font-bold"
-            required
-          >
-            <option value="">Select Group</option>
-            <option value="MPC">MPC</option>
-            <option value="BiPC">BiPC</option>
-            <option value="CEC">CEC</option>
-            <option value="HEC">HEC</option>
-
-            <option value="M&AT">M&AT</option>
-            <option value="MLT">MLT</option>
-            <option value="CET">CET</option>
-          </select>
-
-          <select
-            name="caste"
-            value={formData.caste}
-            onChange={handleChange}
-            className="w-full p-1 border rounded"
-            required
-          >
-            <option value="">Select Caste</option>
-            <option value="OC">OC</option>
-            <option value="OBC">OBC</option>
-            <option value="BC-E">BC</option>
-            <option value="BC-A">BC-A</option>
-            <option value="BC-B">BC-B</option>
-            <option value="BC-C">BC-C</option>
-            <option value="BC-D">BC-D</option>
-            <option value="BC-E">BC-E</option>
-            <option value="SC">SC</option>
-            <option value="SC-A">SC-A</option>
-            <option value="SC_B">SC-B</option>
-            <option value="SC-C">SC-C</option>
-            <option value="ST">ST</option>
-            <option value="OTHER">OTHER</option>
-          </select>
-          <label className="text-sm text-gray-600">Date of Birth</label>
-          <input
-            type="date"
-            name="dob"
-            value={formData.dob}
-            onChange={handleChange}
-            className="w-full p-1 border rounded"
-            required
-          />
-
-          <select
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-            className="w-full p-1 border rounded"
-            required
-          >
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-
-          <label className="text-sm text-gray-600">Admission Number</label>
-          <input
-            name="admissionNo"
-            value={formData.admissionNo}
-            onChange={handleChange}
-            placeholder="Admiassion Number"
-            className="w-full p-1 border rounded font-bold"
-            required
-          />
-
-          <select
-            name="yearOfStudy"
-            value={formData.yearOfStudy}
-            onChange={handleChange}
-            className="w-full p-1 border rounded"
-            required
-          >
-            <option value="">Select Year of Study</option>
-            <option value="First Year">First Year</option>
-            <option value="Second Year">Second Year</option>
-          </select>
-
-          <label className="text-sm text-gray-600">Admission Year</label>
-          <input
-            type="number"
-            name="admissionYear"
-            value={formData.admissionYear}
-            onChange={handleChange}
-            placeholder="Admission Year"
-            className="w-full p-1 border rounded"
-            required
-          />
-
-          <textarea
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            placeholder="Address"
-            className="w-full p-1 border rounded font-bold"
-            required
-          />
-
-          <label className="text-sm text-gray-600">Upload Photo</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setPhoto(e.target.files[0])}
-            className="w-full p-0 border rounded font-bold"
-          />
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 cursor-pointer transition duration-200"
-            disabled={isLoading}
-          >
-            Submit
-          </button>
+          {/* Submit Button - Full Width */}
+          <div className="md:col-span-2">
+            <button
+              type="submit"
+              className="w-full bg-teal-950 text-white py-2 rounded hover:bg-blue-700 transition duration-200 cursor-pointer"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+          </div>
         </form>
       </div>
     </div>

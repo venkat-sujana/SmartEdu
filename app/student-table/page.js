@@ -45,7 +45,7 @@ export default function StudentsPage() {
   const [editingStudent, setEditingStudent] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(0);
-  const studentsPerPage = 5;
+  const studentsPerPage = 10;
 
   const tableRef = useRef();
 
@@ -262,13 +262,10 @@ export default function StudentsPage() {
   const pageCount = Math.ceil(filteredStudents.length / studentsPerPage);
 
   return (
-    
     <div className="p-6 max-w-8xl mx-auto">
-
-      <h1 className="text-2xl font-bold mb-4 text-center">
-        S.K.R.GOVERNMENT JUNIOR COLLEGE
+      <h1 className="text-2xl font-bold mb-4 text-center text-green-500  ">
+        S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR
       </h1>
-      
 
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
@@ -391,8 +388,31 @@ export default function StudentsPage() {
             📝&nbsp; Exam Report
           </button>
         </Link>
+
+        <Link href="/exams-form">
+          <button className="w-full bg-amber-900 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+            📝&nbsp;Marks Entry Form
+          </button>
+        </Link>
+
+        <Link href="/attendance-form">
+          <button className="w-full bg-cyan-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+            📝&nbsp; Attendance Form
+          </button>
+        </Link>
+
+        <Link href="/lecturer/register">
+          <button className="w-full bg-amber-800 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+            📝&nbsp; Add Lecturer
+          </button>
+        </Link>
+
+        <Link href="/login">
+          <button className="w-full bg-slate-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+            📝&nbsp; Lecturer Login
+          </button>
+        </Link>
       </div>
-      
 
       {/* Students Table */}
       <div className="overflow-x-auto" ref={tableRef}>
