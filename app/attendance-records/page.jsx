@@ -1,3 +1,6 @@
+//app/attendance-records
+
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,33 +22,53 @@ export default function AttendanceRecords() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [group, setGroup] = useState("");
+  const [yearOfStudy, setYearOfStudy] = useState("");
+
+
+
+const firstYearRecords = records.filter((r) => r.group && yearOfStudy === "First Year" || !yearOfStudy);
+const secondYearRecords = records.filter((r) => r.group && yearOfStudy === "Second Year" || !yearOfStudy);
+
+const firstYearPresent = firstYearRecords.reduce((sum, r) => sum + (r.present || 0), 0);
+const firstYearAbsent = firstYearRecords.reduce((sum, r) => sum + (r.absent || 0), 0);
+const firstYearTotal = firstYearPresent + firstYearAbsent;
+const firstYearPercent = firstYearTotal === 0 ? 0 : ((firstYearPresent / firstYearTotal) * 100).toFixed(2);
+
+const secondYearPresent = secondYearRecords.reduce((sum, r) => sum + (r.present || 0), 0);
+const secondYearAbsent = secondYearRecords.reduce((sum, r) => sum + (r.absent || 0), 0);
+const secondYearTotal = secondYearPresent + secondYearAbsent;
+const secondYearPercent = secondYearTotal === 0 ? 0 : ((secondYearPresent / secondYearTotal) * 100).toFixed(2);
+
+
 
   const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 
-  const fetchData = async () => {
-    let query = "/api/attendance/summary/daily-group?";
-    if (startDate) query += `start=${startDate}&`;
-    if (endDate) query += `end=${endDate}&`;
-    if (group) query += `group=${encodeURIComponent(group)}&`; // ✅ fixed here
+const fetchData = async () => {
+  let query = "/api/attendance/summary/daily-group?";
+  if (startDate) query += `start=${startDate}&`;
+  if (endDate) query += `end=${endDate}&`;
+  if (group) query += `group=${encodeURIComponent(group)}&`;
+  if (yearOfStudy) query += `yearOfStudy=${encodeURIComponent(yearOfStudy)}&`;
 
-    try {
-      const res = await fetch(query);
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("API Error Response:", text);
-        return;
-      }
-
-      const data = await res.json();
-      if (Array.isArray(data.data)) {
-        setRecords(data.data);
-      } else {
-        console.error("Unexpected response format", data);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
+  try {
+    const res = await fetch(query);
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("API Error Response:", text);
+      return;
     }
-  };
+
+    const data = await res.json();
+    if (Array.isArray(data.data)) {
+      setRecords(data.data);
+    } else {
+      console.error("Unexpected response format", data);
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
 
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
@@ -154,6 +177,24 @@ export default function AttendanceRecords() {
             ))}
           </select>
         </div>
+
+<div>
+  <label className="block text-sm font-medium">Year of Study</label>
+  <select
+    value={yearOfStudy}
+    onChange={(e) => setYearOfStudy(e.target.value)}
+    className="border rounded px-2 py-1"
+  >
+    <option value="">All Years</option>
+    <option value="First Year">I Year</option>
+    <option value="Second Year">II Year</option>
+  </select>
+</div>
+
+
+
+
+
         <div className="flex items-end">
           <button
             onClick={fetchData}
@@ -267,7 +308,30 @@ export default function AttendanceRecords() {
                     {record.percentage.toFixed(2)}%
                   </td>
                 </tr>
+
+                
+
+
               ))}
+
+              {/* I Year Summary Row */}
+<tr className="bg-yellow-100 font-semibold">
+  <td colSpan={3} className="border px-4 py-2 text-right">I Year Total</td>
+  <td className="border px-4 py-2">{firstYearPresent}</td>
+  <td className="border px-4 py-2">{firstYearAbsent}</td>
+  <td className="border px-4 py-2">{firstYearTotal}</td>
+  <td className="border px-4 py-2">{firstYearPercent}%</td>
+</tr>
+
+{/* II Year Summary Row */}
+<tr className="bg-orange-100 font-semibold">
+  <td colSpan={3} className="border px-4 py-2 text-right">II Year Total</td>
+  <td className="border px-4 py-2">{secondYearPresent}</td>
+  <td className="border px-4 py-2">{secondYearAbsent}</td>
+  <td className="border px-4 py-2">{secondYearTotal}</td>
+  <td className="border px-4 py-2">{secondYearPercent}%</td>
+</tr>
+
 
               {/* ✅ College Total Row */}
               <tr className="bg-green-100 font-semibold">

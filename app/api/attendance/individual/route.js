@@ -8,15 +8,16 @@ export async function GET(req) {
 
   const { searchParams } = new URL(req.url);
   const group = decodeURIComponent(searchParams.get("group"));
+  const year = decodeURIComponent(searchParams.get("year")); // ✅ new
   const start = searchParams.get("start");
   const end = searchParams.get("end");
 
-
-
-  if (!group) return NextResponse.json({ error: "Missing group" });
+  if (!group || !year) {
+    return NextResponse.json({ error: "Missing group or year" });
+  }
 
   try {
-    const students = await Student.find({ group }).select("_id name");
+    const students = await Student.find({ group, yearOfStudy: year }).select("_id name");
 
     const studentIds = students.map((s) => s._id);
 
@@ -60,3 +61,4 @@ export async function GET(req) {
     return NextResponse.json({ error: "Failed to fetch group-wise individual data" });
   }
 }
+

@@ -8,14 +8,17 @@ import Link from "next/link";
 export default function IndividualReport() {
   const [records, setRecords] = useState([]);
   const [group, setGroup] = useState("");
+  const [year, setYear] = useState(""); // ✅ NEW STATE
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
+  const years = ["First Year", "Second Year"]; // ✅ NEW DROPDOWN OPTIONS
 
   const fetchData = async () => {
     const encodedGroup = encodeURIComponent(group);
-    let query = `/api/attendance/individual?group=${encodedGroup}`;
+    const encodedYear = encodeURIComponent(year);
+    let query = `/api/attendance/individual?group=${encodedGroup}&year=${encodedYear}`;
 
     if (startDate && endDate) {
       query += `&start=${startDate}&end=${endDate}`;
@@ -56,9 +59,10 @@ export default function IndividualReport() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6 text-center">Group-wise Student Attendance Report</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Group & Year-wise Student Attendance Report</h2>
 
       <div className="flex flex-wrap gap-4 items-end justify-center mb-6">
+        {/* Group Dropdown */}
         <select
           value={group}
           onChange={(e) => setGroup(e.target.value)}
@@ -70,6 +74,19 @@ export default function IndividualReport() {
           ))}
         </select>
 
+        {/* Year Dropdown */}
+        <select
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+          className="border px-4 py-2 rounded"
+        >
+          <option value="">Select Year</option>
+          {years.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+
+        {/* Start Date */}
         <input
           type="date"
           value={startDate}
@@ -77,6 +94,7 @@ export default function IndividualReport() {
           className="border px-4 py-2 rounded"
         />
 
+        {/* End Date */}
         <input
           type="date"
           value={endDate}
@@ -84,6 +102,7 @@ export default function IndividualReport() {
           className="border px-4 py-2 rounded"
         />
 
+        {/* Report Button */}
         <button
           onClick={fetchData}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -91,6 +110,7 @@ export default function IndividualReport() {
          📝&nbsp; Get Report
         </button>
 
+        {/* Print */}
         <button
           onClick={handlePrint}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
@@ -98,6 +118,7 @@ export default function IndividualReport() {
           <Printer className="inline mr-2" /> Print
         </button>
 
+        {/* Excel */}
         <button
           onClick={handleExportExcel}
           className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
@@ -106,6 +127,7 @@ export default function IndividualReport() {
         </button>
       </div>
 
+      {/* Navigation Buttons */}
       <div className="flex justify-center gap-4 mb-6">
         <Link href="/attendance-form">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold">
@@ -119,6 +141,7 @@ export default function IndividualReport() {
         </Link>
       </div>
 
+      {/* Attendance Table */}
       <div id="attendance-table" className="overflow-x-auto">
         {records.length > 0 ? (
           <table className="table-auto w-full border border-gray-300 text-center">

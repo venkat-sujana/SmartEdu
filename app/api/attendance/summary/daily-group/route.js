@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
+import Student from "@/models/Student";
 
 export async function GET(req) {
   await connectMongoDB();
@@ -9,6 +10,7 @@ export async function GET(req) {
   const start = searchParams.get("start");
   const end = searchParams.get("end");
   const group = searchParams.get("group");
+  const yearOfStudy = searchParams.get("yearOfStudy");
 
   try {
     const matchStage = {};
@@ -28,8 +30,28 @@ export async function GET(req) {
 
     if (group) matchStage.group = group;
 
-    const summary = await Attendance.aggregate([
+    const pipeline = [
       { $match: matchStage },
+      {
+        $lookup: {
+          from: "students",
+          localField: "studentId",
+          foreignField: "_id",
+          as: "studentInfo",
+        },
+      },
+      { $unwind: "$studentInfo" },
+    ];
+
+    if (yearOfStudy) {
+      pipeline.push({
+        $match: {
+          "studentInfo.yearOfStudy": yearOfStudy,
+        },
+      });
+    }
+
+    pipeline.push(
       {
         $group: {
           _id: {
@@ -114,15 +136,14 @@ export async function GET(req) {
           },
         },
       },
-      { $sort: { date: -1, group: 1 } },
-    ]);
+      { $sort: { date: -1, group: 1 } }
+    );
+
+    const summary = await Attendance.aggregate(pipeline);
 
     return NextResponse.json({ data: summary });
   } catch (error) {
     console.error("API error:", error);
-   return NextResponse.json({ data: summary });
-
+    return NextResponse.json({ error: "Failed to fetch attendance summary" });
   }
 }
-
-

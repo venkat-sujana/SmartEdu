@@ -2,13 +2,11 @@
 "use client";
 import { useEffect, useState } from "react";
 
-
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 
 import Link from "next/link";
-
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthNames = [
@@ -25,9 +23,6 @@ const monthNames = [
   "November",
   "December",
 ];
-
-
-
 
 export default function CalendarView() {
   const [group, setGroup] = useState("");
@@ -69,11 +64,11 @@ export default function CalendarView() {
     attendanceData.map((r) => [new Date(r.date).getDate(), r.status])
   );
 
-  
-
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 flex items-center justify-center text-blue-500">Monthly Attendance Calendar-2025</h1>
+      <h1 className="text-2xl font-bold mb-4 flex items-center justify-center text-blue-500">
+        Monthly Attendance Calendar-2025
+      </h1>
       <p className="mb-4">
         👉Note:-Select a group and student to view their attendance.
       </p>
@@ -83,7 +78,7 @@ export default function CalendarView() {
       </p>
       <Link href="/attendance-form">
         <button className="bg-cyan-600 text-white px-4 py-2 mb-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-         📝&nbsp; Attendance Form
+          📝&nbsp; Attendance Form
         </button>
       </Link>
 
@@ -154,41 +149,36 @@ export default function CalendarView() {
       </div>
 
       {/* Calendar Grid */}
-<div id="calendar-grid" className="grid grid-cols-7 gap-2 text-center">
-  {[...Array(daysInMonth)].map((_, day) => {
-    const date = day + 1;
-    const status = attendanceMap[date] || "N/A";
-    const color =
-      status === "Present"
-        ? "bg-green-300"
-        : status === "Absent"
-        ? "bg-red-300"
-        : "bg-gray-200";
+      <div id="calendar-grid" className="grid grid-cols-7 gap-2 text-center">
+        {[...Array(daysInMonth)].map((_, day) => {
+          const date = day + 1;
+          const status = attendanceMap[date] || "N/A";
+          const color =
+            status === "Present"
+              ? "bg-green-300"
+              : status === "Absent"
+              ? "bg-red-300"
+              : "bg-gray-200";
 
-    return (
-      <div key={date} className={`p-2 border rounded ${color}`}>
-
-        
-        <div className="font-bold">{date}</div>
-{status === "Present" ? (
-  <img
-    src={
-      students.find((s) => s._id === studentId)?.photo ||
-      "/default-avatar.png"
-    }
-    alt="Student Photo"
-    className="mx-auto mt-1 w-10 h-10 rounded-full object-cover border border-gray-400 
-               transition-all duration-300 ease-in-out transform hover:scale-110 opacity-0 animate-fade-in"
-  />
-) : (
-  <div className="text-sm">{status}</div>
-)}
-
+          return (
+            <div key={date} className={`p-2 border rounded ${color}`}>
+              <div className="font-bold">{date}</div>
+              {status === "Present" ? (
+                <img
+                  src={
+                    students.find((s) => s._id === studentId)?.photo ||
+                    "/default-avatar.png"
+                  }
+                  alt="Student Photo"
+                  className="mx-auto mt-1 w-15 h-15 rounded-full object-cover border border-gray-400"
+                />
+              ) : (
+                <div className="text-sm">{status}</div>
+              )}
+            </div>
+          );
+        })}
       </div>
-    );
-  })}
-</div>
-
     </div>
   );
 }
