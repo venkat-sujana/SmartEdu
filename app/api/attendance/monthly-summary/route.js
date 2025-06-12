@@ -1,5 +1,3 @@
-
-//api/attendance/monthly-summary/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
@@ -10,18 +8,21 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
 
   const group = searchParams.get("group");
-const yearOfStudy = searchParams.get("yearOfStudy");
+  const yearOfStudy = searchParams.get("yearOfStudy");
 
-
-  if (!group) return NextResponse.json({ error: "Missing group" });
+  if (!group) {
+    return NextResponse.json({ error: "Missing group" });
+  }
 
   try {
     const studentQuery = { group };
-if (yearOfStudy) studentQuery.yearOfStudy = yearOfStudy;
-
+    if (yearOfStudy) {
+      studentQuery.yearOfStudy = yearOfStudy;
+    }
 
     const students = await Student.find(studentQuery).select("_id name");
 
+    const studentIds = students.map((s) => s._id);
 
     const months = [
       { label: "JUN", key: "June" },
@@ -35,8 +36,6 @@ if (yearOfStudy) studentQuery.yearOfStudy = yearOfStudy;
       { label: "FEB", key: "February" },
       { label: "MAR", key: "March" },
     ];
-
-    const studentIds = students.map((s) => s._id);
 
     const attendance = await Attendance.aggregate([
       { $match: { studentId: { $in: studentIds } } },
@@ -91,4 +90,3 @@ if (yearOfStudy) studentQuery.yearOfStudy = yearOfStudy;
     return NextResponse.json({ error: "Failed to generate summary" });
   }
 }
-

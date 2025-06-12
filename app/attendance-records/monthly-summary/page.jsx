@@ -5,44 +5,35 @@ import Link from "next/link";
 import { Printer } from "lucide-react";
 
 const months = [
-  "JUN",
-  "JUL",
-  "AUG",
-  "SEP",
-  "OCT",
-  "NOV",
-  "DEC",
-  "JAN",
-  "FEB",
-  "MAR",
+  "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR",
 ];
 const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
+const years = ["First Year", "Second Year"]; // Added year options
 
 export default function MonthlySummary() {
   const [summaryData, setSummaryData] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState("");
+  const [selectedYear, setSelectedYear] = useState(""); // Year state
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    if (!selectedGroup) return;
+    if (!selectedGroup || !selectedYear) return;
 
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `/api/attendance/monthly-summary?group=${encodeURIComponent(
-            selectedGroup
-          )}`
+          `/api/attendance/monthly-summary?group=${encodeURIComponent(selectedGroup)}&yearOfStudy=${encodeURIComponent(selectedYear)}`
         );
         const data = await res.json();
         console.log("API RESPONSE:", data);
-        setSummaryData(data.data);
+        setSummaryData(data.data || []);
       } catch (error) {
         console.error("Fetch error:", error);
       }
     };
 
     fetchData();
-  }, [selectedGroup]);
+  }, [selectedGroup, selectedYear]);
 
   const filteredData = summaryData.filter((student) =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -71,9 +62,11 @@ export default function MonthlySummary() {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-8 flex items-center justify-center">
+        Monthly Attendance Summary - 2025
+      </h2>
 
-      <h2 className="text-2xl font-bold mb-8 flex items-center justify-center">Monthly Attendance Summary-2025</h2>
-                  <strong>
+      <strong>
         <p className="mb-4">
           Features:
           <br />
@@ -92,7 +85,8 @@ export default function MonthlySummary() {
         </p>
       </strong>
 
-      <div className="mb-4 flex gap-4 items-center">
+      {/* Filters */}
+      <div className="mb-4 flex gap-4 items-center flex-wrap">
         <select
           value={selectedGroup}
           onChange={(e) => setSelectedGroup(e.target.value)}
@@ -106,34 +100,48 @@ export default function MonthlySummary() {
           ))}
         </select>
 
+        <select
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
+          className="border px-3 py-2 rounded bg-white"
+        >
+          <option value="">Select Year</option>
+          {years.map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="text"
+          placeholder="🔍 Search Student"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border px-3 py-2 rounded"
+        />
+
         <button
           onClick={handlePrint}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer "
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
         >
           <Printer className="inline mr-2" /> Print
         </button>
 
         <Link href="/attendance-form">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold cursor-pointer">
-            📝&nbsp;Attendance Form
+            📝 Attendance Form
           </button>
         </Link>
 
         <Link href="/attendance-records">
           <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold cursor-pointer">
-            🧾&nbsp;Attendance Records
+            🧾 Attendance Records
           </button>
         </Link>
-
-        <input
-          type="text"
-          placeholder="🔍&nbsp;Search Student"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border px-3 py-2 rounded"
-        />
       </div>
 
+      {/* Attendance Table */}
       <div id="print-area">
         <table className="table-auto w-full border border-gray-300 shadow text-sm">
           <thead className="bg-green-600 text-white">
@@ -167,8 +175,6 @@ export default function MonthlySummary() {
                     )}
                   </td>
                 </tr>
-
-              
 
                 {/* Present Row */}
                 <tr>
@@ -219,7 +225,7 @@ export default function MonthlySummary() {
                   </td>
                 </tr>
 
-                {/* Optional spacing row after each block */}
+                {/* Spacing */}
                 <tr>
                   <td colSpan={months.length + 3} className="h-4"></td>
                 </tr>

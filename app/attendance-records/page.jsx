@@ -1,6 +1,4 @@
 //app/attendance-records
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,119 +7,87 @@ import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Link from "next/link";
-import {
-  FileDown,
-  FileSpreadsheet,
-  Pencil,
-  Trash2,
-  Printer,
-} from "lucide-react";
+import { FileDown, FileSpreadsheet, Printer } from "lucide-react";
 
 export default function AttendanceRecords() {
   const [records, setRecords] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [group, setGroup] = useState("");
+
+  const [attendanceData, setAttendanceData] = useState({
+    "First Year": [],
+    "Second Year": [],
+  });
+
   const [yearOfStudy, setYearOfStudy] = useState("");
-
-
-
-const firstYearRecords = records.filter((r) => r.group && yearOfStudy === "First Year" || !yearOfStudy);
-const secondYearRecords = records.filter((r) => r.group && yearOfStudy === "Second Year" || !yearOfStudy);
-
-const firstYearPresent = firstYearRecords.reduce((sum, r) => sum + (r.present || 0), 0);
-const firstYearAbsent = firstYearRecords.reduce((sum, r) => sum + (r.absent || 0), 0);
-const firstYearTotal = firstYearPresent + firstYearAbsent;
-const firstYearPercent = firstYearTotal === 0 ? 0 : ((firstYearPresent / firstYearTotal) * 100).toFixed(2);
-
-const secondYearPresent = secondYearRecords.reduce((sum, r) => sum + (r.present || 0), 0);
-const secondYearAbsent = secondYearRecords.reduce((sum, r) => sum + (r.absent || 0), 0);
-const secondYearTotal = secondYearPresent + secondYearAbsent;
-const secondYearPercent = secondYearTotal === 0 ? 0 : ((secondYearPresent / secondYearTotal) * 100).toFixed(2);
-
-
 
   const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 
-const fetchData = async () => {
-  let query = "/api/attendance/summary/daily-group?";
-  if (startDate) query += `start=${startDate}&`;
-  if (endDate) query += `end=${endDate}&`;
-  if (group) query += `group=${encodeURIComponent(group)}&`;
-  if (yearOfStudy) query += `yearOfStudy=${encodeURIComponent(yearOfStudy)}&`;
+  const firstYearData = attendanceData["First Year"] || [];
+  const secondYearData = attendanceData["Second Year"] || [];
 
-  try {
-    const res = await fetch(query);
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("API Error Response:", text);
-      return;
-    }
+  const combinedData = [...firstYearData, ...secondYearData];
 
-    const data = await res.json();
-    if (Array.isArray(data.data)) {
-      setRecords(data.data);
-    } else {
-      console.error("Unexpected response format", data);
-    }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-};
-
-
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      records.map((r, i) => ({
-        SNo: i + 1,
-        Date: r.date,
-        Group: r.group,
-        Present: r.present,
-        Absent: r.absent,
-        Total: r.total,
-        Percentage: `${r.percentage.toFixed(2)}%`,
-      }))
-    );
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance Summary");
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "GroupwiseAttendanceSummary.xlsx");
-  };
-
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Group-wise Attendance Summary", 14, 10);
-    const tableData = records.map((r, i) => [
-      i + 1,
-      r.date,
-      r.group,
-      r.present,
-      r.absent,
-      r.total,
-      `${r.percentage.toFixed(2)}%`,
-    ]);
-
-    autoTable(doc, {
-      head: [["S.No", "Date", "Group", "Present", "Absent", "Total", "%"]],
-      body: tableData,
-      startY: 20,
-    });
-
-    doc.save("GroupwiseAttendanceSummary.pdf");
-  };
-
-  // Calculate totals
-  const totalPresent = records.reduce((sum, r) => sum + (r.present || 0), 0);
-  const totalAbsent = records.reduce((sum, r) => sum + (r.absent || 0), 0);
+  const totalPresent = combinedData.reduce(
+    (acc, item) => acc + (item.present || 0),
+    0
+  );
+  const totalAbsent = combinedData.reduce(
+    (acc, item) => acc + (item.absent || 0),
+    0
+  );
   const totalAll = totalPresent + totalAbsent;
-  const collegePercentage =
-    totalAll === 0 ? 0 : ((totalPresent / totalAll) * 100).toFixed(2);
 
-  // Inside AttendanceRecords component
+  const collegePercentage =
+    totalAll > 0 ? ((totalPresent / totalAll) * 100).toFixed(2) : 0;
+
+  const fetchAttendanceRecords = async () => {
+    try {
+      const res = await fetch(
+        `/api/attendance/summary/daily-group?start=${startDate}&end=${endDate}&group=${group}&year=${yearOfStudy}`
+      );
+      const json = await res.json();
+      setAttendanceData(json.data || { "First Year": [], "Second Year": [] });
+    } catch (error) {
+      console.error("Error fetching attendance records:", error);
+    }
+  };
+
+  // Encode before fetch
+  const query = new URLSearchParams({
+    startDate,
+    endDate,
+    group,
+    yearOfStudy,
+  }).toString();
+
+  const res = fetch(`/api/attendance/summary/daily-group?${query}`);
+
+
+
+  // const exportToPDF = () => {
+  //   const doc = new jsPDF();
+  //   doc.text("Group-wise Attendance Summary", 14, 10);
+  //   const tableData = records.map((r, i) => [
+  //     i + 1,
+  //     r.date,
+  //     r.group,
+  //     r.present,
+  //     r.absent,
+  //     r.total,
+  //     `${r.percentage?.toFixed(2)}%`,
+  //   ]);
+
+  //   autoTable(doc, {
+  //     head: [["S.No", "Date", "Group", "Present", "Absent", "Total", "%"]],
+  //     body: tableData,
+  //     startY: 20,
+  //   });
+
+  //   doc.save("GroupwiseAttendanceSummary.pdf");
+  // };
+
   const today = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -130,18 +96,14 @@ const fetchData = async () => {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-
       👉note: this is a computer generated report and does not require signature
       <p className="text-sm font-semibold mb-4 flex items-center justify-center">
         <span className="text-gray-600">Generated on</span>
         Date: {today} | Time: {new Date().toLocaleTimeString()}
       </p>
-      
       <h2 className="text-2xl font-bold mb-4 flex items-center justify-center">
-        
         🧾Group-wise Daily Attendance Summary-2025
       </h2>
-
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div>
@@ -169,7 +131,9 @@ const fetchData = async () => {
             onChange={(e) => setGroup(e.target.value)}
             className="border rounded px-2 py-1"
           >
-            <option value="">All Groups</option>
+            <option value="" disabled>
+              All Groups
+            </option>
             {groups.map((g) => (
               <option key={g} value={g}>
                 {g}
@@ -178,38 +142,35 @@ const fetchData = async () => {
           </select>
         </div>
 
-<div>
-  <label className="block text-sm font-medium">Year of Study</label>
-  <select
-    value={yearOfStudy}
-    onChange={(e) => setYearOfStudy(e.target.value)}
-    className="border rounded px-2 py-1"
-  >
-    <option value="">All Years</option>
-    <option value="First Year">I Year</option>
-    <option value="Second Year">II Year</option>
-  </select>
-</div>
-
-
-
-
+        <div>
+          <label className="block text-sm font-medium">Year of Study</label>
+          <select
+            value={yearOfStudy}
+            onChange={(e) => setYearOfStudy(e.target.value)}
+            className="border rounded px-2 py-1"
+          >
+            <option value="" disabled>
+              All Years
+            </option>
+            <option value="First Year">First Year</option>
+            <option value="Second Year">Second Year</option>
+          </select>
+        </div>
 
         <div className="flex items-end">
           <button
-            onClick={fetchData}
+            onClick={fetchAttendanceRecords}
             className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer"
           >
             🧃&nbsp;Apply Filters
           </button>
         </div>
       </div>
-
       {/* Export Buttons */}
       <div className="mb-4">
-        <button
+        {/* <button
           onClick={exportToExcel}
-          className="bg-yellow-500 text-white px-4 py-2 rounded mr-2 cursor-pointer"
+          className="bg-yellow-500 text-white px-4 py-2 rounded mr-2 cursor-pointer mb-2"
         >
           <FileSpreadsheet className="inline mr-2" />
           Export to Excel
@@ -220,10 +181,10 @@ const fetchData = async () => {
         >
           <FileDown className="inline mr-2" />
           Export to PDF
-        </button>
+        </button> */}
         <Link href="/attendance-form">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-           📝&nbsp; Attendance Form
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer mb-2">
+            📝&nbsp; Attendance Form
           </button>
         </Link>
 
@@ -248,11 +209,10 @@ const fetchData = async () => {
 
         <Link href="/attendance-records/monthly-summary">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 mt-2 cursor-pointer">
-           🧾&nbsp; Monthly Summary
+            🧾&nbsp; Monthly Summary
           </button>
         </Link>
       </div>
-
       {/* Global Print Style */}
       <style jsx global>{`
         @media print {
@@ -273,7 +233,6 @@ const fetchData = async () => {
           }
         }
       `}</style>
-
       <div className="print-area">
         {/* Header Section */}
         <div className="text-center mb-6">
@@ -283,59 +242,86 @@ const fetchData = async () => {
           <p className="text-sm font-semibold">Attendance as on {today}</p>
 
           {/* Records Table */}
-          <table className="table-auto w-full border mb-8">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border px-4 py-2">S.No</th>
-                <th className="border px-4 py-2">Date</th>
-                <th className="border px-4 py-2">Group</th>
-                <th className="border px-4 py-2">Present</th>
-                <th className="border px-4 py-2">Absent</th>
-                <th className="border px-4 py-2">Total</th>
-                <th className="border px-4 py-2">%</th>
-              </tr>
-            </thead>
+          <div className="space-y-8">
+            {/* First Year Table */}
+            <div>
+              <h2 className="text-lg font-semibold mb-2">
+                📘 First Year Attendance
+              </h2>
+              {attendanceData["First Year"].length > 0 ? (
+                <table className="table-auto w-full border">
+                  <thead>
+                    <tr className="bg-blue-100">
+                      <th className="border px-2 py-1">Date</th>
+                      <th className="border px-2 py-1">Group</th>
+                      <th className="border px-2 py-1">Present</th>
+                      <th className="border px-2 py-1">Absent</th>
+                      <th className="border px-2 py-1">Total</th>
+                      <th className="border px-2 py-1">Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attendanceData["First Year"].map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="border px-2 py-1">{item.date}</td>
+                        <td className="border px-2 py-1">{item.group}</td>
+                        <td className="border px-2 py-1">{item.present}</td>
+                        <td className="border px-2 py-1">{item.absent}</td>
+                        <td className="border px-2 py-1">{item.total}</td>
+                        <td className="border px-2 py-1">
+                          {item.percentage.toFixed(1)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-gray-500">No First Year data available.</p>
+              )}
+            </div>
+
+            {/* Second Year Table */}
+            <div>
+              <h2 className="text-lg font-semibold mb-2">
+                📗 Second Year Attendance
+              </h2>
+              {attendanceData["Second Year"].length > 0 ? (
+                <table className="table-auto w-full border">
+                  <thead>
+                    <tr className="bg-green-100">
+                      <th className="border px-2 py-1">Date</th>
+                      <th className="border px-2 py-1">Group</th>
+                      <th className="border px-2 py-1">Present</th>
+                      <th className="border px-2 py-1">Absent</th>
+                      <th className="border px-2 py-1">Total</th>
+                      <th className="border px-2 py-1">Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attendanceData["Second Year"].map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="border px-2 py-1">{item.date}</td>
+                        <td className="border px-2 py-1">{item.group}</td>
+                        <td className="border px-2 py-1">{item.present}</td>
+                        <td className="border px-2 py-1">{item.absent}</td>
+                        <td className="border px-2 py-1">{item.total}</td>
+                        <td className="border px-2 py-1">
+                          {item.percentage.toFixed(1)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-gray-500">No Second Year data available.</p>
+              )}
+            </div>
+          </div>
+
+          <table className="table-auto w-full border mt-4">
             <tbody>
-              {records.map((record, i) => (
-                <tr key={`${record.date}-${record.group}`}>
-                  <td className="border px-4 py-2">{i + 1}</td>
-                  <td className="border px-4 py-2">{record.date}</td>
-                  <td className="border px-4 py-2">{record.group}</td>
-                  <td className="border px-4 py-2">{record.present}</td>
-                  <td className="border px-4 py-2">{record.absent}</td>
-                  <td className="border px-4 py-2">{record.total}</td>
-                  <td className="border px-4 py-2">
-                    {record.percentage.toFixed(2)}%
-                  </td>
-                </tr>
-
-                
-
-
-              ))}
-
-              {/* I Year Summary Row */}
-<tr className="bg-yellow-100 font-semibold">
-  <td colSpan={3} className="border px-4 py-2 text-right">I Year Total</td>
-  <td className="border px-4 py-2">{firstYearPresent}</td>
-  <td className="border px-4 py-2">{firstYearAbsent}</td>
-  <td className="border px-4 py-2">{firstYearTotal}</td>
-  <td className="border px-4 py-2">{firstYearPercent}%</td>
-</tr>
-
-{/* II Year Summary Row */}
-<tr className="bg-orange-100 font-semibold">
-  <td colSpan={3} className="border px-4 py-2 text-right">II Year Total</td>
-  <td className="border px-4 py-2">{secondYearPresent}</td>
-  <td className="border px-4 py-2">{secondYearAbsent}</td>
-  <td className="border px-4 py-2">{secondYearTotal}</td>
-  <td className="border px-4 py-2">{secondYearPercent}%</td>
-</tr>
-
-
-              {/* ✅ College Total Row */}
               <tr className="bg-green-100 font-semibold">
-                <td colSpan={3} className="border px-4 py-2 text-right">
+                <td colSpan={4} className="border px-4 py-2 text-right">
                   College Total Attendance
                 </td>
                 <td className="border px-4 py-2">{totalPresent}</td>
