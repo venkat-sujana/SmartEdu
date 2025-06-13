@@ -64,30 +64,6 @@ export default function AttendanceRecords() {
 
   const res = fetch(`/api/attendance/summary/daily-group?${query}`);
 
-
-
-  // const exportToPDF = () => {
-  //   const doc = new jsPDF();
-  //   doc.text("Group-wise Attendance Summary", 14, 10);
-  //   const tableData = records.map((r, i) => [
-  //     i + 1,
-  //     r.date,
-  //     r.group,
-  //     r.present,
-  //     r.absent,
-  //     r.total,
-  //     `${r.percentage?.toFixed(2)}%`,
-  //   ]);
-
-  //   autoTable(doc, {
-  //     head: [["S.No", "Date", "Group", "Present", "Absent", "Total", "%"]],
-  //     body: tableData,
-  //     startY: 20,
-  //   });
-
-  //   doc.save("GroupwiseAttendanceSummary.pdf");
-  // };
-
   const today = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -131,7 +107,7 @@ export default function AttendanceRecords() {
             onChange={(e) => setGroup(e.target.value)}
             className="border rounded px-2 py-1"
           >
-            <option value="" disabled>
+            <option value="" >
               All Groups
             </option>
             {groups.map((g) => (
@@ -149,7 +125,7 @@ export default function AttendanceRecords() {
             onChange={(e) => setYearOfStudy(e.target.value)}
             className="border rounded px-2 py-1"
           >
-            <option value="" disabled>
+            <option value="" >
               All Years
             </option>
             <option value="First Year">First Year</option>
@@ -166,24 +142,11 @@ export default function AttendanceRecords() {
           </button>
         </div>
       </div>
-      {/* Export Buttons */}
+   
       <div className="mb-4">
-        {/* <button
-          onClick={exportToExcel}
-          className="bg-yellow-500 text-white px-4 py-2 rounded mr-2 cursor-pointer mb-2"
-        >
-          <FileSpreadsheet className="inline mr-2" />
-          Export to Excel
-        </button>
-        <button
-          onClick={exportToPDF}
-          className="bg-red-500 text-white px-4 py-2 rounded mr-2 cursor-pointer"
-        >
-          <FileDown className="inline mr-2" />
-          Export to PDF
-        </button> */}
+
         <Link href="/attendance-form">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer mb-2">
+          <button className="bg-slate-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer mb-2">
             📝&nbsp; Attendance Form
           </button>
         </Link>
@@ -196,19 +159,19 @@ export default function AttendanceRecords() {
         </button>
 
         <Link href="/attendance-records/individual">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
+          <button className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer mb-2">
             👤&nbsp;Individual Attendance
           </button>
         </Link>
 
         <Link href="/attendance-records/attendance-calendar">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer mb-2">
             📅&nbsp;Monthly Calendar View
           </button>
         </Link>
 
         <Link href="/attendance-records/monthly-summary">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 mt-2 cursor-pointer">
+          <button className="bg-slate-900 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 mt-2 cursor-pointer mb-2">
             🧾&nbsp; Monthly Summary
           </button>
         </Link>
@@ -321,7 +284,7 @@ export default function AttendanceRecords() {
           <table className="table-auto w-full border mt-4">
             <tbody>
               <tr className="bg-green-100 font-semibold">
-                <td colSpan={4} className="border px-4 py-2 text-right">
+                <td colSpan={2} className="border px-4 py-2 text-right">
                   College Total Attendance
                 </td>
                 <td className="border px-4 py-2">{totalPresent}</td>
