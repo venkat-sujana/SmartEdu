@@ -1,11 +1,5 @@
-// app/attendance-records/attendance-calendar/page.jsx
 "use client";
 import { useEffect, useState } from "react";
-
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import * as XLSX from "xlsx";
-
 import Link from "next/link";
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
@@ -28,25 +22,28 @@ export default function CalendarView() {
   const [group, setGroup] = useState("");
   const [students, setStudents] = useState([]);
   const [studentId, setStudentId] = useState("");
+  const [yearOfStudy, setYearOfStudy] = useState("");
   const [attendanceData, setAttendanceData] = useState([]);
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
 
-  // Load students when group is selected
+  // Load students when group or yearOfStudy is selected
   useEffect(() => {
-    if (group) {
+    if (group && yearOfStudy) {
       fetch("/api/students")
         .then((res) => res.json())
         .then((data) => {
-          const filtered = data.data.filter((s) => s.group === group);
+          const filtered = data.data.filter(
+            (s) => s.group === group && s.yearOfStudy === yearOfStudy
+          );
           setStudents(filtered);
-          setStudentId(""); // Reset student selection
+          setStudentId("");
         });
     } else {
       setStudents([]);
       setStudentId("");
     }
-  }, [group]);
+  }, [group, yearOfStudy]);
 
   // Load attendance for selected student
   useEffect(() => {
@@ -63,6 +60,8 @@ export default function CalendarView() {
   const attendanceMap = Object.fromEntries(
     attendanceData.map((r) => [new Date(r.date).getDate(), r.status])
   );
+
+  const selectedStudent = students.find((s) => s._id === studentId);
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -90,6 +89,17 @@ export default function CalendarView() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-4">
+        {/* Year Dropdown */}
+        <select
+          value={yearOfStudy}
+          onChange={(e) => setYearOfStudy(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">Select Year</option>
+          <option value="First Year">First Year</option>
+          <option value="Second Year">Second Year</option>
+        </select>
+
         {/* Group Dropdown */}
         <select
           value={group}
@@ -165,12 +175,9 @@ export default function CalendarView() {
               <div className="font-bold">{date}</div>
               {status === "Present" ? (
                 <img
-                  src={
-                    students.find((s) => s._id === studentId)?.photo ||
-                    "/default-avatar.png"
-                  }
+                  src={selectedStudent?.photo || "/default-avatar.png"}
                   alt="Student Photo"
-                  className="mx-auto mt-1 w-15 h-15 rounded-full object-cover border border-gray-400"
+                  className="mx-auto mt-1 w-16 h-16 rounded-full object-cover border border-gray-400"
                 />
               ) : (
                 <div className="text-sm">{status}</div>
