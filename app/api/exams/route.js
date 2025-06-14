@@ -1,39 +1,24 @@
-//app/api/exams/route.js
+// app/api/exams/route.js
 import { NextResponse } from 'next/server';
 import connectMongoDB from '@/lib/mongodb';
 import Exam from "@/models/Exam";
 
+// POST - Create Exam
 export async function POST(req) {
   try {
     await connectMongoDB();
     const body = await req.json();
-
     const {
-      studentId,
-      stream,
-      yearOfStudy,
-      academicYear,
-      examType,
-      examDate,
-      subjects,
+      studentId, stream, yearOfStudy, academicYear,
+      examType, examDate, subjects,
     } = body;
 
-    // 👉 Filter subjects based on stream type
+    // 👉 Filter based on stream
     let filteredSubjects = {};
     if (['MPC', 'BIPC', 'CEC', 'HEC'].includes(stream)) {
-      filteredSubjects = Object.entries(subjects)
-        .slice(0, 6)
-        .reduce((obj, [key, value]) => {
-          obj[key] = value;
-          return obj;
-        }, {});
+      filteredSubjects = Object.fromEntries(Object.entries(subjects).slice(0, 6));
     } else if (['M&AT', 'CET', 'MLT'].includes(stream)) {
-      filteredSubjects = Object.entries(subjects)
-        .slice(0, 5)
-        .reduce((obj, [key, value]) => {
-          obj[key] = value;
-          return obj;
-        }, {});
+      filteredSubjects = Object.fromEntries(Object.entries(subjects).slice(0, 5));
     }
 
     const subjectMarks = Object.values(filteredSubjects).map(Number).filter(n => !isNaN(n));
@@ -53,7 +38,7 @@ export async function POST(req) {
 
     if (['MPC', 'BIPC', 'CEC', 'HEC'].includes(stream)) {
       examData.generalSubjects = filteredSubjects;
-    } else if (['M&AT', 'CET', 'MLT'].includes(stream)) {
+    } else {
       examData.vocationalSubjects = filteredSubjects;
     }
 
@@ -67,21 +52,22 @@ export async function POST(req) {
   }
 }
 
+// GET - All Exams
 export async function GET() {
   try {
     await connectMongoDB();
     const exams = await Exam.find().populate('studentId', 'name');
-
     const examsWithNames = exams.map((exam) => ({
       ...exam._doc,
       student: {
         name: exam.studentId?.name || 'Unknown',
       },
     }));
-
     return NextResponse.json({ success: true, data: examsWithNames });
   } catch (error) {
     console.error('Error fetching exams:', error);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
+
+

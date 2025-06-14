@@ -1,45 +1,48 @@
 //app/exam-report/page.jsx
-
 "use client";
-
+import { NextResponse } from "next/server";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import EditExamForm from "@/app/edit-exam-form/page"; // Adjust the import path as needed
+import { Toaster } from "react-hot-toast";
 
 export default function ExamReportPage() {
-  // const [students, setStudents] = useState([]);
   const [reports, setReports] = useState([]);
   const [filters, setFilters] = useState({
     studentName: "",
     stream: "",
     academicYear: "",
-
-    // yearOfStudy: "", // Uncomment if you want to filter by year of study
     examType: "",
+    yearOfStudy: "",
   });
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const res = await fetch("/api/exams");
-        let data = {};
-        try {
-          const text = await res.text();
-          data = text ? JSON.parse(text) : {};
-        } catch (e) {
-          data = {};
-        }
-        if (data.success) {
-          setReports(data.data);
-        }
-      } catch (err) {
-        console.error("Error loading reports:", err);
-      }
-    };
+  const [editingExam, setEditingExam] = useState(null);
 
+  // Move fetchReports to component scope so it can be called elsewhere
+  const fetchReports = async () => {
+    try {
+      const res = await fetch("/api/exams");
+      let data = {};
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = {};
+      }
+      if (data.success) {
+        setReports(data.data);
+      }
+    } catch (err) {
+      console.error("Error loading reports:", err);
+    }
+  };
+
+  useEffect(() => {
     const fetchStudents = async () => {
       try {
         const res = await fetch("/api/students");
         const data = await res.json();
+        // You can store in state if needed like: setStudents(data.data)
       } catch (err) {
         console.error("Error loading students:", err);
       }
@@ -88,8 +91,6 @@ export default function ExamReportPage() {
     "PRE-PUBLIC-2",
   ];
 
-  // Define general and vocational
-  // columns arrays based on stream
   const generalColumns = [
     "Telugu/Sanskrit",
     "English",
@@ -100,28 +101,96 @@ export default function ExamReportPage() {
   ];
   const vocationalColumns = ["GFC", "English", "V1/V4", "V2/V5", "V3/V6"];
 
+  const handleDelete = async (id) => {
+    const confirmDelete = confirm("Are you sure you want to delete?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/exams/${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json(); // ✅ this may throw error if response is empty
+
+      if (res.ok && data.success) {
+        alert("Deleted successfully");
+        setReports((prev) => prev.filter((r) => r._id !== id));
+      } else {
+        console.error("Delete failed:", data);
+        alert("Delete failed");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Something went wrong");
+    }
+  };
+
+  const handleUpdate = async (updatedData) => {
+    console.log("handleUpdate called with", updatedData);
+
+    try {
+      const response = await fetch(`/api/exams/${updatedData._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      console.log("Update response:", response);
+
+      const data = await response.json();
+
+      console.log("Update data:", data);
+
+      if (data.success) {
+        alert("Updated successfully");
+
+        setIsEditing(false); // Close the form after submission
+        fetchReports(); // reload reports
+      } else {
+        alert("Update failed");
+      }
+    } catch (error) {
+      console.error("Update Error:", error);
+      alert("Something went wrong");
+    }
+  };
+
+  const handleUpdated = async () => {
+  await fetchExam(); // again fetch latest exam from backend
+  setShowEditForm(false); // or close modal
+};
+
+
   return (
     <div className="p-6 ">
       <h1 className="text-2xl font-bold mb-2 flex items-center justify-center">
         Exam Summary Report
       </h1>
-      <strong><p className="mb-4">
-        Note:-This page displays a summary of exams conducted by the
-        institution. You can filter the results using the dropdowns below.
-        To print the report, click on the &quot;Print Report&quot; button above.
-        You can also filter the results by selecting a specific academic year,
-        stream, or year of study from the dropdown menus below.
-    
-      </p></strong>
+      <strong>
+        <p className="mb-4">
+          Note:-This page displays a summary of exams conducted by the
+          institution. You can filter the results using the dropdowns below. To
+          print the report, click on the &quot;Print Report&quot; button above.
+          You can also filter the results by selecting a specific academic year,
+          stream, or year of study from the dropdown menus below.
+        </p>
+      </strong>
 
-      <strong><p className="mb-4">
-        The user should be able to:<br/> 1. View exam name, date, total marks,
-        percentage.<br/> 2. See PASS/FAIL status based on marks.<br/>  3. Subjects
-        should show “Pass” or “Fail” beside each mark based on rules.<br/> 4. Display
-        red color for failed subjects and green for passed ones.
-      </p></strong>
+      <strong>
+        <p className="mb-4">
+          The user should be able to:
+          <br /> 1. View exam name, date, total marks, percentage.
+          <br /> 2. See PASS/FAIL status based on marks.
+          <br /> 3. Subjects should show “Pass” or “Fail” beside each mark based
+          on rules.
+          <br /> 4. Display red color for failed subjects and green for passed
+          ones.
+        </p>
+      </strong>
 
-            <Link href="/student-table">
+      <Link href="/student-table">
         <button className="w-50 bg-cyan-600 mb-2 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
           📝&nbsp; Student-Table
         </button>
@@ -206,6 +275,7 @@ export default function ExamReportPage() {
           ))}
         </select>
       </div>
+
       <div id="print-section">
         {/* Report Table */}
         <table className="table-auto w-full border border-black">
@@ -228,6 +298,7 @@ export default function ExamReportPage() {
               <th className="border p-1">Total</th>
               <th className="border p-1">%</th>
               <th className="border p-1">Status</th>
+              <th className="border p-1">Actions</th>
             </tr>
           </thead>
 
@@ -351,11 +422,50 @@ export default function ExamReportPage() {
                   <td className="border p-1">{total}</td>
                   <td className="border p-1">{percentage}</td>
                   <td className="border p-1">{status}</td>
+
+                  
+       <td className="border p-1">
+
+<button
+  onClick={() => setEditingExam(report)} // report = exam object
+  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+>
+  ✏️ Edit
+</button>
+
+
+
+                    <button
+                      onClick={() => handleDelete(report._id)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded ml-2"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
+
+
+{editingExam && (
+  <EditExamForm
+    key={editingExam._id} // 👉 Reactకు కొత్త component అన్నట్టు చెప్పే key
+    examData={editingExam}
+    onClose={() => setEditingExam(null)}
+    
+    onUpdated={fetchReports}
+  />
+)}
+
+
+
+        <div className="mt-4">
+          {filteredReports.length === 0 && (
+            <p className="text-center text-gray-500">No reports found</p>
+          )}
+        </div>
       </div>
     </div>
   );

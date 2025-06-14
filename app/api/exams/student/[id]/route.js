@@ -1,3 +1,4 @@
+//app/api/exams/student/[id]/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Exam from "@/models/Exam"; 
@@ -16,3 +17,7 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: "Failed to fetch exams" }, { status: 500 });
   }
 }
+
+
+
+
