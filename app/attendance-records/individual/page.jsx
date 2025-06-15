@@ -1,57 +1,76 @@
 "use client";
 import { useState } from "react";
-import { Printer, FileSpreadsheet } from "lucide-react";
+import { Printer, FileSpreadsheet, Pencil, Trash2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Link from "next/link";
+import AttendanceEditForm from "@/app/attendance-edit-form/page";
+import { toast } from "react-hot-toast";
 
 export default function IndividualReport() {
   const [records, setRecords] = useState([]);
   const [group, setGroup] = useState("");
-  const [year, setYear] = useState(""); // ✅ NEW STATE
+  const [year, setYear] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
-  const years = ["First Year", "Second Year"]; // ✅ NEW DROPDOWN OPTIONS
+  const years = ["First Year", "Second Year"];
 
-  const fetchData = async () => {
-    const encodedGroup = encodeURIComponent(group);
-    const encodedYear = encodeURIComponent(year);
-    let query = `/api/attendance/individual?group=${encodedGroup}&year=${encodedYear}`;
+const fetchData = async () => {
+  let query = `/api/attendance/individual?group=${encodeURIComponent(group)}&year=${encodeURIComponent(year)}`;
+  if (startDate && endDate) query += `&start=${startDate}&end=${endDate}`;
 
-    if (startDate && endDate) {
-      query += `&start=${startDate}&end=${endDate}`;
+  try {
+    const res = await fetch(query);
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch: ${res.status}`);
     }
 
+    const text = await res.text();
+
+    const data = text ? JSON.parse(text) : { data: [] }; // ✅ avoid empty JSON error
+    setRecords(data.data || []);
+  } catch (err) {
+    console.error("Error fetching attendance:", err);
+    setRecords([]);
+  }
+};
+
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("Are you sure you want to delete this attendance record?");
+    if (!confirmed) return;
+
+    const toastId = toast.loading("Deleting...");
     try {
-      const res = await fetch(query);
-      const data = await res.json();
-      if (data.data) {
-        setRecords(data.data);
+      const res = await fetch(`/api/attendance/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Deleted successfully", { id: toastId });
+        fetchData(); // refresh data
       } else {
-        setRecords([]);
+        toast.error("Failed to delete", { id: toastId });
       }
-    } catch (err) {
-      console.error("Error fetching attendance:", err);
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Error deleting record", { id: toastId });
     }
   };
 
   const handlePrint = () => {
-    const printContents = document.getElementById("attendance-table").innerHTML;
-    const originalContents = document.body.innerHTML;
-
-    document.body.innerHTML = printContents;
-    window.print();
-    document.body.innerHTML = originalContents;
-    window.location.reload();
+    window.print(); // simpler & safer
   };
 
   const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(records);
+    const worksheet = XLSX.utils.json_to_sheet(records.map(r => ({
+      Student: r.student,
+      Present: r.present,
+      Absent: r.absent
+    })));
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-
     const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "attendance_report.xlsx");
@@ -59,75 +78,35 @@ export default function IndividualReport() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6 text-center">Group & Year-wise Student Attendance Report</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Individual Student Attendance Report</h2>
 
       <div className="flex flex-wrap gap-4 items-end justify-center mb-6">
-        {/* Group Dropdown */}
-        <select
-          value={group}
-          onChange={(e) => setGroup(e.target.value)}
-          className="border px-4 py-2 rounded"
-        >
+        <select value={group} onChange={(e) => setGroup(e.target.value)} className="border px-4 py-2 rounded">
           <option value="">Select Group</option>
-          {groups.map((g) => (
-            <option key={g} value={g}>{g}</option>
-          ))}
+          {groups.map((g) => <option key={g} value={g}>{g}</option>)}
         </select>
 
-        {/* Year Dropdown */}
-        <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          className="border px-4 py-2 rounded"
-        >
+        <select value={year} onChange={(e) => setYear(e.target.value)} className="border px-4 py-2 rounded">
           <option value="">Select Year</option>
-          {years.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
+          {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
 
-        {/* Start Date */}
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="border px-4 py-2 rounded"
-        />
+        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border px-4 py-2 rounded" />
+        <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border px-4 py-2 rounded" />
 
-        {/* End Date */}
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="border px-4 py-2 rounded"
-        />
-
-        {/* Report Button */}
-        <button
-          onClick={fetchData}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-         📝&nbsp; Get Report
+        <button onClick={fetchData} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          📝&nbsp; Get Report
         </button>
 
-        {/* Print */}
-        <button
-          onClick={handlePrint}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
+        <button onClick={handlePrint} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
           <Printer className="inline mr-2" /> Print
         </button>
 
-        {/* Excel */}
-        <button
-          onClick={handleExportExcel}
-          className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-        >
+        <button onClick={handleExportExcel} className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
           <FileSpreadsheet className="inline mr-2" /> Excel
         </button>
       </div>
 
-      {/* Navigation Buttons */}
       <div className="flex justify-center gap-4 mb-6">
         <Link href="/attendance-form">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold">
@@ -141,7 +120,6 @@ export default function IndividualReport() {
         </Link>
       </div>
 
-      {/* Attendance Table */}
       <div id="attendance-table" className="overflow-x-auto">
         {records.length > 0 ? (
           <table className="table-auto w-full border border-gray-300 text-center">
@@ -151,19 +129,32 @@ export default function IndividualReport() {
                 <th className="border px-4 py-2">Student</th>
                 <th className="border px-4 py-2">Present</th>
                 <th className="border px-4 py-2">Absent</th>
-                <th className="border px-4 py-2">Total</th>
-                <th className="border px-4 py-2">%</th>
+                <th className="border px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               {records.map((r, i) => (
-                <tr key={i} className="hover:bg-gray-50">
+                <tr key={r._id || i} className="hover:bg-gray-50">
                   <td className="border px-4 py-2">{i + 1}</td>
                   <td className="border px-4 py-2">{r.student}</td>
                   <td className="border px-4 py-2">{r.present}</td>
                   <td className="border px-4 py-2">{r.absent}</td>
-                  <td className="border px-4 py-2">{r.total}</td>
-                  <td className="border px-4 py-2">{r.percentage.toFixed(2)}%</td>
+                  <td className="border px-4 py-2 flex gap-2 justify-center">
+
+<button onClick={() => {
+  console.log("Selected record:", r); // 👈 check here
+  setSelectedRecord(r);
+}} className="text-blue-600 hover:text-blue-800">
+  <Pencil size={18} />
+</button>
+
+
+
+
+                    <button onClick={() => handleDelete(r._id)} className="text-red-600 hover:text-red-800">
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -172,6 +163,14 @@ export default function IndividualReport() {
           <p className="text-center text-gray-500">No records found.</p>
         )}
       </div>
+
+      {selectedRecord && (
+        <AttendanceEditForm
+          record={selectedRecord}
+          onClose={() => setSelectedRecord(null)}
+          onUpdate={fetchData}
+        />
+      )}
     </div>
   );
 }

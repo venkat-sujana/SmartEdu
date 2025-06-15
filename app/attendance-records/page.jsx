@@ -153,7 +153,7 @@ export default function AttendanceRecords() {
 
         <button
           onClick={() => window.print()}
-          className="bg-green-600 text-white px-4 py-2 rounded mr-2 cursor-pointer"
+          className="bg-green-600 text-white px-4 py-2 rounded mr-2 cursor-pointer mb-2"
         >
           <Printer className="inline mr-2" /> Print Table
         </button>

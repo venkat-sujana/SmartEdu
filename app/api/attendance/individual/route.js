@@ -1,64 +1,51 @@
+// app/api/attendance/individual/route.js
 import { NextResponse } from "next/server";
-import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
-import Student from "@/models/Student";
+import connectMongoDB from "@/lib/mongodb";
 
 export async function GET(req) {
   await connectMongoDB();
-
+  
   const { searchParams } = new URL(req.url);
-  const group = decodeURIComponent(searchParams.get("group"));
-  const year = decodeURIComponent(searchParams.get("year")); // ✅ new
+  const group = searchParams.get("group");
+  const year = searchParams.get("year");
   const start = searchParams.get("start");
   const end = searchParams.get("end");
 
   if (!group || !year) {
-    return NextResponse.json({ error: "Missing group or year" });
+    return NextResponse.json({ data: [], message: "Missing group/year" }, { status: 400 });
+  }
+
+  const query = {
+    group,
+    yearOfStudy: year,
+  };
+
+  if (start && end) {
+    query.date = {
+      $gte: new Date(start),
+      $lte: new Date(end),
+    };
   }
 
   try {
-    const students = await Student.find({ group, yearOfStudy: year }).select("_id name");
+    const attendance = await Attendance.find(query).populate("studentId", "name group yearOfStudy");
+    
+    // Structure the data as expected by frontend
+    const formatted = attendance.map((a) => ({
+      _id: a._id,
+      student: a.studentId?.name || "Unknown",
+      present: a.status === "Present" ? 1 : 0,
+      absent: a.status === "Absent" ? 1 : 0,
+      date: a.date,
+      status: a.status,
+      group: a.group,
+      year: a.yearOfStudy
+    }));
 
-    const studentIds = students.map((s) => s._id);
-
-    const match = { studentId: { $in: studentIds } };
-    if (start && end) {
-      match.date = {
-        $gte: new Date(start),
-        $lte: new Date(end),
-      };
-    }
-
-    const records = await Attendance.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: { studentId: "$studentId", status: "$status" },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
-    const summary = students.map((s) => {
-      const studentRecords = records.filter((r) => r._id.studentId.toString() === s._id.toString());
-      const present = studentRecords.find((r) => r._id.status === "Present")?.count || 0;
-      const absent = studentRecords.find((r) => r._id.status === "Absent")?.count || 0;
-      const total = present + absent;
-      const percentage = total > 0 ? (present / total) * 100 : 0;
-
-      return {
-        student: s.name,
-        present,
-        absent,
-        total,
-        percentage,
-      };
-    });
-
-    return NextResponse.json({ data: summary });
+    return NextResponse.json({ data: formatted }, { status: 200 });
   } catch (err) {
-    console.error("Error:", err);
-    return NextResponse.json({ error: "Failed to fetch group-wise individual data" });
+    console.error("❌ API Error:", err);
+    return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
-

@@ -1,3 +1,5 @@
+//app/attendance-form/page.jsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -182,45 +184,46 @@ const AttendanceForm = () => {
         {filteredStudents.length > 0 && (
           <div className="mt-4">
             <h3 className="font-semibold mb-2">Students List</h3>
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-  {filteredStudents.map((student) => (
-    <div
-      key={student._id}
-      className="bg-white border border-gray-200 rounded-xl shadow p-4 flex flex-col items-center space-y-2"
-    >
-      <img
-        src={student.photo || "/default-avatar.png"}
-        alt={student.name}
-        className="w-24 h-24 object-cover rounded-full border-2 border-blue-400"
-      />
-      <h4 className="text-lg font-semibold text-gray-800">{student.name}</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {filteredStudents.map((student) => (
+                <div
+                  key={student._id}
+                  className="bg-white border border-gray-200 rounded-xl shadow p-4 flex flex-col items-center space-y-2"
+                >
+                  <img
+                    src={student.photo || "/default-avatar.png"}
+                    alt={student.name}
+                    className="w-24 h-24 object-cover rounded-full border-2 border-blue-400"
+                  />
+                  <h4 className="text-lg font-semibold text-gray-800">
+                    {student.name}
+                  </h4>
 
-      <div className="flex gap-2">
-        <button
-          onClick={() => handleToggleChange(student._id, "Present")}
-          className={`px-3 py-1 rounded-full text-white text-sm ${
-            attendanceData[student._id] === "Present"
-              ? "bg-green-600"
-              : "bg-gray-400"
-          }`}
-        >
-          Present
-        </button>
-        <button
-          onClick={() => handleToggleChange(student._id, "Absent")}
-          className={`px-3 py-1 rounded-full text-white text-sm ${
-            attendanceData[student._id] === "Absent"
-              ? "bg-red-600"
-              : "bg-gray-400"
-          }`}
-        >
-          Absent
-        </button>
-      </div>
-    </div>
-  ))}
-</div>
-
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleToggleChange(student._id, "Present")}
+                      className={`px-3 py-1 rounded-full text-white text-sm ${
+                        attendanceData[student._id] === "Present"
+                          ? "bg-green-600"
+                          : "bg-gray-400"
+                      }`}
+                    >
+                      Present
+                    </button>
+                    <button
+                      onClick={() => handleToggleChange(student._id, "Absent")}
+                      className={`px-3 py-1 rounded-full text-white text-sm ${
+                        attendanceData[student._id] === "Absent"
+                          ? "bg-red-600"
+                          : "bg-gray-400"
+                      }`}
+                    >
+                      Absent
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
