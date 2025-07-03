@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import AttendanceSummaryTable from "@/app/attendance-summary-table/page";
+
 
 import {
   Home,
