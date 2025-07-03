@@ -13,6 +13,7 @@ import Image from "next/image";
 import generateAdmissionCertificatePDF from "../admission-certificate/page";
 import generateStudyCertificatePDF from "../study-certificate/page";
 import generateCaretakerCertificatePDF from "../caretaker-form/page";
+import { useSession } from "next-auth/react";
 
 import {
   FileDown,
@@ -24,12 +25,7 @@ import {
 
 import Link from "next/link";
 
-/**
- * StudentsPage Component
- *
- * A page that displays all students in a table with options to
- * filter, sort, edit, delete, and export to PDF and Excel.
- */
+
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
@@ -41,27 +37,37 @@ export default function StudentsPage() {
     gender: "",
     yearOfStudy: "",
   });
+ const { data: session,status} = useSession();
+ const collegeName =
+    status === "loading"
+      ? "Loading..."
+      : session?.user?.collegeName || "College name missing";
+
 
   const [editingStudent, setEditingStudent] = useState(null);
-
   const [currentPage, setCurrentPage] = useState(0);
   const studentsPerPage = 10;
 
   const tableRef = useRef();
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const res = await fetch("/api/students");
-        const result = await res.json();
-        setStudents(result.data);
-        setFilteredStudents(result.data);
-      } catch (err) {
-        console.error("Error fetching students:", err);
-      }
-    };
-    fetchStudents();
-  }, []);
+useEffect(() => {
+  const fetchStudents = async () => {
+    try {
+      if (!session?.user?.collegeId) return;
+
+      const res = await fetch(`/api/students?collegeId=${session.user.collegeId}`);
+      const result = await res.json();
+      setStudents(result.data);
+      setFilteredStudents(result.data);
+      console.log("Fetched students:", result.data);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+    }
+  };
+
+  fetchStudents();
+}, [session]);
+
 
   useEffect(() => {
     let filtered = [...students];
@@ -95,11 +101,24 @@ export default function StudentsPage() {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
+
+
   const handleExportPDF = () => {
+
+  
+  const collegeName = session?.user?.collegeName || "College Name";
+
     const doc = new jsPDF();
-    doc.text("S.K.R.GOVERNMENT JUNIOR COLLEGE", 14, 15);
+
+
+  // ✅ College Name centered at top
+  doc.setFontSize(14);
+  doc.text(collegeName.toUpperCase(), 105, 15, { align: "center" });
+
+
+
     autoTable(doc, {
-      startY: 20,
+      startY: 25,
       head: [
         [
           "S.No",
@@ -134,40 +153,58 @@ export default function StudentsPage() {
     doc.save("students.pdf");
   };
 
-  const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      filteredStudents.map((s, idx) => ({
-        SNo: idx + 1,
-        Name: s.name,
-        FatherName: s.fatherName,
-        Mobile: s.mobile,
-        Group: s.group,
-        Caste: s.caste,
-        Gender: s.gender,
-        DOB: s.dob,
-        YearOfStudy:
-          s.yearOfStudy === "First Year" ? "First Year" : "Second Year",
-        AdmissionDate: new Date(s.createdAt).toLocaleString("en-IN", {
-          timeZone: "Asia/Kolkata",
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        }),
-        AdmissionNo: s.admissionNo,
-        AdmissionYear: s.admissionYear,
-        Address: s.address,
-      }))
-    );
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-    XLSX.writeFile(workbook, "students.xlsx");
-  };
+
+
+
+const handleExportExcel = () => {
+  const { user } = session || {};
+  const collegeName = user?.collegeName || "College Name";
+
+  // Prepare student data rows
+  const studentData = filteredStudents.map((s, idx) => ({
+    SNo: idx + 1,
+    Name: s.name,
+    FatherName: s.fatherName,
+    Mobile: s.mobile,
+    Group: s.group,
+    Caste: s.caste,
+    Gender: s.gender,
+    DOB: s.dob,
+    YearOfStudy: s.yearOfStudy,
+    AdmissionDate: new Date(s.createdAt).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }),
+    AdmissionNo: s.admissionNo,
+    AdmissionYear: s.admissionYear,
+    Address: s.address,
+  }));
+
+  // ✅ Insert college name in first row as a dummy object
+  const collegeHeaderRow = { SNo: "", Name: `College: ${collegeName}` };
+  studentData.unshift(collegeHeaderRow); // Insert at beginning
+
+  const worksheet = XLSX.utils.json_to_sheet(studentData, { skipHeader: false });
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+  XLSX.writeFile(workbook, "students.xlsx");
+};
+
+
+
 
   const handlePrint = () => {
     const printContent = tableRef.current.innerHTML;
+
+    const { user } = session || {};
+    const collegeName = user?.collegeName || "College Name";
+
     const printWindow = window.open("", "", "height=800,width=1000");
     printWindow.document.write("<html><head><title>Print Students</title>");
     printWindow.document.write("<style>");
@@ -179,14 +216,20 @@ export default function StudentsPage() {
       img { max-width: 50px; height: auto; }
     `);
     printWindow.document.write("</style></head><body>");
-    printWindow.document.write(
-      `<h2 style="text-align:center;">S.K.R. GOVERNMENT JUNIOR COLLEGE</h2>`
-    );
+
+printWindow.document.write(
+    `<h2 style="text-align:center;">${collegeName.toUpperCase()}</h2>`
+  );
+
+
     printWindow.document.write(printContent);
     printWindow.document.write("</body></html>");
     printWindow.document.close();
     printWindow.print();
   };
+
+
+  
 
   const handlePageChange = ({ selected }) => {
     setCurrentPage(selected);
@@ -264,7 +307,19 @@ export default function StudentsPage() {
   return (
     <div className="p-6 max-w-8xl mx-auto">
       <h1 className="text-2xl font-bold mb-4 text-center text-green-500  ">
-        S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR
+<div className="flex justify-center mb-6">
+  <input
+    type="text"
+    value={
+      status === "loading"
+        ? "Loading..."
+        : session?.user?.collegeName || "College name missing"
+    }
+    disabled
+    className="text-center font-semibold text-gray-900 p-2 border rounded bg-gray-100 w-[80%] md:w-[60%]"
+  />
+</div>
+
       </h1>
 
       {/* Filters */}

@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 const AttendanceForm = () => {
   const [students, setStudents] = useState([]);
@@ -14,6 +15,9 @@ const AttendanceForm = () => {
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = useSession();
+  const collegeName = session?.user?.collegeName || "College";
+
 
   const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
   const monthsList = [
@@ -32,16 +36,26 @@ const AttendanceForm = () => {
   ];
   const yearsList = ["First Year", "Second Year"];
 
-  useEffect(() => {
-    fetch("/api/students")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") {
-          setStudents(data.data);
-        }
-      })
-      .catch((err) => console.error("Error fetching students", err));
-  }, []);
+useEffect(() => {
+  const fetchStudents = async () => {
+    if (!selectedGroup || !session?.user?.collegeId) return;
+
+    const encodedGroup = encodeURIComponent(selectedGroup);
+    const res = await fetch(
+      `/api/students?collegeId=${session.user.collegeId}&group=${encodedGroup}`
+    );
+    const json = await res.json();
+    if (json.status === "success") {
+      setStudents(json.data);
+    }
+  };
+  fetchStudents();
+}, [selectedGroup, session]);
+
+
+
+
+
 
   useEffect(() => {
     if (selectedGroup && selectedYearOfStudy) {
@@ -55,12 +69,17 @@ const AttendanceForm = () => {
     }
   }, [selectedGroup, selectedYearOfStudy, students]);
 
+
+
   const handleToggleChange = (studentId, status) => {
     setAttendanceData((prev) => ({
       ...prev,
       [studentId]: status,
     }));
   };
+
+
+
 
   const handleSubmit = async () => {
     if (!selectedDate || !selectedGroup || filteredStudents.length === 0) {
@@ -69,6 +88,8 @@ const AttendanceForm = () => {
       );
       return;
     }
+
+
 
     const dateObj = new Date(selectedDate);
     const month = monthsList[dateObj.getMonth()];
@@ -117,9 +138,10 @@ const AttendanceForm = () => {
       <Toaster position="top-center" />
 
       <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
-        <h1 className="text-2xl font-bold mb-4 flex items-center justify-center text-blue-800">
-          Attendance Form-2025
-        </h1>
+        <h1 className="text-xl font-bold text-center text-blue-800 mb-2">
+  {collegeName} - Attendance Form 2025
+</h1>
+
         <p className="text-gray-600 mb-4">
           👉 Note:-Please select a date, group, and ensure students are visible.
         </p>

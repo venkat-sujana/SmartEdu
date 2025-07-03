@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import EditExamForm from "@/app/edit-exam-form/page"; // Adjust the import path as needed
 import { Toaster } from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 export default function ExamReportPage() {
   const [reports, setReports] = useState([]);
@@ -15,6 +16,8 @@ export default function ExamReportPage() {
     examType: "",
     yearOfStudy: "",
   });
+
+  const { data: session, status } = useSession();
 
   const [editingExam, setEditingExam] = useState(null);
 
@@ -158,10 +161,9 @@ export default function ExamReportPage() {
   };
 
   const handleUpdated = async () => {
-  await fetchExam(); // again fetch latest exam from backend
-  setShowEditForm(false); // or close modal
-};
-
+    await fetchExam(); // again fetch latest exam from backend
+    setShowEditForm(false); // or close modal
+  };
 
   return (
     <div className="p-6 ">
@@ -276,9 +278,19 @@ export default function ExamReportPage() {
         </select>
       </div>
 
+      {status === "loading" ? (
+        <p className="text-center font-bold text-lg text-gray-600 mb-4">
+          Loading college name...
+        </p>
+      ) : (
+        <h2 className="text-center text-xl font-bold mb-4 uppercase">
+          {session?.user?.collegeName || "College Name Not Available"}
+        </h2>
+      )}
+
       <div id="print-section">
         {/* Report Table */}
-        <table className="table-auto w-full border border-black">
+        <table className="table-auto w-full border border-black m-4">
           <thead>
             <tr className="bg-blue-600 text-white">
               <th className="border p-1">S.No</th>
@@ -422,18 +434,13 @@ export default function ExamReportPage() {
                   <td className="border p-1">{total}</td>
                   <td className="border p-1">{percentage}</td>
                   <td className="border p-1">{status}</td>
-
-                  
-       <td className="border p-1">
-
-<button
-  onClick={() => setEditingExam(report)} // report = exam object
-  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
->
-  ✏️ Edit
-</button>
-
-
+                  <td className="border p-1">
+                    <button
+                      onClick={() => setEditingExam(report)} // report = exam object
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                    >
+                      ✏️ Edit
+                    </button>
 
                     <button
                       onClick={() => handleDelete(report._id)}
@@ -448,18 +455,14 @@ export default function ExamReportPage() {
           </tbody>
         </table>
 
-
-{editingExam && (
-  <EditExamForm
-    key={editingExam._id} // 👉 Reactకు కొత్త component అన్నట్టు చెప్పే key
-    examData={editingExam}
-    onClose={() => setEditingExam(null)}
-    
-    onUpdated={fetchReports}
-  />
-)}
-
-
+        {editingExam && (
+          <EditExamForm
+            key={editingExam._id} // 👉 Reactకు కొత్త component అన్నట్టు చెప్పే key
+            examData={editingExam}
+            onClose={() => setEditingExam(null)}
+            onUpdated={fetchReports}
+          />
+        )}
 
         <div className="mt-4">
           {filteredReports.length === 0 && (

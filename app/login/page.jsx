@@ -34,7 +34,7 @@ export default function LoginPage() {
   
 
       <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-80">
-        <h2 className="text-xl font-bold mb-4 text-center">🔓&nbsp;Lecturer Login</h2>
+        <h2 className="text-xl font-bold mb-4 text-center">🔓&nbsp;Caretaker Login</h2>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <input
           type="email"

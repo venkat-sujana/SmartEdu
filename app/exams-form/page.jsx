@@ -1,12 +1,18 @@
+//app/exams-form/page.jsx
 "use client";
 import { useMemo } from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 export default function ExamsFormPage() {
   const [students, setStudents] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: session } = useSession();
+  const [group, setGroup] = useState("");
+  const [status, setStatus] = useState(""); // ✅ ఇది అవసరం
+  const [result, setResult] = useState({}); // ✅ ఇది అవసరం
   const [formData, setFormData] = useState({
     studentId: "",
     stream: "",
@@ -21,6 +27,7 @@ export default function ExamsFormPage() {
 
   const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
   const vocationalStreams = ["M&AT", "CET", "MLT"];
+
   const generalSubjects = [
     "Tel/Sansk",
     "English",
@@ -29,20 +36,36 @@ export default function ExamsFormPage() {
     "Phy/Eco",
     "Che/Com",
   ];
+
   const vocationalSubjects = ["GFC", "Eng", "V1/V4", "V2/V5", "V3/V6"];
 
+  // Define fetchStudents outside so it can be reused
+  const fetchStudents = async () => {
+    try {
+      const res = await fetch(
+        `/api/students?collegeId=${session?.user?.collegeId}&group=${group}`
+      );
+      const json = await res.json();
+
+      // ✅ Fetch success అనుకున్నా check చేసేము
+      setStudents(Array.isArray(json.data) ? json.data : []);
+
+      // ✅ ఈ logicకి క్రింద లైన్ suffice:
+      setStatus(json.status); // 'success' or 'error' from your backend
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      setStatus("error");
+    }
+  };
   useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const res = await fetch("/api/students");
-        const json = await res.json();
-        setStudents(Array.isArray(json.data) ? json.data : []);
-      } catch (err) {
-        console.error("Error fetching students:", err);
-      }
-    };
     fetchStudents();
-  }, []);
+  }, [group, session?.user?.collegeId]); // ✅ group and collegeId dependancies
+
+  useEffect(() => {
+    if (session?.user?.collegeName) {
+      document.title = `${session.user.collegeName} - Exam Entry Form`;
+    }
+  }, [session]);
 
   const filteredStudents = formData.stream
     ? students.filter(
@@ -115,6 +138,8 @@ export default function ExamsFormPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
+        collegeId: session?.user?.collegeId,
+        lecturerId: session?.user?.id, // if needed
       });
 
       const result = await res.json();
@@ -183,8 +208,18 @@ export default function ExamsFormPage() {
         </Link>
 
         <h2 className="text-xl font-bold mb-4 flex items-center justify-center">
-          Home Exam Marks Entry Form-2025
+          Home Exam Marks Entry Form - 2025
         </h2>
+
+        {status === "loading" ? (
+          <p className="text-center font-semibold text-gray-600 mb-2">
+            Loading College Name...
+          </p>
+        ) : (
+          <h2 className="text-center font-bold text-lg mb-2 uppercase">
+            {session?.user?.collegeName || "College Name Not Available"}
+          </h2>
+        )}
 
         {formData.yearOfStudy && (
           <div className="text-green-600 font-semibold">

@@ -27,6 +27,13 @@ const attendanceSchema = new Schema({
     enum: ['First Year', 'Second Year'],
     required: true,
   },
+
+  collegeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "College",
+      required: true,
+    },
+    
   month: {
     type: String,
     enum: [
@@ -34,11 +41,14 @@ const attendanceSchema = new Schema({
       "July", "August", "September", "October", "November", "December"
     ],
   },
-  year: {
+
+year: {
     type: Number,
   }
+  
 }, {
   timestamps: true,
 });
+attendanceSchema.index({ studentId: 1, date: 1 }, { unique: true });
 
 export default mongoose.models.Attendance || mongoose.model("Attendance", attendanceSchema);

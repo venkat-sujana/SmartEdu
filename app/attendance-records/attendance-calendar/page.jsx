@@ -1,3 +1,5 @@
+//app/attendance-records/attendance-calendar/page.jsx
+
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -27,6 +29,8 @@ export default function CalendarView() {
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
 
+  
+
   // Load students when group or yearOfStudy is selected
   useEffect(() => {
     if (group && yearOfStudy) {
@@ -44,6 +48,18 @@ export default function CalendarView() {
       setStudentId("");
     }
   }, [group, yearOfStudy]);
+
+const [collegeName, setCollegeName] = useState("");
+useEffect(() => {
+    // Fetch session from /api/auth/session
+    fetch("/api/auth/session")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.user?.collegeName) {
+          setCollegeName(data.user.collegeName);
+        }
+      });
+  }, []);
 
   // Load attendance for selected student
   useEffect(() => {
@@ -65,9 +81,10 @@ export default function CalendarView() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 flex items-center justify-center text-blue-500">
-        Monthly Attendance Calendar-2025
-      </h1>
+<h1 className="text-2xl font-bold mb-4 flex items-center justify-center text-blue-500">
+  {collegeName || "Your College"} Monthly Attendance Calendar - {year}
+</h1>
+
       <p className="mb-4">
         👉Note:-Select a group and student to view their attendance.
       </p>

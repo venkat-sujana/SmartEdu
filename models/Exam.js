@@ -45,6 +45,13 @@ const examSchema = new Schema({
       return ['M&AT', 'CET', 'MLT'].includes(this.stream);
     },
   },
+
+  collegeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "College",
+      required: true,
+    },
+    
   total: {
     type: Number,
     default: 0

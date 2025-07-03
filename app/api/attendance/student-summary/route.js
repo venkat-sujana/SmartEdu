@@ -1,15 +1,8 @@
-
-// This route handles fetching the attendance summary for a specific student
-// based on their studentId.
-// It aggregates attendance data by month and status (Present/Absent),
-// returning a summary of present and working days for each month.
-// It uses MongoDB aggregation to group attendance records and calculate the summary.
-
-
-//api/attendance/student-summary/route.js
+// api/attendance/student-summary/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
+import mongoose from "mongoose"; // ✅ Mongoose import is required
 
 export async function GET(req) {
   await connectMongoDB();
@@ -25,7 +18,13 @@ export async function GET(req) {
     ];
 
     const attendance = await Attendance.aggregate([
-      { $match: { studentId: { $eq: new mongoose.Types.ObjectId(studentId) } } },
+      {
+$match: {
+  studentId: { $in: studentIds },
+  collegeId: session.user.collegeId,
+}
+
+      },
       {
         $group: {
           _id: { month: "$month", status: "$status" },

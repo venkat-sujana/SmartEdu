@@ -2,10 +2,20 @@
 import { NextResponse } from "next/server";
 import Attendance from "@/models/Attendance";
 import connectMongoDB from "@/lib/mongodb";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/route"; // ✅ Adjust path if needed
 
 export async function GET(req) {
   await connectMongoDB();
-  
+
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.collegeId) {
+    return NextResponse.json({ status: "error", message: "Unauthorized" }, { status: 401 });
+  }
+
+  const collegeId = session.user.collegeId;
+
   const { searchParams } = new URL(req.url);
   const group = searchParams.get("group");
   const year = searchParams.get("year");
@@ -17,6 +27,7 @@ export async function GET(req) {
   }
 
   const query = {
+    collegeId,             // ✅ restrict to lecturer's college
     group,
     yearOfStudy: year,
   };
@@ -30,8 +41,7 @@ export async function GET(req) {
 
   try {
     const attendance = await Attendance.find(query).populate("studentId", "name group yearOfStudy");
-    
-    // Structure the data as expected by frontend
+
     const formatted = attendance.map((a) => ({
       _id: a._id,
       student: a.studentId?.name || "Unknown",

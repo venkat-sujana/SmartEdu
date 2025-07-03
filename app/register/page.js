@@ -1,12 +1,39 @@
 //app/register/page.jsx
 "use client";
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Users, Home } from "lucide-react";
-
 import toast from "react-hot-toast";
 
+// ✅ Add for session
+import { useSession } from "next-auth/react";
+
 export default function RegisterPage() {
+
+  const { data: session, status } = useSession(); // 🔐 get lecturer session
+
+  console.log("Lecturer session:", session);
+  const collegeName = session?.user?.collegeName;
+
+  const [collegeId, setCollegeId] = useState(""); // ✅ store collegeId
+
+useEffect(() => {
+  if (status !== "loading") {
+    console.log("✅ Session User:", session?.user);
+  }
+}, [status, session]);
+
+
+useEffect(() => {
+  if (session?.user?.collegeId) {
+    setCollegeId(session.user.collegeId);
+  }
+}, [session]);
+
+
+
+
   const [photo, setPhoto] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -22,7 +49,6 @@ export default function RegisterPage() {
     address: "",
     photo: null,
   });
-
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (e) => {
@@ -37,6 +63,13 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
 
+if (!session?.user?.collegeId) {
+  toast.error("Session expired. Please login again.");
+  return;
+}
+
+  
+
     const form = new FormData();
     form.append("name", formData.name);
     form.append("fatherName", formData.fatherName);
@@ -49,6 +82,9 @@ export default function RegisterPage() {
     form.append("yearOfStudy", formData.yearOfStudy);
     form.append("admissionYear", formData.admissionYear);
     form.append("address", formData.address);
+
+    form.append("collegeId", collegeId); // ✅ Add this line to send collegeId  not in formData
+    form.append("lecturerId", session.user.id); // ✅ Add lecturerId from session
 
     if (photo) {
       form.append("photo", photo);
@@ -64,7 +100,7 @@ export default function RegisterPage() {
       console.log(result);
 
       if (res.ok) {
-        toast.success("స్టూడెంట్ విజయవంతంగా  రిజిస్టర్ అయ్యాడు 👍 ✅");
+        toast.success("Student registered successfully 👍 ✅");
 
         // Reset the form
         setFormData({
@@ -94,7 +130,7 @@ export default function RegisterPage() {
   return (
     <div className="relative">
       <Link href="/">
-        {/* Dashboard Button */}
+        {/* Home Button */}
         <button
           className="bg-green-600
          text-white 
@@ -110,6 +146,12 @@ export default function RegisterPage() {
         </button>
       </Link>
       &nbsp;
+      <Link href="/student-table">
+        <button className="w-50 bg-cyan-600 m-2 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold border-b-black border-b-2">
+          📝&nbsp; Student-Table
+        </button>
+      </Link>
+
       {/* Full Page Spinner Overlay */}
       {isLoading && (
         <div className="fixed inset-0 bg-white bg-opacity-80 flex flex-col items-center  justify-center z-50">
@@ -137,9 +179,24 @@ export default function RegisterPage() {
         </div>
       )}
       <div className="max-w-2xl mx-auto mt-10 bg-gray-100 shadow-lg rounded-xl p-6 font-bold border-x-black border-x-2 border-t-2 border-b-2 border-t-blue-600 border-b-blue-600">
-        <h1 className="text-lg font-bold mb-4 text-center  text-blue-600">
-          S.K.R.GOVERNMENT JUNIOR COLLEGE-GUDUR
-        </h1>
+        {/* College Name Display */}
+<div className="mb-4">
+  <label className="block text-sm font-medium text-gray-700 mb-1  items-center justify-center">
+    College Name
+  </label>
+  <input
+    type="text"
+    value={
+      status === "loading"
+        ? "Loading..."
+        : session?.user?.collegeName || "College name missing"
+    }
+    disabled
+    className="w-full p-2 border rounded-md truncate" // ✅ key line
+  />
+</div>
+
+
         <h2 className="text-xl font-bold mb-4 text-white bg-teal-600 text-center">
           🧑‍🎓🧑‍🎓&nbsp;Student Admission Form-2025
         </h2>
@@ -149,8 +206,9 @@ export default function RegisterPage() {
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           {/* Column 1 */}
+
           <div className="space-y-4">
-            <input 
+            <input
               name="name"
               value={formData.name}
               onChange={handleChange}
@@ -238,7 +296,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Column 2 */}
-          <div className="space-y-4">
+          <div className="space-y-1">
             <div>
               <label className="text-sm text-gray-600">Admission Number</label>
               <input

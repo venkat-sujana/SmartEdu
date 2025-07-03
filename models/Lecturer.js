@@ -1,3 +1,4 @@
+// models/Lecturer.js
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -9,8 +10,14 @@ const lecturerSchema = new mongoose.Schema({
   assignedGroups: { type: [String], default: [] },
   assignedStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
   password: { type: String, required: true, select: false },
-   photo: { type: String, default: "" }, // ✅ Added photo field
+  photo: { type: String, default: "" },
   role: { type: String, default: "lecturer" },
+  collegeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "College",
+    required: true
+  },
+  collegeName: String, // ✅ This should exist
   createdAt: { type: Date, default: Date.now },
 });
 

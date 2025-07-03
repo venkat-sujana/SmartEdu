@@ -8,12 +8,17 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Link from "next/link";
 import { FileDown, FileSpreadsheet, Printer } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function AttendanceRecords() {
   const [records, setRecords] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [group, setGroup] = useState("");
+  const { data: session } = useSession();
+
+
+  const collegeName = session?.user?.collegeName || "College";
 
   const [attendanceData, setAttendanceData] = useState({
     "First Year": [],
@@ -42,17 +47,26 @@ export default function AttendanceRecords() {
   const collegePercentage =
     totalAll > 0 ? ((totalPresent / totalAll) * 100).toFixed(2) : 0;
 
-  const fetchAttendanceRecords = async () => {
-    try {
-      const res = await fetch(
-        `/api/attendance/summary/daily-group?start=${startDate}&end=${endDate}&group=${group}&year=${yearOfStudy}`
-      );
-      const json = await res.json();
-      setAttendanceData(json.data || { "First Year": [], "Second Year": [] });
-    } catch (error) {
-      console.error("Error fetching attendance records:", error);
-    }
-  };
+const fetchAttendanceRecords = async () => {
+  const query = `start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}&group=${encodeURIComponent(group)}&year=${encodeURIComponent(yearOfStudy)}`
+
+  try {
+    const url = `/api/attendance/summary/daily-group?${query}`;
+    console.log("Requesting:", url); // ✅ Debug
+    const res = await fetch(url);
+    const json = await res.json();
+    console.log("Response JSON:", json); // ✅ Debug
+
+   setAttendanceData({
+  "First Year": json.data?.["First Year"] || [],
+  "Second Year": json.data?.["Second Year"] || [],
+});
+    console.log("Attendance Data:", json.data); // ✅ Debug
+  } catch (error) {
+    console.error("Error fetching attendance records:", error); // ✅ Check here
+  }
+};
+
 
   // Encode before fetch
   const query = new URLSearchParams({
@@ -78,7 +92,7 @@ export default function AttendanceRecords() {
         Date: {today} | Time: {new Date().toLocaleTimeString()}
       </p>
       <h2 className="text-2xl font-bold mb-4 flex items-center justify-center">
-        🧾Group-wise Daily Attendance Summary-2025
+        {collegeName}🧾Group-wise Daily Attendance Summary-2025
       </h2>
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
@@ -160,7 +174,7 @@ export default function AttendanceRecords() {
 
         <Link href="/attendance-records/individual">
           <button className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer mb-2">
-            👤&nbsp;Individual Attendance
+            👤&nbsp;Edit Attendance Records
           </button>
         </Link>
 

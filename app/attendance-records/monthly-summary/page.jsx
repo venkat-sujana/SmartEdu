@@ -1,20 +1,35 @@
+// app/attendance-records/monthly-summary/page.jsx
 "use client";
 import { useEffect, useState } from "react";
 import React from "react";
 import Link from "next/link";
 import { Printer } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 const months = [
-  "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR",
+  { label: "JUN", year: "2025" },
+  { label: "JUL", year: "2025" },
+  { label: "AUG", year: "2025" },
+  { label: "SEP", year: "2025" },
+  { label: "OCT", year: "2025" },
+  { label: "NOV", year: "2025" },
+  { label: "DEC", year: "2025" },
+  { label: "JAN", year: "2026" },
+  { label: "FEB", year: "2026" },
+  { label: "MAR", year: "2026" },
 ];
+
 const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
-const years = ["First Year", "Second Year"]; // Added year options
+const years = ["First Year", "Second Year"];
 
 export default function MonthlySummary() {
   const [summaryData, setSummaryData] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState("");
-  const [selectedYear, setSelectedYear] = useState(""); // Year state
+  const [selectedYear, setSelectedYear] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const { data: session } = useSession();
+
+  const collegeName = session?.user?.collegeName || "College";
 
   useEffect(() => {
     if (!selectedGroup || !selectedYear) return;
@@ -22,10 +37,11 @@ export default function MonthlySummary() {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `/api/attendance/monthly-summary?group=${encodeURIComponent(selectedGroup)}&yearOfStudy=${encodeURIComponent(selectedYear)}`
+          `/api/attendance/monthly-summary?group=${encodeURIComponent(
+            selectedGroup
+          )}&yearOfStudy=${encodeURIComponent(selectedYear)}`
         );
         const data = await res.json();
-        console.log("API RESPONSE:", data);
         setSummaryData(data.data || []);
       } catch (error) {
         console.error("Fetch error:", error);
@@ -49,7 +65,7 @@ export default function MonthlySummary() {
           <style>
             body { font-family: Arial, sans-serif; }
             table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid black; padding: 8px; text-align: center; }
+            th, td { border: 1px solid black; padding: 6px; text-align: center; font-size: 12px; }
             th { background-color: #16a34a; color: white; }
           </style>
         </head>
@@ -62,28 +78,9 @@ export default function MonthlySummary() {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-8 flex items-center justify-center">
-        Monthly Attendance Summary - 2025
+      <h2 className="text-2xl font-bold mb-4 text-center">
+        {collegeName} 🧾 Monthly Attendance Summary - 2025
       </h2>
-
-      <strong>
-        <p className="mb-4">
-          Features:
-          <br />
-          - Shows monthly columns from JUN to MAR (or April to March).
-          <br />
-          - Three rows: Working Days, Present Days, Percentage.
-          <br />
-          - Last column “TOTAL” shows cumulative values.
-          <br />
-          - Place and Date fields shown at the bottom.
-          <br />
-          - Signature area for student.
-          <br />
-          - Designed for A4 printing.
-          <br />
-        </p>
-      </strong>
 
       {/* Filters */}
       <div className="mb-4 flex gap-4 items-center flex-wrap">
@@ -129,13 +126,13 @@ export default function MonthlySummary() {
         </button>
 
         <Link href="/attendance-form">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold cursor-pointer">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded font-bold cursor-pointer">
             📝 Attendance Form
           </button>
         </Link>
 
         <Link href="/attendance-records">
-          <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold cursor-pointer">
+          <button className="bg-green-600 text-white px-4 py-2 rounded font-bold cursor-pointer">
             🧾 Attendance Records
           </button>
         </Link>
@@ -143,96 +140,107 @@ export default function MonthlySummary() {
 
       {/* Attendance Table */}
       <div id="print-area">
-        <table className="table-auto w-full border border-gray-300 shadow text-sm">
-          <thead className="bg-green-600 text-white">
-            <tr>
-              <th className="p-2 border">S.No</th>
-              <th className="p-2 border">🧑‍🎓 Students</th>
-              {months.map((month) => (
-                <th key={month} className="p-2 border">
-                  {month}
-                </th>
+        {filteredData.length === 0 ? (
+          <p className="text-gray-500 mt-4 text-center">No data available.</p>
+        ) : (
+          <table className="table-auto w-full border border-gray-300 shadow text-sm">
+            <thead className="bg-green-600 text-white">
+              <tr>
+                <th className="p-2 border">S.No</th>
+                <th className="p-2 border">🧑‍🎓 Students</th>
+                {months.map(({ label }) => (
+                  <th key={label} className="p-2 border">
+                    {label}
+                  </th>
+                ))}
+                <th className="p-2 border">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.map((student, idx) => (
+                <React.Fragment key={idx}>
+                  {/* Working Days */}
+                  <tr className="bg-gray-100 font-medium">
+                    <td className="p-2 border"></td>
+                    <td className="p-2 border">Working Days</td>
+                    {months.map(({ label, year }) => {
+                      const key = `${label}-${year}`;
+                      return (
+                        <td key={key} className="p-2 border">
+                          {student.workingDays?.[key] || 0}
+                        </td>
+                      );
+                    })}
+                    <td className="p-2 border">
+                      {months.reduce((sum, { label, year }) => {
+                        const key = `${label}-${year}`;
+                        return sum + (student.workingDays?.[key] || 0);
+                      }, 0)}
+                    </td>
+                  </tr>
+
+                  {/* Present */}
+                  <tr>
+                    <td className="p-2 border">{idx + 1}</td>
+                    <td className="p-2 border">{student.name}</td>
+                    {months.map(({ label, year }) => {
+                      const key = `${label}-${year}`;
+                      return (
+                        <td key={key} className="p-2 border">
+                          {student.present?.[key] || 0}
+                        </td>
+                      );
+                    })}
+                    <td className="p-2 border">
+                      {months.reduce((sum, { label, year }) => {
+                        const key = `${label}-${year}`;
+                        return sum + (student.present?.[key] || 0);
+                      }, 0)}
+                    </td>
+                  </tr>
+
+                  {/* Percent */}
+                  <tr className="bg-yellow-100 font-semibold">
+                    <td className="p-2 border"></td>
+                    <td className="p-2 border">Percent</td>
+                    {months.map(({ label, year }) => {
+                      const key = `${label}-${year}`;
+                      const present = student.present?.[key] ?? 0;
+                      const total = student.workingDays?.[key] ?? 0;
+                      const percent =
+                        total > 0 ? ((present / total) * 100).toFixed(0) : "-";
+                      return (
+                        <td key={key} className="p-2 border">
+                          {percent}%
+                        </td>
+                      );
+                    })}
+                    <td className="p-2 border">
+                      {(() => {
+                        const totalPresent = months.reduce((sum, { label, year }) => {
+                          const key = `${label}-${year}`;
+                          return sum + (student.present?.[key] || 0);
+                        }, 0);
+                        const totalWorking = months.reduce((sum, { label, year }) => {
+                          const key = `${label}-${year}`;
+                          return sum + (student.workingDays?.[key] || 0);
+                        }, 0);
+                        return totalWorking > 0
+                          ? ((totalPresent / totalWorking) * 100).toFixed(0) + "%"
+                          : "-";
+                      })()}
+                    </td>
+                  </tr>
+
+                  {/* Spacer Row */}
+                  <tr>
+                    <td colSpan={months.length + 3} className="h-4"></td>
+                  </tr>
+                </React.Fragment>
               ))}
-              <th className="p-2 border">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((student, idx) => (
-              <React.Fragment key={idx}>
-                {/* Working Days Row */}
-                <tr className="bg-gray-100">
-                  <td className="p-2 border font-semibold"></td>
-                  <td className="p-2 border font-semibold">Working Days</td>
-                  {months.map((m) => (
-                    <td key={m + "-work"} className="p-2 border">
-                      {student.workingDays?.[m] || 0}
-                    </td>
-                  ))}
-                  <td className="p-2 border font-semibold">
-                    {months.reduce(
-                      (sum, m) => sum + (student.workingDays?.[m] || 0),
-                      0
-                    )}
-                  </td>
-                </tr>
-
-                {/* Present Row */}
-                <tr>
-                  <td className="p-2 border">{idx + 1}</td>
-                  <td className="p-2 border">{student.name}</td>
-                  {months.map((m) => (
-                    <td key={m + "-present"} className="p-2 border">
-                      {student.present?.[m] || 0}
-                    </td>
-                  ))}
-                  <td className="p-2 border">
-                    {months.reduce(
-                      (sum, m) => sum + (student.present?.[m] || 0),
-                      0
-                    )}
-                  </td>
-                </tr>
-
-                {/* Percent Row */}
-                <tr className="bg-yellow-100 font-semibold">
-                  <td className="p-2 border"></td>
-                  <td className="p-2 border font-medium">Percent</td>
-                  {months.map((m) => {
-                    const present = student.present?.[m] || 0;
-                    const total = student.workingDays?.[m] || 0;
-                    const percent =
-                      total > 0 ? ((present / total) * 100).toFixed(0) : "-";
-                    return (
-                      <td key={m + "-percent"} className="p-2 border">
-                        {percent}%
-                      </td>
-                    );
-                  })}
-                  <td className="p-2 border font-medium">
-                    {(() => {
-                      const totalWorking = months.reduce(
-                        (sum, m) => sum + (student.workingDays?.[m] || 0),
-                        0
-                      );
-                      const totalPresent = months.reduce(
-                        (sum, m) => sum + (student.present?.[m] || 0),
-                        0
-                      );
-                      return totalWorking > 0
-                        ? ((totalPresent / totalWorking) * 100).toFixed(0) + "%"
-                        : "-";
-                    })()}
-                  </td>
-                </tr>
-
-                {/* Spacing */}
-                <tr>
-                  <td colSpan={months.length + 3} className="h-4"></td>
-                </tr>
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

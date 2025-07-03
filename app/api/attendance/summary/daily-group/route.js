@@ -6,19 +6,22 @@ import Student from "@/models/Student";
 export async function GET(req) {
   await connectMongoDB();
 
-const { searchParams } = new URL(req.url);
-const start = searchParams.get("start");
-const end = searchParams.get("end");
-const group = searchParams.get("group");
-const year = searchParams.get("yearOfStudy"); // 👈 add this
-
+  const { searchParams } = new URL(req.url);
+  const start = searchParams.get("start");
+  const end = searchParams.get("end");
+  const group = searchParams.get("group");
+  const filterYear = searchParams.get("year"); // 👈 frontend నుంచి yearOfStudy as 'year' వస్తుంది అని assume చేస్తున్నాం
 
   const yearOptions = ["First Year", "Second Year"];
+  const results = {};
 
   try {
-    const results = {};
-
     for (const yearOfStudy of yearOptions) {
+      // 👉 yearOfStudy filter ఇచ్చినా, ఆ year మాత్రమే చూపించాలి
+      if (filterYear && filterYear !== yearOfStudy) {
+        continue;
+      }
+
       const matchStage = {};
 
       if (start && end) {
