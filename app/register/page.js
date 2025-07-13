@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Users, Home } from "lucide-react";
 import toast from "react-hot-toast";
-
+import { useRouter } from "next/navigation";
 // ✅ Add for session
 import { useSession } from "next-auth/react";
 
@@ -50,6 +50,15 @@ useEffect(() => {
     photo: null,
   });
   const [isLoading, setIsLoading] = useState(false);
+ const router = useRouter();
+
+  // ✅ Redirect if unauthenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      toast.error("Please login to access this page.");
+      router.push("/login");
+    }
+  }, [status, router]);
 
   const handleFileChange = (e) => {
     setFormData({ ...formData, photo: e.target.files[0] });
@@ -101,6 +110,7 @@ if (!session?.user?.collegeId) {
 
       if (res.ok) {
         toast.success("Student registered successfully 👍 ✅");
+        router.push("/student-table"); // ✅ Redirect to student table
 
         // Reset the form
         setFormData({
@@ -146,11 +156,7 @@ if (!session?.user?.collegeId) {
         </button>
       </Link>
       &nbsp;
-      <Link href="/student-table">
-        <button className="w-50 bg-cyan-600 m-2 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold border-b-black border-b-2">
-          📝&nbsp; Student-Table
-        </button>
-      </Link>
+
 
       {/* Full Page Spinner Overlay */}
       {isLoading && (

@@ -1,7 +1,7 @@
 //app/lecturer-registration/page.jsx
 "use client";
 import { useEffect, useState } from "react";
-import router from "next/router";
+import Router from "next/router";
 
 
 
@@ -72,7 +72,7 @@ export default function LecturerRegistrationForm() {
       subject: "",
       collegeId: "",
     });
-    router.push("/lecturer-login");
+    Router.push("/lecturer-login");
   } else {
     alert(result.message || "Something went wrong");
   }
@@ -142,6 +142,20 @@ export default function LecturerRegistrationForm() {
         <button className="bg-blue-600 text-white px-4 py-2 rounded">
           Register
         </button>
+        <p className="mt-4 text-center text-gray-600">
+          Already have an account{" "}
+          <a href="/lecturer-login" className="text-blue-600 hover:underline">
+            Login here
+          </a>
+        </p>
+               <p className="mt-4 text-center text-gray-600">
+          if your college is not in the list{" "}
+          <a href="/college-registration" className="text-blue-600 hover:underline">
+            Register here
+          </a>
+        </p>
+
+
       </form>
     </div>
   );

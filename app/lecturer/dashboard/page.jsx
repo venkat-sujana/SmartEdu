@@ -78,6 +78,20 @@ useEffect(() => {
           </button>
         </Link>
 
+               
+                  <Link href="/register">
+                    <button className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
+                      📝&nbsp;Admission Form
+                    </button>
+                  </Link>
+
+                        <Link href="/student-table">
+                          <button className="w-50 bg-cyan-600 m-2 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold border-b-black border-b-2">
+                            📝&nbsp; Student-Table
+                          </button>
+                        </Link>
+              
+
         <Link href="/lecturer/assign">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
             ✏️ Add Students

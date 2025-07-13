@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const AttendanceForm = () => {
   const [students, setStudents] = useState([]);
@@ -35,6 +36,7 @@ const AttendanceForm = () => {
     "December",
   ];
   const yearsList = ["First Year", "Second Year"];
+  const router = useRouter();
 
 useEffect(() => {
   const fetchStudents = async () => {
@@ -118,6 +120,7 @@ useEffect(() => {
       const result = await response.json();
       toast.dismiss(toastId);
       toast.success(result.message || "Attendance submitted successfully!");
+     router.push("/attendance-records");
     } catch (error) {
       toast.dismiss(toastId);
       toast.error("Error submitting attendance");

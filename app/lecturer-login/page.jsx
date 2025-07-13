@@ -27,7 +27,7 @@ export default function LecturerLoginPage() {
 
     if (res?.ok) {
       toast.success("Login successful!");
-      router.push("/register");
+      router.push("/student-table");
     } else {
       toast.error("Invalid credentials");
     }
@@ -72,6 +72,13 @@ export default function LecturerLoginPage() {
         >
           {isLoading ? "Logging in..." : "Login"}
         </button>
+        <p className="mt-4 text-center text-gray-600">
+          Don't have an account?{" "}
+          <a href="/lecturer-registration" className="text-blue-600 hover:underline">
+            Register here
+          </a>
+        </p>
+        <p className="mt-2 text-center text-gray-600"></p>
       </form>
     </div>
   );

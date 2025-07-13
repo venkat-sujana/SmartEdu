@@ -22,4 +22,3 @@ export async function GET(req, { params }) {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
-

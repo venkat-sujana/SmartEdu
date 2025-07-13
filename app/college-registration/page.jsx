@@ -33,21 +33,7 @@ export default function CollegeRegistrationForm() {
   return (
     <div className="max-w-xl mx-auto p-4">
      
-            <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
-             <Link href="/lecturer-registration">
-               <button className="w-full bg-slate-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-                 📝&nbsp; Lecturer Registration
-               </button>
-             </Link>
-             </div>
 
-                     <div className="bg-white p-1 rounded-lg shadow-md border border-gray-300 mb-4">
-        <Link href="/lecturer-login">
-          <button className="w-full bg-slate-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-            📝&nbsp; Lecturer Login
-          </button>
-        </Link>
-        </div>
 
 
       <h2 className="text-2xl font-bold mb-4">College Registration</h2>
@@ -60,7 +46,24 @@ export default function CollegeRegistrationForm() {
         <input name="contactEmail" onChange={handleChange} placeholder="Email" className="w-full border p-2" />
         <input name="contactPhone" onChange={handleChange} placeholder="Phone" className="w-full border p-2" />
         <button className="bg-blue-600 text-white px-4 py-2 rounded">Register College</button>
+
       </form>
+     
+        <p className="mt-4 text-center text-gray-600">
+          Don't have an Lecturer account?{" "}
+          <a href="/lecturer-registration" className="text-blue-600 hover:underline">
+            Register here
+          </a>
+        </p>
+        <p className="mt-2 text-center text-gray-600"></p>
+                <p className="mt-4 text-center text-gray-600">
+          Already have an account?{" "}
+          <a href="/lecturer-login" className="text-blue-600 hover:underline">
+            Login here
+          </a>
+        </p>
+        <p className="mt-2 text-center text-gray-600"></p>
+     
     </div>
   );
 }

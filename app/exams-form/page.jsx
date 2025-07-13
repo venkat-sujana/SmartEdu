@@ -1,15 +1,16 @@
 //app/exams-form/page.jsx
 "use client";
-import { useMemo } from "react";
+import { use, useMemo } from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
 
 export default function ExamsFormPage() {
   const [students, setStudents] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: session } = useSession();
   const [group, setGroup] = useState("");
   const [status, setStatus] = useState(""); // ✅ ఇది అవసరం
   const [result, setResult] = useState({}); // ✅ ఇది అవసరం
@@ -24,9 +25,24 @@ export default function ExamsFormPage() {
     total: 0,
     percentage: 0,
   });
+ const router = useRouter();
+ 
 
   const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
   const vocationalStreams = ["M&AT", "CET", "MLT"];
+
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (session) {
+      console.log("✅ Session Data:", session);
+    } else {
+      console.log("🚫 No session found");
+    }
+  }, [session]);
+
+
+ 
 
   const generalSubjects = [
     "Tel/Sansk",
@@ -145,6 +161,8 @@ export default function ExamsFormPage() {
       const result = await res.json();
       if (res.ok) {
         toast.success("✅ Exam saved successfully!");
+         router.push("/exam-report"); // ✅ redirect here
+        
         setFormData({
           yearOfStudy: "",
           academicYear: "",

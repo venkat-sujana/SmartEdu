@@ -3,24 +3,16 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
 export default function CalendarView() {
+  const { data: session } = useSession();
   const [group, setGroup] = useState("");
   const [students, setStudents] = useState([]);
   const [studentId, setStudentId] = useState("");
@@ -28,13 +20,19 @@ export default function CalendarView() {
   const [attendanceData, setAttendanceData] = useState([]);
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
+  const [collegeName, setCollegeName] = useState("");
 
-  
-
-  // Load students when group or yearOfStudy is selected
+  // 🧠 Load College Name
   useEffect(() => {
-    if (group && yearOfStudy) {
-      fetch("/api/students")
+    if (session?.user?.collegeName) {
+      setCollegeName(session.user.collegeName);
+    }
+  }, [session]);
+
+  // 🧠 Load Students (filtered by collegeId, group, year)
+  useEffect(() => {
+    if (group && yearOfStudy && session?.user?.collegeId) {
+      fetch(`/api/students?collegeId=${session.user.collegeId}`)
         .then((res) => res.json())
         .then((data) => {
           const filtered = data.data.filter(
@@ -47,21 +45,9 @@ export default function CalendarView() {
       setStudents([]);
       setStudentId("");
     }
-  }, [group, yearOfStudy]);
+  }, [group, yearOfStudy, session]);
 
-const [collegeName, setCollegeName] = useState("");
-useEffect(() => {
-    // Fetch session from /api/auth/session
-    fetch("/api/auth/session")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.user?.collegeName) {
-          setCollegeName(data.user.collegeName);
-        }
-      });
-  }, []);
-
-  // Load attendance for selected student
+  // 🧠 Load Attendance (filtered by studentId)
   useEffect(() => {
     if (studentId) {
       fetch(
@@ -81,111 +67,68 @@ useEffect(() => {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-<h1 className="text-2xl font-bold mb-4 flex items-center justify-center text-blue-500">
-  {collegeName || "Your College"} Monthly Attendance Calendar - {year}
-</h1>
+      <h1 className="text-2xl font-bold mb-4 flex items-center justify-center text-blue-500">
+        {collegeName || "Your College"} Monthly Attendance Calendar - {year}
+      </h1>
 
-      <p className="mb-4">
-        👉Note:-Select a group and student to view their attendance.
-      </p>
-      <p className="mb-4"></p>
-      <p className="mb-4">
-        👉Note:Attendance records are shown for the selected month and year.
-      </p>
+      <p className="mb-4">👉Note:-Select a group and student to view their attendance.</p>
       <Link href="/attendance-form">
-        <button className="bg-cyan-600 text-white px-4 py-2 mb-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-          📝&nbsp; Attendance Form
+        <button className="bg-cyan-600 text-white px-4 py-2 mb-2 rounded hover:bg-cyan-700 font-bold mr-2">
+          📝 Attendance Form
         </button>
       </Link>
 
       <Link href="/attendance-records">
-        <button className="bg-violet-700 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-          📝 &nbsp;Attendance-Records
+        <button className="bg-violet-700 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2">
+          📝 Attendance Records
         </button>
       </Link>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-4">
-        {/* Year Dropdown */}
-        <select
-          value={yearOfStudy}
-          onChange={(e) => setYearOfStudy(e.target.value)}
-          className="border p-2 rounded"
-        >
+        <select value={yearOfStudy} onChange={(e) => setYearOfStudy(e.target.value)} className="border p-2 rounded">
           <option value="">Select Year</option>
           <option value="First Year">First Year</option>
           <option value="Second Year">Second Year</option>
         </select>
 
-        {/* Group Dropdown */}
-        <select
-          value={group}
-          onChange={(e) => setGroup(e.target.value)}
-          className="border p-2 rounded"
-        >
+        <select value={group} onChange={(e) => setGroup(e.target.value)} className="border p-2 rounded">
           <option value="">Select Group</option>
           {groupsList.map((g) => (
-            <option key={g} value={g}>
-              {g}
-            </option>
+            <option key={g} value={g}>{g}</option>
           ))}
         </select>
 
-        {/* Student Dropdown */}
-        <select
-          value={studentId}
-          onChange={(e) => setStudentId(e.target.value)}
-          className="border p-2 rounded"
-        >
+        <select value={studentId} onChange={(e) => setStudentId(e.target.value)} className="border p-2 rounded">
           <option value="">Select Student</option>
           {students.map((s) => (
-            <option key={s._id} value={s._id}>
-              {s.name}
-            </option>
+            <option key={s._id} value={s._id}>{s.name}</option>
           ))}
         </select>
 
-        {/* Month Dropdown */}
-        <select
-          value={month}
-          onChange={(e) => setMonth(parseInt(e.target.value))}
-          className="border p-2 rounded"
-        >
+        <select value={month} onChange={(e) => setMonth(parseInt(e.target.value))} className="border p-2 rounded">
           {monthNames.map((m, i) => (
-            <option key={m} value={i}>
-              {m}
-            </option>
+            <option key={m} value={i}>{m}</option>
           ))}
         </select>
 
-        {/* Year Dropdown */}
-        <select
-          value={year}
-          onChange={(e) => setYear(parseInt(e.target.value))}
-          className="border p-2 rounded"
-        >
+        <select value={year} onChange={(e) => setYear(parseInt(e.target.value))} className="border p-2 rounded">
           {[...Array(5)].map((_, i) => {
             const y = new Date().getFullYear() - 2 + i;
-            return (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            );
+            return <option key={y} value={y}>{y}</option>;
           })}
         </select>
       </div>
 
       {/* Calendar Grid */}
-      <div id="calendar-grid" className="grid grid-cols-7 gap-2 text-center">
+      <div className="grid grid-cols-7 gap-2 text-center">
         {[...Array(daysInMonth)].map((_, day) => {
           const date = day + 1;
           const status = attendanceMap[date] || "N/A";
           const color =
-            status === "Present"
-              ? "bg-green-300"
-              : status === "Absent"
-              ? "bg-red-300"
-              : "bg-gray-200";
+            status === "Present" ? "bg-green-300" :
+            status === "Absent" ? "bg-red-300" :
+            "bg-gray-200";
 
           return (
             <div key={date} className={`p-2 border rounded ${color}`}>

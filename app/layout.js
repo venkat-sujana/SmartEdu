@@ -1,11 +1,11 @@
-"use client"; // 👈 Very Important
-import { SessionProvider } from "next-auth/react";
+"use client";
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-// app/layout.js or app/layout.tsx
 import { Toaster } from "react-hot-toast";
+import NavBar from "./components/NavBar"; // ✅ fixed default import
+import { Providers } from "./providers";  // ✅ correct named import
 
-//  import { Providers } from "./providers";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -19,31 +19,28 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Toaster
           position="top-right"
           toastOptions={{
-            duration: 3000, // 4 seconds
+            duration: 3000,
             style: {
-              background: "#0f766e", // teal-700
+              background: "#0f766e",
               color: "white",
               fontWeight: "bold",
               borderRadius: "0.5rem",
             },
-            success: {
-              icon: "✅",
-            },
+            success: { icon: "✅" },
             error: {
-              style: {
-                background: "#dc2626", // red-600
-              },
+              style: { background: "#dc2626" },
               icon: "❌",
             },
           }}
         />
-        <SessionProvider>{children}</SessionProvider>
+        <Providers>
+          <NavBar />
+          <main className="p-4">{children}</main>
+        </Providers>
       </body>
     </html>
   );
