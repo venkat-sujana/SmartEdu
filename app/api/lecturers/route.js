@@ -5,6 +5,7 @@ import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";
 import College from "@/models/College"; // 👉 Import College model
 import cloudinary from "@/lib/cloudinary";
+import bcrypt from "bcryptjs";
 
 export const config = {
   api: {
@@ -32,44 +33,39 @@ export async function POST(req) {
     const file = formData.get("photo");
     let photoUrl = "";
 
-    // ✅ Upload lecturer photo to Cloudinary
+    // ✅ Upload photo to Cloudinary
     if (file && typeof file === "object") {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
       const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
-
       const cloudinaryResponse = await cloudinary.uploader.upload(base64Image, {
         folder: "lecturers",
       });
-
       photoUrl = cloudinaryResponse.secure_url;
     }
 
-    // ✅ Step: Find college name from collegeId
+    // ✅ Fetch College
     const college = await College.findById(fields.collegeId);
-    console.log("📥 Form Fields:", fields);
-    console.log("🏫 collegeId:", fields.collegeId);
-    console.log("🏫 College from DB:", college?.name);
-   
     if (!college) {
       return NextResponse.json(
         { status: "error", message: "Invalid College ID" },
         { status: 400 }
       );
     }
-    
-    
 
-    // ✅ Step: Create lecturer with collegeName
+    // ✅ Hash password
+    const hashedPassword = await bcrypt.hash(fields.password, 10);
+    fields.password = hashedPassword;
+
+    // ✅ Create Lecturer
     const lecturer = await Lecturer.create({
       ...fields,
-      collegeName: college.name, // Add collegeName
+      collegeName: college.name,
       photo: photoUrl,
     });
 
-    
-
     return NextResponse.json({ status: "success", data: lecturer }, { status: 201 });
+
   } catch (error) {
     console.error("Lecturer upload error:", error);
     return NextResponse.json({ status: "error", message: error.message }, { status: 500 });

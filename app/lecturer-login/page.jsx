@@ -15,25 +15,27 @@ export default function LecturerLoginPage() {
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      email: formData.email,
-      password: formData.password,
-    });
+  const res = await signIn("credentials", {
+    redirect: false,
+    email: formData.email,
+    password: formData.password,
+    role: "lecturer", // ✅ Add this
+  });
 
-    if (res?.ok) {
-      toast.success("Login successful!");
-      router.push("/student-table");
-    } else {
-      toast.error("Invalid credentials");
-    }
+  if (res?.ok) {
+    toast.success("Login successful!");
+    router.push("/student-table");
+  } else {
+    toast.error("Invalid credentials");
+  }
 
-    setIsLoading(false);
-  };
+  setIsLoading(false);
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

@@ -16,6 +16,7 @@ export default function PrincipalLogin() {
       redirect: false,
       email,
       password,
+      role: "principal", // Ensure role is set to principal
     });
 
     if (res.error) {

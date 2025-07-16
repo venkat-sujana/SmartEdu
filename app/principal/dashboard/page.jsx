@@ -1,4 +1,4 @@
-
+export const dynamic = "force-dynamic"; // 👈 MOST IMPORTANT LINE
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -16,11 +16,7 @@ export default async function PrincipalDashboard() {
       <h1 className="text-2xl font-bold">Welcome, {session.user.name}</h1>
       <img src={session.user.photo} className="w-20 h-20 rounded-full mt-4" />
       <p>College ID: {session.user.collegeId}</p>
-
-
-<LogoutButton />
-
+      <LogoutButton />
     </div>
   );
 }
-

@@ -9,7 +9,7 @@ const lecturerSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   assignedGroups: { type: [String], default: [] },
   assignedStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
-  password: { type: String, required: true, select: false },
+  password: { type: String, required: true },
   photo: { type: String, default: "" },
   role: { type: String, default: "lecturer" },
   collegeId: {

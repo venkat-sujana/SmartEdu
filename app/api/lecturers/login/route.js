@@ -1,3 +1,4 @@
+//app/lecturers/login/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";

@@ -1,5 +1,3 @@
-//app/api/auth/[...nextauth]/route.js
-// This file handles authentication using NextAuth.js with MongoDB and Cloudinary.
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import connectMongoDB from "@/lib/mongodb";
@@ -14,52 +12,65 @@ export const authOptions = {
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
+         role: { label: "Role", type: "text" },
       },
-      async authorize(credentials) {
-        await connectMongoDB();
-        console.log("🔐 Incoming login:", credentials.email);
+async authorize(credentials) {
+if (!credentials) {
+  throw new Error("No credentials provided");
+}
+await connectMongoDB();
 
-        const { email, password } = credentials;
+  
 
-        // 🔍 First check if it's a Lecturer
-        const lecturer = await Lecturer.findOne({ email });
-        if (lecturer) {
-          const isMatch = await compare(password, lecturer.password);
-          console.log("Lecturer found. Password match:", isMatch);
 
-          if (!isMatch) throw new Error("Invalid lecturer credentials");
+  const { email, password, role } = credentials;
 
-          return {
-            id: lecturer._id,
-            name: lecturer.name,
-            email: lecturer.email,
-            role: "lecturer",
-            collegeId: lecturer.collegeId,
-            collegeName: lecturer.collegeName,
-          };
-        }
+if (role === "lecturer") {
+  const lecturer = await Lecturer.findOne({ email }).select("+password");
 
-        // 🔍 If not a lecturer, check Principal
-        const principal = await Principal.findOne({ email });
-        if (principal) {
-          const isMatch = await compare(password, principal.password);
-           console.log("Principal found. Password match:", isMatch);
+  if (!lecturer) throw new Error("Invalid credentials");
 
-          if (!isMatch) throw new Error("Invalid principal credentials");
+  const isMatch = await compare(password, lecturer.password);
 
-          return {
-            id: principal._id,
-            name: principal.name,
-            email: principal.email,
-            role: "principal",
-            collegeId: principal.collegeId.toString(),
-            photo: principal.photo,
-          };
-        }
+  console.log("Lecturer found?", !!lecturer);
+  console.log("👉 Plain password entered:", password);
+  console.log("👉 Hashed password in DB:", lecturer.password);
+  console.log("👉 Password match result:", isMatch);
 
-        console.log("❌ No user found");
-       throw new Error("No user found");
-      },
+  if (!isMatch) throw new Error("Invalid credentials");
+
+  return {
+    id: lecturer._id,
+    name: lecturer.name,
+    email: lecturer.email,
+    role: "lecturer",
+    collegeId: lecturer.collegeId,
+    collegeName: lecturer.collegeName,
+    photo: lecturer.photo || null,
+  };
+}
+
+
+  if (role === "principal") {
+    const principal = await Principal.findOne({ email });
+    if (!principal) throw new Error("Invalid credentials");
+
+    const isMatch = await compare(password, principal.password);
+    if (!isMatch) throw new Error("Invalid credentials");
+
+    return {
+      id: principal._id,
+      name: principal.name,
+      email: principal.email,
+      role: "principal",
+      collegeId: principal.collegeId.toString(),
+      photo: principal.photo,
+    };
+  }
+
+  throw new Error("Invalid role");
+}
+
     }),
   ],
   callbacks: {
@@ -83,8 +94,9 @@ export const authOptions = {
     },
   },
   pages: {
-    signIn: "/lecturer-login", // 👈 you can update dynamically if needed
+    signIn: "/lecturer-login", // default login page
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
