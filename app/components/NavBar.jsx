@@ -11,8 +11,13 @@ export default function NavBar() {
   const { data: session } = useSession();
 
   const handleLogout = () => {
-    signOut({ callbackUrl: "/lecturer-login" }); // Or student-login
-  };
+  if (session?.user?.role === "principal") {
+    signOut({ callbackUrl: "/auth/principal/login" });
+  } else {
+    signOut({ callbackUrl: "/auth/lecturer/login" });
+  }
+};
+
 
   return (
     <nav className="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
@@ -40,8 +45,8 @@ export default function NavBar() {
           Logout
         </button>
       ) : (
-        <Link href="/lecturer-login" className="hover:underline">
-          Login
+        <Link href="/auth/lecturer/login" className="hover:underline">
+          Lecturer Login
         </Link>
       )}
     </nav>

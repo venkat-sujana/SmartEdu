@@ -1,37 +1,18 @@
-//app/models/PrincipalModel.js
-// This file defines the Mongoose schema and model for the Principal entity.
-
 import mongoose from "mongoose";
 
-const principalSchema = new mongoose.Schema(
+const PrincipalSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    collegeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "College",
-      required: true,
-    },
-    photo: {
-      type: String, // Cloudinary URL or base64 string
-      required: false, // optional field
-    },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    collegeId: { type: String, required: true },
+    role: { type: String, default: "principal" },
+    photo: { type: String }, // ✅ Photo URL
   },
   {
     timestamps: true,
   }
 );
 
-export const Principal =
-  mongoose.models.Principal || mongoose.model("Principal", principalSchema);
+export default mongoose.models.Principal ||
+  mongoose.model("Principal", PrincipalSchema);

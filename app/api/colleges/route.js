@@ -1,3 +1,5 @@
+
+//app/api/colleges/route.js
 import { NextResponse } from "next/server";
 import College from "@/models/College";
 import connectMongoDB from '@/lib/mongodb';
