@@ -25,21 +25,32 @@ export default function ExamsFormPage() {
     total: 0,
     percentage: 0,
   });
+  
  const router = useRouter();
  
 
   const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
   const vocationalStreams = ["M&AT", "CET", "MLT"];
 
-  const { data: session } = useSession();
+const { data: session } = useSession();
+console.log("SESSION: ", session);
 
+const [collegeId, setCollegeId] = useState('');
+const [collegeName, setCollegeName] = useState('');
+
+  
   useEffect(() => {
-    if (session) {
-      console.log("✅ Session Data:", session);
-    } else {
-      console.log("🚫 No session found");
+    if (session?.user?.collegeId) {
+      setCollegeId(session.user.collegeId);
+    }
+    if (session?.user?.collegeName) {
+      setCollegeName(session.user.collegeName);
     }
   }, [session]);
+
+
+
+
 
 
  
@@ -55,7 +66,7 @@ export default function ExamsFormPage() {
 
   const vocationalSubjects = ["GFC", "Eng", "V1/V4", "V2/V5", "V3/V6"];
 
-  // Define fetchStudents outside so it can be reused
+  //Define fetchStudents outside so it can be reused
   const fetchStudents = async () => {
     try {
       const res = await fetch(
@@ -228,22 +239,10 @@ export default function ExamsFormPage() {
         <h2 className="text-xl font-bold mb-4 flex items-center justify-center">
           Home Exam Marks Entry Form - 2025
         </h2>
+<div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
+  <span className="font-semibold">🏫</span> {collegeName || "Loading..."}
+</div>
 
-        {status === "loading" ? (
-          <p className="text-center font-semibold text-gray-600 mb-2">
-            Loading College Name...
-          </p>
-        ) : (
-          <h2 className="text-center font-bold text-lg mb-2 uppercase">
-            {session?.user?.collegeName || "College Name Not Available"}
-          </h2>
-        )}
-
-        {formData.yearOfStudy && (
-          <div className="text-green-600 font-semibold">
-            Year of Study: {formData.yearOfStudy}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

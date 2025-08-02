@@ -467,7 +467,8 @@ printWindow.document.write(
             📝&nbsp; Lecturer Login
           </button>
         </Link>
-              <Link href="/register">
+        
+        <Link href="/register">
         <button className="w-50 bg-cyan-600  text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
           📝&nbsp; Admission Form
         </button>

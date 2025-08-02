@@ -1,3 +1,4 @@
+// models/principal.js
 import mongoose from "mongoose";
 
 const PrincipalSchema = new mongoose.Schema(

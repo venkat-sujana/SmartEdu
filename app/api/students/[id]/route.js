@@ -1,14 +1,15 @@
+//app/students/[id]/route.js
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 
 // Cloudinary కాన్ఫిగరేషన్
-cloudinary.config({ 
-  cloud_name: 'dlwxpzc83',
+cloudinary.config({
+  cloud_name: "dlwxpzc83",
   api_key: 562792651785938,
-  api_secret: 'Dz79bpyfHvklgMfW6ufZihpCQ1Y',
-  secure: true
+  api_secret: "Dz79bpyfHvklgMfW6ufZihpCQ1Y",
+  secure: true,
 });
 
 // మెరుగైన పబ్లిక్ ఐడీ ఎక్స్ట్రాక్షన్
@@ -16,11 +17,11 @@ function getPublicIdFromUrl(url) {
   if (!url) return null;
   try {
     const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
+    const pathParts = urlObj.pathname.split("/");
     if (pathParts.length >= 3) {
       const folder = pathParts[pathParts.length - 2];
       const filename = pathParts[pathParts.length - 1];
-      return `${folder}/${filename.split('.')[0]}`;
+      return `${folder}/${filename.split(".")[0]}`;
     }
     return null;
   } catch (e) {
@@ -69,11 +70,10 @@ export async function PUT(req, { params }) {
       }
     }
 
-    const updatedStudent = await Student.findByIdAndUpdate(
-      params.id, 
-      body, 
-      { new: true, runValidators: true }
-    );
+    const updatedStudent = await Student.findByIdAndUpdate(params.id, body, {
+      new: true,
+      runValidators: true,
+    });
 
     return NextResponse.json({ status: "success", data: updatedStudent });
   } catch (error) {
@@ -85,7 +85,7 @@ export async function DELETE(req, { params }) {
   try {
     await connectMongoDB();
     const student = await Student.findById(params.id);
-    
+
     if (!student) {
       return NextResponse.json(
         { message: "Student not found" },
@@ -106,14 +106,12 @@ export async function DELETE(req, { params }) {
     }
 
     await Student.findByIdAndDelete(params.id);
-    
-    return NextResponse.json({ 
-      status: "success", 
-      message: "Student deleted successfully" 
+
+    return NextResponse.json({
+      status: "success",
+      message: "Student deleted successfully",
     });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
-
-

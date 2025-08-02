@@ -30,22 +30,26 @@ export default function CalendarView() {
   }, [session]);
 
   // 🧠 Load Students (filtered by collegeId, group, year)
-  useEffect(() => {
-    if (group && yearOfStudy && session?.user?.collegeId) {
-      fetch(`/api/students?collegeId=${session.user.collegeId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          const filtered = data.data.filter(
-            (s) => s.group === group && s.yearOfStudy === yearOfStudy
-          );
-          setStudents(filtered);
-          setStudentId("");
-        });
-    } else {
-      setStudents([]);
-      setStudentId("");
-    }
-  }, [group, yearOfStudy, session]);
+useEffect(() => {
+  if (group && yearOfStudy && session?.user?.collegeId) {
+    console.log("🚀 Fetching students...");
+    fetch(`/api/students?collegeId=${session.user.collegeId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("🎓 API Response:", data);
+        const filtered = data.data.filter(
+          (s) => s.group === group && s.yearOfStudy === yearOfStudy
+        );
+        console.log("🎯 Filtered Students:", filtered);
+        setStudents(filtered);
+        setStudentId("");
+      });
+  } else {
+    setStudents([]);
+    setStudentId("");
+  }
+}, [group, yearOfStudy, session]);
+
 
   // 🧠 Load Attendance (filtered by studentId)
   useEffect(() => {
@@ -63,7 +67,15 @@ export default function CalendarView() {
     attendanceData.map((r) => [new Date(r.date).getDate(), r.status])
   );
 
-  const selectedStudent = students.find((s) => s._id === studentId);
+  const selectedStudent = students.find((s) => s._id?.toString() === studentId?.toString());
+
+console.log("🔍 Student ID:", studentId);
+console.log("📚 Students List:", students);
+console.log("🎯 Selected Student:", selectedStudent);
+console.log("🖼️ Selected Student Photo:", selectedStudent?.photo);
+
+
+
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -130,22 +142,50 @@ export default function CalendarView() {
             status === "Absent" ? "bg-red-300" :
             "bg-gray-200";
 
-          return (
-            <div key={date} className={`p-2 border rounded ${color}`}>
-              <div className="font-bold">{date}</div>
-              {status === "Present" ? (
-                <img
-                  src={selectedStudent?.photo || "/default-avatar.png"}
-                  alt="Student Photo"
-                  className="mx-auto mt-1 w-16 h-16 rounded-full object-cover border border-gray-400"
-                />
-              ) : (
-                <div className="text-sm">{status}</div>
-              )}
-            </div>
-          );
+return (
+  <div key={date} className={`p-2 border rounded ${color} text-center`}>
+    <div className="font-bold text-sm">{date}</div>
+{status === "Present" ? (
+  <div className="flex flex-col items-center gap-1 mt-1">
+    <div className="text-green-700 text-xl">✅</div>
+    {selectedStudent?.photo ? (
+      <img
+        src={selectedStudent.photo}
+        alt="Student Photo"
+        onError={(e) => { e.target.src = "/default-avatar.png"; }}
+        className="w-16 h-16 rounded-full object-cover border border-gray-400"
+      />
+    ) : (
+      <div className="text-xs text-gray-400">Photo not available</div>
+    )}
+    <p className="text-xs text-gray-600">{selectedStudent?.name}</p>
+  </div>
+) : (
+  <>
+    <p className="text-sm">{status}</p>
+    {status === "Absent" && selectedStudent?._id && (
+      <Link
+        href={`/attendance-records/${selectedStudent._id}/absent-reason?date=${year}-${month + 1}-${date}`}
+      >
+        <button className="text-xs text-blue-500 hover:underline mt-1">
+          View Reason
+        </button>
+      </Link>
+    )}
+  </>
+)}
+
+  
+  </div>
+);
         })}
       </div>
     </div>
-  );
+  );  
+
+
+
+
+
+
 }

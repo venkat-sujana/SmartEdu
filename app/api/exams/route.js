@@ -4,7 +4,7 @@ import connectMongoDB from "@/lib/mongodb";
 import Exam from "@/models/Exam";
 
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 // POST - Create Exam
 export async function POST(req) {

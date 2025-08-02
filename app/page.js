@@ -4,6 +4,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gray-100">
+
       {/* Main Heading */}
       <div>
         <Image
@@ -15,6 +16,7 @@ export default function Home() {
           priority
         />
       </div>
+
 
       <h1 className="text-4xl text-black font-bold mt-2">
         Welcome to 🧑‍🏫&nbsp;OSRA

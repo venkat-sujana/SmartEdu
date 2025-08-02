@@ -1,11 +1,15 @@
+
+//app/attendance-records/individual/page.jsx
 "use client";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Printer, FileSpreadsheet, Pencil, Trash2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import Link from "next/link";
 import AttendanceEditForm from "@/app/attendance-edit-form/page";
 import { toast } from "react-hot-toast";
+import { useSession } from "next-auth/react";
+
 
 export default function IndividualReport() {
   const [records, setRecords] = useState([]);
@@ -17,6 +21,31 @@ export default function IndividualReport() {
 
   const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
   const years = ["First Year", "Second Year"];
+
+  const { data: session } = useSession();
+console.log("SESSION: ", session);
+
+const [collegeId, setCollegeId] = useState('');
+const [collegeName, setCollegeName] = useState('');
+
+  
+  useEffect(() => {
+    if (session?.user?.collegeId) {
+      setCollegeId(session.user.collegeId);
+    }
+    if (session?.user?.collegeName) {
+      setCollegeName(session.user.collegeName);
+    }
+  }, [session]);
+
+  if (!session?.user?.collegeId) {
+      toast.error("Session expired. Please login again.");
+      return;
+    }
+
+
+
+
 
 const fetchData = async () => {
   let query = `/api/attendance/individual?group=${encodeURIComponent(group)}&year=${encodeURIComponent(year)}`;
@@ -78,6 +107,13 @@ const fetchData = async () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+
+<div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
+  <span className="font-semibold">🏫</span> {collegeName || "Loading..."}
+</div>
+
+
+
       <h2 className="text-2xl font-bold mb-6 text-center">Individual Student Attendance Report</h2>
 
       <div className="flex flex-wrap gap-4 items-end justify-center mb-6">

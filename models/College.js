@@ -1,3 +1,4 @@
+//app/models/College.js
 import mongoose from "mongoose";
 
 const collegeSchema = new mongoose.Schema({

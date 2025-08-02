@@ -3,9 +3,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import NavBar from "./components/NavBar"; // ✅ fixed default import
-import { Providers } from "./providers";  // ✅ correct named import
-
+import SessionProviderWrapper from "./components/SessionProviderWrapper";
+import Navbar from "./components/Navbar";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -37,10 +36,13 @@ export default function RootLayout({ children }) {
             },
           }}
         />
-        <Providers>
-          <NavBar />
-          <main className="p-4">{children}</main>
-        </Providers>
+
+        <SessionProviderWrapper>
+          <Navbar />
+          
+         <main className="p-4">{children}</main>
+       </SessionProviderWrapper>
+       
       </body>
     </html>
   );

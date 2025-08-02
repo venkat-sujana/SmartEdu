@@ -1,5 +1,5 @@
 
-//app/dashboard/page.js
+//app/dashboard/first-year/page.js
 
 "use client";
 import { useEffect, useState } from "react";
@@ -7,6 +7,9 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+
+
 // import AdmissionCharts from "./components/AdmissionCharts";
 
 import {
@@ -21,6 +24,8 @@ import {
 // import GenderWiseChart from "./components/GenderWiseChart";
 // import CasteWiseChart from "./components/CasteWisechart";
 
+
+
 export default function GroupDashboard() {
   const [students, setStudents] = useState([]);
   const [groupCounts, setGroupCounts] = useState([]);
@@ -30,29 +35,59 @@ export default function GroupDashboard() {
   const [dateWiseCounts, setDateWiseCounts] = useState([]);
   const [total, setTotal] = useState(0);
 
+  const [selectedYear, setSelectedYear] = useState("First Year");
+
+
+
+  const { data: session } = useSession();
+console.log("SESSION: ", session);
+
+const [collegeId, setCollegeId] = useState('');
+const [collegeName, setCollegeName] = useState('');
+
+  
   useEffect(() => {
-    const fetchData = async () => {
+    if (session?.user?.collegeId) {
+      setCollegeId(session.user.collegeId);
+    }
+    if (session?.user?.collegeName) {
+      setCollegeName(session.user.collegeName);
+    }
+  }, [session]);
+
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      if (!session?.user?.collegeId) return;
+
       const res = await fetch("/api/students");
       const data = await res.json();
       const studentData = data.data || [];
 
-      // First Year students filter
-    const filteredData = studentData.filter(
-      (student) => student.yearOfStudy === "First Year"
-    );
+      // ✅ Filter by selectedYear and collegeId
+      const filteredData = studentData.filter(
+        (student) =>
+          student.yearOfStudy === selectedYear &&
+          student.collegeId === session.user.collegeId
+      );
 
       setStudents(filteredData);
       setTotal(filteredData.length);
-
       setGroupCounts(getCounts(filteredData, "group"));
       setCasteCounts(getCounts(filteredData, "caste"));
       setGenderCounts(getCounts(filteredData, "gender"));
       setAdmissionYearCounts(getCounts(filteredData, "admissionYear"));
       setDateWiseCounts(getDateWiseCounts(filteredData));
-    };
+    } catch (error) {
+      console.error("Error fetching student data:", error);
+    }
+  };
 
-    fetchData();
-  }, []);
+  fetchData();
+}, [session?.user?.collegeId, selectedYear]); // 👈 Add selectedYear here
+
+
 
   const getCounts = (data, field) => {
     const counts = {};
@@ -250,6 +285,9 @@ export default function GroupDashboard() {
         Visit Study Certificate App
       </a>
 
+      <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
+      <span className="font-semibold">🏫</span> {collegeName || "Loading..."}
+      </div>
 
       <h2 className="text-xl font-bold text-center print:text-left bg-amber-100 border-2 border-b-black border-b-2 p-4 rounded-lg mt-2">
         🧑‍🎓🧑‍🎓🧑‍🎓

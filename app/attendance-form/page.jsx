@@ -1,7 +1,5 @@
 //app/attendance-form/page.jsx
-
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
@@ -16,8 +14,21 @@ const AttendanceForm = () => {
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { data: session } = useSession();
-  const collegeName = session?.user?.collegeName || "College";
+
+ const { data: session } = useSession();
+ console.log("SESSION: ", session);
+ 
+ const [collegeId, setCollegeId] = useState('');
+ const [collegeName, setCollegeName] = useState('');
+
+   useEffect(() => {
+     if (session?.user?.collegeId) {
+       setCollegeId(session.user.collegeId);
+     }
+     if (session?.user?.collegeName) {
+       setCollegeName(session.user.collegeName);
+     }
+   }, [session]);
 
 
   const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
@@ -142,7 +153,11 @@ useEffect(() => {
 
       <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
         <h1 className="text-xl font-bold text-center text-blue-800 mb-2">
-  {collegeName} - Attendance Form 2025
+
+  <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
+  <span className="font-semibold">🏫</span> {collegeName || "Loading..."}
+</div>
+
 </h1>
 
         <p className="text-gray-600 mb-4">

@@ -1,58 +1,81 @@
-// components/NavBar.jsx
+'use client';
 
-"use client";
+import { useSession, signOut } from 'next-auth/react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+export default function Navbar() {
+  const { data: session, status } = useSession();
+  const [collegeName, setCollegeName] = useState('');
 
-export default function NavBar() {
-  const pathname = usePathname();
-  const { data: session } = useSession();
+  // Fetch college name from API using collegeId
+  useEffect(() => {
+    const fetchCollegeName = async () => {
+      if (session?.user?.collegeId) {
+        try {
+          const res = await fetch(`/api/colleges/${session.user.collegeId}`);
+          const data = await res.json();
+          if (res.ok) {
+            setCollegeName(data.name); // assuming { name: "ABC College" }
+          } else {
+            console.error("College fetch failed:", data.error);
+          }
+        } catch (err) {
+          console.error("Error fetching college name:", err);
+        }
+      }
+    };
+
+    fetchCollegeName();
+  }, [session?.user?.collegeId]);
 
   const handleLogout = () => {
-  if (session?.user?.role === "principal") {
-    signOut({ callbackUrl: "/auth/principal/login" });
-  } else {
-    signOut({ callbackUrl: "/auth/lecturer/login" });
-  }
-};
-
+    signOut({ callbackUrl: '/lecturer/login' });
+  };
 
   return (
-    <nav className="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
-      <div className="flex items-center gap-6">
-        <Link href="/admin" className="font-bold text-xl">
-          OSRA
+    <nav className="bg-blue-600 text-white px-4 py-3 shadow-md">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <Link href="/" className="text-xl font-bold">
+          OSRA App
         </Link>
-        {session?.user?.role === "lecturer" && (
-          <>
-            <Link href="/lecturer/dashboard" className={navLinkStyle(pathname, "/lecturer/dashboard")}>
-              Dashboard
-            </Link>
-            <Link href="/lecturer/attendance" className={navLinkStyle(pathname, "/lecturer/attendance")}>
-              Attendance
-            </Link>
-          </>
-        )}
-      </div>
 
-      {session ? (
-        <button
-          onClick={handleLogout}
-          className="bg-white text-blue-600 px-4 py-1 rounded hover:bg-gray-200"
-        >
-          Logout
-        </button>
-      ) : (
-        <Link href="/auth/lecturer/login" className="hover:underline">
-          Lecturer Login
-        </Link>
-      )}
+        <div className="flex gap-4 items-center">
+          {/* College name shown here */}
+          {collegeName && (
+            <span className="text-sm font-semibold hidden sm:inline">
+              {collegeName}
+            </span>
+          )}
+
+          <Link href="/about" className="hover:underline">
+            About
+          </Link>
+
+          {status === 'authenticated' && (
+            <>
+              <span className="hidden sm:inline text-sm font-medium">
+                {session?.user?.name}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm"
+              >
+                Logout
+              </button>
+            </>
+          )}
+
+          {status === 'unauthenticated' && (
+            <Link
+              href="/lecturer/login"
+              className="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-100"
+            >
+              Login
+            </Link>
+          )}
+        </div>
+      </div>
     </nav>
   );
-}
-
-function navLinkStyle(current, target) {
-  return `hover:underline ${current === target ? "underline font-semibold" : ""}`;
 }

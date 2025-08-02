@@ -17,9 +17,26 @@ export default function ExamReportPage() {
     yearOfStudy: "",
   });
 
-  const { data: session, status } = useSession();
+  
 
   const [editingExam, setEditingExam] = useState(null);
+
+  const { data: session } = useSession();
+console.log("SESSION: ", session);
+
+const [collegeId, setCollegeId] = useState('');
+const [collegeName, setCollegeName] = useState('');
+
+  
+  useEffect(() => {
+    if (session?.user?.collegeId) {
+      setCollegeId(session.user.collegeId);
+    }
+    if (session?.user?.collegeName) {
+      setCollegeName(session.user.collegeName);
+    }
+  }, [session]);
+
 
   // Move fetchReports to component scope so it can be called elsewhere
   const fetchReports = async () => {
@@ -167,6 +184,12 @@ export default function ExamReportPage() {
 
   return (
     <div className="p-6 ">
+     
+     <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
+     <span className="font-semibold">🏫</span> {collegeName || "Loading..."}
+     </div>
+
+
       <h1 className="text-2xl font-bold mb-2 flex items-center justify-center">
         Exam Summary Report
       </h1>
@@ -278,7 +301,7 @@ export default function ExamReportPage() {
         </select>
       </div>
 
-      {status === "loading" ? (
+      {/* {status === "loading" ? (
         <p className="text-center font-bold text-lg text-gray-600 mb-4">
           Loading college name...
         </p>
@@ -286,7 +309,7 @@ export default function ExamReportPage() {
         <h2 className="text-center text-xl font-bold mb-4 uppercase">
           {session?.user?.collegeName || "College Name Not Available"}
         </h2>
-      )}
+      )} */}
 
       <div id="print-section">
         {/* Report Table */}

@@ -15,10 +15,22 @@ export default function AttendanceRecords() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [group, setGroup] = useState("");
-  const { data: session } = useSession();
 
+const { data: session } = useSession();
+console.log("SESSION: ", session);
 
-  const collegeName = session?.user?.collegeName || "College";
+const [collegeId, setCollegeId] = useState('');
+const [collegeName, setCollegeName] = useState('');
+
+  
+  useEffect(() => {
+    if (session?.user?.collegeId) {
+      setCollegeId(session.user.collegeId);
+    }
+    if (session?.user?.collegeName) {
+      setCollegeName(session.user.collegeName);
+    }
+  }, [session]);
 
   const [attendanceData, setAttendanceData] = useState({
     "First Year": [],
@@ -86,14 +98,17 @@ const fetchAttendanceRecords = async () => {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
+  
       👉note: this is a computer generated report and does not require signature
       <p className="text-sm font-semibold mb-4 flex items-center justify-center">
         <span className="text-gray-600">Generated on</span>
         Date: {today} | Time: {new Date().toLocaleTimeString()}
       </p>
-      <h2 className="text-2xl font-bold mb-4 flex items-center justify-center">
-        {collegeName}🧾Group-wise Daily Attendance Summary-2025
-      </h2>
+
+<div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
+  <span className="font-semibold">🏫</span> {collegeName || "Loading..."}
+</div>
+
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div>
@@ -213,9 +228,7 @@ const fetchAttendanceRecords = async () => {
       <div className="print-area">
         {/* Header Section */}
         <div className="text-center mb-6">
-          <h1 className="text-xl font-bold uppercase">
-            S.K.R. GOVERNMENT JUNIOR COLLEGE
-          </h1>
+
           <p className="text-sm font-semibold">Attendance as on {today}</p>
 
           {/* Records Table */}

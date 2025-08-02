@@ -5,7 +5,7 @@ import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import { getServerSession } from "next-auth";
 import Student from "@/models/Student";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+// import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(req) {
   await connectMongoDB();

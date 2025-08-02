@@ -1,6 +1,10 @@
+//app/student-edit-form/page.js
+
 "use client";
-import { useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 const StudentEditForm = ({ student, onCancel, onSave }) => {
   const [formData, setFormData] = useState({
@@ -19,6 +23,19 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
   });
 
   const [isUploading, setIsUploading] = useState(false);
+  const { data: session } = useSession();
+  const [collegeId, setCollegeId] = useState('');
+  const [collegeName, setCollegeName] = useState('');
+
+  useEffect(() => {
+    if (session?.user?.collegeId) {
+      setCollegeId(session.user.collegeId);
+    }
+    if (session?.user?.collegeName) {
+      setCollegeName(session.user.collegeName);
+    }
+  }, [session]);
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -115,10 +132,15 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
   };
 
   return (
+    
     <form
       onSubmit={handleSubmit}
       className="bg-white p-6 rounded-xl shadow-md border space-y-6 w-full max-w-3xl mx-auto"
-    >
+>
+  <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
+  <span className="font-semibold">🏫</span> {collegeName || "Loading..."}
+</div>
+
       <h2 className="text-xl font-semibold text-gray-800">Edit Student Details</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

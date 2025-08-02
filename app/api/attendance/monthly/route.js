@@ -1,11 +1,11 @@
-// app/api/attendance/monthly/route.js
+// app/api/attendance/monthly/route.js(calender view for student attendance for a specific month and year)
 
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import Student from "@/models/Student";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
 
 export async function GET(req) {

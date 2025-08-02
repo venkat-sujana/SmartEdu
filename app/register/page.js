@@ -6,32 +6,31 @@ import Link from "next/link";
 import { Users, Home } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-// ✅ Add for session
+
 import { useSession } from "next-auth/react";
+
+
+
 
 export default function RegisterPage() {
 
-  const { data: session, status } = useSession(); // 🔐 get lecturer session
-
-  console.log("Lecturer session:", session);
-  const collegeName = session?.user?.collegeName;
-
-  const [collegeId, setCollegeId] = useState(""); // ✅ store collegeId
-
-useEffect(() => {
-  if (status !== "loading") {
-    console.log("✅ Session User:", session?.user);
-  }
-}, [status, session]);
 
 
-useEffect(() => {
-  if (session?.user?.collegeId) {
-    setCollegeId(session.user.collegeId);
-  }
-}, [session]);
+const { data: session } = useSession();
+console.log("SESSION: ", session);
 
+const [collegeId, setCollegeId] = useState('');
+const [collegeName, setCollegeName] = useState('');
 
+  
+  useEffect(() => {
+    if (session?.user?.collegeId) {
+      setCollegeId(session.user.collegeId);
+    }
+    if (session?.user?.collegeName) {
+      setCollegeName(session.user.collegeName);
+    }
+  }, [session]);
 
 
   const [photo, setPhoto] = useState(null);
@@ -50,15 +49,9 @@ useEffect(() => {
     photo: null,
   });
   const [isLoading, setIsLoading] = useState(false);
- const router = useRouter();
+  const router = useRouter();
 
-  // ✅ Redirect if unauthenticated
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      toast.error("Please login to access this page.");
-      router.push("/login");
-    }
-  }, [status, router]);
+
 
   const handleFileChange = (e) => {
     setFormData({ ...formData, photo: e.target.files[0] });
@@ -72,12 +65,10 @@ useEffect(() => {
     e.preventDefault();
     setIsLoading(true);
 
-if (!session?.user?.collegeId) {
-  toast.error("Session expired. Please login again.");
-  return;
-}
-
-  
+    if (!session?.user?.collegeId) {
+      toast.error("Session expired. Please login again.");
+      return;
+    }
 
     const form = new FormData();
     form.append("name", formData.name);
@@ -156,8 +147,6 @@ if (!session?.user?.collegeId) {
         </button>
       </Link>
       &nbsp;
-
-
       {/* Full Page Spinner Overlay */}
       {isLoading && (
         <div className="fixed inset-0 bg-white bg-opacity-80 flex flex-col items-center  justify-center z-50">
@@ -186,22 +175,14 @@ if (!session?.user?.collegeId) {
       )}
       <div className="max-w-2xl mx-auto mt-10 bg-gray-100 shadow-lg rounded-xl p-6 font-bold border-x-black border-x-2 border-t-2 border-b-2 border-t-blue-600 border-b-blue-600">
         {/* College Name Display */}
-<div className="mb-4">
-  <label className="block text-sm font-medium text-gray-700 mb-1  items-center justify-center">
-    College Name
-  </label>
-  <input
-    type="text"
-    value={
-      status === "loading"
-        ? "Loading..."
-        : session?.user?.collegeName || "College name missing"
-    }
-    disabled
-    className="w-full p-2 border rounded-md truncate" // ✅ key line
-  />
+
+
+<div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
+  <span className="font-semibold">🏫</span> {collegeName || "Loading..."}
 </div>
 
+
+      
 
         <h2 className="text-xl font-bold mb-4 text-white bg-teal-600 text-center">
           🧑‍🎓🧑‍🎓&nbsp;Student Admission Form-2025

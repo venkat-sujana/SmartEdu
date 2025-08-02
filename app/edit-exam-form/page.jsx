@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 
 export default function EditExamForm({ examData, onClose, onUpdated }) {
   const [students, setStudents] = useState([]);
@@ -18,11 +18,11 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
     total: 0,
     percentage: 0,
   });
-const { data: session } = useSession();
+// const { data: session } = useSession();
 
 
-console.log("Session data:", session);
-console.log("Fetching students for collegeId:", session?.user?.collegeId);
+// console.log("Session data:", session);
+// console.log("Fetching students for collegeId:", session?.user?.collegeId);
 
 
   const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
@@ -44,7 +44,7 @@ console.log("Fetching students for collegeId:", session?.user?.collegeId);
 
   useEffect(() => {
     const fetchStudents = async () => {
-      const res = await fetch(`/api/students?collegeId=${session.user.collegeId}`);
+      // const res = await fetch(`/api/students?collegeId=${session.user.collegeId}`);
       const json = await res.json();
       setStudents(json.data || []);
     };
