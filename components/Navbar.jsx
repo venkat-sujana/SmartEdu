@@ -37,7 +37,7 @@ export default function Navbar() {
     <nav className="bg-blue-600 text-white px-4 py-3 shadow-md">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Link href="/" className="text-xl font-bold">
-          OSRA App
+          SmartEdu App
         </Link>
 
         <div className="flex gap-4 items-center">
@@ -48,7 +48,11 @@ export default function Navbar() {
             </span>
           )}
 
-          <Link href="/about" className="hover:underline">
+          <Link href="/lecturer/dashboard" className="hover:underline font-semibold">
+            Dashboard
+          </Link>
+
+         <Link href="/about" className="hover:underline">
             About
           </Link>
 

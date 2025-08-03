@@ -230,9 +230,9 @@ const [collegeName, setCollegeName] = useState('');
       )}
 
       <div className="max-w-xl mx-auto p-4 bg-white shadow rounded relative z-10">
-        <Link href="/">
+        <Link href="/exam-report">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition font-bold mb-4 cursor-pointer">
-            🏠 Home
+            🏠 Exam Report
           </button>
         </Link>
 

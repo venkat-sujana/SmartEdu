@@ -130,7 +130,7 @@ const [collegeName, setCollegeName] = useState('');
 
   return (
     <div className="relative">
-      <Link href="/">
+      <Link href="/student-table">
         {/* Home Button */}
         <button
           className="bg-green-600
@@ -140,10 +140,10 @@ const [collegeName, setCollegeName] = useState('');
          rounded absolute top-4
           right-10 hover:bg-blue-700 
           transition cursor-pointer
-           border-b-black 
+           
            border-b-2"
         >
-          <Home className="inline mr-2" size={21} color="yellow" /> Home
+          <Home className="inline mr-2" size={21} color="yellow" /> Student Table
         </button>
       </Link>
       &nbsp;

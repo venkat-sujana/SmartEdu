@@ -166,9 +166,9 @@ useEffect(() => {
 
         <h2 className="text-xl font-bold mb-4">Mark Attendance</h2>
 
-        <Link href="/">
+        <Link href="/attendance-records">
           <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold mr-2 cursor-pointer">
-            🏠&nbsp; Home
+            🏠&nbsp; Attendance Records
           </button>
         </Link>
 
