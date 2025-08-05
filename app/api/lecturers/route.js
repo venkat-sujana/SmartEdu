@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import Lecturer from "@/models/Lecturer"; // adjust the path
-import connectDB from "@/lib/mongodb"; // your DB connection function
+import connectMongoDB from "@/lib/mongodb"; // your DB connection function
 
 export async function POST(req) {
-  await connectDB();
+  await connectMongoDB();
 
   const body = await req.json();
   const { name, email, password, subject, collegeId, photo } = body;

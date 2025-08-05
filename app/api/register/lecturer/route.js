@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer"; // ✅ correct import
-
 import College from "@/models/College";
 
 export async function POST(req) {

@@ -28,8 +28,8 @@ const lecturerSchema = new mongoose.Schema(
     subject: {
       type: String,
       enum: {
-        values: ["Maths", "Physics", "Automobile", "English", "Mechanics"],
-        message: "Subject must be one of: Maths, Physics, Automobile, English, Mechanics"
+        values: ["Maths", "Physics", "English", "Telugu","Hindi","Civics","Zoology","Botany","Chemistry","CET","MLT","Economics","History","Commerce","MandAT"],
+        message: "Subject must be one of: Maths, Physics, English, Telugu, Hindi, Civics, Zoology, Botany, Chemistry, CET, MLT, Economics, History, Commerce, MandAT",
       },
       required: [true, "Subject is required"],
     },

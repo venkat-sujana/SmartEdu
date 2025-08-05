@@ -124,9 +124,18 @@ export default function LecturerRegister() {
             <option value="">-- Select Subject --</option>
             <option value="Maths">Maths</option>
             <option value="Physics">Physics</option>
-            <option value="Automobile">Automobile</option>
             <option value="English">English</option>
-            <option value="Mechanics">Mechanics</option>
+            <option value="Telugu">Telugu</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Civics">Civics</option>
+            <option value="Zoology">Zoology</option>
+            <option value="Botany">Botany</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="MLT">MLT</option>
+            <option value="Economics">Economics</option>
+            <option value="History">History</option>
+            <option value="Commerce">Commerce</option>
+            <option value="MandAT">M&AT</option>
           </select>
         </div>
 

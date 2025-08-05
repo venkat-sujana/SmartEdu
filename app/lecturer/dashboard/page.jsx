@@ -1,9 +1,15 @@
+//app/lecturer/dashboard/page.jsx
 "use client";
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+// import { FunctionSquare } from "lucide-react";
+import { GraduationCap } from "lucide-react";
+// import { BookOpen } from "lucide-react";
+// import AttendanceCards from "@/components/AttendanceCards";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function LecturerDashboard() {
   const { data: session, status } = useSession();
@@ -62,8 +68,8 @@ export default function LecturerDashboard() {
   return (
     <div className="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-xl">
       {/* College Name */}
-      <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
-        <span className="mr-2">🏫</span> {collegeName || "Loading..."}
+      <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-red-800 rounded shadow-sm flex items-center justify-center font-bold">
+        <span className="mr-2"><GraduationCap className="w-8 h-8" /></span> <h1>{collegeName || "Loading..."}</h1>
       </div>
 
       {/* Title */}
@@ -81,7 +87,11 @@ export default function LecturerDashboard() {
             <span className="font-semibold">📧 Email:</span> {user?.email}
           </p>
           <p>
+            {/* <FunctionSquare className="w-5 h-5" /> */}
             <span className="font-semibold">📚 Subject:</span> {user?.subject}
+          </p>
+
+          <p>
           </p>
         </div>
       </div>
@@ -157,7 +167,23 @@ export default function LecturerDashboard() {
             </p>
           </div>
         </Link>
+
+                {/* Attendance Link Card */}
+        <Link href="/lecturer/attendance">
+          <Card className="cursor-pointer hover:shadow-lg transition bg-indigo-100 hover:bg-indigo-200">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-lg font-semibold">📅 Attendance</p>
+                <p className="text-sm text-gray-600">View group/year-wise attendance</p>
+              </div>
+              <span className="text-2xl">➡️</span>
+            </CardContent>
+          </Card>
+        </Link>
+
+
       </div>
+     
     </div>
   );
 }

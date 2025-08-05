@@ -19,14 +19,14 @@ export default function Home() {
 
 
       <h1 className="text-4xl text-black font-bold mt-2">
-        Welcome to 🧑‍🏫&nbsp;OSRA
+        Welcome to 🧑‍🏫&nbsp;SmartEdu
       </h1>
       <h2 className="text-2xl text-black font-semibold mt-4">
         Online Student Registration & Analysis
       </h2>
 
       <p className="text-lg mt-4  text-left text-black max-w-2xl">
-        🏫 <strong>OSRA</strong> – Online Student Registration & Analysis OSRA
+        🏫 <strong>SmartEdu</strong> – Online Student Registration & Analysis OSRA
         is a modern, full-stack web application designed to streamline student
         registration, attendance tracking, and examination analysis for Junior
         Colleges.
@@ -67,7 +67,7 @@ export default function Home() {
       <strong>
         {" "}
         <p className="text-md mt-3 flex items-center justify-left text-black">
-          🎯 Why OSRA?
+          🎯 Why SmartEdu?
           <br /> Simplifies administrative tasks in government junior colleges.
           Offers real-time, visual insights into student performance.
           <br />
