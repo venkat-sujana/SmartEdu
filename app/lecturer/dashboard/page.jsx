@@ -1,6 +1,5 @@
 //app/lecturer/dashboard/page.jsx
 "use client";
-
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,6 +17,11 @@ export default function LecturerDashboard() {
   const [collegeName, setCollegeName] = useState("");
   const [studentCount, setStudentCount] = useState(0);
   const [attendancePercent, setAttendancePercent] = useState(0);
+
+  const [firstYearPresent, setFirstYearPresent] = useState(0);
+  const [secondYearPresent, setSecondYearPresent] = useState(0);
+  const [totalPresent, setTotalPresent] = useState(0);
+
 
 
   useEffect(() => {
@@ -65,11 +69,32 @@ export default function LecturerDashboard() {
 }, [status, session]);
 
 
+useEffect(() => {
+  if (status === "authenticated" && session?.user?.collegeId) {
+    // Fetch today’s attendance breakdown
+    fetch(`/api/attendance/today-breakdown?collegeId=${session.user.collegeId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setFirstYearPresent(data.firstYear || 0);
+          setSecondYearPresent(data.secondYear || 0);
+          setTotalPresent((data.firstYear || 0) + (data.secondYear || 0));
+          setAttendancePercent(data.percent || 0); // Optional
+        }
+      });
+  }
+}, [status, session]);
+
+
+
   return (
     <div className="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-xl">
       {/* College Name */}
-      <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-red-800 rounded shadow-sm flex items-center justify-center font-bold">
-        <span className="mr-2"><GraduationCap className="w-8 h-8" /></span> <h1>{collegeName || "Loading..."}</h1>
+      <div className="mb-6 px-6 py-3 bg-white border-l-4 border-blue-500 text-gray-800 rounded-lg shadow flex items-center justify-center space-x-3">
+        <GraduationCap className="w-8 h-8 text-blue-600" />
+        <h1 className="text-xl font-semibold tracking-wide">
+          {collegeName || "Loading..."}
+        </h1>
       </div>
 
       {/* Title */}
@@ -91,8 +116,7 @@ export default function LecturerDashboard() {
             <span className="font-semibold">📚 Subject:</span> {user?.subject}
           </p>
 
-          <p>
-          </p>
+          <p></p>
         </div>
       </div>
 
@@ -105,10 +129,28 @@ export default function LecturerDashboard() {
         </div>
 
         <div className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center">
-          <div className="text-3xl mb-2">📈</div>
+          <div className="text-3xl mb-1">📈</div>
           <p className="font-semibold">Today’s Attendance</p>
-          <p className="text-lg text-green-900 font-bold">{attendancePercent}%</p>
-
+          <div className="text-sm text-green-900 font-medium space-y-1">
+            <p>
+              First Year: <span className="font-bold">{firstYearPresent}</span>
+            </p>
+            <p>
+              Second Year:{" "}
+              <span className="font-bold">{secondYearPresent}</span>
+            </p>
+            <hr className="my-1 border-red-500" />
+            <p>
+              College Total:{" "}
+              <span className="text-lg font-extrabold">{totalPresent}</span>
+            </p>
+            <p>
+              College Percentage:{" "}
+              <span className="text-lg font-extrabold">
+                {attendancePercent}%
+              </span>
+            </p>
+          </div>
         </div>
 
         <div className="p-5 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-xl shadow-lg text-center">
@@ -148,7 +190,9 @@ export default function LecturerDashboard() {
 
         <Link href="/exam-report">
           <div className="cursor-pointer p-5 bg-pink-100 hover:bg-pink-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-pink-800">📊 Exam Report</p>
+            <p className="text-xl font-semibold text-pink-800">
+              📊 Exam Report
+            </p>
           </div>
         </Link>
 
@@ -168,22 +212,26 @@ export default function LecturerDashboard() {
           </div>
         </Link>
 
-                {/* Attendance Link Card */}
         <Link href="/lecturer/attendance">
-          <Card className="cursor-pointer hover:shadow-lg transition bg-indigo-100 hover:bg-indigo-200">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-lg font-semibold">📅 Attendance</p>
-                <p className="text-sm text-gray-600">View group/year-wise attendance</p>
-              </div>
-              <span className="text-2xl">➡️</span>
-            </CardContent>
-          </Card>
+          <div className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center">
+            <p className="text-lg font-semibold">📅 Attendance</p>
+            <p className="text-sm text-gray-600">
+              View group/year-wise attendance➡️
+            </p>
+          </div>
         </Link>
 
 
+        <Link href="/lecturer/attendance/group-wise">
+          <div className="p-5 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-xl shadow-lg text-center">
+            <p className="text-lg font-semibold">📅 Attendance</p>
+            <p className="text-sm text-gray-600">
+              View group-wise summary attendance➡️
+            </p>
+          </div>
+        </Link>
+
       </div>
-     
     </div>
   );
 }
