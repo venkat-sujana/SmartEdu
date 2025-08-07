@@ -12,13 +12,7 @@ export async function GET(req) {
     return NextResponse.json({ error: "College ID required" }, { status: 400 });
   }
 
-  // const today = new Date();
-  // today.setHours(0, 0, 0, 0);
 
-  // const attendanceRecords = await Attendance.find({
-  //   date: today,
-  //   collegeId,
-  // });
 
 
   const startOfDay = new Date();

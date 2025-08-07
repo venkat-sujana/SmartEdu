@@ -1,3 +1,4 @@
+//app/lecturer/login/page.jsx
 'use client';
 
 import { signIn } from "next-auth/react";

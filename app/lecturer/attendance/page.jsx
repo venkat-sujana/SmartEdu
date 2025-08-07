@@ -1,5 +1,4 @@
 //app/lecturer/attendance/page.jsx
-
 'use client';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -7,6 +6,17 @@ import { useSession } from "next-auth/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+
+// Group Icons
+const groupIcons = {
+  MPC: "📘",
+  BiPC: "🧬",
+  CEC: "💼",
+  HEC: "🍽️",
+  "M&AT": "🧮",
+  MLT: "🧪",
+  CET: "⚙️",
+};
 
 export default function AttendancePage() {
   const { data: session } = useSession();
@@ -63,8 +73,11 @@ export default function AttendancePage() {
 
   return (
     <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold">Attendance Summary</h1>
+      {/* Top Heading with College Name and Date */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2 ">
+        <h1 className="text-xl font-bold  text-center md:text-left">
+          {session?.user?.collegeName || "College Name"} - Attendance Summary
+        </h1>
         <input
           type="date"
           value={date}
@@ -73,6 +86,7 @@ export default function AttendancePage() {
         />
       </div>
 
+      {/* Year-wise Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {years.map((year) => {
           const stats = getYearStats(year);
@@ -80,23 +94,24 @@ export default function AttendancePage() {
             <Card key={year} className="shadow-sm">
               <CardContent className="p-4">
                 <h2 className="font-semibold text-lg mb-2">{year} Attendance</h2>
-                <p>Present: {stats.present}</p>
-                <p>Absent: {stats.absent}</p>
-                <p className="font-medium text-blue-600">% Present: {stats.percent}%</p>
+                <p>✅ Present: {stats.present}</p>
+                <p>❌ Absent: {stats.absent}</p>
+                <p className="font-medium text-blue-600">📊 % Present: {stats.percent}%</p>
               </CardContent>
             </Card>
           );
         })}
         <Card className="shadow-sm">
           <CardContent className="p-4">
-            <h2 className="font-semibold text-lg mb-2">College Total</h2>
-            <p>Present: {collegeStats.present}</p>
-            <p>Absent: {collegeStats.absent}</p>
-            <p className="font-medium text-blue-600">% Present: {collegeStats.percent}%</p>
+            <h2 className="font-semibold text-lg mb-2">🏫 College Total</h2>
+            <p>✅ Present: {collegeStats.present}</p>
+            <p>❌ Absent: {collegeStats.absent}</p>
+            <p className="font-medium text-blue-600">📊 % Present: {collegeStats.percent}%</p>
           </CardContent>
         </Card>
       </div>
 
+      {/* Group-wise Attendance */}
       {years.map((year) => (
         <div key={year} className="mb-10">
           <h2 className="text-lg font-bold mb-4 border-b pb-1">{year}</h2>
@@ -111,13 +126,16 @@ export default function AttendancePage() {
               <Card key={`${year}-${group}`} className="mb-6 shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-md font-semibold">Group: {group}</h3>
+                    <h3 className="text-md font-semibold">
+                      Group: {groupIcons[group] || "📘"} {group}
+                    </h3>
                     <div className="text-sm text-muted-foreground">
-                      Present: {presentList.length} | Absent: {absentList.length}
+                      ✅ {presentList.length} | ❌ {absentList.length}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Present Students */}
                     <div>
                       <h4 className="font-medium mb-2 text-green-700">✅ Present Students</h4>
                       <table className="w-full border border-green-200 text-sm">
@@ -138,6 +156,7 @@ export default function AttendancePage() {
                       </table>
                     </div>
 
+                    {/* Absent Students */}
                     <div>
                       <h4 className="font-medium mb-2 text-red-700">❌ Absent Students</h4>
                       <table className="w-full border border-red-200 text-sm">
@@ -167,5 +186,3 @@ export default function AttendancePage() {
     </div>
   );
 }
-
-
