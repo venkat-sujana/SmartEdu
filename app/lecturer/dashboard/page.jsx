@@ -167,10 +167,21 @@ useEffect(() => {
       </div>
 
       {/* Quick Actions */}
+
+ 
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <Link href="/student-table">
           <div className="cursor-pointer p-5 bg-blue-100 hover:bg-blue-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-blue-800">📋 Students</p>
+            <p className="text-xl font-semibold text-blue-800">📋 View Students</p>
+          </div>
+        </Link>
+
+               <Link href="/register">
+          <div className="cursor-pointer p-5 bg-pink-100 hover:bg-indigo-200 rounded-xl text-center shadow-md">
+            <p className="text-xl font-semibold text-indigo-800">
+              ➕ Add Student
+            </p>
           </div>
         </Link>
 
@@ -182,8 +193,52 @@ useEffect(() => {
           </div>
         </Link>
 
-        <Link href="/exams-form">
+     <Link href="/lecturer/attendance/group-wise">
           <div className="cursor-pointer p-5 bg-yellow-100 hover:bg-yellow-200 rounded-xl text-center shadow-md">
+            <p className="text-xl font-semibold text-yellow-800">📅 Group wise Attendance</p>
+          </div>
+        </Link>
+
+        <Link href="/attendance-records">
+          <div className="cursor-pointer p-5 bg-indigo-100 hover:bg-indigo-200 rounded-xl text-center shadow-md">
+            <p className="text-xl font-semibold text-indigo-800">
+              📆 Attendance Records
+            </p>
+          </div>
+        </Link>
+
+
+
+        <Link href="/lecturer/attendance">
+          <div className="cursor-pointer p-5 bg-pink-100 hover:bg-indigo-200 rounded-xl text-center shadow-md">
+            <p className="text-xl font-semibold text-indigo-800">
+              📅 Attendance with names
+            </p>
+          </div>
+        </Link>
+
+
+        <Link href="/lecturer/attendance/group-wise">
+          <div className="cursor-pointer p-5 bg-yellow-100 hover:bg-yellow-200 rounded-xl text-center shadow-md">
+            <p className="text-xl font-semibold text-yellow-800">📅 Group wise Attendance</p>
+          </div>
+        </Link>
+
+        <Link href="/attendance-records/attendance-calendar">
+          <div className="cursor-pointer p-5 bg-green-100 hover:bg-green-200 rounded-xl text-center shadow-md">
+            <p className="text-xl font-semibold text-yellow-800">📅 Calendar View Attendance</p>
+          </div>
+        </Link>
+
+
+        <Link href="/attendance-records/monthly-summary">
+          <div className="cursor-pointer p-5 bg-yellow-100 hover:bg-yellow-200 rounded-xl text-center shadow-md">
+            <p className="text-xl font-semibold text-yellow-800">📅 Monthly Summary  Attendance</p>
+          </div>
+        </Link>
+
+                <Link href="/exams-form">
+          <div className="cursor-pointer p-5 bg-green-100 hover:bg-green-200 rounded-xl text-center shadow-md">
             <p className="text-xl font-semibold text-yellow-800">📝 Add Exam</p>
           </div>
         </Link>
@@ -196,40 +251,6 @@ useEffect(() => {
           </div>
         </Link>
 
-        <Link href="/attendance-records">
-          <div className="cursor-pointer p-5 bg-indigo-100 hover:bg-indigo-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-indigo-800">
-              📆 Attendance Records
-            </p>
-          </div>
-        </Link>
-
-        <Link href="/register">
-          <div className="cursor-pointer p-5 bg-pink-100 hover:bg-indigo-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-indigo-800">
-              ➕ Add Student
-            </p>
-          </div>
-        </Link>
-
-        <Link href="/lecturer/attendance">
-          <div className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center">
-            <p className="text-lg font-semibold">📅 Attendance</p>
-            <p className="text-sm text-gray-600">
-              View group/year-wise attendance➡️
-            </p>
-          </div>
-        </Link>
-
-
-        <Link href="/lecturer/attendance/group-wise">
-          <div className="p-5 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-xl shadow-lg text-center">
-            <p className="text-lg font-semibold">📅 Attendance</p>
-            <p className="text-sm text-gray-600">
-              View group-wise summary attendance➡️
-            </p>
-          </div>
-        </Link>
 
       </div>
     </div>

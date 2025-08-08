@@ -1,4 +1,4 @@
-// app/attendance-records/monthly-summary/page.jsx
+//app/attendance-records/monthly-summary/page.jsx
 "use client";
 import { useEffect, useState } from "react";
 import React from "react";
@@ -77,17 +77,17 @@ export default function MonthlySummary() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4 text-center">
+    <div className="max-w-7xl mx-auto p-4 md:p-6">
+      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800">
         {collegeName} 🧾 Monthly Attendance Summary - 2025
       </h2>
 
       {/* Filters */}
-      <div className="mb-4 flex gap-4 items-center flex-wrap">
+      <div className="mb-6 flex flex-wrap gap-3 items-center bg-white p-4 rounded-lg shadow-md">
         <select
           value={selectedGroup}
           onChange={(e) => setSelectedGroup(e.target.value)}
-          className="border px-3 py-2 rounded bg-white"
+          className="border border-gray-300 px-3 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none"
         >
           <option value="">Select Group</option>
           {groups.map((g) => (
@@ -100,7 +100,7 @@ export default function MonthlySummary() {
         <select
           value={selectedYear}
           onChange={(e) => setSelectedYear(e.target.value)}
-          className="border px-3 py-2 rounded bg-white"
+          className="border border-gray-300 px-3 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none"
         >
           <option value="">Select Year</option>
           {years.map((y) => (
@@ -115,35 +115,35 @@ export default function MonthlySummary() {
           placeholder="🔍 Search Student"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border px-3 py-2 rounded"
+          className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
         />
 
         <button
           onClick={handlePrint}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
         >
-          <Printer className="inline mr-2" /> Print
+          <Printer size={18} /> Print
         </button>
 
         <Link href="/attendance-form">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded font-bold cursor-pointer">
+          <button className="bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-cyan-700 transition">
             📝 Attendance Form
           </button>
         </Link>
 
         <Link href="/attendance-records">
-          <button className="bg-green-600 text-white px-4 py-2 rounded font-bold cursor-pointer">
+          <button className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
             🧾 Attendance Records
           </button>
         </Link>
       </div>
 
       {/* Attendance Table */}
-      <div id="print-area">
+      <div id="print-area" className="overflow-x-auto bg-white rounded-lg shadow-lg">
         {filteredData.length === 0 ? (
-          <p className="text-gray-500 mt-4 text-center">No data available.</p>
+          <p className="text-gray-500 mt-4 text-center py-6">No data available.</p>
         ) : (
-          <table className="table-auto w-full border border-gray-300 shadow text-sm">
+          <table className="table-auto w-full border border-gray-300 text-sm">
             <thead className="bg-green-600 text-white">
               <tr>
                 <th className="p-2 border">S.No</th>
@@ -160,7 +160,7 @@ export default function MonthlySummary() {
               {filteredData.map((student, idx) => (
                 <React.Fragment key={idx}>
                   {/* Working Days */}
-                  <tr className="bg-gray-100 font-medium">
+                  <tr className="bg-gray-50 font-medium">
                     <td className="p-2 border"></td>
                     <td className="p-2 border">Working Days</td>
                     {months.map(({ label, year }) => {
@@ -171,7 +171,7 @@ export default function MonthlySummary() {
                         </td>
                       );
                     })}
-                    <td className="p-2 border">
+                    <td className="p-2 border font-semibold">
                       {months.reduce((sum, { label, year }) => {
                         const key = `${label}-${year}`;
                         return sum + (student.workingDays?.[key] || 0);
@@ -191,7 +191,7 @@ export default function MonthlySummary() {
                         </td>
                       );
                     })}
-                    <td className="p-2 border">
+                    <td className="p-2 border font-semibold">
                       {months.reduce((sum, { label, year }) => {
                         const key = `${label}-${year}`;
                         return sum + (student.present?.[key] || 0);
@@ -200,7 +200,7 @@ export default function MonthlySummary() {
                   </tr>
 
                   {/* Percent */}
-                  <tr className="bg-yellow-100 font-semibold">
+                  <tr className="bg-yellow-50 font-semibold">
                     <td className="p-2 border"></td>
                     <td className="p-2 border">Percent</td>
                     {months.map(({ label, year }) => {
@@ -232,9 +232,9 @@ export default function MonthlySummary() {
                     </td>
                   </tr>
 
-                  {/* Spacer Row */}
+                  {/* Spacer */}
                   <tr>
-                    <td colSpan={months.length + 3} className="h-4"></td>
+                    <td colSpan={months.length + 3} className="h-2"></td>
                   </tr>
                 </React.Fragment>
               ))}

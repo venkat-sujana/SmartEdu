@@ -1,6 +1,8 @@
+//app/lecturer-registration/page.jsx
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import SpinnerDots from "@/components/SpinnerDots";
 
 export default function LecturerRegister() {
   const [form, setForm] = useState({
@@ -13,6 +15,7 @@ export default function LecturerRegister() {
   });
 
   const [colleges, setColleges] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -34,6 +37,8 @@ export default function LecturerRegister() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const res = await fetch('/api/register/lecturer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -41,6 +46,8 @@ export default function LecturerRegister() {
     });
 
     const data = await res.json();
+    setIsLoading(false);
+
     if (res.ok) {
       alert('Lecturer registered successfully!');
       router.push('/lecturer/login');
@@ -51,7 +58,9 @@ export default function LecturerRegister() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6 relative">
+      {isLoading && <SpinnerDots />}
+
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md bg-white shadow-md rounded-lg p-6 space-y-4 border border-gray-200"
@@ -141,10 +150,12 @@ export default function LecturerRegister() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
+          disabled={isLoading}
+          className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition disabled:opacity-70"
         >
           Register Lecturer
         </button>
+
         <p className="text-center text-sm text-gray-600">
           Already have an account?{' '}
           <a href="/lecturer/login" className="text-blue-600 hover:underline">

@@ -1,3 +1,4 @@
+//app/api/attendance/group-wise-today/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
@@ -7,25 +8,33 @@ export async function GET(req) {
 
   const { searchParams } = new URL(req.url);
   const collegeId = searchParams.get("collegeId");
+  const dateParam = searchParams.get("date");
 
   if (!collegeId) {
     return NextResponse.json({ error: "College ID required" }, { status: 400 });
   }
 
+  let startOfDay, endOfDay;
 
+  if (dateParam) {
+    const selectedDate = new Date(dateParam);
+    startOfDay = new Date(selectedDate);
+    startOfDay.setHours(0, 0, 0, 0);
 
+    endOfDay = new Date(selectedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+  } else {
+    startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-  const startOfDay = new Date();
-startOfDay.setHours(0, 0, 0, 0);
+    endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+  }
 
-const endOfDay = new Date();
-endOfDay.setHours(23, 59, 59, 999);
-
-const attendanceRecords = await Attendance.find({
-  date: { $gte: startOfDay, $lte: endOfDay },
-  collegeId,
-});
-
+  const attendanceRecords = await Attendance.find({
+    date: { $gte: startOfDay, $lte: endOfDay },
+    collegeId,
+  });
 
   const result = {};
 
@@ -58,3 +67,4 @@ const attendanceRecords = await Attendance.find({
 
   return NextResponse.json({ groupWise: result });
 }
+

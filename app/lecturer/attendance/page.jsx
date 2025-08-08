@@ -13,10 +13,11 @@ const groupIcons = {
   BiPC: "🧬",
   CEC: "💼",
   HEC: "🍽️",
-  "M&AT": "🧮",
+  "M&AT": "⚙️",
   MLT: "🧪",
-  CET: "⚙️",
+  CET: "🧮",
 };
+
 
 export default function AttendancePage() {
   const { data: session } = useSession();

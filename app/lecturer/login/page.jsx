@@ -1,17 +1,19 @@
-//app/lecturer/login/page.jsx
 'use client';
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import SpinnerDots from "@/components/SpinnerDots";
 
 export default function LecturerLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     const res = await signIn("credentials", {
       email,
@@ -19,6 +21,8 @@ export default function LecturerLogin() {
       redirect: false,
       callbackUrl: "/success",
     });
+
+    setIsLoading(false);
 
     if (res.ok) {
       router.push("/lecturer/dashboard");
@@ -67,9 +71,10 @@ export default function LecturerLogin() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white font-semibold py-2 rounded-md hover:bg-blue-700 transition"
+          disabled={isLoading}
+          className="w-full bg-blue-600 text-white font-semibold py-2 rounded-md hover:bg-blue-700 transition flex justify-center items-center gap-2 disabled:opacity-70"
         >
-          Login
+          {isLoading ? <SpinnerDots /> : "Login"}
         </button>
 
         <p className="text-center text-sm text-gray-600">

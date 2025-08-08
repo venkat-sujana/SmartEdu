@@ -29,11 +29,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 via-blue-300 to-blue-500 px-4">
 
-  
 
-      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-80">
+     <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-80">
         <h2 className="text-xl font-bold mb-4 text-center">🔓&nbsp;Caretaker Login</h2>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <input
