@@ -8,8 +8,8 @@ export default function Home() {
       {/* Main Heading */}
       <div>
         <Image
-          src="/images/skrlogo.png"
-          alt="OSRA Logo"
+          src="/images/bg-2.jpg"
+          alt="SmartEdu Logo"
           width={600}
           height={600}
           className="mt-20 border-2 border-gray-300 rounded-lg shadow-lg"

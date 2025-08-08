@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import EditExamForm from "@/app/edit-exam-form/page"; // Adjust the import path as needed
+import EditExamForm from "@/app/edit-exam-form/page";
 import { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 
@@ -16,18 +16,40 @@ export default function ExamReportPage() {
     examType: "",
     yearOfStudy: "",
   });
-
-  
+  const [examType, setExamType] = useState([
+    "UNIT-1",
+    "UNIT-2",
+    "UNIT-3",
+    "UNIT-4",
+    "QUARTERLY",
+    "HALFYEARLY",
+    "PRE-PUBLIC-1",
+    "PRE-PUBLIC-2",
+  ]);
 
   const [editingExam, setEditingExam] = useState(null);
 
   const { data: session } = useSession();
-console.log("SESSION: ", session);
+  const [collegeId, setCollegeId] = useState("");
+  const [collegeName, setCollegeName] = useState("");
 
-const [collegeId, setCollegeId] = useState('');
-const [collegeName, setCollegeName] = useState('');
+  const[generalColumns, setGeneralColumns] = useState([
+    "Telugu/Sanskrit",
+    "English",
+    "Maths/Botany/Civics",
+    "Maths/Zoology/History",
+    "Physics/Economics",
+    "Chemistry/Commerce",
+  ]);
 
-  
+  const[vocationalColumns, setVocationalColumns] = useState([
+    "GFC",
+    "English",
+    "V1/V4",
+    "V2/V5",
+    "V3/V6",
+  ]);
+
   useEffect(() => {
     if (session?.user?.collegeId) {
       setCollegeId(session.user.collegeId);
@@ -37,8 +59,6 @@ const [collegeName, setCollegeName] = useState('');
     }
   }, [session]);
 
-
-  // Move fetchReports to component scope so it can be called elsewhere
   const fetchReports = async () => {
     try {
       const res = await fetch("/api/exams");
@@ -61,8 +81,7 @@ const [collegeName, setCollegeName] = useState('');
     const fetchStudents = async () => {
       try {
         const res = await fetch("/api/students");
-        const data = await res.json();
-        // You can store in state if needed like: setStudents(data.data)
+        await res.json();
       } catch (err) {
         console.error("Error loading students:", err);
       }
@@ -72,154 +91,102 @@ const [collegeName, setCollegeName] = useState('');
     fetchStudents();
   }, []);
 
-  const filteredReports = reports.filter((report) => {
-    const studentNameMatch = filters.studentName
-      ? report.student?.name
-          ?.toLowerCase()
-          .includes(filters.studentName.toLowerCase())
-      : true;
-    const streamMatch = filters.stream
-      ? report.stream === filters.stream
-      : true;
-    const yearMatch = filters.academicYear
-      ? report.academicYear === filters.academicYear
-      : true;
-    const examMatch = filters.examType
-      ? report.examType === filters.examType
-      : true;
-    const yearOfStudyMatch = filters.yearOfStudy
-      ? report.yearOfStudy === filters.yearOfStudy
-      : true;
-
-    return (
-      studentNameMatch &&
-      streamMatch &&
-      yearMatch &&
-      examMatch &&
-      yearOfStudyMatch
-    );
-  });
-
-  const examTypes = [
-    "UNIT-1",
-    "UNIT-2",
-    "UNIT-3",
-    "UNIT-4",
-    "QUARTERLY",
-    "HALFYEARLY",
-    "PRE-PUBLIC-1",
-    "PRE-PUBLIC-2",
-  ];
-
-  const generalColumns = [
-    "Telugu/Sanskrit",
-    "English",
-    "Maths/Botany/Civics",
-    "Maths/Zoology/History",
-    "Physics/Economics",
-    "Chemistry/Commerce",
-  ];
-  const vocationalColumns = ["GFC", "English", "V1/V4", "V2/V5", "V3/V6"];
-
+  // Handle delete exam report
   const handleDelete = async (id) => {
-    const confirmDelete = confirm("Are you sure you want to delete?");
-    if (!confirmDelete) return;
-
+    if (!window.confirm("Are you sure you want to delete this report?")) return;
     try {
       const res = await fetch(`/api/exams/${id}`, {
         method: "DELETE",
       });
-
-      const data = await res.json(); // ✅ this may throw error if response is empty
-
-      if (res.ok && data.success) {
-        alert("Deleted successfully");
+      const data = await res.json();
+      if (data.success) {
         setReports((prev) => prev.filter((r) => r._id !== id));
       } else {
-        console.error("Delete failed:", data);
-        alert("Delete failed");
+        alert("Failed to delete report.");
       }
-    } catch (error) {
-      console.error("Delete error:", error);
-      alert("Something went wrong");
+    } catch (err) {
+      alert("Error deleting report.");
+      console.error(err);
     }
   };
 
-  const handleUpdate = async (updatedData) => {
-    console.log("handleUpdate called with", updatedData);
+  const filteredReports = reports.filter((report) => {
+    const studentNameMatch = filters.studentName
+      ? report.student?.name?.toLowerCase().includes(filters.studentName.toLowerCase())
+      : true;
+    const streamMatch = filters.stream ? report.stream === filters.stream : true;
+    const yearMatch = filters.academicYear ? report.academicYear === filters.academicYear : true;
+    const examMatch = filters.examType ? report.examType === filters.examType : true;
+    const yearOfStudyMatch = filters.yearOfStudy ? report.yearOfStudy === filters.yearOfStudy : true;
 
-    try {
-      const response = await fetch(`/api/exams/${updatedData._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedData),
-      });
+    return studentNameMatch && streamMatch && yearMatch && examMatch && yearOfStudyMatch;
+  });
 
-      console.log("Update response:", response);
+  // Compute pass/fail counts
+  const { passCount, failCount, passPercentage } = (() => {
+    let pass = 0, fail = 0;
+    for (const report of filteredReports) {
+      const subjectMarks = report.generalSubjects || report.vocationalSubjects || {};
+      const isVocational = ["M&AT", "CET", "MLT"].includes(report.stream);
 
-      const data = await response.json();
-
-      console.log("Update data:", data);
-
-      if (data.success) {
-        alert("Updated successfully");
-
-        setIsEditing(false); // Close the form after submission
-        fetchReports(); // reload reports
-      } else {
-        alert("Update failed");
+      let isFail = false;
+      for (const mark of Object.values(subjectMarks)) {
+        const markStr = String(mark).toUpperCase();
+        if (markStr === "A" || markStr === "AB" || Number(mark) === 0) {
+          isFail = true;
+          break;
+        }
+        const numericMark = Number(mark);
+        if (!isNaN(numericMark)) {
+          if (["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(report.examType) && numericMark < 9) {
+            isFail = true;
+            break;
+          }
+          if (["QUARTERLY", "HALFYEARLY"].includes(report.examType) && numericMark < 18) {
+            isFail = true;
+            break;
+          }
+          if (["PRE-PUBLIC-1", "PRE-PUBLIC-2"].includes(report.examType) && numericMark < 35) {
+            isFail = true;
+            break;
+          }
+        }
       }
-    } catch (error) {
-      console.error("Update Error:", error);
-      alert("Something went wrong");
+      if (isFail) fail++;
+      else pass++;
     }
-  };
-
-  const handleUpdated = async () => {
-    await fetchExam(); // again fetch latest exam from backend
-    setShowEditForm(false); // or close modal
-  };
+    const total = pass + fail;
+    const percentage = total > 0 ? ((pass / total) * 100).toFixed(2) : "0.00";
+    return { passCount: pass, failCount: fail, passPercentage: percentage };
+  })();
 
   return (
-    <div className="p-6 ">
-     
-     <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
-     <span className="font-semibold">🏫</span> {collegeName || "Loading..."}
-     </div>
+    <div className="max-w-7xl mx-auto p-4 sm:p-6">
+     <Toaster />
+
+      <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-800 rounded shadow-sm flex items-center justify-center font-semibold">
+        <span className="font-semibold">🏫</span>
+        <span className="ml-2">{collegeName || "Loading..."}</span>
+      </div>
 
 
-      <h1 className="text-2xl font-bold mb-2 flex items-center justify-center">
-        Exam Summary Report
-      </h1>
-      <strong>
-        <p className="mb-4">
-          Note:-This page displays a summary of exams conducted by the
-          institution. You can filter the results using the dropdowns below. To
-          print the report, click on the &quot;Print Report&quot; button above.
-          You can also filter the results by selecting a specific academic year,
-          stream, or year of study from the dropdown menus below.
-        </p>
-      </strong>
+    <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-center">Exam Summary Report</h1>
 
-      <strong>
-        <p className="mb-4">
-          The user should be able to:
-          <br /> 1. View exam name, date, total marks, percentage.
-          <br /> 2. See PASS/FAIL status based on marks.
-          <br /> 3. Subjects should show “Pass” or “Fail” beside each mark based
-          on rules.
-          <br /> 4. Display red color for failed subjects and green for passed
-          ones.
-        </p>
-      </strong>
+
+    
+      {/* Summary Stats */}
+      <div className="mb-4 flex flex-col sm:flex-row justify-center items-center gap-4 bg-gray-100 p-4 rounded-md shadow-inner">
+        <div className="text-green-700 font-semibold">✅ Passed: {passCount}</div>
+        <div className="text-red-700 font-semibold">❌ Failed: {failCount}</div>
+        <div className="text-blue-700 font-semibold">📊 Pass %: {passPercentage}%</div>
+      </div>
 
       <Link href="/student-table">
         <button className="w-50 bg-cyan-600 mb-2 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
           📝&nbsp; Student-Table
         </button>
       </Link>
+
       <Link href="/exams-form">
         <button className="w-50 bg-teal-600 mb-2 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold mr-2">
           📝&nbsp; Exams Form
@@ -232,9 +199,29 @@ const [collegeName, setCollegeName] = useState('');
       >
         🖨️ Print Report
       </button>
+
       <h1 className="text-2xl font-bold mb-4 flex items-center justify-center ">
         Home Examinations Report
       </h1>
+
+
+        {editingExam && (
+          <EditExamForm
+            key={editingExam._id} // 👉 Reactకు కొత్త component అన్నట్టు చెప్పే key
+            examData={editingExam}
+            onClose={() => setEditingExam(null)}
+            onUpdated={fetchReports}
+          />
+        )}
+
+        <div className="mt-4">
+          {filteredReports.length === 0 && (
+            <p className="text-center text-gray-500">No reports found</p>
+          )}
+        </div>
+
+
+
       <style jsx global>{`
         @media print {
           body * {
@@ -293,7 +280,7 @@ const [collegeName, setCollegeName] = useState('');
           className="border p-2 rounded"
         >
           <option value="">All Exam Types</option>
-          {examTypes.map((type) => (
+          {examType.map((type) => (
             <option key={type} value={type}>
               {type}
             </option>
@@ -301,15 +288,6 @@ const [collegeName, setCollegeName] = useState('');
         </select>
       </div>
 
-      {/* {status === "loading" ? (
-        <p className="text-center font-bold text-lg text-gray-600 mb-4">
-          Loading college name...
-        </p>
-      ) : (
-        <h2 className="text-center text-xl font-bold mb-4 uppercase">
-          {session?.user?.collegeName || "College Name Not Available"}
-        </h2>
-      )} */}
 
       <div id="print-section">
         {/* Report Table */}
@@ -478,7 +456,7 @@ const [collegeName, setCollegeName] = useState('');
           </tbody>
         </table>
 
-        {editingExam && (
+        {/* {editingExam && (
           <EditExamForm
             key={editingExam._id} // 👉 Reactకు కొత్త component అన్నట్టు చెప్పే key
             examData={editingExam}
@@ -491,7 +469,7 @@ const [collegeName, setCollegeName] = useState('');
           {filteredReports.length === 0 && (
             <p className="text-center text-gray-500">No reports found</p>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );

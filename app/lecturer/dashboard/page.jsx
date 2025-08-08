@@ -88,7 +88,7 @@ useEffect(() => {
 
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-xl">
+    <div className="max-w-6xl mx-auto mt-10 p-6 bg-gray-100 rounded-2xl shadow-xl">
       {/* College Name */}
       <div className="mb-6 px-6 py-3 bg-white border-l-4 border-blue-500 text-gray-800 rounded-lg shadow flex items-center justify-center space-x-3">
         <GraduationCap className="w-8 h-8 text-blue-600" />

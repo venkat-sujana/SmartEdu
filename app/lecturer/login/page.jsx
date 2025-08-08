@@ -32,10 +32,15 @@ export default function LecturerLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div
+      className="min-h-screen flex items-center justify-center bg-[url('/images/bg-7.jpg')] bg-cover bg-center relative px-4"
+    >
+      {/* Transparent overlay for dim effect */}
+      {/* <div className="absolute inset-0 "></div> */}
+
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-md bg-white p-8 rounded-xl shadow-md border border-gray-200 space-y-6"
+        className="relative z-10 w-full max-w-md bg-white/100 backdrop-blur-sm p-8 rounded-xl shadow-md border border-gray-200 space-y-4"
       >
         <h2 className="text-2xl font-bold text-center text-gray-800">🎓 Lecturer Login</h2>
 
