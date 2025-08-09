@@ -58,7 +58,7 @@ export default function Navbar() {
 
           {status === 'authenticated' && (
             <>
-              <span className="hidden sm:inline text-sm font-medium">
+              <span className="hidden sm:inline text-md mr-3  font-semibold">
                 {session?.user?.name}
               </span>
               <button

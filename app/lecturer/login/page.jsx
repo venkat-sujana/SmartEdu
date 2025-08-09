@@ -33,7 +33,8 @@ export default function LecturerLogin() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-[url('/images/bg-7.jpg')] bg-cover bg-center relative px-4"
+      // className="min-h-screen flex items-center justify-center bg-[url('/images/bg-7.jpg')] bg-cover bg-center relative px-4"
+      className="min-h-screen flex items-center justify-center bg-gradient-to-r from-cyan-500 via-indigo-100 to-emerald-500"
     >
       {/* Transparent overlay for dim effect */}
       {/* <div className="absolute inset-0 "></div> */}
@@ -77,7 +78,7 @@ export default function LecturerLogin() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-blue-600 text-white font-semibold py-2 rounded-md hover:bg-blue-700 transition flex justify-center items-center gap-2 disabled:opacity-70"
+          className="w-full bg-blue-600 text-white cursur-pointer font-semibold py-2 rounded-md hover:bg-blue-700 transition flex justify-center items-center gap-2 disabled:opacity-70"
         >
           {isLoading ? <SpinnerDots /> : "Login"}
         </button>

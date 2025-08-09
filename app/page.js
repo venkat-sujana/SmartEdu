@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gray-100">
+    <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gradient-to-r from-purple-200 via-pink-300 to-red-100">
 
       {/* Main Heading */}
       <div>
