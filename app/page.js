@@ -8,7 +8,7 @@ export default function Home() {
       {/* Main Heading */}
       <div>
         <Image
-          src="/images/bg-2.jpg"
+          src="/images/bg-1.jpg"
           alt="SmartEdu Logo"
           width={600}
           height={600}
@@ -18,7 +18,7 @@ export default function Home() {
       </div>
 
 
-      <h1 className="text-4xl text-black font-bold mt-2">
+      <h1 className="text-2xl text-black font-bold mt-2">
         Welcome to 🧑‍🏫&nbsp;SmartEdu
       </h1>
       <h2 className="text-2xl text-black font-semibold mt-4">

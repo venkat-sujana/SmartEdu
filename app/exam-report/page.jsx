@@ -293,7 +293,7 @@ export default function ExamReportPage() {
         {/* Report Table */}
         <table className="table-auto w-full border border-black m-4">
           <thead>
-            <tr className="bg-blue-600 text-white">
+            <tr className="bg-gray-600 text-white">
               <th className="border p-1">S.No</th>
               <th className="border p-1">Name</th>
               <th className="border p-1">Exam</th>
@@ -438,14 +438,14 @@ export default function ExamReportPage() {
                   <td className="border p-1">
                     <button
                       onClick={() => setEditingExam(report)} // report = exam object
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                      className="bg-cyan-200 hover:bg-yellow-100 text-black px-3 py-1 rounded"
                     >
                       ✏️ Edit
                     </button>
 
                     <button
                       onClick={() => handleDelete(report._id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded ml-2"
+                      className="bg-red-400 hover:bg-red-500 text-black px-3 py-1 rounded ml-2"
                     >
                       🗑️ Delete
                     </button>

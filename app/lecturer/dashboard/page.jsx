@@ -107,17 +107,17 @@ const { user } = session || {};
       </h1>
 
       {/* Lecturer Info Card */}
-      <div className="mb-8 p-5 bg-slate-100 rounded-xl shadow-md grid sm:grid-cols-2 gap-4">
+      <div className="mb-8 p-5 bg-slate-200 rounded-xl shadow-md grid sm:grid-cols-2 gap-4">
         <div className="text-gray-800 space-y-2">
           <p>
-            <span className="font-semibold">👤 Name:</span> {user?.name}
+            <span className="font-bold">👤 Name:</span><span className="font-bold">{user?.name}</span> 
           </p>
           <p>
-            <span className="font-semibold">📧 Email:</span> {user?.email}
+            <span className="font-bold">📧 Email:</span><span className="font-bold">{user?.email}</span> 
           </p>
           <p>
             {/* <FunctionSquare className="w-5 h-5" /> */}
-            <span className="font-semibold">📚 Subject:</span> {user?.subject}
+            <span className="font-bold">📚 Subject:</span><span className="font-bold" >Junior Lecturer in  {user?.subject}</span>
           </p>
 
           <p></p>

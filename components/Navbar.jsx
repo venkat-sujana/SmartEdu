@@ -4,6 +4,7 @@ import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+  import Tutorials from './tutorials/page';
 export default function Navbar() {
   const { data: session, status } = useSession();
   const [collegeName, setCollegeName] = useState('');
@@ -55,6 +56,9 @@ export default function Navbar() {
          <Link href="/about" className="hover:underline">
             About
           </Link>
+
+
+          <Tutorials />
 
           {status === 'authenticated' && (
             <>

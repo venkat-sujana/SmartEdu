@@ -1,8 +1,10 @@
-//app/students/[id]/route.js
+// app/students/[id]/route.js
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 // Cloudinary కాన్ఫిగరేషన్
 cloudinary.config({
@@ -29,36 +31,43 @@ function getPublicIdFromUrl(url) {
   }
 }
 
+// ✅ Session + CollegeId ఆధారంగా చెక్ చేసే helper
+async function getStudentByIdWithAuth(id) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return { error: "Unauthorized", status: 401 };
+  }
+  await connectMongoDB();
+  const student = await Student.findOne({
+    _id: id,
+    collegeId: session.user.collegeId, // 🛡️ కాలేజీ ఫిల్టర్
+  });
+  if (!student) {
+    return { error: "Student not found", status: 404 };
+  }
+  return { student, session };
+}
+
+// 📌 GET
 export async function GET(req, { params }) {
   try {
-    await connectMongoDB();
-    const student = await Student.findById(params.id);
-    if (!student) {
-      return NextResponse.json(
-        { message: "Student not found" },
-        { status: 404 }
-      );
-    }
+    const { student, error, status } = await getStudentByIdWithAuth(params.id);
+    if (error) return NextResponse.json({ message: error }, { status });
     return NextResponse.json({ status: "success", data: student });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
 
+// 📌 PUT
 export async function PUT(req, { params }) {
   try {
-    await connectMongoDB();
+    const { student: existingStudent, error, status } = await getStudentByIdWithAuth(params.id);
+    if (error) return NextResponse.json({ message: error }, { status });
+
     const body = await req.json();
 
-    const existingStudent = await Student.findById(params.id);
-    if (!existingStudent) {
-      return NextResponse.json(
-        { message: "Student not found" },
-        { status: 404 }
-      );
-    }
-
-    // ఫోటో మారినట్లయితే పాత ఫోటోని డిలీట్ చేయండి
+    // ఫోటో మారితే పాత ఫోటోని డిలీట్ చేయండి
     if (body.photo && existingStudent.photo !== body.photo) {
       const publicId = getPublicIdFromUrl(existingStudent.photo);
       if (publicId) {
@@ -70,10 +79,11 @@ export async function PUT(req, { params }) {
       }
     }
 
-    const updatedStudent = await Student.findByIdAndUpdate(params.id, body, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedStudent = await Student.findOneAndUpdate(
+      { _id: params.id, collegeId: existingStudent.collegeId }, // 🔒 కాలేజీ చెక్
+      body,
+      { new: true, runValidators: true }
+    );
 
     return NextResponse.json({ status: "success", data: updatedStudent });
   } catch (error) {
@@ -81,19 +91,13 @@ export async function PUT(req, { params }) {
   }
 }
 
+// 📌 DELETE
 export async function DELETE(req, { params }) {
   try {
-    await connectMongoDB();
-    const student = await Student.findById(params.id);
+    const { student, error, status } = await getStudentByIdWithAuth(params.id);
+    if (error) return NextResponse.json({ message: error }, { status });
 
-    if (!student) {
-      return NextResponse.json(
-        { message: "Student not found" },
-        { status: 404 }
-      );
-    }
-
-    // ఫోటోని Cloudinary నుండి డిలీట్ చేయండి
+    // Cloudinary నుండి ఫోటోని డిలీట్ చేయండి
     if (student.photo) {
       const publicId = getPublicIdFromUrl(student.photo);
       if (publicId) {
@@ -105,7 +109,7 @@ export async function DELETE(req, { params }) {
       }
     }
 
-    await Student.findByIdAndDelete(params.id);
+    await Student.findByIdAndDelete(student._id);
 
     return NextResponse.json({
       status: "success",

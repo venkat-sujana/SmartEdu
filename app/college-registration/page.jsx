@@ -58,7 +58,7 @@ export default function CollegeRegistrationForm() {
         <p className="mt-2 text-center text-gray-600"></p>
                 <p className="mt-4 text-center text-gray-600">
           Already have an account?{" "}
-          <a href="/lecturer-login" className="text-blue-600 hover:underline">
+          <a href="/lecturer/login" className="text-blue-600 hover:underline">
             Login here
           </a>
         </p>
