@@ -162,6 +162,9 @@ export default function LecturerRegister() {
             Login here
           </a>
         </p>
+        <p>
+          if you don't have a college?{' '}<a href="/college-registration" className="text-blue-600 hover:underline">Register College</a> for your student
+        </p>
       </form>
     </div>
   );

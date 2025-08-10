@@ -8,7 +8,7 @@ export default function Home() {
       {/* Main Heading */}
       <div>
         <Image
-          src="/images/bg-3.jpg"
+          src="/images/bg-2.jpg"
           alt="SmartEdu Logo"
           width={600}
           height={600}
