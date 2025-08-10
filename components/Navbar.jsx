@@ -53,9 +53,9 @@ export default function Navbar() {
             Dashboard
           </Link>
 
-         <Link href="/about" className="hover:underline">
+         {/* <Link href="/about" className="hover:underline">
             About
-          </Link>
+          </Link> */}
 
 
           <Tutorials />
