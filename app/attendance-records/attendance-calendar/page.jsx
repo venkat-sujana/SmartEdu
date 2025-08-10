@@ -12,9 +12,33 @@ const monthNames = [
 // 🛑 Public Holidays (month is 0-based)
 const publicHolidays = [
   { month: 0, day: 26, name: "రిపబ్లిక్ డే" },
+  { month: 5, day: 2, name: "Re opening Day" },
+  { month: 6, day: 17, name: "UNIT-I" }, 
+  { month: 6, day: 18, name: "UNIT-I" },
+  { month: 6, day: 19, name: "UNIT-I" },
   { month: 7, day: 15, name: "స్వాతంత్ర దినం" },
   { month: 7, day: 8, name: "వరలక్ష్మి వ్రతం" },
+  { month: 7, day: 16, name: "krishnastami " },
+  { month: 7, day: 18, name: "UNI-II" },
+  { month: 7, day: 19, name: "UNI-II" },
+  { month: 7, day: 20, name: "UNI-II" },
+  { month: 8, day: 15, name: "Quarterly Exams" },
+  { month: 8, day: 16, name: "Quarterly Exams" },
+  { month: 8, day: 17, name: "Quarterly Exams" },
+  { month: 8, day: 18, name: "Quarterly Exams" },
+  { month: 8, day: 19, name: "Quarterly Exams" },
+  { month: 8, day: 20, name: "Quarterly Exams" },
+  { month: 8, day: 28, name: "Dussara holidays" },
+  { month: 8, day: 29, name: "Dussara holidays" },
+  { month: 8, day: 30, name: "Dussara holidays" },
+  { month: 9, day: 1, name: "Dussara holidays" },
   { month: 9, day: 2, name: "గాంధీ జయంతి" },
+  { month: 9, day: 3, name: "Dussara holidays" },
+  { month: 9, day: 4, name: "Dussara holidays" },
+  { month: 9, day: 6, name: "Re open after Dussara holidays" },
+  
+
+
 ];
 
 // 🔹 Helper for Second Saturday

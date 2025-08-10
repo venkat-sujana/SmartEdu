@@ -34,7 +34,7 @@ export default function LecturerLogin() {
   return (
     <div
       // className="min-h-screen flex items-center justify-center bg-[url('/images/bg-7.jpg')] bg-cover bg-center relative px-4"
-      className="min-h-screen flex items-center justify-center bg-gradient-to-r from-cyan-500 via-indigo-100 to-emerald-500"
+      className="min-h-screen flex items-center justify-center bg-gradient-to-r from-cyan-100 via-indigo-100 to-emerald-100"
     >
       {/* Transparent overlay for dim effect */}
       {/* <div className="absolute inset-0 "></div> */}

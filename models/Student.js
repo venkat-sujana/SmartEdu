@@ -63,6 +63,8 @@ const studentSchema = new mongoose.Schema({
     ref: "College",
     required: true,
   },
+  subjects: [String], // ✅ Subjects linked to this student
+  
   createdAt: {
     type: Date,
     default: Date.now,

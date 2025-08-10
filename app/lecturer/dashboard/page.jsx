@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function LecturerDashboard() {
   const { data: session, status } = useSession();
+  console.log(session?.user);
   const router = useRouter();
 
   const [collegeName, setCollegeName] = useState("");
@@ -37,25 +38,23 @@ export default function LecturerDashboard() {
           if (data?.name) setCollegeName(data.name);
         });
 
-      // Fetch Student Count
-      fetch(`/api/students/count?collegeId=${session.user.collegeId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data?.count !== undefined) {
-            setStudentCount(data.count);
-          }
-        });
+     // Fetch Student Count
+   fetch(
+  `/api/students/count?collegeId=${session.user.collegeId}&subject=${encodeURIComponent(session.user.subject)}`
+)
+  .then((res) => res.json())
+  .then((data) => {
+    if (data?.count !== undefined) {
+      setStudentCount(data.count);
+    }
+  });
     }
   }, [status, session, router]);
 
-  if (status === "loading") {
-    return <div className="text-center mt-10 text-gray-600">Loading...</div>;
-  }
-
-  const { user } = session || {};
 
 
-  useEffect(() => {
+
+useEffect(() => {
   if (status === "authenticated" && session?.user?.collegeId) {
     // Attendance %
     fetch(`/api/attendance/today-percent?collegeId=${session.user.collegeId}`)
@@ -67,7 +66,6 @@ export default function LecturerDashboard() {
       });
   }
 }, [status, session]);
-
 
 useEffect(() => {
   if (status === "authenticated" && session?.user?.collegeId) {
@@ -85,10 +83,16 @@ useEffect(() => {
   }
 }, [status, session]);
 
+if (status === "loading") {
+  return <div className="text-center mt-10 text-gray-600">Loading...</div>;
+}
+
+const { user } = session || {};
+
 
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 p-6 bg-gradient-to-r from-slate-100 via-amber-100 to-teal-100 rounded-2xl shadow-xl">
+    <div className="max-w-6xl mx-auto mt-10 p-6 bg-gradient-to-r from-slate-50 via-amber-50 to-teal-50 rounded-2xl shadow-xl">
       {/* College Name */}
       <div className="mb-6 px-6 py-3 bg-white border-l-4 border-blue-500 text-gray-800 rounded-lg shadow flex items-center justify-center space-x-3">
         <GraduationCap className="w-8 h-8 text-blue-600" />
@@ -156,7 +160,10 @@ useEffect(() => {
         <div className="p-5 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-xl shadow-lg text-center">
           <div className="text-3xl mb-2">🗓️</div>
           <p className="font-semibold">Exams Scheduled</p>
-          <p className="text-lg text-yellow-900 font-bold">3</p>
+          <p className="text-lg text-yellow-900 font-bold">UNIT-II</p>
+          <p className="font-semibold">18-082025</p>
+          <p className="font-semibold">19-08-2025</p>
+          <p className="font-semibold">20-08-2025</p>
         </div>
 
         <div className="p-5 bg-gradient-to-br from-purple-100 to-purple-300 rounded-xl shadow-lg text-center">
@@ -219,34 +226,43 @@ useEffect(() => {
 
 
         <Link href="/lecturer/attendance/group-wise">
-          <div className="cursor-pointer p-5 bg-yellow-100 hover:bg-yellow-200 rounded-xl text-center shadow-md">
+          <div className="cursor-pointer p-5 bg-yellow-300 hover:bg-yellow-200 rounded-xl text-center shadow-md">
             <p className="text-xl font-semibold text-yellow-800">📅 Group wise Attendance</p>
           </div>
         </Link>
 
         <Link href="/attendance-records/attendance-calendar">
-          <div className="cursor-pointer p-5 bg-green-100 hover:bg-green-200 rounded-xl text-center shadow-md">
+          <div className="cursor-pointer p-5 bg-green-200 hover:bg-amber-400 rounded-xl text-center shadow-md">
             <p className="text-xl font-semibold text-yellow-800">📅 Calendar View Attendance</p>
           </div>
         </Link>
 
 
         <Link href="/attendance-records/monthly-summary">
-          <div className="cursor-pointer p-5 bg-yellow-100 hover:bg-yellow-200 rounded-xl text-center shadow-md">
+          <div className="cursor-pointer p-5 bg-yellow-200 hover:bg-cyan-500 rounded-xl text-center shadow-md">
             <p className="text-xl font-semibold text-yellow-800">📅 Monthly Summary  Attendance</p>
           </div>
         </Link>
 
                 <Link href="/exams-form">
-          <div className="cursor-pointer p-5 bg-green-100 hover:bg-green-200 rounded-xl text-center shadow-md">
+          <div className="cursor-pointer p-5 bg-green-200 hover:bg-slate-400 rounded-xl text-center shadow-md">
             <p className="text-xl font-semibold text-yellow-800">📝 Add Exam</p>
           </div>
         </Link>
 
         <Link href="/exam-report">
-          <div className="cursor-pointer p-5 bg-pink-100 hover:bg-pink-200 rounded-xl text-center shadow-md">
+          <div className="cursor-pointer p-5 bg-pink-200 hover:bg-pink-500 rounded-xl text-center shadow-md">
             <p className="text-xl font-semibold text-pink-800">
-              📊 Exam Report
+              📊 Exam Records
+            </p>
+          </div>
+        </Link>
+
+
+        <Link href="/caretaker">
+          <div className="cursor-pointer p-5 bg-cyan-200 hover:bg-slate-500 rounded-xl text-center shadow-md">
+            <p className="text-xl font-semibold text-green-800">
+              🟢 Caretaker
             </p>
           </div>
         </Link>

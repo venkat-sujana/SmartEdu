@@ -57,8 +57,8 @@ useEffect(() => {
 
       const res = await fetch(`/api/students?collegeId=${session.user.collegeId}`);
       const result = await res.json();
-      setStudents(result.data);
-      setFilteredStudents(result.data);
+      setStudents(Array.isArray(result.data) ? result.data : []);
+      setFilteredStudents(Array.isArray(result.data) ? result.data : []);
       console.log("Fetched students:", result.data);
     } catch (err) {
       console.error("Error fetching students:", err);
@@ -298,11 +298,11 @@ printWindow.document.write(
 
   // Calculate paginated students
   const offset = currentPage * studentsPerPage;
-  const paginatedStudents = filteredStudents.slice(
+  const paginatedStudents = (filteredStudents || []).slice(
     offset,
     offset + studentsPerPage
   );
-  const pageCount = Math.ceil(filteredStudents.length / studentsPerPage);
+  const pageCount = Math.ceil((filteredStudents ? filteredStudents.length : 0) / studentsPerPage);
 
   return (
     <div className="p-6 max-w-8xl mx-auto">
@@ -456,17 +456,9 @@ printWindow.document.write(
           </button>
         </Link>
 
-        <Link href="/lecturer/register">
-          <button className="w-full bg-amber-800 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-            📝&nbsp; Add Lecturer
-          </button>
-        </Link>
 
-        <Link href="/login">
-          <button className="w-full bg-slate-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
-            📝&nbsp; Lecturer Login
-          </button>
-        </Link>
+
+
         
         <Link href="/register">
         <button className="w-50 bg-cyan-600  text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer font-bold">
@@ -611,7 +603,7 @@ printWindow.document.write(
 
         <div className="mt-4 text-center text-gray-600 font-bold">
           Page {currentPage + 1} of {pageCount} | Showing{" "}
-          {filteredStudents.length} Students
+          {(filteredStudents ? filteredStudents.length : 0)} Students
         </div>
         {pageCount > 1 && (
           <div className="mt-4 flex justify-center cursor-pointer font-bold">

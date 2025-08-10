@@ -2,7 +2,6 @@
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 import { cloudinary } from "@/lib/cloudinary";
@@ -12,20 +11,17 @@ export async function POST(req) {
   try {
     await connectMongoDB();
 
-    // ✅ App Router లో request object పాస్ చేయకూడదు
     const session = await getServerSession(authOptions);
-    console.log("SESSION DEBUG =>", JSON.stringify(session, null, 2));
     const lecturer = session?.user;
 
-    const collegeName = lecturer?.collegeName;
-    console.log("Lecturer session:", session);
-
-    if (!lecturer?.collegeId) {
+    if (!lecturer?.collegeId || (!lecturer?.subject && !lecturer?.group)) {
       return Response.json(
-        { status: "error", message: "Unauthorized: No College ID" },
+        { status: "error", message: "Unauthorized: Missing College ID or Subject/Group" },
         { status: 401 }
       );
     }
+
+    const collegeName = lecturer.collegeName;
 
     const formData = await req.formData();
     const fields = Object.fromEntries(formData.entries());
@@ -62,6 +58,8 @@ export async function POST(req) {
       ...fields,
       collegeId: new mongoose.Types.ObjectId(lecturer.collegeId),
       collegeName,
+      // Vocational అయితే group ద్వారా, లేకపోతే subject ద్వారా link
+      subjects: lecturer.group ? [] : [lecturer.subject],
       photo: photoUrl,
     });
 
@@ -76,43 +74,36 @@ export async function POST(req) {
 export async function GET(req) {
   try {
     await connectMongoDB();
+    const session = await getServerSession(authOptions);
 
-    const { searchParams } = new URL(req.url);
-    const collegeId = searchParams.get("collegeId");
-    const group = searchParams.get("group");
-
-    const filter = {};
-
-    if (collegeId) {
-      console.log("Received collegeId:", collegeId);
-      // ✅ Valid ObjectId check చేయండి
-      if (mongoose.Types.ObjectId.isValid(collegeId)) {
-        filter.collegeId = new mongoose.Types.ObjectId(collegeId);
-      } else {
-        return Response.json(
-          { status: "error", message: "Invalid collegeId format" },
-          { status: 400 }
-        );
-      }
-      console.log("Filter applied:", filter);
+    if (!session) {
+      return Response.json({ status: "error", message: "Unauthorized" }, { status: 401 });
     }
 
-    if (group) {
-      console.log("Received group:", group);
-      filter.group = group;
+    let filter = {
+      collegeId: session.user.collegeId
+    };
+
+    // Vocational stream => filter by group
+    if (session.user.stream === "Vocational" && session.user.group) {
+      filter.group = session.user.group;
     }
 
-    console.log("Final filter:", filter);
+    // General stream => filter by subject array match
+    if (session.user.stream === "General" && session.user.subject) {
+      filter.subjects = session.user.subject; // exact match in array
+    }
 
-    const students = await Student.find(filter).sort({ createdAt: -1 });
+    const students = await Student.find(filter);
 
-    console.log("Students fetched:", students.length);
-    return Response.json({ status: "success", data: students });
+    return Response.json({
+      status: "success",
+      data: students
+    });
   } catch (error) {
-    console.error("GET Error:", error);
-    return Response.json(
-      { status: "error", message: error.message },
-      { status: 500 }
-    );
+    console.error(error);
+    return Response.json({ status: "error", message: "Server error" }, { status: 500 });
   }
 }
+
+

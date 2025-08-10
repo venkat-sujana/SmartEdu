@@ -3,12 +3,12 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gradient-to-r from-purple-200 via-pink-300 to-red-100">
+    <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gradient-to-r from-gray-200 via-cyan-100 to-amber-100">
 
       {/* Main Heading */}
       <div>
         <Image
-          src="/images/bg-2.jpg"
+          src="/images/bg-3.jpg"
           alt="SmartEdu Logo"
           width={600}
           height={600}
