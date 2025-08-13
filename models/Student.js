@@ -48,6 +48,12 @@ const studentSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+
+  dateOfJoining: {
+  type: Date,
+  required: true,
+},
+
   address: {
     type: String,
     required: true,

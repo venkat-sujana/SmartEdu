@@ -44,6 +44,7 @@ const [collegeName, setCollegeName] = useState('');
     admissionNo: "",
     yearOfStudy: "",
     admissionYear: "",
+    dateOfJoining: "",
     address: "",
     photo: null,
   });
@@ -80,6 +81,7 @@ const [collegeName, setCollegeName] = useState('');
     form.append("admissionNo", formData.admissionNo);
     form.append("yearOfStudy", formData.yearOfStudy);
     form.append("admissionYear", formData.admissionYear);
+    form.append("dateOfJoining", formData.dateOfJoining);
     form.append("address", formData.address);
 
     form.append("collegeId", collegeId); // ✅ Add this line to send collegeId  not in formData
@@ -113,6 +115,8 @@ const [collegeName, setCollegeName] = useState('');
           gender: "",
           admissionNo: "",
           admissionYear: "",
+          yearOfStudy: "",
+          dateOfJoining: "",
           address: "",
         });
         setPhoto(null);
@@ -305,6 +309,7 @@ const [collegeName, setCollegeName] = useState('');
               <option value="First Year">First Year</option>
               <option value="Second Year">Second Year</option>
             </select>
+
             <div>
               <label className="text-sm text-gray-600">Admission Year</label>
               <input
@@ -317,6 +322,21 @@ const [collegeName, setCollegeName] = useState('');
                 required
               />
             </div>
+
+            <div>
+              <label className="text-sm text-gray-600">Date of joining</label>
+              <input
+                type="date"
+                name="dateOfJoining"
+                value={formData.dateOfJoining}
+                onChange={handleChange}
+                placeholder="Joining Date"
+                className="w-full p-2 border rounded-md"
+                required
+              />
+            </div>
+
+
             <textarea
               name="address"
               value={formData.address}

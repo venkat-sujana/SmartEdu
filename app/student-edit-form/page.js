@@ -15,6 +15,7 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
     caste: student?.caste || "",
     dob: student?.dob || "",
     gender: student?.gender || "",
+    dateOfJoining: student?.dateOfJoining || "",
     admissionNo: student?.admissionNo || "",
     admissionYear: student?.admissionYear || "",
     address: student?.address || "",
@@ -106,6 +107,8 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
         caste: formData.caste,
         dob: formData.dob,
         gender: formData.gender,
+        
+        dateOfjoining: formData.dateOfJoining,
         admissionNo: formData.admissionNo,
         admissionYear: formData.admissionYear,
         address: formData.address,
@@ -193,6 +196,19 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
           placeholder="Gender"
           className="input-field"
         />
+
+
+<input
+  type="date"
+  name="dateOfJoining"
+  value={formData.dateOfJoining}
+  onChange={handleChange}
+  placeholder="Date of Joining"
+  className="input-field"
+/>
+
+
+
         <input
           name="admissionNo"
           value={formData.admissionNo}

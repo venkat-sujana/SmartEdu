@@ -6,6 +6,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+
+
+
 // Cloudinary కాన్ఫిగరేషన్
 cloudinary.config({
   cloud_name: "dlwxpzc83",
@@ -13,6 +16,9 @@ cloudinary.config({
   api_secret: "Dz79bpyfHvklgMfW6ufZihpCQ1Y",
   secure: true,
 });
+
+
+
 
 // మెరుగైన పబ్లిక్ ఐడీ ఎక్స్ట్రాక్షన్
 function getPublicIdFromUrl(url) {
@@ -31,6 +37,9 @@ function getPublicIdFromUrl(url) {
   }
 }
 
+
+
+
 // ✅ Session + CollegeId ఆధారంగా చెక్ చేసే helper
 async function getStudentByIdWithAuth(id) {
   const session = await getServerSession(authOptions);
@@ -48,6 +57,9 @@ async function getStudentByIdWithAuth(id) {
   return { student, session };
 }
 
+
+
+
 // 📌 GET
 export async function GET(req, { params }) {
   try {
@@ -59,15 +71,35 @@ export async function GET(req, { params }) {
   }
 }
 
+
+
+
 // 📌 PUT
 export async function PUT(req, { params }) {
   try {
     const { student: existingStudent, error, status } = await getStudentByIdWithAuth(params.id);
+
+        
+
     if (error) return NextResponse.json({ message: error }, { status });
 
-    const body = await req.json();
+    let body = await req.json();
 
-    // ఫోటో మారితే పాత ఫోటోని డిలీట్ చేయండి
+      // 🐞 Debug logs
+    console.log("📥 Incoming body:", body);
+    console.log("📅 Raw dateOfJoining value:", body.dateOfJoining);
+
+    // 📅 dateOfJoining ఉంటే Date object గా మార్చడం
+    if (body.dateOfJoining) {
+      body.dateOfJoining = new Date(body.dateOfJoining);
+    }
+
+
+    console.log("📥 Incoming body:", body);
+console.log("📅 dateOfJoining type:", typeof body.dateOfJoining, body.dateOfJoining);
+
+
+    // 🖼️ ఫోటో మారితే పాత ఫోటోని Cloudinary లో డిలీట్ చేయడం
     if (body.photo && existingStudent.photo !== body.photo) {
       const publicId = getPublicIdFromUrl(existingStudent.photo);
       if (publicId) {
@@ -79,17 +111,23 @@ export async function PUT(req, { params }) {
       }
     }
 
-    const updatedStudent = await Student.findOneAndUpdate(
-      { _id: params.id, collegeId: existingStudent.collegeId }, // 🔒 కాలేజీ చెక్
-      body,
-      { new: true, runValidators: true }
-    );
+    // 🔄 Student update చేయడం
+const updatedStudent = await Student.findOneAndUpdate(
+  { _id: params.id, collegeId: existingStudent.collegeId },
+  { $set: body },
+  { new: true, runValidators: true }
+);
+
 
     return NextResponse.json({ status: "success", data: updatedStudent });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
+
+
+
+
 
 // 📌 DELETE
 export async function DELETE(req, { params }) {

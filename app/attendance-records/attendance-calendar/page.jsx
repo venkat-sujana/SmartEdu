@@ -1,3 +1,4 @@
+//app/attendance-records/attendance-calendar/page.jsx
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -13,15 +14,17 @@ const monthNames = [
 const publicHolidays = [
   { month: 0, day: 26, name: "రిపబ్లిక్ డే" },
   { month: 5, day: 2, name: "Re opening Day" },
+  { month: 5, day: 7, name: "Bakrid" },
   { month: 6, day: 17, name: "UNIT-I" }, 
   { month: 6, day: 18, name: "UNIT-I" },
   { month: 6, day: 19, name: "UNIT-I" },
   { month: 7, day: 15, name: "స్వాతంత్ర దినం" },
   { month: 7, day: 8, name: "వరలక్ష్మి వ్రతం" },
-  { month: 7, day: 16, name: "krishnastami " },
+  { month: 7, day: 16, name: "krishnastami" },
   { month: 7, day: 18, name: "UNI-II" },
   { month: 7, day: 19, name: "UNI-II" },
   { month: 7, day: 20, name: "UNI-II" },
+  { month: 7, day: 27, name: "వినాయక చవితి"},
   { month: 8, day: 15, name: "Quarterly Exams" },
   { month: 8, day: 16, name: "Quarterly Exams" },
   { month: 8, day: 17, name: "Quarterly Exams" },
@@ -36,10 +39,7 @@ const publicHolidays = [
   { month: 9, day: 3, name: "Dussara holidays" },
   { month: 9, day: 4, name: "Dussara holidays" },
   { month: 9, day: 6, name: "Re open after Dussara holidays" },
-  
-
-
-];
+  ];
 
 // 🔹 Helper for Second Saturday
 function isSecondSaturday(dateObj) {
@@ -168,71 +168,76 @@ export default function CalendarView() {
       )}
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
-        {[...Array(daysInMonth)].map((_, day) => {
-          const date = day + 1;
-          const currentDateObj = new Date(year, month, date);
-          const dayOfWeek = currentDateObj.getDay();
-          const status = attendanceMap[date] || "N/A";
-          const beforeJoin = joinDateObj && currentDateObj < joinDateObj;
-          const isSunday = dayOfWeek === 0;
-          const isSecondSat = isSecondSaturday(currentDateObj);
-          const holiday = publicHolidays.find(h => h.month === month && h.day === date);
+<div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
+  {[...Array(daysInMonth)].map((_, day) => {
+    const date = day + 1;
+    const currentDateObj = new Date(year, month, date);
+    const dayOfWeek = currentDateObj.getDay();
+    const status = attendanceMap[date] || "N/A";
+    const beforeJoin = joinDateObj && currentDateObj < joinDateObj;
+    const isSunday = dayOfWeek === 0;
+    const isSecondSat = isSecondSaturday(currentDateObj);
+    const holiday = publicHolidays.find(h => h.month === month && h.day === date);
 
-          let color = "bg-gray-100";
-          if (beforeJoin) {
-            color = "bg-gray-300 opacity-60";
-          } else if (holiday) {
-            color = "bg-yellow-200";
-          } else if (isSunday || isSecondSat) {
-            color = "bg-orange-200";
-          } else if (status === "Present") {
-            color = "bg-green-200";
-          } else if (status === "Absent") {
-            color = "bg-red-200";
-          }
-
+    let color = "bg-gray-100";
+    if (beforeJoin) {
+      color = "bg-gray-300 opacity-60";
+    } else if (holiday) {
+      color = "bg-yellow-100 hover:bg-yellow-200 transition-colors";
+    } else if (isSunday || isSecondSat) {
+      color = "bg-orange-100 hover:bg-orange-400 transition-colors";
+    } else if (status === "Present") {
+      color = "bg-green-200 hover:bg-green-400 transition-colors";
+    } else if (status === "Absent") {
+      color = "bg-red-100 hover:bg-red-400 transition-colors";
+    }
           return (
-            <div key={date} className={`${color} p-3 rounded-xl shadow-sm hover:shadow-md transition`}>
-              <div className="font-bold">{date}</div>
-              {holiday && <div className="text-xs text-red-700">{holiday.name}</div>}
-              {isSunday && !holiday && <div className="text-xs text-blue-700">Sunday</div>}
-              {isSecondSat && !holiday && <div className="text-xs text-purple-700">2nd Saturday</div>}
-              {beforeJoin && <div className="text-xs text-gray-600">Before Join</div>}
+                 <div 
+        key={date} 
+        className={`${color} p-3 rounded-xl shadow-sm hover:shadow-md transition flex flex-col items-center justify-between min-h-[120px]`}
+        title={holiday?.name || status}
+      >
+        <div className="font-bold text-lg">{date}</div>
+        
+        {holiday && <div className="text-xs text-red-700 text-center">{holiday.name}</div>}
+        {isSunday && !holiday && <div className="text-xs text-blue-700">Sunday</div>}
+        {isSecondSat && !holiday && <div className="text-xs text-purple-700">2nd Saturday</div>}
+        {beforeJoin && <div className="text-xs text-gray-600">Before Join</div>}
 
-              {!beforeJoin && !isSunday && !isSecondSat && !holiday && (
-                status === "Present" ? (
-                  <div className="flex flex-col items-center gap-1 mt-1">
-                    <div className="text-green-700 text-lg">✅</div>
-                    {selectedStudent?.photo && (
-                      <img
-                        src={selectedStudent.photo}
-                        alt="Student"
-                        onError={(e) => { e.target.src = "/default-avatar.png"; }}
-                        className="w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover border border-gray-300"
-                      />
-                    )}
-                    <p className="text-xs text-gray-700">{selectedStudent?.name}</p>
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-sm">{status}</p>
-                    {status === "Absent" && selectedStudent?._id && (
-                      <Link
-                        href={`/attendance-records/${selectedStudent._id}/absent-reason?date=${year}-${month + 1}-${date}`}
-                      >
-                        <button className="text-xs text-blue-500 hover:underline mt-1">
-                          View Reason
-                        </button>
-                      </Link>
-                    )}
-                  </>
-                )
+        {!beforeJoin && !isSunday && !isSecondSat && !holiday && (
+          status === "Present" ? (
+            <div className="flex flex-col items-center gap-1 mt-1">
+              <div className="text-green-700 text-lg">✅</div>
+              {selectedStudent?.photo && (
+                <img
+                  src={selectedStudent.photo}
+                  alt="Student"
+                  onError={(e) => { e.target.src = "/default-avatar.png"; }}
+                  className="w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover border border-gray-300"
+                />
               )}
+              <p className="text-xs text-gray-700">{selectedStudent?.name}</p>
             </div>
-          );
-        })}
+          ) : (
+            <>
+              <p className="text-sm">{status}</p>
+              {status === "Absent" && selectedStudent?._id && (
+                <Link
+                  href={`/attendance-records/${selectedStudent._id}/absent-reason?date=${year}-${month + 1}-${date}`}
+                >
+                  <button className="text-xs text-blue-500 hover:underline mt-1">
+                    View Reason
+                  </button>
+                </Link>
+              )}
+            </>
+          )
+        )}
       </div>
+    );
+  })}
+</div>
+
     </div>
   );
 }

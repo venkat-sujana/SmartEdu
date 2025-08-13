@@ -132,6 +132,7 @@ useEffect(() => {
           "Year of Study",
           "Admission Number",
           "Admission Year",
+          "dateOfJoining",
           "Address",
         ],
       ],
@@ -147,6 +148,7 @@ useEffect(() => {
         s.yearOfStudy === "First Year" ? "First Year" : "Second Year",
         s.admissionNo,
         s.admissionYear,
+        s.dateOfJoining,
         s.address,
       ]),
     });
@@ -182,6 +184,7 @@ const handleExportExcel = () => {
     }),
     AdmissionNo: s.admissionNo,
     AdmissionYear: s.admissionYear,
+    dateOfJoining: s.dateOfJoining,
     Address: s.address,
   }));
 
@@ -482,9 +485,9 @@ printWindow.document.write(
               <th className="px-4 py-2">DOB</th>
               <th className="px-4 py-2">Year of study</th>
               <th className="px-4 py-2">Admission Year</th>
-              <th className="px-4 py-2">Admission Date</th>
+              {/* <th className="px-4 py-2">Admission Date</th> */}
+              <th className="px-4 py-2">Date Of Joining</th>
               <th className="px-4 py-2">Admission No</th>
-
               <th className="px-4 py-2">Address</th>
               <th className="px-3 py-2 border">Photo</th>
               <th className="px-4 py-2">Admission Certificate</th>
@@ -512,7 +515,7 @@ printWindow.document.write(
                     : "Second Year"}
                 </td>
                 <td className="px-4 py-2">{s.admissionYear}</td>
-                <td className="px-4 py-2">
+                {/* <td className="px-4 py-2">
                   {new Date(s.createdAt).toLocaleString("en-IN", {
                     timeZone: "Asia/Kolkata",
                     day: "2-digit",
@@ -522,8 +525,8 @@ printWindow.document.write(
                     minute: "2-digit",
                     hour12: true,
                   })}
-                </td>
-
+                </td> */}
+                <td className="px-4 py-2">{s.dateOfJoining}</td>
                 <td className="px-4 py-2">{s.admissionNo}</td>
                 <td className="px-4 py-2">{s.address}</td>
 

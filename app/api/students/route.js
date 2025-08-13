@@ -42,7 +42,7 @@ export async function POST(req) {
     const requiredFields = [
       "name", "fatherName", "mobile", "group", "caste",
       "dob", "gender", "admissionNo", "yearOfStudy",
-      "admissionYear", "address",
+      "admissionYear","dateOfJoining", "address",
     ];
 
     for (const field of requiredFields) {
