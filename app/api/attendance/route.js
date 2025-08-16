@@ -6,7 +6,7 @@ import connectMongoDB from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route"; // adjust path if needed
 
-// 🔽 POST Attendance
+
 // 🔽 POST Attendance
 export async function POST(req) {
   await connectMongoDB();
