@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gradient-to-r from-gray-200 via-cyan-100 to-amber-100">
+    <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gray-100 text-gray-800">
 
       {/* Main Heading */}
       <div>
@@ -26,13 +26,13 @@ export default function Home() {
       </h2>
 
       <p className="text-lg mt-4  text-left text-black max-w-2xl">
-        🏫 <strong>SmartEdu</strong> – Online Student Registration & Analysis OSRA
+        🏫 <strong>SmartEdu</strong> – Online Student Registration & Analysis SmartEdu
         is a modern, full-stack web application designed to streamline student
         registration, attendance tracking, and examination analysis for Junior
         Colleges.
         <br />
         Developed using <strong>Next.js</strong> and{" "}
-        <strong>Tailwind CSS</strong>, <strong>OSRA</strong> empowers lecturers
+        <strong>Tailwind CSS</strong>, <strong>SmartEdu</strong> empowers lecturers
         and administrators to efficiently manage student data, academic
         performance, and attendance across academic years and streams.
       </p>
