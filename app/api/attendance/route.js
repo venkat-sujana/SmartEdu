@@ -4,9 +4,7 @@ import mongoose from "mongoose";
 import Attendance from "@/models/Attendance";
 import connectMongoDB from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route"; // adjust path if needed
-
-// 🔽 POST Attendance
+import { authOptions } from "../auth/[...nextauth]/route"; // adjust path if nee
 // 🔽 POST Attendance
 export async function POST(req) {
   await connectMongoDB();
@@ -65,7 +63,7 @@ export async function POST(req) {
 
 
 // 🔽 GET Attendance Record
-// app/api/attendance/route.js
+
 export async function GET(req) {
   await connectMongoDB();
   console.log("📢 Attendance GET API called");
