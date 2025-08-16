@@ -12,17 +12,10 @@ const monthNames = [
 // 🛑 Public Holidays (month is 0-based)
 const publicHolidays = [
   { month: 0, day: 26, name: "Republic Day" },
-
   { month: 5, day: 7, name: "Bakrid" },
-  { month: 6, day: 17, name: "UNIT-I" }, 
-  { month: 6, day: 18, name: "UNIT-I" },
-  { month: 6, day: 19, name: "UNIT-I" },
   { month: 7, day: 15, name: "Indipenance Day" },
   { month: 7, day: 8, name: "Varalaksmi vratham" },
   { month: 7, day: 16, name: "krishnastami" },
-  { month: 7, day: 18, name: "UNI-II" },
-  { month: 7, day: 19, name: "UNI-II" },
-  { month: 7, day: 20, name: "UNI-II" },
   { month: 7, day: 27, name: "Vinayaka Chavithi "},
   { month: 8, day: 15, name: "Quarterly Exams" },
   { month: 8, day: 16, name: "Quarterly Exams" },
@@ -159,22 +152,29 @@ export default function CalendarView() {
         </Link>
       </div>
 
-      {/* Student Info */}
-      {selectedStudent && (
-        <div className="bg-gray-50 p-4 rounded-lg shadow-md mb-4 flex flex-col sm:flex-row justify-between gap-3">
-          <div>
-            <p className="font-semibold">Student: <span className="font-normal">{selectedStudent.name}</span></p>
-            {joinDateObj && (
-              <p className="font-semibold">Join Date: <span className="font-normal">{joinDateObj.toLocaleDateString()}</span></p>
-            )}
-          </div>
-          <div className="flex gap-4">
-            <span className="bg-green-200 px-3 py-1 rounded-lg">✅ Present: {presentCount}</span>
-            <span className="bg-red-200 px-3 py-1 rounded-lg">❌ Absent: {absentCount}</span>
-            <span className="bg-blue-200 px-3 py-1 rounded-lg">📊 Attendance %: {attendancePercentage}%</span>
-          </div>
-        </div>
+    
+{/* Student Info */}
+{selectedStudent && (
+  <div className="bg-gray-100 p-4 rounded-lg shadow-md mb-4 flex flex-col sm:flex-row justify-between gap-3">
+    <div>
+      <p className="font-semibold">
+        Student: <span className="font-normal">{selectedStudent.name}</span>
+      </p>
+      {joinDateObj && (
+        <p className="font-semibold">
+          Join Date: <span className="font-normal">{joinDateObj.toLocaleDateString()}</span>
+        </p>
       )}
+    </div>
+    <div className="flex gap-4 flex-wrap">
+      <span className="bg-green-200 px-3 py-1 rounded-lg">✅ <strong>Present: {presentCount}</strong></span>
+      <span className="bg-red-200 px-3 py-1 rounded-lg">❌<strong>Absent: {absentCount}</strong> </span>
+      <span className="bg-yellow-200 px-3 py-1 rounded-lg">📅 <strong>Working Days: {workingDays}</strong></span>
+      <span className="bg-blue-200 px-3 py-1 rounded-lg">📊<strong>Attendance %: {attendancePercentage}%</strong> </span>
+    </div>
+  </div>
+)}
+
 
       {/* Calendar Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">

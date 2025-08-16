@@ -225,9 +225,9 @@ const { user } = session || {};
         </Link>
 
 
-        <Link href="/lecturer/attendance/group-wise">
+        <Link href="/attendance-records/individual">
           <div className="cursor-pointer p-5 bg-yellow-300 hover:bg-yellow-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-yellow-800">📅 Group wise Attendance</p>
+            <p className="text-xl font-semibold text-yellow-800">📅 Edit Attendance Records</p>
           </div>
         </Link>
 
