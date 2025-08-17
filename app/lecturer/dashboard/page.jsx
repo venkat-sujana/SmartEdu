@@ -4,11 +4,9 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-// import { FunctionSquare } from "lucide-react";
 import { GraduationCap } from "lucide-react";
-// import { BookOpen } from "lucide-react";
-// import AttendanceCards from "@/components/AttendanceCards";
 import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
 
 export default function LecturerDashboard() {
   const { data: session, status } = useSession();
@@ -67,6 +65,8 @@ useEffect(() => {
   }
 }, [status, session]);
 
+
+
 useEffect(() => {
   if (status === "authenticated" && session?.user?.collegeId) {
     // Fetch today’s attendance breakdown
@@ -82,6 +82,8 @@ useEffect(() => {
       });
   }
 }, [status, session]);
+
+
 
 if (status === "loading") {
   return <div className="text-center mt-10 text-gray-600">Loading...</div>;
@@ -106,6 +108,10 @@ const { user } = session || {};
         🎓 Lecturer Dashboard
       </h1>
 
+
+
+
+
       {/* Lecturer Info Card */}
       <div className="mb-8 p-5 bg-slate-200 rounded-xl shadow-md grid sm:grid-cols-2 gap-4">
         <div className="text-gray-800 space-y-2">
@@ -116,60 +122,107 @@ const { user } = session || {};
             <span className="font-bold">📧 Email:</span><span className="font-bold">{user?.email}</span> 
           </p>
           <p>
-            {/* <FunctionSquare className="w-5 h-5" /> */}
+            
             <span className="font-bold">📚 Subject:</span><span className="font-bold" >Junior Lecturer in  {user?.subject}</span>
           </p>
 
-          <p></p>
-        </div>
       </div>
+      </div>
+
+
+
+      {/* Welcome Message */}
+      <div className="mb-8 p-5 bg-white rounded-xl shadow-md text-center">
+        <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+          Welcome, {user?.name || "Lecturer"}!
+        </h2>
+        <p className="text-gray-600"> 
+          You are now logged in as a Lecturer in {collegeName || "College"}.
+        </p>
+      </div>
+
+
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+
+
         <div className="p-5 bg-gradient-to-br from-blue-100 to-blue-300 rounded-xl shadow-lg text-center">
-          <div className="text-3xl mb-2">👥</div>
-          <p className="font-semibold">Total Students</p>
-          <p className="text-lg text-blue-900 font-bold">{studentCount}</p>
+  <motion.div
+    whileHover={{ scale: 1.05 }}
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    className="p-5 bg-gradient-to-br from-blue-100 to-blue-300 rounded-xl shadow-lg text-center"
+  >
+    <div className="text-3xl mb-2 animate-pulse">👥</div>
+    <p className="font-semibold">Total Students</p>
+    <p className="text-lg text-blue-900 font-bold">{studentCount}</p>
+  </motion.div>
         </div>
+
+
 
         <div className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center">
-          <div className="text-3xl mb-1">📈</div>
-          <p className="font-semibold">Today’s Attendance</p>
-          <div className="text-sm text-green-900 font-medium space-y-1">
-            <p>
-              First Year: <span className="font-bold">{firstYearPresent}</span>
-            </p>
-            <p>
-              Second Year:{" "}
-              <span className="font-bold">{secondYearPresent}</span>
-            </p>
-            <hr className="my-1 border-red-500" />
-            <p>
-              College Total:{" "}
-              <span className="text-lg font-extrabold">{totalPresent}</span>
-            </p>
-            <p>
-              College Percentage:{" "}
-              <span className="text-lg font-extrabold">
-                {attendancePercent}%
-              </span>
-            </p>
-          </div>
+<motion.div
+    whileHover={{ scale: 1.05 }}
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+    className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center"
+  >
+    <div className="text-3xl mb-1 animate-bounce">📈</div>
+    <p className="font-semibold">Today’s Attendance</p>
+    <div className="text-sm text-green-900 font-medium space-y-1">
+      <p>First Year: <span className="font-bold">{firstYearPresent}</span></p>
+      <p>Second Year: <span className="font-bold">{secondYearPresent}</span></p>
+      <hr className="my-1 border-red-500" />
+      <p>College Total: <span className="text-lg font-extrabold">{totalPresent}</span></p>
+      <p>Percentage: <span className="text-lg font-extrabold">{attendancePercent}%</span></p>
+    </div>
+  </motion.div>
         </div>
 
+
+
         <div className="p-5 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-xl shadow-lg text-center">
-          <div className="text-3xl mb-2">🗓️</div>
-          <p className="font-semibold">Exams Scheduled</p>
-          <p className="text-lg text-yellow-900 font-bold">UNIT-II</p>
+
+          <motion.div
+    whileHover={{ scale: 1.05 }}
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+    className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center"
+  >
+    <div className="text-3xl mb-1 animate-bounce">🗓️</div>
+    <p className="font-semibold">Exams Scheduled</p>
+    <div className="text-sm text-green-900 font-medium space-y-1">
+ <p className="text-lg text-yellow-900 font-bold">UNIT-II</p>
           <p className="font-semibold">18-082025</p>
           <p className="font-semibold">19-08-2025</p>
           <p className="font-semibold">20-08-2025</p>
+    </div>
+  </motion.div>
+
         </div>
 
         <div className="p-5 bg-gradient-to-br from-purple-100 to-purple-300 rounded-xl shadow-lg text-center">
-          <div className="text-3xl mb-2">⚡</div>
+
+          <motion.div
+    whileHover={{ scale: 1.05 }}
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+    className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center"
+  >
+    <div className="text-3xl mb-1 animate-bounce">👇</div>
+    <p className="font-semibold">Exams Scheduled</p>
+    <div className="text-sm text-green-900 font-medium space-y-1">
           <p className="font-semibold">Quick Actions</p>
-          <p className="text-sm text-purple-800">👇 Below</p>
+          <p className="text-sm text-purple-800">⚡ Below</p>
+    </div>
+  </motion.div>
+
         </div>
       </div>
 
@@ -178,18 +231,26 @@ const { user } = session || {};
  
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <Link href="/student-table">
-          <div className="cursor-pointer p-5 bg-blue-100 hover:bg-blue-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-blue-800">📋 View Students</p>
-          </div>
-        </Link>
 
-               <Link href="/register">
-          <div className="cursor-pointer p-5 bg-pink-100 hover:bg-indigo-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-indigo-800">
-              ➕ Add Student
-            </p>
-          </div>
+          <Link href="/student-table">
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: 2 }}
+              whileTap={{ scale: 0.95 }}
+              className="cursor-pointer p-5 bg-blue-100 hover:bg-blue-200 rounded-xl text-center shadow-md transition-all"
+            >
+              <p className="text-xl font-semibold text-blue-800">📋 View Students</p>
+            </motion.div>
+          </Link>
+
+
+        <Link href="/register">
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: 2 }}
+              whileTap={{ scale: 0.95 }}
+              className="cursor-pointer p-5 bg-blue-100 hover:bg-blue-200 rounded-xl text-center shadow-md transition-all"
+            >
+              <p className="text-xl font-semibold text-blue-800">➕ Add Student</p>
+            </motion.div>
         </Link>
 
         <Link href="/attendance-form">
