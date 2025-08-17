@@ -1,7 +1,9 @@
+//app/attendance-records/attendance-calendar/page.jsx
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import {motion} from "framer-motion";
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthNames = [
@@ -155,25 +157,47 @@ export default function CalendarView() {
     
 {/* Student Info */}
 {selectedStudent && (
-  <div className="bg-gray-100 p-4 rounded-lg shadow-md mb-4 flex flex-col sm:flex-row justify-between gap-3">
-    <div>
+  <div className="bg-gray-50 p-4 rounded-lg shadow-md mb-4">
+    <div className="mb-4">
       <p className="font-semibold">
         Student: <span className="font-normal">{selectedStudent.name}</span>
       </p>
       {joinDateObj && (
         <p className="font-semibold">
-          Join Date: <span className="font-normal">{joinDateObj.toLocaleDateString()}</span>
+          Join Date:{" "}
+          <span className="font-normal">
+            {joinDateObj.toLocaleDateString()}
+          </span>
         </p>
       )}
     </div>
-    <div className="flex gap-4 flex-wrap">
-      <span className="bg-green-200 px-3 py-1 rounded-lg">✅ <strong>Present: {presentCount}</strong></span>
-      <span className="bg-red-200 px-3 py-1 rounded-lg">❌<strong>Absent: {absentCount}</strong> </span>
-      <span className="bg-yellow-200 px-3 py-1 rounded-lg">📅 <strong>Working Days: {workingDays}</strong></span>
-      <span className="bg-blue-200 px-3 py-1 rounded-lg">📊<strong>Attendance %: {attendancePercentage}%</strong> </span>
+
+    {/* Animated Summary Cards */}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {[
+        { value: presentCount, label: "Present", color: "bg-green-100", icon: "✅" },
+        { value: absentCount, label: "Absent", color: "bg-red-100", icon: "❌" },
+        { value: workingDays, label: "Working Days", color: "bg-yellow-100", icon: "📅" },
+        { value: `${attendancePercentage}%`, label: "Attendance", color: "bg-blue-100", icon: "📊" },
+      ].map((card, index) => (
+        <motion.div
+          key={index}
+          className={`${card.color} p-4 rounded-2xl shadow flex flex-col items-center`}
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: index * 0.2 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <span className="text-2xl">{card.icon}</span>
+          <p className="font-bold text-lg">{card.value}</p>
+          <p className="text-sm">{card.label}</p>
+        </motion.div>
+      ))}
     </div>
   </div>
 )}
+
 
 
       {/* Calendar Grid */}

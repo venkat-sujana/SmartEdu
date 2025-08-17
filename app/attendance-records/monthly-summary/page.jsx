@@ -78,7 +78,7 @@ export default function MonthlySummary() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">
-      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800">
+      <h2 className="text-xl md:text-2xl font-bold mb-6 text-center text-gray-800">
         {collegeName} 🧾 Monthly Attendance Summary - 2025
       </h2>
 
@@ -200,37 +200,53 @@ export default function MonthlySummary() {
                   </tr>
 
                   {/* Percent */}
-                  <tr className="bg-yellow-50 font-semibold">
-                    <td className="p-2 border"></td>
-                    <td className="p-2 border">Percent</td>
-                    {months.map(({ label, year }) => {
-                      const key = `${label}-${year}`;
-                      const present = student.present?.[key] ?? 0;
-                      const total = student.workingDays?.[key] ?? 0;
-                      const percent =
-                        total > 0 ? ((present / total) * 100).toFixed(0) : "-";
-                      return (
-                        <td key={key} className="p-2 border">
-                          {percent}%
-                        </td>
-                      );
-                    })}
-                    <td className="p-2 border">
-                      {(() => {
-                        const totalPresent = months.reduce((sum, { label, year }) => {
-                          const key = `${label}-${year}`;
-                          return sum + (student.present?.[key] || 0);
-                        }, 0);
-                        const totalWorking = months.reduce((sum, { label, year }) => {
-                          const key = `${label}-${year}`;
-                          return sum + (student.workingDays?.[key] || 0);
-                        }, 0);
-                        return totalWorking > 0
-                          ? ((totalPresent / totalWorking) * 100).toFixed(0) + "%"
-                          : "-";
-                      })()}
-                    </td>
-                  </tr>
+ {/* Percent */}
+<tr className="bg-yellow-50 font-semibold">
+  <td className="p-2 border"></td>
+  <td className="p-2 border">Percent</td>
+  {months.map(({ label, year }) => {
+    const key = `${label}-${year}`;
+    const present = student.present?.[key] ?? 0;
+    const total = student.workingDays?.[key] ?? 0;
+    const percent =
+      total > 0 ? ((present / total) * 100).toFixed(0) : "-";
+
+    // ✅ Red alert if < 75%
+    const isLow = total > 0 && percent < 75;
+
+    return (
+      <td
+        key={key}
+        className={` p-2 border ${isLow ? "text-red-600 font-bold" : ""}`}
+        title={isLow ? "⚠️ Attendance below 75%" : ""}
+      >
+        {percent}%
+      </td>
+    );
+  })}
+  <td className="p-2 border">
+    {(() => {
+      const totalPresent = months.reduce((sum, { label, year }) => {
+        const key = `${label}-${year}`;
+        return sum + (student.present?.[key] || 0);
+      }, 0);
+      const totalWorking = months.reduce((sum, { label, year }) => {
+        const key = `${label}-${year}`;
+        return sum + (student.workingDays?.[key] || 0);
+      }, 0);
+      const overallPercent =
+        totalWorking > 0 ? ((totalPresent / totalWorking) * 100).toFixed(0) : "-";
+      const isLow = totalWorking > 0 && overallPercent < 75;
+
+      return (
+        <span className={isLow ? "text-red-600 font-bold" : ""} title={isLow ? "⚠️ Overall attendance below 75%" : ""}>
+          {overallPercent}%
+        </span>
+      );
+    })()}
+  </td>
+</tr>
+
 
                   {/* Spacer */}
                   <tr>
