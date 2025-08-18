@@ -78,10 +78,6 @@ export default function MonthlySummary() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">
-      <h2 className="text-xl md:text-2xl font-bold mb-6 text-center text-gray-800">
-        {collegeName} 🧾 Monthly Attendance Summary - 2025
-      </h2>
-
       {/* Filters */}
       <div className="mb-6 flex flex-wrap gap-3 items-center bg-white p-4 rounded-lg shadow-md">
         <select
@@ -138,15 +134,24 @@ export default function MonthlySummary() {
         </Link>
       </div>
 
+      <h2 className="text-xl md:text-2xl font-bold mb-6 text-center text-gray-800">
+        {collegeName} 🧾 Monthly Attendance Summary - 2025
+      </h2>
+
       {/* Attendance Table */}
-      <div id="print-area" className="overflow-x-auto bg-white rounded-lg shadow-lg">
+      <div
+        id="print-area"
+        className="overflow-x-auto bg-white rounded-lg shadow-lg"
+      >
         {filteredData.length === 0 ? (
-          <p className="text-gray-500 mt-4 text-center py-6">No data available.</p>
+          <p className="text-gray-500 mt-4 text-center py-6">
+            No data available.
+          </p>
         ) : (
           <table className="table-auto w-full border border-gray-300 text-sm">
             <thead className="bg-green-600 text-white">
               <tr>
-                <th className="p-2 border">S.No</th>
+                <th className="p-2 border ">S.No</th>
                 <th className="p-2 border">🧑‍🎓 Students</th>
                 {months.map(({ label }) => (
                   <th key={label} className="p-2 border">
@@ -154,8 +159,11 @@ export default function MonthlySummary() {
                   </th>
                 ))}
                 <th className="p-2 border">Total</th>
+                <th className="p-2 border">Status ✅</th>{" "}
+                {/* కొత్త Status కాలమ్ */}
               </tr>
             </thead>
+
             <tbody>
               {filteredData.map((student, idx) => (
                 <React.Fragment key={idx}>
@@ -177,6 +185,8 @@ export default function MonthlySummary() {
                         return sum + (student.workingDays?.[key] || 0);
                       }, 0)}
                     </td>
+                    <td className="p-2 border"></td>{" "}
+                    {/* Status లో ఏమీ display చేయకూడదు */}
                   </tr>
 
                   {/* Present */}
@@ -197,60 +207,97 @@ export default function MonthlySummary() {
                         return sum + (student.present?.[key] || 0);
                       }, 0)}
                     </td>
+                    <td className="p-2 border"></td>{" "}
+                    {/* Status లో ఏమీ display చేయకూడదు */}
                   </tr>
 
-                  {/* Percent */}
- {/* Percent */}
-<tr className="bg-yellow-50 font-semibold">
-  <td className="p-2 border"></td>
-  <td className="p-2 border">Percent</td>
-  {months.map(({ label, year }) => {
-    const key = `${label}-${year}`;
-    const present = student.present?.[key] ?? 0;
-    const total = student.workingDays?.[key] ?? 0;
-    const percent =
-      total > 0 ? ((present / total) * 100).toFixed(0) : "-";
+                  {/* Percent + Status */}
+                  <tr className="bg-yellow-50 font-semibold">
+                    <td className="p-2 border"></td>
+                    <td className="p-2 border">Percent</td>
+                    {months.map(({ label, year }) => {
+                      const key = `${label}-${year}`;
+                      const present = student.present?.[key] ?? 0;
+                      const total = student.workingDays?.[key] ?? 0;
+                      const percent =
+                        total > 0 ? ((present / total) * 100).toFixed(0) : "-";
+                      const isLow = total > 0 && percent < 75;
 
-    // ✅ Red alert if < 75%
-    const isLow = total > 0 && percent < 75;
+                      return (
+                        <td
+                          key={key}
+                          className={`p-2 border ${
+                            isLow ? "text-red-600 font-bold" : ""
+                          }`}
+                        >
+                          {percent}%
+                        </td>
+                      );
+                    })}
 
-    return (
-      <td
-        key={key}
-        className={` p-2 border ${isLow ? "text-red-600 font-bold" : ""}`}
-        title={isLow ? "⚠️ Attendance below 75%" : ""}
-      >
-        {percent}%
-      </td>
-    );
-  })}
-  <td className="p-2 border">
-    {(() => {
-      const totalPresent = months.reduce((sum, { label, year }) => {
-        const key = `${label}-${year}`;
-        return sum + (student.present?.[key] || 0);
-      }, 0);
-      const totalWorking = months.reduce((sum, { label, year }) => {
-        const key = `${label}-${year}`;
-        return sum + (student.workingDays?.[key] || 0);
-      }, 0);
-      const overallPercent =
-        totalWorking > 0 ? ((totalPresent / totalWorking) * 100).toFixed(0) : "-";
-      const isLow = totalWorking > 0 && overallPercent < 75;
+                    {/* మొత్తం % మరియు Status తీసుకోవడం */}
+                    <td className="p-2 border">
+                      {(() => {
+                        const totalPresent = months.reduce(
+                          (sum, { label, year }) => {
+                            const key = `${label}-${year}`;
+                            return sum + (student.present?.[key] || 0);
+                          },
+                          0
+                        );
+                        const totalWorking = months.reduce(
+                          (sum, { label, year }) => {
+                            const key = `${label}-${year}`;
+                            return sum + (student.workingDays?.[key] || 0);
+                          },
+                          0
+                        );
+                        const overallPercent =
+                          totalWorking > 0
+                            ? ((totalPresent / totalWorking) * 100).toFixed(0)
+                            : "-";
+                        return overallPercent + "%";
+                      })()}
+                    </td>
 
-      return (
-        <span className={isLow ? "text-red-600 font-bold" : ""} title={isLow ? "⚠️ Overall attendance below 75%" : ""}>
-          {overallPercent}%
-        </span>
-      );
-    })()}
-  </td>
-</tr>
+                    {/* ✅ Status Calculation */}
+                    <td className="p-2 border">
+                      {(() => {
+                        const totalPresent = months.reduce(
+                          (sum, { label, year }) => {
+                            const key = `${label}-${year}`;
+                            return sum + (student.present?.[key] || 0);
+                          },
+                          0
+                        );
+                        const totalWorking = months.reduce(
+                          (sum, { label, year }) => {
+                            const key = `${label}-${year}`;
+                            return sum + (student.workingDays?.[key] || 0);
+                          },
+                          0
+                        );
+                        const overallPercent =
+                          totalWorking > 0
+                            ? (totalPresent / totalWorking) * 100
+                            : 0;
 
+                        return overallPercent >= 75 ? (
+                          <span className="text-green-600 font-bold">
+                            Eligible ✅
+                          </span>
+                        ) : (
+                          <span className="text-red-600 font-bold">
+                            Not Eligible ❌
+                          </span>
+                        );
+                      })()}
+                    </td>
+                  </tr>
 
                   {/* Spacer */}
                   <tr>
-                    <td colSpan={months.length + 3} className="h-2"></td>
+                    <td colSpan={months.length + 4} className="h-2"></td>
                   </tr>
                 </React.Fragment>
               ))}

@@ -112,22 +112,34 @@ const { user } = session || {};
 
 
 
-      {/* Lecturer Info Card */}
-      <div className="mb-8 p-5 bg-slate-200 rounded-xl shadow-md grid sm:grid-cols-2 gap-4">
-        <div className="text-gray-800 space-y-2">
-          <p>
-            <span className="font-bold">👤 Name:</span><span className="font-bold">{user?.name}</span> 
-          </p>
-          <p>
-            <span className="font-bold">📧 Email:</span><span className="font-bold">{user?.email}</span> 
-          </p>
-          <p>
-            
-            <span className="font-bold">📚 Subject:</span><span className="font-bold" >Junior Lecturer in  {user?.subject}</span>
-          </p>
+{/* Lecturer Info Card */}
+<div className="mb-8 p-6 bg-gradient-to-r from-slate-100 to-blue-100 rounded-2xl shadow-lg border border-blue-200 max-w-2xl mx-auto">
+  <div className="flex items-center gap-4">
+    <div className="bg-blue-500 text-white rounded-full w-14 h-14 flex items-center justify-center text-3xl shadow-md border-2 border-blue-300">
+      {/* Lecturer initials or icon */}
+      <span>
+        {user?.name
+          ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+          : '👤'}
+      </span>
+    </div>
+    <div className="flex-1">
+      <p className="text-lg font-bold text-gray-800 flex items-center gap-2">
+        <span>👤</span>
+        <span>{user?.name || 'Lecturer Name'}</span>
+      </p>
+      <p className="text-base font-medium text-gray-700 flex items-center gap-2">
+        <span>📧</span>
+        <span>{user?.email || 'Lecturer Email'}</span>
+      </p>
+      <p className="text-base text-gray-700 flex items-center gap-2">
+        <span>📚</span>
+        <span>Junior Lecturer in {user?.subject || 'Subject'}</span>
+      </p>
+    </div>
+  </div>
+</div>
 
-      </div>
-      </div>
 
 
 
@@ -147,13 +159,17 @@ const { user } = session || {};
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
 
 
-        <div className="p-5 bg-gradient-to-br from-blue-100 to-blue-300 rounded-xl shadow-lg text-center">
+ 
+
+
+
+  <div className="p-5 bg-gradient-to-br from-blue-100 to-blue-300 rounded-xl shadow-lg text-center">
   <motion.div
     whileHover={{ scale: 1.05 }}
     initial={{ opacity: 0, y: 50 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
-    className="p-5 bg-gradient-to-br from-blue-100 to-blue-300 rounded-xl shadow-lg text-center"
+    className="p-5 bg-gradient-to-br from-blue-100 to-blue-500 rounded-xl shadow-lg text-center"
   >
     <div className="text-3xl mb-2 animate-pulse">👥</div>
     <p className="font-semibold">Total Students</p>
@@ -169,7 +185,7 @@ const { user } = session || {};
     initial={{ opacity: 0, y: 50 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.6 }}
-    className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center"
+    className="p-5 bg-gradient-to-br from-slate-100 to-slate-300 rounded-xl shadow-lg text-center"
   >
     <div className="text-3xl mb-1 animate-bounce">📈</div>
     <p className="font-semibold">Today’s Attendance</p>
