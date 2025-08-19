@@ -213,10 +213,10 @@ const { user } = session || {};
     <div className="text-3xl mb-1 animate-bounce">🗓️</div>
     <p className="font-semibold">Exams Scheduled</p>
     <div className="text-sm text-green-900 font-medium space-y-1">
- <p className="text-lg text-yellow-900 font-bold">UNIT-II</p>
+ {/* <p className="text-lg text-yellow-900 font-bold">UNIT-II</p>
           <p className="font-semibold">18-082025</p>
           <p className="font-semibold">19-08-2025</p>
-          <p className="font-semibold">20-08-2025</p>
+          <p className="font-semibold">20-08-2025</p> */}
     </div>
   </motion.div>
 

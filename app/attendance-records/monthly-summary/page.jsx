@@ -79,64 +79,67 @@ export default function MonthlySummary() {
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">
       {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-3 items-center bg-white p-4 rounded-lg shadow-md">
-        <select
-          value={selectedGroup}
-          onChange={(e) => setSelectedGroup(e.target.value)}
-          className="border border-gray-300 px-3 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none"
-        >
-          <option value="">Select Group</option>
-          {groups.map((g) => (
-            <option key={g} value={g}>
-              {g}
-            </option>
-          ))}
-        </select>
+<div className="mb-6 flex flex-wrap gap-4 items-center bg-white p-5 rounded-lg shadow-md">
+  <select
+    value={selectedGroup}
+    onChange={(e) => setSelectedGroup(e.target.value)}
+    className="border border-gray-300 px-4 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none transition"
+  >
+    <option value="">Select Group</option>
+    {groups.map((g) => (
+      <option key={g} value={g}>
+        {g}
+      </option>
+    ))}
+  </select>
 
-        <select
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value)}
-          className="border border-gray-300 px-3 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none"
-        >
-          <option value="">Select Year</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
+  <select
+    value={selectedYear}
+    onChange={(e) => setSelectedYear(e.target.value)}
+    className="border border-gray-300 px-4 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none transition"
+  >
+    <option value="">Select Year</option>
+    {years.map((y) => (
+      <option key={y} value={y}>
+        {y}
+      </option>
+    ))}
+  </select>
 
-        <input
-          type="text"
-          placeholder="🔍 Search Student"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-        />
+  <input
+    type="text"
+    placeholder="🔍 Search Student"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition flex-grow min-w-[200px]"
+  />
 
-        <button
-          onClick={handlePrint}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          <Printer size={18} /> Print
-        </button>
+  <button
+    onClick={handlePrint}
+    className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+  >
+    {/* Assuming Printer is a valid React icon component */}
+    <Printer size={18} />
+    Print
+  </button>
 
-        <Link href="/attendance-form">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-cyan-700 transition">
-            📝 Attendance Form
-          </button>
-        </Link>
+  <Link href="/attendance-form" passHref>
+    <button className="bg-cyan-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-cyan-700 transition">
+      📝 Attendance Form
+    </button>
+  </Link>
 
-        <Link href="/attendance-records">
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
-            🧾 Attendance Records
-          </button>
-        </Link>
-      </div>
+  <Link href="/attendance-records" passHref>
+    <button className="bg-green-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+      🧾 Attendance Records
+    </button>
+  </Link>
+</div>
 
-      <h2 className="text-xl md:text-2xl font-bold mb-6 text-center text-gray-800">
-        {collegeName} 🧾 Monthly Attendance Summary - 2025
-      </h2>
+<h2 className="text-xl md:text-2xl font-bold mb-6 text-center text-gray-800">
+  {collegeName} 🧾 Monthly Attendance Summary - 2025
+</h2>
+
 
       {/* Attendance Table */}
       <div
@@ -148,161 +151,127 @@ export default function MonthlySummary() {
             No data available.
           </p>
         ) : (
-          <table className="table-auto w-full border border-gray-300 text-sm">
-            <thead className="bg-green-600 text-white">
-              <tr>
-                <th className="p-2 border ">S.No</th>
-                <th className="p-2 border">🧑‍🎓 Students</th>
-                {months.map(({ label }) => (
-                  <th key={label} className="p-2 border">
-                    {label}
-                  </th>
-                ))}
-                <th className="p-2 border">Total</th>
-                <th className="p-2 border">Status ✅</th>{" "}
-                {/* కొత్త Status కాలమ్ */}
-              </tr>
-            </thead>
+<table className="table-auto w-full border border-gray-300 text-sm font-sans shadow-lg rounded-lg overflow-hidden">
+  <thead className="bg-green-700 text-white text-sm uppercase tracking-wide">
+    <tr>
+      <th className="p-3 border-r border-green-600 w-14 text-center">S.No</th>
+      <th className="p-3 border-r border-green-600 text-left">🧑‍🎓 Students</th>
+      {months.map(({ label }) => (
+        <th key={label} className="p-3 border-r border-green-600 text-center">
+          {label}
+        </th>
+      ))}
+      <th className="p-3 border-r border-green-600 text-center">Total</th>
+      <th className="p-3 border-r border-green-600 text-center w-32">Shortage (days)</th>
+      <th className="p-3 text-center w-28">Status ✅</th>
+    </tr>
+  </thead>
 
-            <tbody>
-              {filteredData.map((student, idx) => (
-                <React.Fragment key={idx}>
-                  {/* Working Days */}
-                  <tr className="bg-gray-50 font-medium">
-                    <td className="p-2 border"></td>
-                    <td className="p-2 border">Working Days</td>
-                    {months.map(({ label, year }) => {
-                      const key = `${label}-${year}`;
-                      return (
-                        <td key={key} className="p-2 border">
-                          {student.workingDays?.[key] || 0}
-                        </td>
-                      );
-                    })}
-                    <td className="p-2 border font-semibold">
-                      {months.reduce((sum, { label, year }) => {
-                        const key = `${label}-${year}`;
-                        return sum + (student.workingDays?.[key] || 0);
-                      }, 0)}
-                    </td>
-                    <td className="p-2 border"></td>{" "}
-                    {/* Status లో ఏమీ display చేయకూడదు */}
-                  </tr>
+  <tbody>
+    {filteredData.map((student, idx) => {
+      const totalPresent = months.reduce((sum, { label, year }) => {
+        const key = `${label}-${year}`;
+        return sum + (student.present?.[key] || 0);
+      }, 0);
+      const totalWorking = months.reduce((sum, { label, year }) => {
+        const key = `${label}-${year}`;
+        return sum + (student.workingDays?.[key] || 0);
+      }, 0);
+      const overallPercent = totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0;
+      const requiredDays = Math.ceil(totalWorking * 0.75);
+      const shortage = requiredDays - totalPresent;
+      const isEligible = overallPercent >= 75;
 
-                  {/* Present */}
-                  <tr>
-                    <td className="p-2 border">{idx + 1}</td>
-                    <td className="p-2 border">{student.name}</td>
-                    {months.map(({ label, year }) => {
-                      const key = `${label}-${year}`;
-                      return (
-                        <td key={key} className="p-2 border">
-                          {student.present?.[key] || 0}
-                        </td>
-                      );
-                    })}
-                    <td className="p-2 border font-semibold">
-                      {months.reduce((sum, { label, year }) => {
-                        const key = `${label}-${year}`;
-                        return sum + (student.present?.[key] || 0);
-                      }, 0)}
-                    </td>
-                    <td className="p-2 border"></td>{" "}
-                    {/* Status లో ఏమీ display చేయకూడదు */}
-                  </tr>
+      return (
+        <React.Fragment key={idx}>
+          {/* Working Days Row */}
+          <tr className="bg-gray-50 font-semibold text-gray-700">
+            <td className="p-3 border border-green-200"></td>
+            <td className="p-3 border border-green-200">Working Days</td>
+            {months.map(({ label, year }) => {
+              const key = `${label}-${year}`;
+              return (
+                <td key={key} className="p-3 border border-green-200 text-center">
+                  {student.workingDays?.[key] || 0}
+                </td>
+              );
+            })}
+            <td className="p-3 border border-green-200 font-bold text-center">{totalWorking}</td>
+            <td className="p-3 border border-green-200"></td>
+            <td className="p-3 border border-green-200"></td>
+          </tr>
 
-                  {/* Percent + Status */}
-                  <tr className="bg-yellow-50 font-semibold">
-                    <td className="p-2 border"></td>
-                    <td className="p-2 border">Percent</td>
-                    {months.map(({ label, year }) => {
-                      const key = `${label}-${year}`;
-                      const present = student.present?.[key] ?? 0;
-                      const total = student.workingDays?.[key] ?? 0;
-                      const percent =
-                        total > 0 ? ((present / total) * 100).toFixed(0) : "-";
-                      const isLow = total > 0 && percent < 75;
+          {/* Present Days Row */}
+          <tr className="odd:bg-white even:bg-gray-50 hover:bg-green-100 transition">
+            <td className="p-3 border border-green-200 text-center">{idx + 1}</td>
+            <td className="p-3 border border-green-200 font-semibold text-gray-900">{student.name}</td>
+            {months.map(({ label, year }) => {
+              const key = `${label}-${year}`;
+              return (
+                <td key={key} className="p-3 border border-green-200 text-center">
+                  {student.present?.[key] || 0}
+                </td>
+              );
+            })}
+            <td className="p-3 border border-green-200 font-bold text-center">{totalPresent}</td>
+            <td className="p-3 border border-green-200"></td>
+            <td className="p-3 border border-green-200"></td>
+          </tr>
 
-                      return (
-                        <td
-                          key={key}
-                          className={`p-2 border ${
-                            isLow ? "text-red-600 font-bold" : ""
-                          }`}
-                        >
-                          {percent}%
-                        </td>
-                      );
-                    })}
+          {/* Percent + Shortage + Status Row */}
+          <tr className="bg-green-50 font-semibold text-gray-800">
+            <td className="p-3 border border-green-200"></td>
+            <td className="p-3 border border-green-200">Percent</td>
+            {months.map(({ label, year }) => {
+              const key = `${label}-${year}`;
+              const present = student.present?.[key] || 0;
+              const total = student.workingDays?.[key] || 0;
+              const percent = total > 0 ? ((present / total) * 100).toFixed(0) : "-";
+              const isLow = total > 0 && percent < 75;
 
-                    {/* మొత్తం % మరియు Status తీసుకోవడం */}
-                    <td className="p-2 border">
-                      {(() => {
-                        const totalPresent = months.reduce(
-                          (sum, { label, year }) => {
-                            const key = `${label}-${year}`;
-                            return sum + (student.present?.[key] || 0);
-                          },
-                          0
-                        );
-                        const totalWorking = months.reduce(
-                          (sum, { label, year }) => {
-                            const key = `${label}-${year}`;
-                            return sum + (student.workingDays?.[key] || 0);
-                          },
-                          0
-                        );
-                        const overallPercent =
-                          totalWorking > 0
-                            ? ((totalPresent / totalWorking) * 100).toFixed(0)
-                            : "-";
-                        return overallPercent + "%";
-                      })()}
-                    </td>
+              return (
+                <td
+                  key={key}
+                  className={`p-3 border border-green-200 text-center ${
+                    isLow ? "text-red-600 font-bold" : ""
+                  }`}
+                >
+                  {percent}%
+                </td>
+              );
+            })}
+            <td className="p-3 border border-green-200 font-bold text-center">{overallPercent.toFixed(0)}%</td>
 
-                    {/* ✅ Status Calculation */}
-                    <td className="p-2 border">
-                      {(() => {
-                        const totalPresent = months.reduce(
-                          (sum, { label, year }) => {
-                            const key = `${label}-${year}`;
-                            return sum + (student.present?.[key] || 0);
-                          },
-                          0
-                        );
-                        const totalWorking = months.reduce(
-                          (sum, { label, year }) => {
-                            const key = `${label}-${year}`;
-                            return sum + (student.workingDays?.[key] || 0);
-                          },
-                          0
-                        );
-                        const overallPercent =
-                          totalWorking > 0
-                            ? (totalPresent / totalWorking) * 100
-                            : 0;
+            {/* Shortage Days */}
+            <td className="p-3 border border-green-200 text-center">
+              {isEligible ? (
+                <span className="text-green-600 font-semibold">No shortage</span>
+              ) : (
+                <span className="text-red-600 font-bold">{shortage} days</span>
+              )}
+            </td>
 
-                        return overallPercent >= 75 ? (
-                          <span className="text-green-600 font-bold">
-                            Eligible ✅
-                          </span>
-                        ) : (
-                          <span className="text-red-600 font-bold">
-                            Not Eligible ❌
-                          </span>
-                        );
-                      })()}
-                    </td>
-                  </tr>
+            {/* Status */}
+            <td className="p-3 border border-green-200 text-center">
+              {isEligible ? (
+                <span className="text-green-700 font-bold">Eligible ✅</span>
+              ) : (
+                <span className="text-red-600 font-bold">Not Eligible ❌</span>
+              )}
+            </td>
+          </tr>
 
-                  {/* Spacer */}
-                  <tr>
-                    <td colSpan={months.length + 4} className="h-2"></td>
-                  </tr>
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+          {/* Spacer */}
+          <tr className="h-2">
+            <td colSpan={months.length + 6}></td>
+          </tr>
+        </React.Fragment>
+      );
+    })}
+  </tbody>
+</table>
+
+
         )}
       </div>
     </div>

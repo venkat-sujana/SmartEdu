@@ -472,125 +472,109 @@ printWindow.document.write(
 
       {/* Students Table */}
       <div className="overflow-x-auto" ref={tableRef}>
-        <table className="min-w-full table-auto border rounded shadow font-semibold">
-          <thead className="bg-gray-200 text-left">
-            <tr>
-              <th className="px-4 py-2">S.No</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Father Name</th>
-              <th className="px-4 py-2">Mobile</th>
-              <th className="px-4 py-2">Group</th>
-              <th className="px-4 py-2">Caste</th>
-              <th className="px-4 py-2">Gender</th>
-              <th className="px-4 py-2">DOB</th>
-              <th className="px-4 py-2">Year of study</th>
-              <th className="px-4 py-2">Admission Year</th>
-              {/* <th className="px-4 py-2">Admission Date</th> */}
-              <th className="px-4 py-2">Date Of Joining</th>
-              <th className="px-4 py-2">Admission No</th>
-              <th className="px-4 py-2">Address</th>
-              <th className="px-3 py-2 border">Photo</th>
-              <th className="px-4 py-2">Admission Certificate</th>
-              <th className="px-4 py-2">Study Certificate</th>
-              <th className="px-4 py-2">Care taker Form</th>
-              <th className="px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedStudents.map((s, idx) => (
-              <tr key={s._id} className="border-t">
-                <td className="px-4 py-2">{offset + idx + 1}</td>
-                <td className="px-4 py-2">{s.name}</td>
-                <td className="px-4 py-2">{s.fatherName}</td>
-                <td className="px-4 py-2">{s.mobile}</td>
-                <td className="px-4 py-2">{s.group}</td>
-                <td className="px-4 py-2">{s.caste}</td>
-                <td className="px-4 py-2">{s.gender}</td>
-                <td className="px-4 py-2">
-                  {new Date(s.dob).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-2">
-                  {s.yearOfStudy === "First Year"
-                    ? "First Year"
-                    : "Second Year"}
-                </td>
-                <td className="px-4 py-2">{s.admissionYear}</td>
-                {/* <td className="px-4 py-2">
-                  {new Date(s.createdAt).toLocaleString("en-IN", {
-                    timeZone: "Asia/Kolkata",
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
-                </td> */}
-                <td className="px-4 py-2">{s.dateOfJoining}</td>
-                <td className="px-4 py-2">{s.admissionNo}</td>
-                <td className="px-4 py-2">{s.address}</td>
+        <table className="min-w-full table-auto border rounded-lg shadow-md font-semibold text-sm">
+  <thead className="bg-gray-100 text-left text-gray-700 uppercase tracking-wide">
+    <tr>
+      <th className="px-4 py-2 border-r border-gray-300 w-12 text-center">S.No</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-36">Name</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-36">Father Name</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-28">Mobile</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-24">Group</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-24">Caste</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-20">Gender</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-28">DOB</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-32">Year of Study</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-28">Admission Year</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-28">Date of Joining</th>
+      <th className="px-4 py-2 border-r border-gray-300 w-28">Admission No</th>
+      <th className="px-4 py-2 border-r border-gray-300">Address</th>
+      <th className="px-3 py-2 border border-gray-300 w-16 text-center">Photo</th>
+      <th className="px-4 py-2 border border-gray-300 w-28 text-center">Admission Certificate</th>
+      <th className="px-4 py-2 border border-gray-300 w-28 text-center">Study Certificate</th>
+      <th className="px-4 py-2 border border-gray-300 w-28 text-center">Care taker Form</th>
+      <th className="px-4 py-2 border border-gray-300 w-24 text-center">Actions</th>
+    </tr>
+  </thead>
+  <tbody className="divide-y divide-gray-200">
+    {paginatedStudents.map((s, idx) => (
+      <tr key={s._id} className="hover:bg-green-50 transition-colors">
+        <td className="px-4 py-2 border-r border-gray-300 text-center">{offset + idx + 1}</td>
+        <td className="px-4 py-2 border-r border-gray-300 font-medium text-gray-900">{s.name}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.fatherName}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.mobile}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.group}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.caste}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.gender}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{new Date(s.dob).toLocaleDateString()}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.yearOfStudy === "First Year" ? "First Year" : "Second Year"}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.admissionYear}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.dateOfJoining}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.admissionNo}</td>
+        <td className="px-4 py-2 border-r border-gray-300">{s.address}</td>
 
-                <td className="px-3 py-2 border text-center">
-                  {s.photo ? (
-                    <Image
-                      src={s.photo}
-                      alt={s.name || "Student Photo"}
-                      width={50}
-                      height={50}
-                      className="rounded-md border"
-                    />
-                  ) : (
-                    <span className="text-gray-400 text-sm">No Photo</span>
-                  )}
-                </td>
+        <td className="px-3 py-2 border border-gray-300 text-center">
+          {s.photo ? (
+            <Image
+              src={s.photo}
+              alt={s.name || "Student Photo"}
+              width={50}
+              height={50}
+              className="rounded-md border object-cover"
+            />
+          ) : (
+            <span className="text-gray-400 text-sm">No Photo</span>
+          )}
+        </td>
 
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => generateAdmissionCertificatePDF(s)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs cursor-pointer font-semibold"
-                  >
-                    Download
-                  </button>
-                </td>
+        <td className="px-4 py-2 border border-gray-300 text-center">
+          <button
+            onClick={() => generateAdmissionCertificatePDF(s)}
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs font-semibold"
+          >
+            Download
+          </button>
+        </td>
 
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => generateStudyCertificatePDF(s)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs cursor-pointer font-semibold"
-                  >
-                    Download
-                  </button>
-                </td>
+        <td className="px-4 py-2 border border-gray-300 text-center">
+          <button
+            onClick={() => generateStudyCertificatePDF(s)}
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs font-semibold"
+          >
+            Download
+          </button>
+        </td>
 
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => generateCaretakerCertificatePDF(s)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs cursor-pointer font-semibold"
-                  >
-                    Download
-                  </button>
-                </td>
+        <td className="px-4 py-2 border border-gray-300 text-center">
+          <button
+            onClick={() => generateCaretakerCertificatePDF(s)}
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs font-semibold"
+          >
+            Download
+          </button>
+        </td>
 
-                <td className="px-4 py-2 flex gap-2">
-                  <button
-                    onClick={() => handleEdit(s)}
-                    className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50"
-                    aria-label="Edit student"
-                  >
-                    <Pencil size={20} />
-                  </button>
+        <td className="px-4 py-2 border border-gray-300 flex justify-center gap-2">
+          <button
+            onClick={() => handleEdit(s)}
+            className="text-yellow-600 hover:text-yellow-800 cursor-pointer p-1 rounded hover:bg-yellow-50"
+            aria-label="Edit student"
+          >
+            <Pencil size={20} />
+          </button>
 
-                  <button
-                    onClick={() => handleDelete(s._id)}
-                    className="text-red-600 hover:text-red-800 cursor-pointer"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <button
+            onClick={() => handleDelete(s._id)}
+            className="text-red-600 hover:text-red-800 cursor-pointer p-1 rounded hover:bg-red-50"
+            aria-label="Delete student"
+          >
+            <Trash2 size={20} />
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
 
         {editingStudent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
