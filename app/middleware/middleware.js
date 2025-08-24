@@ -15,6 +15,6 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/lecturer/:path*'],
+  matcher: ["/lecturer/:path*", "/principal/:path*", "/student/:path*"],
 };
 export { default } from "next-auth/middleware";

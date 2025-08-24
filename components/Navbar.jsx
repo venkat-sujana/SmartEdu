@@ -53,9 +53,7 @@ export default function Navbar() {
             Dashboard
           </Link>
 
-         {/* <Link href="/about" className="hover:underline">
-            About
-          </Link> */}
+
 
 
           <Tutorials />
@@ -79,7 +77,7 @@ export default function Navbar() {
               href="/lecturer/login"
               className="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-100"
             >
-              Login
+            Login
             </Link>
           )}
         </div>

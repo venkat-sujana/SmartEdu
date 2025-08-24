@@ -232,7 +232,7 @@ const { user } = session || {};
     className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center"
   >
     <div className="text-3xl mb-1 animate-bounce">👇</div>
-    <p className="font-semibold">Exams Scheduled</p>
+   
     <div className="text-sm text-green-900 font-medium space-y-1">
           <p className="font-semibold">Quick Actions</p>
           <p className="text-sm text-purple-800">⚡ Below</p>

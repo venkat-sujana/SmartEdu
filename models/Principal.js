@@ -1,14 +1,18 @@
-// models/principal.js
 import mongoose from "mongoose";
 
 const PrincipalSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
-    collegeId: { type: String, required: true },
-    role: { type: String, default: "principal" },
-    photo: { type: String }, // ✅ Photo URL
+    collegeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "College",
+      required: true,
+    },
+    role: { type: String, enum: ["principal"], default: "principal" },
+    photo: { type: String, default: "" },
+    dateOfJoining: { type: Date, default: Date.now }, // ✅ Added
   },
   {
     timestamps: true,

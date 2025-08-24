@@ -49,8 +49,8 @@ export default function LecturerRegister() {
     setIsLoading(false);
 
     if (res.ok) {
-      alert('Lecturer registered successfully!');
-      router.push('/lecturer/login');
+    
+      window.location.href = "/registration-success";
       setForm({ name: '', email: '', password: '', collegeId: '', subject: '' });
     } else {
       alert(data.error || 'Registration failed.');

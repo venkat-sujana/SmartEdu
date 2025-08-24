@@ -19,7 +19,6 @@ cloudinary.config({
 
 
 
-
 // మెరుగైన పబ్లిక్ ఐడీ ఎక్స్ట్రాక్షన్
 function getPublicIdFromUrl(url) {
   if (!url) return null;
@@ -124,8 +123,6 @@ const updatedStudent = await Student.findOneAndUpdate(
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
-
-
 
 
 

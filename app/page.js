@@ -80,7 +80,7 @@ export default function Home() {
 
       <p className="text-lg mt-4 text-center text-black">
         <a
-          href="https://github.com/venkat-sujana/osra"
+          href="https://github.com/venkat-sujana/SmartEdu"
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-500 hover:text-blue-600"
