@@ -126,7 +126,7 @@ export default function StudentActivatePage() {
         {msg && (
           <div className="text-sm text-green-700 bg-green-50 border border-green-200 p-2 rounded text-center">
             {msg} &nbsp;
-            <Link href="/login" className="underline font-medium">Go to Login</Link>
+            <Link href="/student/login" className="underline font-medium">Go to Login</Link>
           </div>
         )}
 
@@ -140,7 +140,7 @@ export default function StudentActivatePage() {
 
         <p className="text-center text-sm text-gray-600">
           Already activated?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline font-medium">
+          <Link href="/student/login" className="text-blue-600 hover:underline font-medium">
             Login here
           </Link>
         </p>

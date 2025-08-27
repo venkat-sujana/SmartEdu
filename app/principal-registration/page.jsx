@@ -100,6 +100,7 @@ export default function PrincipalRegistrationForm() {
       >
         Register
       </button>
+      login{" "}<a href="/principal/login" className="text-blue-600">here</a>
     </form>
   );
 }

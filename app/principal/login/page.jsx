@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-export default function LecturerLogin() {
+export default function PrincipalLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,18 +15,14 @@ export default function LecturerLogin() {
     setError("");
 
     const res = await signIn("credentials", {
-      redirect: false,
+      redirect: true,
       identifier: email,
       password,
-      role: "lecturer", // 🔥 fixed role
-      callbackUrl: "/lecturer/dashboard",
+      role: "principal", // 🔥 fixed role
+      callbackUrl: "/principal/dashboard",
     });
 
-    if (res?.error) {
-      setError("Invalid email or password");
-    } else {
-      router.push("/lecturer/dashboard");
-    }
+ if (res?.error) setError("Invalid credentials");
   };
 
   return (
@@ -35,7 +31,7 @@ export default function LecturerLogin() {
         onSubmit={handleSubmit}
         className="bg-white shadow-lg rounded-lg p-6 w-96"
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">Lecturer Login</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Principal Login</h2>
         {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
         <input
@@ -58,14 +54,11 @@ export default function LecturerLogin() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700"
         >
           Login
         </button>
-        if don't have an account?{" "}
-        <a href="/lecturer-registration" className="text-blue-600 hover:underline">
-          Register
-        </a>
+        don't have an account?{" "}<a href="/principal-registration" className="text-purple-600">Register</a>
       </form>
     </div>
   );

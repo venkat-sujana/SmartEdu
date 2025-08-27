@@ -39,22 +39,30 @@ function getPublicIdFromUrl(url) {
 
 
 
+
 // ✅ Session + CollegeId ఆధారంగా చెక్ చేసే helper
 async function getStudentByIdWithAuth(id) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return { error: "Unauthorized", status: 401 };
   }
+
   await connectMongoDB();
+
+  // ⚡️ ఇప్పుడు populate చేయండి
   const student = await Student.findOne({
     _id: id,
     collegeId: session.user.collegeId, // 🛡️ కాలేజీ ఫిల్టర్
-  });
+  }).populate("collegeId", "name code"); // name, code మాత్రమే తీసుకుందాం
+
   if (!student) {
     return { error: "Student not found", status: 404 };
   }
+
   return { student, session };
 }
+
+
 
 
 
