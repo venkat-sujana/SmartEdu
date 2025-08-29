@@ -1,5 +1,6 @@
 "use client";
 
+import StudentIndividualExams from "@/app/components/Student Individual Exams/page";
 import StudentMonthlyAttendanceSummary from "@/app/components/StudentMonthlyAttendanceSummary/page";
 import { useSession } from "next-auth/react";
  // ఇక్కడ మీ component ఫైల్ according path మార్చాలి
@@ -90,7 +91,8 @@ export default function StudentDashboard() {
 
       {/* Monthly Attendance Summary Section */}
      <StudentMonthlyAttendanceSummary studentId={user.id} />
-      {/* <StudentMonthlyAttendanceSummary studentId={user.id} /> */}
+      {/* Individual Exam Results Section */}
+      <StudentIndividualExams studentId={user.id} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-// app/api/students/route.js
+// app/api/exams/student/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
