@@ -47,12 +47,10 @@ const authOptions = {
           };
         }
 
-        // 🎓 Student Login
+       
 // 🎓 Student Login
 if (role === "student") {
-  const student = await Student.findOne({ admissionNo: identifier })
-  
-    .populate("collegeId", "name");
+  const student = await Student.findOne({ admissionNo: identifier }).populate("collegeId", "name");
     console.log("FOUND STUDENT:", student);
 
   if (!student) {
@@ -84,6 +82,8 @@ if (role === "student") {
     mobile: student.mobile,
   };
 }
+
+
 
 
         // 🎩 Principal Login

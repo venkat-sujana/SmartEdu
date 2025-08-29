@@ -1,8 +1,9 @@
 "use client";
 
-// import AttendanceSummaryTable from "@/app/components/AttendanceSummaryTable/page";
-import StudentAttendanceSummary from "@/app/dashboard-attendance-summary/page";
+import StudentMonthlyAttendanceSummary from "@/app/components/StudentMonthlyAttendanceSummary/page";
 import { useSession } from "next-auth/react";
+ // ఇక్కడ మీ component ఫైల్ according path మార్చాలి
+
 
 export default function StudentDashboard() {
   const { data: session, status } = useSession();
@@ -28,15 +29,15 @@ export default function StudentDashboard() {
   const user = session.user;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12">
+    <div className="max-w-5xl mx-auto px-4 py-12 space-y-10">
       {/* Header */}
-      <h1 className="text-4xl font-extrabold text-center text-blue-700 mb-10 tracking-tight">
+      <h1 className="text-4xl font-extrabold text-center text-blue-700 tracking-tight">
         🎓 Student Dashboard
       </h1>
 
-      <h1 className="text-4xl font-extrabold text-center text-blue-700 mb-10 tracking-tight">
+      <h2 className="text-2xl font-bold text-center text-blue-700 mb-10">
         {user.collegeName}
-      </h1>
+      </h2>
 
       {/* Profile Section */}
       <div className="bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl p-10 transition-transform hover:scale-[1.01]">
@@ -56,54 +57,40 @@ export default function StudentDashboard() {
             <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-6">
               <p>
-                <span className="font-semibold text-gray-800">
-                  Admission No:
-                </span>{" "}
-                {user.admissionNo}
+                <span className="font-semibold text-gray-800">Admission No:</span> {user.admissionNo}
               </p>
               <p>
-                <span className="font-semibold text-gray-800">College:</span>{" "}
-                {user.collegeName}
+                <span className="font-semibold text-gray-800">College:</span> {user.collegeName}
               </p>
               <p>
-                <span className="font-semibold text-gray-800">Year:</span>{" "}
-                {user.yearOfStudy}
+                <span className="font-semibold text-gray-800">Year:</span> {user.yearOfStudy}
               </p>
               <p className="text-gray-600 mb-1">
-                <span className="font-semibold">Father Name:</span>{" "}
-                {user.fatherName}
+                <span className="font-semibold">Father Name:</span> {user.fatherName}
               </p>
               <p>
-                <span className="font-semibold text-gray-800">Mobile:</span>{" "}
-                {user.mobile}
+                <span className="font-semibold text-gray-800">Mobile:</span> {user.mobile}
               </p>
               <p>
-                <span className="font-semibold text-gray-800">Caste:</span>{" "}
-                {user.caste}
+                <span className="font-semibold text-gray-800">Caste:</span> {user.caste}
               </p>
               <p>
-                <span className="font-semibold text-gray-800">DOB:</span>{" "}
-                {new Date(user.dob).toLocaleDateString()}
+                <span className="font-semibold text-gray-800">DOB:</span> {new Date(user.dob).toLocaleDateString()}
               </p>
               <p>
-                <span className="font-semibold text-gray-800">Gender:</span>{" "}
-                {user.gender}
+                <span className="font-semibold text-gray-800">Gender:</span> {user.gender}
               </p>
               <p className="md:col-span-2">
-                <span className="font-semibold text-gray-800">Address:</span>{" "}
-                {user.address}
+                <span className="font-semibold text-gray-800">Address:</span> {user.address}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-<div className="mt-8">
-  <h2 className="text-xl font-semibold text-gray-700 mb-4">📊 Attendance Summary</h2>
- <StudentAttendanceSummary />
- {/* <AttendanceSummaryTable /> */}
-</div>
-
+      {/* Monthly Attendance Summary Section */}
+     <StudentMonthlyAttendanceSummary studentId={user.id} />
+      {/* <StudentMonthlyAttendanceSummary studentId={user.id} /> */}
     </div>
   );
 }

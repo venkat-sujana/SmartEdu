@@ -11,15 +11,24 @@ export default function StudentLoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    console.log("Logging in with admissionNo, password", admissionNo, password);
 
     const res = await signIn("credentials", {
-      redirect: true,
-      identifier: admissionNo, // 👈 important: admissionNo ని identifier గా పంపాలి
+      redirect: false,
+      identifier: admissionNo, // important: admissionNo ని identifier గా పంపాలి
       password,
       role: "student",
       callbackUrl: "/student/dashboard",
     });
-    if (res?.error) setError("Invalid credentials");
+
+    console.log("Response", res);
+
+
+  if (res?.error) {
+    setError("Invalid credentials");
+  } else if (res?.ok) {
+    window.location.href = res.url || "/student/dashboard";  // manual redirect
+  }
   };
 
   return (
