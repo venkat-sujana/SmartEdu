@@ -1,4 +1,4 @@
-// app/api/attendance/monthly/route.js
+// app/api/attendance/monthly/route.js(calander view కోసం)
 
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
@@ -62,13 +62,22 @@ export async function GET(req) {
 
     // ✅ Step 3: Generate day-wise status (including '-')
     const daysInMonth = end.getDate();
-    const doj = new Date(student.dateOfJoining);
-    let result = [];
+
+
+    
+    
+const doj = student.dateOfJoining ? new Date(student.dateOfJoining) : null;
+let result = [];
 
 for (let day = 1; day <= daysInMonth; day++) {
   const currentDate = new Date(year, month, day);
 
-  if (currentDate.getTime() < doj.setHours(0,0,0,0)) {
+  // 👉 DOJ check Only for First Year students
+  if (
+    student.yearOfStudy?.toLowerCase().includes("first") &&
+    doj &&
+    currentDate.getTime() < doj.setHours(0,0,0,0)
+  ) {
     result.push({ date: currentDate, status: "🚫" });
     continue;
   }
@@ -84,7 +93,8 @@ for (let day = 1; day <= daysInMonth; day++) {
 }
 
 
-    console.log("📌 Final result prepared:", result);
+
+console.log("📌 Final result prepared:", result);
 
     return NextResponse.json({ data: result, status: "success" });
 

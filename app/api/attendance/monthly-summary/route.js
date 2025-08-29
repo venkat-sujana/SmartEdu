@@ -1,3 +1,6 @@
+//app/api/attendance/monthly-summary/route.js
+
+
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Student from "@/models/Student";
@@ -12,12 +15,6 @@ const publicHolidays = [
   { month: 7, day: 8, name: "Varalakshmi Vratham" },
   { month: 7, day: 16, name: "Krishna Ashtami" },
   { month: 7, day: 27, name: "Vinayaka Chavithi" },
-  { month: 8, day: 15, name: "Quarterly Exams" },
-  { month: 8, day: 16, name: "Quarterly Exams" },
-  { month: 8, day: 17, name: "Quarterly Exams" },
-  { month: 8, day: 18, name: "Quarterly Exams" },
-  { month: 8, day: 19, name: "Quarterly Exams" },
-  { month: 8, day: 20, name: "Quarterly Exams" },
   { month: 8, day: 28, name: "Dussara Holidays" },
   { month: 8, day: 29, name: "Dussara Holidays" },
   { month: 8, day: 30, name: "Dussara Holidays" },
@@ -36,12 +33,15 @@ function isHoliday(dateObj) {
 
 export async function GET(req) {
   try {
+    console.log("GET /api/attendance/monthly-summary route called!");
     await connectDB();
 
     const { searchParams } = new URL(req.url);
     const group = searchParams.get("group");
     const yearOfStudy = searchParams.get("yearOfStudy");
     const collegeId = searchParams.get("collegeId");
+
+    console.log("Query params:", { group, yearOfStudy, collegeId });
 
     // ✅ Students filter
     const studentQuery = {};
@@ -94,30 +94,45 @@ export async function GET(req) {
       const percentage = {};
       const alerts = {};
 
-      const doj = student.dateOfJoining ? new Date(student.dateOfJoining) : null;
 
-      attendance.forEach((r) => {
-        if (r.studentId.toString() === student._id.toString()) {
-          const monthKey = `${monthMap[r.month]}-${r.year}`;
-          const recordDate = new Date(r.date);
 
-          // 🚫 DOJ కి ముందు ఉన్న రికార్డులు skip
-          if (doj && recordDate < doj) return;
 
-          // 🚫 Holiday అయితే skip
-          if (isHoliday(recordDate)) return;
+const doj = student.dateOfJoining ? new Date(student.dateOfJoining) : null;
 
-          // Working days count
-          if (!workingDays[monthKey]) workingDays[monthKey] = 0;
-          workingDays[monthKey]++;
+attendance.forEach((r) => {
+  if (r.studentId.toString() === student._id.toString()) {
+    const monthKey = `${monthMap[r.month]}-${r.year}`;
+    const recordDate = new Date(r.date);
 
-          // Present count
-          if (r.status === "Present") {
-            if (!present[monthKey]) present[monthKey] = 0;
-            present[monthKey]++;
-          }
-        }
-      });
+    // 👉 Only First Year Students కు DOJ చెక్ చేయాలి
+    if (student.yearOfStudy?.toLowerCase().includes("first") && doj && recordDate < doj) {
+      console.log("Skipping record as it's before DOJ (First Year)");
+      return;
+    }
+
+    // 🚫 Holiday అయితే skip
+    if (isHoliday(recordDate)) {
+      console.log("Skipping record as it's a holiday");
+      return;
+    }
+
+    // Working days count
+    if (!workingDays[monthKey]) workingDays[monthKey] = 0;
+    workingDays[monthKey]++;
+
+    // Present count
+    if (r.status === "Present") {
+      if (!present[monthKey]) present[monthKey] = 0;
+      present[monthKey]++;
+    }
+  }
+});
+
+
+
+
+
+
 
       // ✅ Calculate percentage + alerts
       Object.keys(workingDays).forEach((monthKey) => {
@@ -138,6 +153,8 @@ export async function GET(req) {
         alerts,
       };
     });
+
+    console.log("Monthly summary generated:", summary.length);
 
     return NextResponse.json({ data: summary }, { status: 200 });
   } catch (err) {

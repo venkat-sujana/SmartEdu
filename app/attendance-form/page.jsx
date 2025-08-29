@@ -109,7 +109,8 @@ useEffect(() => {
     const year = dateObj.getFullYear();
 
     const attendanceRecords = filteredStudents.map((student) => ({
-      studentId: student._id,
+      studentId: new mongoose.Types.ObjectId(student._id), // ✅ force ObjectId
+      // studentId: student._id,
       date: selectedDate,
       status: attendanceData[student._id] || "Absent",
       group: selectedGroup,

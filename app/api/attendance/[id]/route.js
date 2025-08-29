@@ -1,3 +1,4 @@
+//app/api/attendance/[id]/route.js
 import { NextResponse } from "next/server";
 import Attendance from "@/models/Attendance";
 import connectMongoDB from "@/lib/mongodb";

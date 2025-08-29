@@ -1,5 +1,7 @@
 "use client";
 
+// import AttendanceSummaryTable from "@/app/components/AttendanceSummaryTable/page";
+import StudentAttendanceSummary from "@/app/dashboard-attendance-summary/page";
 import { useSession } from "next-auth/react";
 
 export default function StudentDashboard() {
@@ -95,6 +97,13 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+
+<div className="mt-8">
+  <h2 className="text-xl font-semibold text-gray-700 mb-4">📊 Attendance Summary</h2>
+ <StudentAttendanceSummary />
+ {/* <AttendanceSummaryTable /> */}
+</div>
+
     </div>
   );
 }

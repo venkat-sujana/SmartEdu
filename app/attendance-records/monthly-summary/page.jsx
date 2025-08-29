@@ -35,13 +35,19 @@ export default function MonthlySummary() {
     if (!selectedGroup || !selectedYear) return;
 
     const fetchData = async () => {
+      console.log("Fetching data with:", {
+        group: selectedGroup,
+        yearOfStudy: selectedYear,
+      });
       try {
         const res = await fetch(
           `/api/attendance/monthly-summary?group=${encodeURIComponent(
             selectedGroup
           )}&yearOfStudy=${encodeURIComponent(selectedYear)}`
         );
+        console.log("Response:", res);
         const data = await res.json();
+        console.log("Data:", data);
         setSummaryData(data.data || []);
       } catch (error) {
         console.error("Fetch error:", error);
