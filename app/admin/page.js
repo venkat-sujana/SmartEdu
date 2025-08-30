@@ -10,7 +10,7 @@ export default function AdminLoginPage() {
   const handleLogin = () => {
     if (password === 'admin123') {
       localStorage.setItem('admin-auth', 'true')
-      router.push('/student-table')
+      router.push('/admin-dashboard')
     } else {
       setError('Invalid password')
     }

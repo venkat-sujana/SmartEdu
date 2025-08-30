@@ -90,12 +90,12 @@ export default function Navbar() {
     <Link href="/student/login" className="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-100">
       Student Login
     </Link>
-    <Link href="/lecturer/login" className="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-100">
-      Lecturer Login
+    <Link href="/admin" className="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-100">
+      Admin
     </Link>
-    <Link href="/principal/login" className="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-100">
+    {/* <Link href="/principal/login" className="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-100">
       Principal Login
-    </Link>
+    </Link> */}
   </div>
 )}
 
