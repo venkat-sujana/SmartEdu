@@ -93,9 +93,7 @@ export default function Navbar() {
     <Link href="/admin" className="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-100">
       Admin
     </Link>
-    {/* <Link href="/principal/login" className="bg-white text-blue-600 px-3 py-1 rounded-md text-sm font-semibold hover:bg-blue-100">
-      Principal Login
-    </Link> */}
+
   </div>
 )}
 

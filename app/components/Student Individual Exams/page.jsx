@@ -1,3 +1,5 @@
+
+//app/components/Student Individual Exams/page.jsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -12,31 +14,47 @@ export default function StudentIndividualExams({ studentId }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!studentId) return;
+  if (!studentId) return;
 
-    async function fetchExamResults() {
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/exams/student/${studentId}`);
-        const json = await res.json();
+  async function fetchExamResults() {
+    console.log("Fetching exam results for", studentId);
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/exams/student/${studentId}`);
+      const json = await res.json();
 
-        if (res.ok) {
-          setExamResults(json || []);
-          setError("");
-        } else {
-          setError(json.error || "Failed to fetch exam results");
-          setExamResults([]);
-        }
-      } catch (err) {
-        setError("Server error while fetching exam results");
+      console.log("Exam results response:", json);
+      if (res.ok) {
+        // json exams array లో ప్రతి exam కి percentage calculate చేసి set చేయాలి
+        const updatedExams = (json || []).map((exam) => {
+          const totalMarks = 125;
+          const percentage = (exam.total / totalMarks) * 100;
+          return {
+            ...exam,
+            percentage,
+          };
+        });
+
+        console.log("Updated exams:", updatedExams);
+        setExamResults(updatedExams);
+        setError("");
+      } else {
+        console.error("Failed to fetch exam results:", json.error);
+        setError(json.error || "Failed to fetch exam results");
         setExamResults([]);
-      } finally {
-        setLoading(false);
       }
+    } catch (err) {
+      console.error("Server error while fetching exam results:", err);
+      setError("Server error while fetching exam results");
+      setExamResults([]);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    fetchExamResults();
-  }, [studentId]);
+  fetchExamResults();
+}, [studentId]);
+
 
   if (loading) return <p>Loading exam results...</p>;
   if (error) return <p className="text-red-600">{error}</p>;
@@ -61,7 +79,7 @@ export default function StudentIndividualExams({ studentId }) {
             <thead className="bg-green-600 text-white">
               <tr>
                 <th className="border border-green-700 p-2">Subject</th>
-                <th className="border border-green-700 p-2">Score</th>
+                <th className="border border-green-700 p-2">Marks</th>
               </tr>
             </thead>
             <tbody>
@@ -75,9 +93,16 @@ export default function StudentIndividualExams({ studentId }) {
           </table>
 
           <div className="mt-4 font-semibold text-gray-800">
-            <p>Total Marks: {exam.total}</p>
-            <p>Percentage: {exam.percentage.toFixed(2)}%</p>
-          </div>
+  <p>Total Marks: {exam.total}</p>
+  <p>Percentage: {exam.percentage.toFixed(2)}%</p>
+  <p>
+    Result:{" "}
+    <span className={exam.total >= 50 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+      {exam.total >= 50 ? "Pass" : "Fail"}
+    </span>
+  </p>
+</div>
+
         </div>
       ))}
     </div>
