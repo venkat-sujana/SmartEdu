@@ -40,6 +40,7 @@ const studentSchema = new mongoose.Schema(
     admissionNo: { type: String, required: true, unique: true, index: true },
 
     password: { type: String, required: true },
+    mustChangePassword: { type: Boolean, default: true },
 
     yearOfStudy: {
       type: String,

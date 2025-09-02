@@ -1,6 +1,7 @@
-"use client";
+//app/student/dashboard/page.jsx
 
-import StudentIndividualExams from "@/app/components/Student Individual Exams/page";
+"use client";
+import StudentIndividualExams from "@/app/components/StudentIndividualExams/page";
 import StudentMonthlyAttendanceSummary from "@/app/components/StudentMonthlyAttendanceSummary/page";
 import { useSession } from "next-auth/react";
  // ఇక్కడ మీ component ఫైల్ according path మార్చాలి
@@ -8,6 +9,9 @@ import { useSession } from "next-auth/react";
 
 export default function StudentDashboard() {
   const { data: session, status } = useSession();
+
+  console.log("Session", session);
+  console.log("Status", status);
 
   if (status === "loading") {
     return (
@@ -28,6 +32,8 @@ export default function StudentDashboard() {
   }
 
   const user = session.user;
+
+  console.log("User", user);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12 space-y-10">
@@ -92,7 +98,7 @@ export default function StudentDashboard() {
       {/* Monthly Attendance Summary Section */}
      <StudentMonthlyAttendanceSummary studentId={user.id} />
       {/* Individual Exam Results Section */}
-      <StudentIndividualExams studentId={user.id} />
+     <StudentIndividualExams studentId={user.id} />
     </div>
   );
 }

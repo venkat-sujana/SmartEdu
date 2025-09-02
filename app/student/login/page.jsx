@@ -1,3 +1,4 @@
+//app/student/login/page.jsx
 "use client";
 
 import { signIn } from "next-auth/react";
@@ -13,23 +14,26 @@ export default function StudentLoginPage() {
     setError("");
     console.log("Logging in with admissionNo, password", admissionNo, password);
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      identifier: admissionNo, // important: admissionNo ని identifier గా పంపాలి
-      password,
-      role: "student",
-      callbackUrl: "/student/dashboard",
-    });
-
-    console.log("Response", res);
 
 
-  if (res?.error) {
-    setError("Invalid credentials");
-  } else if (res?.ok) {
-    window.location.href = res.url || "/student/dashboard";  // manual redirect
+  const res = await signIn("credentials", {
+  redirect: false,
+  identifier: admissionNo,
+  password,
+  role: "student"
+});
+
+if (res?.error) {
+  setError("Invalid credentials");
+} else if (res?.ok) {
+  if (res.mustChangePassword) {
+    window.location.href = "/student/change-password";
+  } else {
+    window.location.href = "/student/dashboard";
   }
+}
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-green-50">

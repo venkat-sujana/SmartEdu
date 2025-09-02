@@ -162,12 +162,15 @@ const [collegeName, setCollegeName] = useState('');
 
     try {
       const res = await fetch("/api/exams", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-        collegeId: session?.user?.collegeId,
-        lecturerId: session?.user?.id, // if needed
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    ...formData,
+    collegeId: session?.user?.collegeId,
+    lecturerId: session?.user?.id
+  }),
+});
+
 
       const result = await res.json();
       if (res.ok) {

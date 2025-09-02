@@ -1,15 +1,11 @@
 //app/register/page.jsx
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Users, Home } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-
-
-
 
 export default function RegisterPage() {
 
@@ -47,6 +43,7 @@ const [collegeName, setCollegeName] = useState('');
     dateOfJoining: "",
     address: "",
     photo: null,
+    password: ""           // <-- password field add చేయండి
   });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -70,6 +67,10 @@ const [collegeName, setCollegeName] = useState('');
       return;
     }
 
+
+  // Password లేకపోతే default password ఇక్కడ set చేయండి
+  const passwordToSend = formData.password.trim() === "" ? "Welcome@2025" : formData.password;
+
     const form = new FormData();
     form.append("name", formData.name);
     form.append("fatherName", formData.fatherName);
@@ -91,6 +92,9 @@ const [collegeName, setCollegeName] = useState('');
       form.append("photo", photo);
     }
 
+  // Password పంపండి (plain text)
+  form.append("password", passwordToSend);
+
     try {
       const res = await fetch("/api/students", {
         method: "POST",
@@ -101,7 +105,7 @@ const [collegeName, setCollegeName] = useState('');
       console.log(result);
 
       if (res.ok) {
-        toast.success("Student registered successfully 👍 ✅");
+        toast.success("Student registered successfully👍✅");
         router.push("/student-table"); // ✅ Redirect to student table
 
         // Reset the form
@@ -206,6 +210,23 @@ const [collegeName, setCollegeName] = useState('');
               className="w-full p-2 border rounded-md "
               required
             />
+
+ <div>
+  <label className="text-sm text-gray-600">Password (Default:Welcome@2025)</label>
+  <input
+    type="password"
+    name="password"
+    placeholder="Enter Password or leave blank for default"
+    value={formData.password}
+    onChange={handleChange}
+    className="w-full p-2 border rounded-md"
+  />
+</div>
+
+
+
+
+
             <input
               name="fatherName"
               value={formData.fatherName}

@@ -6,6 +6,9 @@ import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 import { cloudinary } from "@/lib/cloudinary";
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+
+
 
 export async function POST(req) {
   try {
@@ -42,7 +45,7 @@ export async function POST(req) {
     const requiredFields = [
       "name", "fatherName", "mobile", "group", "caste",
       "dob", "gender", "admissionNo", "yearOfStudy",
-      "admissionYear","dateOfJoining", "address",
+      "admissionYear", "dateOfJoining", "address",
     ];
 
     for (const field of requiredFields) {
@@ -54,11 +57,19 @@ export async function POST(req) {
       }
     }
 
+    // Check password field; if not present, assign default password
+    const plainPassword = fields.password && fields.password.trim() !== "" ? fields.password.trim() : "Welcome@2025";
+
+    // Hash the password using bcrypt
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+
+    // Create student with hashed password and other fields
     const student = await Student.create({
       ...fields,
+      password: hashedPassword,
       collegeId: new mongoose.Types.ObjectId(lecturer.collegeId),
       collegeName,
-      // Vocational అయితే group ద్వారా, లేకపోతే subject ద్వారా link
       subjects: lecturer.group ? [] : [lecturer.subject],
       photo: photoUrl,
     });
@@ -66,10 +77,10 @@ export async function POST(req) {
     return Response.json({ status: "success", data: student }, { status: 201 });
 
   } catch (error) {
-    console.error("Upload error:", error);
     return Response.json({ status: "error", message: error.message }, { status: 500 });
   }
 }
+
 
 export async function GET(req) {
   try {
@@ -77,8 +88,13 @@ export async function GET(req) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
+      console.log("Unauthorized: No session");
       return Response.json({ status: "error", message: "Unauthorized" }, { status: 401 });
     }
+
+    console.log("GET /api/students/route.js: Filter:", {
+      collegeId: session.user.collegeId,
+    });
 
     let filter = {
       collegeId: session.user.collegeId
@@ -86,22 +102,28 @@ export async function GET(req) {
 
     // Vocational stream => filter by group
     if (session.user.stream === "Vocational" && session.user.group) {
+      console.log("Filtering by group:", session.user.group);
       filter.group = session.user.group;
     }
 
     // General stream => filter by subject array match
     if (session.user.stream === "General" && session.user.subject) {
+      console.log("Filtering by subject:", session.user.subject);
       filter.subjects = session.user.subject; // exact match in array
     }
 
+    console.log("Final filter:", filter);
+
     const students = await Student.find(filter);
+
+    console.log(`Found ${students.length} students`);
 
     return Response.json({
       status: "success",
       data: students
     });
   } catch (error) {
-    console.error(error);
+    console.error("GET /api/students/route.js:", error);
     return Response.json({ status: "error", message: "Server error" }, { status: 500 });
   }
 }
