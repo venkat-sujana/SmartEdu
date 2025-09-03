@@ -1,8 +1,7 @@
-
-//app/components/Student Individual Exams/page.jsx
+// app/components/StudentIndividualExams/page.jsx
 "use client";
-
 import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString();
@@ -13,48 +12,108 @@ export default function StudentIndividualExams({ studentId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { data: session, status } = useSession();
+
+  console.log("Session", session);
+  console.log("Status", status);
+
   useEffect(() => {
-  if (!studentId) return;
+    if (!studentId) return;
 
-  async function fetchExamResults() {
-    console.log("Fetching exam results for", studentId);
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/exams/student/${studentId}`);
-      const json = await res.json();
+    async function fetchExamResults() {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/exams/student/${studentId}`);
+        const json = await res.json();
 
-      console.log("Exam results response:", json);
-      if (res.ok) {
-        // json exams array లో ప్రతి exam కి percentage calculate చేసి set చేయాలి
-        const updatedExams = (json || []).map((exam) => {
-          const totalMarks = 125;
-          const percentage = (exam.total / totalMarks) * 100;
-          return {
-            ...exam,
-            percentage,
-          };
-        });
+        if (res.ok) {
+          const updatedExams = (json || []).map((exam) => {
+            let baseTotal = 0;
+            let passMarks = 0;
 
-        console.log("Updated exams:", updatedExams);
-        setExamResults(updatedExams);
-        setError("");
-      } else {
-        console.error("Failed to fetch exam results:", json.error);
-        setError(json.error || "Failed to fetch exam results");
+            // ✅ Base total calculation
+            if (["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream)) {
+              if (exam.examType?.toLowerCase().includes("unit")) {
+                baseTotal = 6 * 25; // 150
+                passMarks = 9;
+              } else if (
+                exam.examType === "Quarterly" ||
+                exam.examType === "Half-Yearly"
+              ) {
+                baseTotal = 6 * 50; // 300
+                passMarks = 18;
+              } else if (
+                exam.examType === "Prepublic-1" ||
+                exam.examType === "Prepublic-2"
+              ) {
+                baseTotal = 6 * 100; // 600
+                passMarks = 35;
+              }
+            }
+
+            if (["M&AT", "CET", "MLT"].includes(exam.stream)) {
+              if (exam.examType?.toLowerCase().includes("unit")) {
+                baseTotal = 5 * 25; // 125
+                passMarks = 9;
+              } else if (
+                exam.examType === "Quarterly" ||
+                exam.examType === "Half-Yearly"
+              ) {
+                baseTotal = 5 * 50; // 250
+                passMarks = 18;
+              } else if (
+                exam.examType === "Prepublic-1" ||
+                exam.examType === "Prepublic-2"
+              ) {
+                baseTotal = 250; // ✅ Vocational prepublic = 250
+                passMarks = 18;
+              }
+            }
+
+            const totalMarks = exam.total || 0;
+            const percentage =
+              baseTotal > 0 ? (totalMarks / baseTotal) * 100 : 0;
+
+            // ✅ Subject-wise fail check
+            let isFail = false;
+            let subjects =
+              ["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream)
+                ? exam.generalSubjects
+                : exam.vocationalSubjects;
+
+            if (subjects) {
+              for (const [sub, mark] of Object.entries(subjects)) {
+                if (mark === "A" || (typeof mark === "number" && mark < passMarks)) {
+                  isFail = true;
+                  break;
+                }
+              }
+            }
+
+            return {
+              ...exam,
+              percentage,
+              result: isFail ? "Fail" : "Pass",
+            };
+          });
+
+          setExamResults(updatedExams);
+          setError("");
+        } else {
+          setError(json.error || "Failed to fetch exam results");
+          setExamResults([]);
+        }
+      } catch (err) {
+        console.error("Server error while fetching exam results:", err);
+        setError("Server error while fetching exam results");
         setExamResults([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Server error while fetching exam results:", err);
-      setError("Server error while fetching exam results");
-      setExamResults([]);
-    } finally {
-      setLoading(false);
     }
-  }
 
-  fetchExamResults();
-}, [studentId]);
-
+    fetchExamResults();
+  }, [studentId]);
 
   if (loading) return <p>Loading exam results...</p>;
   if (error) return <p className="text-red-600">{error}</p>;
@@ -83,26 +142,84 @@ export default function StudentIndividualExams({ studentId }) {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(exam.vocationalSubjects).map(([subject, score]) => (
-                <tr key={subject} className="even:bg-gray-50">
-                  <td className="border border-gray-300 p-2 font-semibold">{subject}</td>
-                  <td className="border border-gray-300 p-2">{score}</td>
-                </tr>
-              ))}
+              {/* ✅ General Streams */}
+              {["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream) &&
+              exam.generalSubjects &&
+              Object.entries(exam.generalSubjects).length > 0 ? (
+                Object.entries(exam.generalSubjects).map(
+                  ([subject, score]) => (
+                    <tr key={subject} className="even:bg-gray-50">
+                      <td className="border border-gray-300 p-2 font-semibold">
+                        {subject}
+                      </td>
+                      <td
+                        className={`border border-gray-300 p-2 ${
+                          score === "A" || (typeof score === "number" &&
+                          score < (exam.examType?.toLowerCase().includes("unit")
+                            ? 9
+                            : exam.examType === "Quarterly" ||
+                              exam.examType === "Half-Yearly"
+                            ? 18
+                            : 35))
+                            ? "text-red-600 font-bold"
+                            : ""
+                        }`}
+                      >
+                        {score}
+                      </td>
+                    </tr>
+                  )
+                )
+              ) : null}
+
+              {/* ✅ Vocational Streams */}
+              {["M&AT", "CET", "MLT"].includes(exam.stream) &&
+              exam.vocationalSubjects &&
+              Object.entries(exam.vocationalSubjects).length > 0 ? (
+                Object.entries(exam.vocationalSubjects).map(
+                  ([subject, score]) => (
+                    <tr key={subject} className="even:bg-gray-50">
+                      <td className="border border-gray-300 p-2 font-semibold">
+                        {subject}
+                      </td>
+                      <td
+                        className={`border border-gray-300 p-2 ${
+                          score === "A" || (typeof score === "number" &&
+                          score < (exam.examType?.toLowerCase().includes("unit")
+                            ? 9
+                            : exam.examType === "Quarterly" ||
+                              exam.examType === "Half-Yearly"
+                            ? 18
+                            : 18))
+                            ? "text-red-600 font-bold"
+                            : ""
+                        }`}
+                      >
+                        {score}
+                      </td>
+                    </tr>
+                  )
+                )
+              ) : null}
             </tbody>
           </table>
 
           <div className="mt-4 font-semibold text-gray-800">
-  <p>Total Marks: {exam.total}</p>
-  <p>Percentage: {exam.percentage.toFixed(2)}%</p>
-  <p>
-    Result:{" "}
-    <span className={exam.total >= 50 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-      {exam.total >= 50 ? "Pass" : "Fail"}
-    </span>
-  </p>
-</div>
-
+            <p>Total Marks: {exam.total}</p>
+            <p>Percentage: {exam.percentage.toFixed(2)}%</p>
+            <p>
+              Result:{" "}
+              <span
+                className={
+                  exam.result === "Pass"
+                    ? "text-green-600 font-bold"
+                    : "text-red-600 font-bold"
+                }
+              >
+                {exam.result}
+              </span>
+            </p>
+          </div>
         </div>
       ))}
     </div>

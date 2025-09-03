@@ -72,6 +72,11 @@ export default function StudentDashboard() {
               <p>
                 <span className="font-semibold text-gray-800">Year:</span> {user.yearOfStudy}
               </p>
+
+              <p>
+                <span className="font-semibold text-gray-800">Group:</span> {user.group}
+              </p>
+
               <p className="text-gray-600 mb-1">
                 <span className="font-semibold">Father Name:</span> {user.fatherName}
               </p>
