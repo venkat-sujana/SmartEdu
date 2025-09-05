@@ -64,61 +64,46 @@ export async function POST(req) {
 }
 
 
-// 🔽 GET Attendance Record
-// app/api/attendance/route.js
+// 🔽 GET Attendance Record + Summary
 export async function GET(req) {
   await connectMongoDB();
   console.log("📢 Attendance GET API called");
 
   try {
     const session = await getServerSession(authOptions);
-    console.log("✅ Session data:", session);
 
     if (!session || !session.user?.collegeId) {
-      console.log("❌ Unauthorized: No session or collegeId");
       return NextResponse.json({ status: "error", message: "Unauthorized" }, { status: 401 });
     }
 
     const collegeId = session.user.collegeId;
-    console.log("🏫 College ID:", collegeId);
 
     const { searchParams } = new URL(req.url);
-    const date = searchParams.get("date");
-    const group = searchParams.get("group");
     const month = searchParams.get("month");
     const year = searchParams.get("year");
 
-    console.log("📅 Query params =>", { date, group, month, year });
-
     const filter = { collegeId };
-    if (date) filter.date = new Date(date);
-    if (group) filter.group = group;
     if (month) filter.month = month;
     if (year) filter.year = Number(year);
 
-    console.log("🔍 MongoDB filter =>", filter);
+    const records = await Attendance.find(filter);
 
-    const records = await Attendance.find(filter)
-      .populate("studentId", "name group dateOfJoining")
-      .sort({ date: -1 });
+    // ✅ Summary calc
+    const total = records.length;
+    const presents = records.filter((r) => r.status === "Present").length;
+    const percentage = total > 0 ? ((presents / total) * 100).toFixed(2) : 0;
 
-    console.log("📊 Raw Attendance records:", records);
-
-    // ✅ Join date check
-    const updatedRecords = records.map((rec) => {
-      const joinDate = new Date(rec.studentId.dateOfJoining);
-      if (rec.date < joinDate) {
-        return { ...rec.toObject(), status: "-" };
-      }
-      return rec;
+    return NextResponse.json({
+      status: "success",
+      totalRecords: total,
+      totalPresents: presents,
+      attendancePercentage: percentage,
+      data: records, // optional: full data కూడా ఇస్తున్నాం
     });
-
-    console.log("✅ Final processed records:", updatedRecords);
-
-    return NextResponse.json({ data: updatedRecords, status: "success" });
   } catch (err) {
     console.error("💥 GET Error:", err);
     return NextResponse.json({ message: "Error fetching attendance", status: "error" }, { status: 500 });
   }
 }
+
 

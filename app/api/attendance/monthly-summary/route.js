@@ -15,6 +15,7 @@ const publicHolidays = [
   { month: 7, day: 8, name: "Varalakshmi Vratham" },
   { month: 7, day: 16, name: "Krishna Ashtami" },
   { month: 7, day: 27, name: "Vinayaka Chavithi" },
+  { month: 8, day: 5, name: "Miladinabi" },
   { month: 8, day: 28, name: "Dussara Holidays" },
   { month: 8, day: 29, name: "Dussara Holidays" },
   { month: 8, day: 30, name: "Dussara Holidays" },

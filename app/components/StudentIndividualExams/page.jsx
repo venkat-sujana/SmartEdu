@@ -1,7 +1,7 @@
-// app/components/StudentIndividualExams/page.jsx
+//app/
+
 "use client";
 import React, { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString();
@@ -11,11 +11,6 @@ export default function StudentIndividualExams({ studentId }) {
   const [examResults, setExamResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const { data: session, status } = useSession();
-
-  console.log("Session", session);
-  console.log("Status", status);
 
   useEffect(() => {
     if (!studentId) return;
@@ -28,72 +23,57 @@ export default function StudentIndividualExams({ studentId }) {
 
         if (res.ok) {
           const updatedExams = (json || []).map((exam) => {
-            let baseTotal = 0;
-            let passMarks = 0;
+            const stream = exam.stream;
+            const subjects =
+              ["MPC", "BIPC", "CEC", "HEC"].includes(stream)
+                ? exam.generalSubjects || {}
+                : exam.vocationalSubjects || {};
 
-            // ✅ Base total calculation
-            if (["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream)) {
-              if (exam.examType?.toLowerCase().includes("unit")) {
-                baseTotal = 6 * 25; // 150
-                passMarks = 9;
-              } else if (
-                exam.examType === "Quarterly" ||
-                exam.examType === "Half-Yearly"
-              ) {
-                baseTotal = 6 * 50; // 300
-                passMarks = 18;
-              } else if (
-                exam.examType === "Prepublic-1" ||
-                exam.examType === "Prepublic-2"
-              ) {
-                baseTotal = 6 * 100; // 600
-                passMarks = 35;
-              }
+            const subjectCount = Object.keys(subjects).length;
+
+            let maxMarksPerSub = 0;
+
+            if (["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(exam.examType)) {
+              maxMarksPerSub = 25;
+            } else if (["QUARTERLY", "HALF-YEARLY"].includes(exam.examType)) {
+              maxMarksPerSub = 50;
+            } else if (["PRE-PUBLIC-1", "PRE-PUBLIC-2"].includes(exam.examType)) {
+              maxMarksPerSub = ["MPC", "BIPC", "CEC", "HEC"].includes(stream)
+                ? 100 // General
+                : 50; // Vocational
             }
 
-            if (["M&AT", "CET", "MLT"].includes(exam.stream)) {
-              if (exam.examType?.toLowerCase().includes("unit")) {
-                baseTotal = 5 * 25; // 125
-                passMarks = 9;
-              } else if (
-                exam.examType === "Quarterly" ||
-                exam.examType === "Half-Yearly"
-              ) {
-                baseTotal = 5 * 50; // 250
-                passMarks = 18;
-              } else if (
-                exam.examType === "Prepublic-1" ||
-                exam.examType === "Prepublic-2"
-              ) {
-                baseTotal = 250; // ✅ Vocational prepublic = 250
-                passMarks = 18;
-              }
-            }
+            const baseTotal = subjectCount * maxMarksPerSub;
 
-            const totalMarks = exam.total || 0;
-            const percentage =
-              baseTotal > 0 ? (totalMarks / baseTotal) * 100 : 0;
+            let obtained = 0;
+            let result = "Pass";
 
-            // ✅ Subject-wise fail check
-            let isFail = false;
-            let subjects =
-              ["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream)
-                ? exam.generalSubjects
-                : exam.vocationalSubjects;
+            Object.entries(subjects).forEach(([_, score]) => {
+              let marks = score === "A" ? 0 : parseInt(score) || 0;
+              obtained += marks;
 
-            if (subjects) {
-              for (const [sub, mark] of Object.entries(subjects)) {
-                if (mark === "A" || (typeof mark === "number" && mark < passMarks)) {
-                  isFail = true;
-                  break;
+              // Fail conditions
+              if (["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(exam.examType)) {
+                if (score === "A" || marks < 9) result = "Fail";
+              } else if (["QUARTERLY", "HALF-YEARLY"].includes(exam.examType)) {
+                if (score === "A" || marks < 18) result = "Fail";
+              } else if (["PRE-PUBLIC-1", "PRE-PUBLIC-2"].includes(exam.examType)) {
+                if (["MPC", "BIPC", "CEC", "HEC"].includes(stream)) {
+                  if (score === "A" || marks < 35) result = "Fail";
+                } else {
+                  if (score === "A" || marks < 18) result = "Fail";
                 }
               }
-            }
+            });
+
+            // ✅ Final percentage calculation (no duplicate const)
+            const percentage = baseTotal > 0 ? (obtained / baseTotal) * 100 : 0;
 
             return {
               ...exam,
+              total: obtained,
               percentage,
-              result: isFail ? "Fail" : "Pass",
+              result,
             };
           });
 
@@ -142,70 +122,36 @@ export default function StudentIndividualExams({ studentId }) {
               </tr>
             </thead>
             <tbody>
-              {/* ✅ General Streams */}
-              {["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream) &&
-              exam.generalSubjects &&
-              Object.entries(exam.generalSubjects).length > 0 ? (
-                Object.entries(exam.generalSubjects).map(
-                  ([subject, score]) => (
-                    <tr key={subject} className="even:bg-gray-50">
-                      <td className="border border-gray-300 p-2 font-semibold">
-                        {subject}
-                      </td>
-                      <td
-                        className={`border border-gray-300 p-2 ${
-                          score === "A" || (typeof score === "number" &&
-                          score < (exam.examType?.toLowerCase().includes("unit")
-                            ? 9
-                            : exam.examType === "Quarterly" ||
-                              exam.examType === "Half-Yearly"
-                            ? 18
-                            : 35))
-                            ? "text-red-600 font-bold"
-                            : ""
-                        }`}
-                      >
-                        {score}
-                      </td>
-                    </tr>
-                  )
-                )
-              ) : null}
-
-              {/* ✅ Vocational Streams */}
-              {["M&AT", "CET", "MLT"].includes(exam.stream) &&
-              exam.vocationalSubjects &&
-              Object.entries(exam.vocationalSubjects).length > 0 ? (
-                Object.entries(exam.vocationalSubjects).map(
-                  ([subject, score]) => (
-                    <tr key={subject} className="even:bg-gray-50">
-                      <td className="border border-gray-300 p-2 font-semibold">
-                        {subject}
-                      </td>
-                      <td
-                        className={`border border-gray-300 p-2 ${
-                          score === "A" || (typeof score === "number" &&
-                          score < (exam.examType?.toLowerCase().includes("unit")
-                            ? 9
-                            : exam.examType === "Quarterly" ||
-                              exam.examType === "Half-Yearly"
-                            ? 18
-                            : 18))
-                            ? "text-red-600 font-bold"
-                            : ""
-                        }`}
-                      >
-                        {score}
-                      </td>
-                    </tr>
-                  )
-                )
-              ) : null}
+              {exam.generalSubjects &&
+                Object.entries(exam.generalSubjects).map(([subject, score]) => (
+                  <tr key={subject} className="even:bg-gray-50">
+                    <td className="border border-gray-300 p-2 font-semibold">
+                      {subject}
+                    </td>
+                    <td className="border border-gray-300 p-2">{score}</td>
+                  </tr>
+                ))}
+              {exam.vocationalSubjects &&
+                Object.entries(exam.vocationalSubjects).map(([subject, score]) => (
+                  <tr key={subject} className="even:bg-gray-50">
+                    <td className="border border-gray-300 p-2 font-semibold">
+                      {subject}
+                    </td>
+                    <td className="border border-gray-300 p-2">{score}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
 
           <div className="mt-4 font-semibold text-gray-800">
-            <p>Total Marks: {exam.total}</p>
+            <p>Total Marks: {exam.total} / {exam.stream && (["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream) ? 6 : 5) *
+              (["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(exam.examType)
+                ? 25
+                : ["QUARTERLY", "HALF-YEARLY"].includes(exam.examType)
+                ? 50
+                : ["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream)
+                ? 100
+                : 50)}</p>
             <p>Percentage: {exam.percentage.toFixed(2)}%</p>
             <p>
               Result:{" "}

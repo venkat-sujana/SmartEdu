@@ -80,6 +80,7 @@ if (role === "student") {
     gender: student.gender,
     address: student.address,
     mobile: student.mobile,
+    group: student.group, // Add group information
   };
 }
 
@@ -139,6 +140,7 @@ if (user.role === "student") {
   token.gender = user.gender;
   token.address = user.address;
   token.mobile = user.mobile;
+  token.group = user.group;
 }
 
 
@@ -170,6 +172,7 @@ if (token.role === "student") {
   session.user.gender = token.gender;
   session.user.address = token.address;
   session.user.mobile = token.mobile;
+  session.user.group = token.group; 
 }
 
 

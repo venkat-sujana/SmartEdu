@@ -92,34 +92,26 @@ export async function GET(req) {
       return Response.json({ status: "error", message: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("GET /api/students/route.js: Filter:", {
-      collegeId: session.user.collegeId,
-    });
-
     let filter = {
       collegeId: session.user.collegeId
     };
 
     // Vocational stream => filter by group
     if (session.user.stream === "Vocational" && session.user.group) {
-      console.log("Filtering by group:", session.user.group);
       filter.group = session.user.group;
     }
 
     // General stream => filter by subject array match
     if (session.user.stream === "General" && session.user.subject) {
-      console.log("Filtering by subject:", session.user.subject);
-      filter.subjects = session.user.subject; // exact match in array
+      filter.subjects = session.user.subject;
     }
 
-    console.log("Final filter:", filter);
-
     const students = await Student.find(filter);
-
-    console.log(`Found ${students.length} students`);
+    const totalStudents = await Student.countDocuments(filter);
 
     return Response.json({
       status: "success",
+      totalStudents,   // 👈 ఇప్పుడు count వస్తుంది
       data: students
     });
   } catch (error) {
@@ -127,5 +119,6 @@ export async function GET(req) {
     return Response.json({ status: "error", message: "Server error" }, { status: 500 });
   }
 }
+
 
 
