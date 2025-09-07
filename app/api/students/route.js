@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
-import { cloudinary } from "@/lib/cloudinary";
+import cloudinary  from "@/lib/cloudinary";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 

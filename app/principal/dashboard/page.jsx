@@ -21,7 +21,9 @@ export default function PrincipalDashboard() {
 
   // 🔹 Today Absentees and Attendance Summary
   const { data, error, isLoading } = useSWR("/api/attendance/today-absentees", fetcher)
-  const absentees = data?.absentees || []
+
+const absentees = data?.absentees || [];
+
 
   // Correct keys as per API response
   const presentCount = data?.present ?? "--"

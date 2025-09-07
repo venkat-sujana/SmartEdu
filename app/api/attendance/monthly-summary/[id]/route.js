@@ -27,6 +27,7 @@ export async function GET(req) {
 
   const session = await getServerSession(authOptions);
   if (!session || !session.user || !session.user.collegeId) {
+    console.log("❌ Unauthorized request:", req);
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -72,6 +73,8 @@ export async function GET(req) {
       }
     ]);
 
+    console.log("📝 Summary:", summary);
+
     const formatted = {};
     summary.forEach(item => {
       const monthName = monthNameMap[item._id.month] || item._id.month;
@@ -81,6 +84,8 @@ export async function GET(req) {
         present: item.present
       };
     });
+
+    console.log("📊 Formatted summary:", formatted);
 
     return NextResponse.json(formatted);
   } catch (error) {
