@@ -1,3 +1,5 @@
+
+//app/api/attendance/today-absentees/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
@@ -16,10 +18,14 @@ export async function GET(req) {
 
     const collegeId = session.user.collegeId;
 
-    // ✅ Today date start & end
-    const today = new Date();
-    const start = new Date(today.setHours(0, 0, 0, 0));
-    const end = new Date(today.setHours(23, 59, 59, 999));
+// ✅ Today date start & end
+const today = new Date();
+const start = new Date(today);
+start.setHours(0, 0, 0, 0);
+
+const end = new Date(today);
+end.setHours(23, 59, 59, 999);
+
 
     // ✅ ఈరోజు attendance తీసుకోవడం
     const todayRecords = await Attendance.find({
@@ -37,7 +43,9 @@ export async function GET(req) {
     // ✅ % calculation
     const total = todayRecords.length;
     const absentCount = absentees.length;
+    const presentCount = total - absentCount;  
     const percentage = ((total - absentCount) / total) * 100;
+      
 
     return NextResponse.json({
       status: "success",
@@ -47,7 +55,11 @@ export async function GET(req) {
         group: r.studentId.group,
       })),
       percentage: percentage.toFixed(2),
-    });
+      total: total,
+      present: presentCount,
+      absent: absentCount,
+     
+     });
   } catch (err) {
     console.error("Error fetching today absentees:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

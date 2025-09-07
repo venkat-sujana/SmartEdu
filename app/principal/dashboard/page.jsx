@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BarChart, Users, BookOpen, Calendar } from "lucide-react"
 import useSWR from "swr"
+import AbsenteesTable from "@/app/absentees-table/page"
 
 const fetcher = (url) => fetch(url).then((res) => res.json())
 
@@ -18,9 +19,14 @@ export default function PrincipalDashboard() {
   const { data: lecturerData } = useSWR("/api/lecturers", fetcher)
   const totalLecturers = lecturerData?.data?.length || 0
 
-  // 🔹 Today Absentees
-  const { data, error, isLoading } = useSWR("/api/attendance/today-absentees", fetcher);
-  const absentees = data?.data?.filter((r) => r.status === "Absent") || []
+  // 🔹 Today Absentees and Attendance Summary
+  const { data, error, isLoading } = useSWR("/api/attendance/today-absentees", fetcher)
+  const absentees = data?.absentees || []
+
+  // Correct keys as per API response
+  const presentCount = data?.present ?? "--"
+  const absentCount = data?.absent ?? "--"
+  const percentage = data?.percentage ?? "--"
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -59,65 +65,62 @@ export default function PrincipalDashboard() {
             <CardHeader>
               <CardTitle>Total Students</CardTitle>
             </CardHeader>
-            <CardContent className="text-3xl font-bold text-blue-600">
-              {totalStudents}
-            </CardContent>
+            <CardContent className="text-3xl font-bold text-blue-600">{totalStudents}</CardContent>
           </Card>
 
           <Card className="bg-white shadow-md rounded-2xl">
             <CardHeader>
               <CardTitle>Lecturers</CardTitle>
             </CardHeader>
-            <CardContent className="text-3xl font-bold text-green-600">
-              {totalLecturers}
-            </CardContent>
+            <CardContent className="text-3xl font-bold text-green-600">{totalLecturers}</CardContent>
           </Card>
 
           <Card className="bg-white shadow-md rounded-2xl">
             <CardHeader>
               <CardTitle>Attendance %</CardTitle>
             </CardHeader>
-            <CardContent className="text-3xl font-bold text-purple-600">--%</CardContent>
+            <CardContent className="text-3xl font-bold text-purple-600">
+              {isLoading ? "--%" : error || typeof data?.percentage === "undefined" ? "--%" : `${percentage}%`}
+            </CardContent>
           </Card>
 
           <Card className="bg-white shadow-md rounded-2xl">
             <CardHeader>
-              <CardTitle>Exams Scheduled</CardTitle>
+              <CardTitle>Present Count</CardTitle>
             </CardHeader>
-            <CardContent className="text-3xl font-bold text-red-600">--</CardContent>
+            <CardContent className="text-3xl font-bold text-green-700">{isLoading || error ? "--" : presentCount}</CardContent>
+          </Card>
+
+          <Card className="bg-white shadow-md rounded-2xl">
+            <CardHeader>
+              <CardTitle>Absent Count</CardTitle>
+            </CardHeader>
+            <CardContent className="text-3xl font-bold text-red-600">{isLoading || error ? "--" : absentCount}</CardContent>
           </Card>
         </section>
 
-        {/* ✅ New Section - Absentees */}
+        {/* Absentees List Section */}
         <section className="grid gap-6 lg:grid-cols-2">
-<Card>
-      <CardHeader>
-        <CardTitle>Today Absentees List</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : error ? (
-          <p className="text-red-600">Failed to load</p>
-        ) : !data || !data.data ? (
-          <p className="text-gray-500">No attendance recorded</p>
-        ) : data.data.length === 0 ? (
-          <p className="text-green-600">🎉 No Absentees Today</p>
-        ) : (
-          <ul className="list-disc pl-5">
-            {data.data.map((s, i) => (
-              <li key={i} className="text-red-600">
-                {s.name} ({s.yearOfStudy} - {s.group})
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Today Absentees List</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <p>Loading...</p>
+              ) : error ? (
+                <p className="text-red-600">Failed to load</p>
+              ) : !data || !data.absentees ? (
+                <p className="text-gray-500">No attendance recorded</p>
+              ) : data.absentees.length === 0 ? (
+                <p className="text-green-600">🎉 No Absentees Today</p>
+              ) : (
+                <AbsenteesTable absentees={absentees} />
+              )}
+            </CardContent>
+          </Card>
 
-
-
-          {/* Right side - Recent Announcements */}
+          {/* Recent Announcements */}
           <Card className="bg-white shadow-md rounded-2xl">
             <CardHeader>
               <CardTitle>Recent Announcements</CardTitle>
