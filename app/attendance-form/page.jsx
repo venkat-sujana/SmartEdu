@@ -132,7 +132,7 @@ useEffect(() => {
       const result = await response.json();
       toast.dismiss(toastId);
       toast.success(result.message || "Attendance submitted successfully!");
-     router.push("/attendance-records");
+     router.push("/attendance-form");
     } catch (error) {
       toast.dismiss(toastId);
       toast.error("Error submitting attendance");

@@ -1,3 +1,4 @@
+//app/principal-registration/page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -34,7 +35,7 @@ export default function PrincipalRegistrationForm() {
         body: JSON.stringify(formData),
       });
       if (res.ok) {
-        window.location.href = "/registration-success";
+        window.location.href = "/principal/login";
       } else {
         alert("❌ Registration failed");
       }
@@ -93,6 +94,30 @@ export default function PrincipalRegistrationForm() {
           </option>
         ))}
       </select>
+
+<input
+  type="file"
+  accept="image/*"
+  onChange={async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const data = new FormData();
+      formData.append("upload_preset", "osra-preset"); // Cloudinary upload preset
+      formData.append("cloud_name", "dlwxpzc83"); // Cloudinary cloud name
+
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dlwxpzc83/image/upload",
+        { method: "POST", body: data }
+      );
+
+      const uploadRes = await res.json();
+      setFormData((prev) => ({ ...prev, photo: uploadRes.secure_url }));
+    }
+  }}
+/>
+
+
+
 
       <button
         type="submit"

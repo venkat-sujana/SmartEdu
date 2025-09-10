@@ -175,7 +175,7 @@ const [collegeName, setCollegeName] = useState('');
       const result = await res.json();
       if (res.ok) {
         toast.success("✅ Exam saved successfully!");
-         router.push("/exam-report"); // ✅ redirect here
+         router.push("/exams-form"); // ✅ redirect here
         
         setFormData({
           yearOfStudy: "",

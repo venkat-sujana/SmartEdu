@@ -106,7 +106,7 @@ const [collegeName, setCollegeName] = useState('');
 
       if (res.ok) {
         toast.success("Student registered successfully👍✅");
-        router.push("/student-table"); // ✅ Redirect to student table
+        router.push("/register"); // ✅ Redirect to student table
 
         // Reset the form
         setFormData({

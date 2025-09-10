@@ -1,3 +1,5 @@
+//app/admin/page.js
+
 'use client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -17,12 +19,12 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className=" bg-cyan-100 flex flex-col items-center justify-center h-screen">
+    <div className=" bg-amber-50 flex flex-col items-center justify-center h-screen">
       <h1 className="text-3xl font-bold mb-6">👤&nbsp;Admin Login</h1>
       <input
         type="password"
         placeholder="Enter Admin Password"
-        className="border p-2 mb-4"
+        className="border border-black-300 p-2 mb-4"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
