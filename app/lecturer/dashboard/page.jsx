@@ -213,10 +213,9 @@ const { user } = session || {};
     <div className="text-3xl mb-1 animate-bounce">🗓️</div>
     <p className="font-semibold">Exams Scheduled</p>
     <div className="text-sm text-green-900 font-medium space-y-1">
- {/* <p className="text-lg text-yellow-900 font-bold">UNIT-II</p>
-          <p className="font-semibold">18-082025</p>
-          <p className="font-semibold">19-08-2025</p>
-          <p className="font-semibold">20-08-2025</p> */}
+ <p className="text-lg text-yellow-900 font-bold">Querterly Examinations</p>
+          <p className="font-semibold">15-08-2025 to 20-09-2025</p>
+
     </div>
   </motion.div>
 
@@ -277,7 +276,7 @@ const { user } = session || {};
           </div>
         </Link>
 
-     <Link href="/lecturer/attendance/group-wise">
+       <Link href="/lecturer/attendance/group-wise">
           <div className="cursor-pointer p-5 bg-yellow-100 hover:bg-yellow-200 rounded-xl text-center shadow-md">
             <p className="text-xl font-semibold text-yellow-800">📅 Group wise Attendance</p>
           </div>
