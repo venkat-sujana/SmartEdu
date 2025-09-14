@@ -1,10 +1,8 @@
 
-//app/lecturer/attendance/group-wise/page.jsx
-
+//app/components/groupwise-attendance-table/page.jsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 
 const groupIcons = {
   MPC: '📘',
@@ -16,28 +14,22 @@ const groupIcons = {
   CET: '⚙️',
 };
 
-export default function GroupWiseAttendanceTable() {
+export default function GroupWiseAttendanceTable({ collegeId, collegeName, initialDate }) {
   const [data, setData] = useState({});
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return today;
-  });
-
-  const { data: session } = useSession();
+  const [selectedDate, setSelectedDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
-    if (!session || !selectedDate) return;
+    if (!collegeId || !selectedDate) return;
 
     async function fetchData() {
       const res = await fetch(
-        `/api/attendance/group-wise-today?collegeId=${session.user.collegeId}&date=${selectedDate}`
+        `/api/attendance/group-wise-today?collegeId=${collegeId}&date=${selectedDate}`
       );
       const result = await res.json();
       setData(result.groupWise || {});
     }
-
     fetchData();
-  }, [session, selectedDate]);
+  }, [collegeId, selectedDate]);
 
   const handlePrint = () => {
     window.print();
@@ -46,9 +38,9 @@ export default function GroupWiseAttendanceTable() {
   return (
     <div className="p-4 print:p-0 print:bg-white">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-2xl font-bold text-center">
-          🏫 {session?.user?.collegeName || 'College'}-Group wise-Year wise  Attendance Summary
-        </h2>
+        {/* <h2 className="text-2xl font-bold text-center">
+          🏫 {collegeName || 'College'} - Group wise - Year wise Attendance Summary
+        </h2> */}
         <div className="flex items-center gap-3">
           <input
             type="date"
@@ -65,15 +57,11 @@ export default function GroupWiseAttendanceTable() {
         </div>
       </div>
 
-      {/* Loop over each group */}
       {Object.entries(data).map(([group, yearData]) => (
         <div key={group} className="mb-6">
-          {/* Group Heading */}
           <h3 className="text-lg font-semibold text-gray-800 mb-2">
             {groupIcons[group] || '📘'} {group}
           </h3>
-
-          {/* Table */}
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm border border-gray-300">
               <thead>

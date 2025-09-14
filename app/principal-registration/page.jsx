@@ -1,4 +1,3 @@
-//app/principal-registration/page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,9 +10,10 @@ export default function PrincipalRegistrationForm() {
     password: "",
     collegeId: "",
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoUrl, setPhotoUrl] = useState(""); // ఫోటో preview కోసం
 
   useEffect(() => {
-    // API నుండి colleges తీసుకోవడం
     const fetchColleges = async () => {
       const res = await fetch("/api/colleges");
       const data = await res.json();
@@ -26,18 +26,45 @@ export default function PrincipalRegistrationForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // ఫోటో ఫైల్ ఎంచుకున్నప్పుడు state లో ఉంచడం
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
+      // ఈ స్థాయిలో మీరు ఆప్షనల్‌గా ఫోటో ప్రివ్యూ చూపించుకోవచ్చు
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoUrl(reader.result.toString());
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // FormData ఆబ్జెక్ట్ సృష్టించండి multipart/form-data కోసం
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("email", formData.email);
+    data.append("password", formData.password);
+    data.append("collegeId", formData.collegeId);
+
+    if (photoFile) {
+      data.append("photo", photoFile);
+    }
+
     try {
-      const res = await fetch("/api/register/principal", {
+      const res = await fetch("/api/principals", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: data, // Content-Type will be set automatically
       });
+
       if (res.ok) {
         window.location.href = "/principal/login";
       } else {
-        alert("❌ Registration failed");
+        const errorData = await res.json();
+        alert("❌ Registration failed: " + (errorData.error || "Unknown error"));
       }
     } catch (err) {
       console.error(err);
@@ -57,6 +84,7 @@ export default function PrincipalRegistrationForm() {
         name="name"
         placeholder="Full Name"
         onChange={handleChange}
+        value={formData.name}
         className="w-full border px-3 py-2 rounded"
         required
       />
@@ -66,6 +94,7 @@ export default function PrincipalRegistrationForm() {
         name="email"
         placeholder="Email"
         onChange={handleChange}
+        value={formData.email}
         className="w-full border px-3 py-2 rounded"
         required
       />
@@ -75,11 +104,12 @@ export default function PrincipalRegistrationForm() {
         name="password"
         placeholder="Password"
         onChange={handleChange}
+        value={formData.password}
         className="w-full border px-3 py-2 rounded"
         required
       />
 
-      {/* 🔽 College Dropdown */}
+      {/* College Dropdown */}
       <select
         name="collegeId"
         value={formData.collegeId}
@@ -95,29 +125,22 @@ export default function PrincipalRegistrationForm() {
         ))}
       </select>
 
-<input
-  type="file"
-  accept="image/*"
-  onChange={async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const data = new FormData();
-      formData.append("upload_preset", "osra-preset"); // Cloudinary upload preset
-      formData.append("cloud_name", "dlwxpzc83"); // Cloudinary cloud name
+      {/* Photo file input */}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="w-full"
+      />
 
-      const res = await fetch(
-        "https://api.cloudinary.com/v1_1/dlwxpzc83/image/upload",
-        { method: "POST", body: data }
-      );
-
-      const uploadRes = await res.json();
-      setFormData((prev) => ({ ...prev, photo: uploadRes.secure_url }));
-    }
-  }}
-/>
-
-
-
+      {/* Photo preview */}
+      {photoUrl && (
+        <img
+          src={photoUrl}
+          alt="Photo preview"
+          className="w-32 h-32 object-cover rounded mx-auto mt-2"
+        />
+      )}
 
       <button
         type="submit"
@@ -125,7 +148,11 @@ export default function PrincipalRegistrationForm() {
       >
         Register
       </button>
-      login{" "}<a href="/principal/login" className="text-blue-600">here</a>
+
+      login{" "}
+      <a href="/principal/login" className="text-blue-600">
+        here
+      </a>
     </form>
   );
 }

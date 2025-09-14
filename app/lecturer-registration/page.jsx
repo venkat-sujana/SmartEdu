@@ -39,7 +39,7 @@ export default function LecturerRegister() {
     e.preventDefault();
     setIsLoading(true);
 
-    const res = await fetch('/api/register/lecturer', {
+    const res = await fetch('/api/lecturers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),

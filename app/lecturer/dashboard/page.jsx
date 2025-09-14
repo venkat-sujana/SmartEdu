@@ -1,27 +1,21 @@
-//app/lecturer/dashboard/page.jsx
 "use client";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
 export default function LecturerDashboard() {
   const { data: session, status } = useSession();
-  console.log(session?.user);
   const router = useRouter();
 
   const [collegeName, setCollegeName] = useState("");
   const [studentCount, setStudentCount] = useState(0);
   const [attendancePercent, setAttendancePercent] = useState(0);
-
   const [firstYearPresent, setFirstYearPresent] = useState(0);
   const [secondYearPresent, setSecondYearPresent] = useState(0);
   const [totalPresent, setTotalPresent] = useState(0);
-
-
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -29,321 +23,196 @@ export default function LecturerDashboard() {
     }
 
     if (status === "authenticated" && session?.user?.collegeId) {
-      // Fetch College Name
       fetch(`/api/colleges/${session.user.collegeId}`)
         .then((res) => res.json())
         .then((data) => {
           if (data?.name) setCollegeName(data.name);
         });
 
-     // Fetch Student Count
-   fetch(
-  `/api/students/count?collegeId=${session.user.collegeId}&subject=${encodeURIComponent(session.user.subject)}`
-)
-  .then((res) => res.json())
-  .then((data) => {
-    if (data?.count !== undefined) {
-      setStudentCount(data.count);
-    }
-  });
+      fetch(
+        `/api/students/count?collegeId=${session.user.collegeId}&subject=${encodeURIComponent(
+          session.user.subject
+        )}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.count !== undefined) {
+            setStudentCount(data.count);
+          }
+        });
     }
   }, [status, session, router]);
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.collegeId) {
+      fetch(`/api/attendance/today-percent?collegeId=${session.user.collegeId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.percent !== undefined) {
+            setAttendancePercent(data.percent);
+          }
+        });
+    }
+  }, [status, session]);
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.collegeId) {
+      fetch(`/api/attendance/today-breakdown?collegeId=${session.user.collegeId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data) {
+            setFirstYearPresent(data.firstYear || 0);
+            setSecondYearPresent(data.secondYear || 0);
+            setTotalPresent((data.firstYear || 0) + (data.secondYear || 0));
+            setAttendancePercent(data.percent || 0);
+          }
+        });
+    }
+  }, [status, session]);
 
-
-useEffect(() => {
-  if (status === "authenticated" && session?.user?.collegeId) {
-    // Attendance %
-    fetch(`/api/attendance/today-percent?collegeId=${session.user.collegeId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.percent !== undefined) {
-          setAttendancePercent(data.percent);
-        }
-      });
+  if (status === "loading") {
+    return <div className="text-center mt-10 text-gray-500">Loading...</div>;
   }
-}, [status, session]);
 
-
-
-useEffect(() => {
-  if (status === "authenticated" && session?.user?.collegeId) {
-    // Fetch today’s attendance breakdown
-    fetch(`/api/attendance/today-breakdown?collegeId=${session.user.collegeId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data) {
-          setFirstYearPresent(data.firstYear || 0);
-          setSecondYearPresent(data.secondYear || 0);
-          setTotalPresent((data.firstYear || 0) + (data.secondYear || 0));
-          setAttendancePercent(data.percent || 0); // Optional
-        }
-      });
-  }
-}, [status, session]);
-
-
-
-if (status === "loading") {
-  return <div className="text-center mt-10 text-gray-600">Loading...</div>;
-}
-
-const { user } = session || {};
-
-
+  const { user } = session || {};
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 p-6 bg-gradient-to-r from-slate-50 via-amber-50 to-teal-50 rounded-2xl shadow-xl">
+    <div className="max-w-6xl mx-auto mt-12 p-8 bg-white rounded-3xl shadow-lg border border-gray-200">
       {/* College Name */}
-      <div className="mb-6 px-6 py-3 bg-white border-l-4 border-blue-500 text-gray-800 rounded-lg shadow flex items-center justify-center space-x-3">
-        <GraduationCap className="w-8 h-8 text-blue-600" />
-        <h1 className="text-xl font-semibold tracking-wide">
+      <div className="mb-8 px-6 py-4 bg-blue-50 border-l-[6px] border-blue-600 rounded-lg flex items-center gap-4">
+        <GraduationCap className="w-9 h-9 text-blue-700" />
+        <h1 className="text-2xl font-extrabold text-blue-800 tracking-wide">
           {collegeName || "Loading..."}
         </h1>
       </div>
 
       {/* Title */}
-      <h1 className="text-3xl font-bold text-center mb-8 text-blue-700">
+      <h1 className="text-4xl font-bold text-center mb-10 text-blue-900 tracking-tight">
         🎓 Lecturer Dashboard
       </h1>
 
-
-
-
-
-{/* Lecturer Info Card */}
-<div className="mb-8 p-6 bg-gradient-to-r from-slate-100 to-blue-100 rounded-2xl shadow-lg border border-blue-200 max-w-2xl mx-auto">
-  <div className="flex items-center gap-4">
-    <div className="bg-blue-500 text-white rounded-full w-14 h-14 flex items-center justify-center text-3xl shadow-md border-2 border-blue-300">
-      {/* Lecturer initials or icon */}
-      <span>
-        {user?.name
-          ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-          : '👤'}
-      </span>
-    </div>
-    <div className="flex-1">
-      <p className="text-lg font-bold text-gray-800 flex items-center gap-2">
-        <span>👤</span>
-        <span>{user?.name || 'Lecturer Name'}</span>
-      </p>
-      <p className="text-base font-medium text-gray-700 flex items-center gap-2">
-        <span>📧</span>
-        <span>{user?.email || 'Lecturer Email'}</span>
-      </p>
-      <p className="text-base text-gray-700 flex items-center gap-2">
-        <span>📚</span>
-        <span>Junior Lecturer in {user?.subject || 'Subject'}</span>
-      </p>
-    </div>
-  </div>
-</div>
-
-
-
+      {/* Lecturer Info Card */}
+      <div className="mb-10 flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-blue-100 shadow-md rounded-2xl border border-blue-200 max-w-3xl mx-auto">
+        <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-4xl font-semibold shadow-lg border-4 border-blue-400">
+          {user?.name
+            ? user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)
+            : "👤"}
+        </div>
+        <div className="flex-1 space-y-1">
+          <p className="text-xl font-semibold text-blue-900 flex items-center gap-3">
+            <span>👤</span> {user?.name || "Lecturer Name"}
+          </p>
+          <p className="text-md font-medium text-blue-800 flex items-center gap-3">
+            <span>📧</span> {user?.email || "Lecturer Email"}
+          </p>
+          <p className="text-md text-blue-700 flex items-center gap-3">
+            <span>📚</span> Junior Lecturer in {user?.subject || "Subject"}
+          </p>
+        </div>
+      </div>
 
       {/* Welcome Message */}
-      <div className="mb-8 p-5 bg-white rounded-xl shadow-md text-center">
-        <h2 className="text-2xl font-semibold text-blue-800 mb-4">
+      <div className="mb-10 p-6 shadow-md rounded-2xl bg-blue-50 text-center max-w-2xl mx-auto">
+        <h2 className="text-3xl font-semibold text-blue-800 mb-4">
           Welcome, {user?.name || "Lecturer"}!
         </h2>
-        <p className="text-gray-600"> 
+        <p className="text-blue-700 text-lg">
           You are now logged in as a Lecturer in {collegeName || "College"}.
         </p>
       </div>
 
-
-
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-
-
- 
-
-
-
-  <div className="p-5 bg-gradient-to-br from-blue-100 to-blue-300 rounded-xl shadow-lg text-center">
+<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
   <motion.div
-    whileHover={{ scale: 1.05 }}
-    initial={{ opacity: 0, y: 50 }}
+    whileHover={{ scale: 1.07 }}
+    initial={{ opacity: 0, y: 40 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4 }}
+    className="bg-gradient-to-br from-blue-100 to-blue-400 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
+  >
+    <div className="text-2xl mb-3 animate-pulse text-blue-900">👥</div>
+    <p className="text-2xl font-bold text-blue-900">Total Students</p>
+    <p className="text-2xl  font-extrabold text-blue-900 mt-2">{studentCount}</p>
+  </motion.div>
+
+  <motion.div
+    whileHover={{ scale: 1.07 }}
+    initial={{ opacity: 0, y: 40 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
-    className="p-5 bg-gradient-to-br from-blue-100 to-blue-500 rounded-xl shadow-lg text-center"
+    className="bg-gradient-to-br from-green-100 to-green-400 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
   >
-    <div className="text-3xl mb-2 animate-pulse">👥</div>
-    <p className="font-semibold">Total Students</p>
-    <p className="text-lg text-blue-900 font-bold">{studentCount}</p>
-  </motion.div>
-        </div>
-
-
-
-        <div className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center">
-<motion.div
-    whileHover={{ scale: 1.05 }}
-    initial={{ opacity: 0, y: 50 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-    className="p-5 bg-gradient-to-br from-slate-100 to-slate-300 rounded-xl shadow-lg text-center"
-  >
-    <div className="text-3xl mb-1 animate-bounce">📈</div>
-    <p className="font-semibold">Today’s Attendance</p>
-    <div className="text-sm text-green-900 font-medium space-y-1">
-      <p>First Year: <span className="font-bold">{firstYearPresent}</span></p>
-      <p>Second Year: <span className="font-bold">{secondYearPresent}</span></p>
-      <hr className="my-1 border-red-500" />
+    <div className="text-5xl mb-3 animate-bounce text-green-900">📈</div>
+    <p className="text-lg font-bold text-green-900">Today's Attendance</p>
+    <div className="mt-3 space-y-1 text-green-900 font-semibold text-base">
+      <p>First Year: <span className="font-extrabold">{firstYearPresent}</span></p>
+      <p>Second Year: <span className="font-extrabold">{secondYearPresent}</span></p>
+      <hr className="my-1 border-green-600 w-3/5 mx-auto rounded" />
       <p>College Total: <span className="text-lg font-extrabold">{totalPresent}</span></p>
       <p>Percentage: <span className="text-lg font-extrabold">{attendancePercent}%</span></p>
     </div>
   </motion.div>
-        </div>
 
-
-
-        <div className="p-5 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-xl shadow-lg text-center">
-
-          <motion.div
-    whileHover={{ scale: 1.05 }}
-    initial={{ opacity: 0, y: 50 }}
+  <motion.div
+    whileHover={{ scale: 1.07 }}
+    initial={{ opacity: 0, y: 40 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-    className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center"
+    transition={{ duration: 0.5 }}
+    className="bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
   >
-    <div className="text-3xl mb-1 animate-bounce">🗓️</div>
-    <p className="font-semibold">Exams Scheduled</p>
-    <div className="text-sm text-green-900 font-medium space-y-1">
- <p className="text-lg text-yellow-900 font-bold">Querterly Examinations</p>
-          <p className="font-semibold">15-08-2025 to 20-09-2025</p>
-
+    <div className="text-5xl mb-3 animate-bounce text-yellow-900">🗓️</div>
+    <p className="text-lg font-bold text-yellow-900">Exams Scheduled</p>
+    <div className="mt-3 text-yellow-900 font-semibold">
+      <p className="text-2xl font-extrabold mb-1">Quarterly Examinations</p>
+      <p className="text-lg font-semibold">15-08-2025 to 20-09-2025</p>
     </div>
   </motion.div>
 
-        </div>
-
-        <div className="p-5 bg-gradient-to-br from-purple-100 to-purple-300 rounded-xl shadow-lg text-center">
-
-          <motion.div
-    whileHover={{ scale: 1.05 }}
-    initial={{ opacity: 0, y: 50 }}
+  <motion.div
+    whileHover={{ scale: 1.07 }}
+    initial={{ opacity: 0, y: 40 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-    className="p-5 bg-gradient-to-br from-green-100 to-green-300 rounded-xl shadow-lg text-center"
+    transition={{ duration: 0.5 }}
+    className="bg-gradient-to-br from-purple-200 to-purple-400 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
   >
-    <div className="text-3xl mb-1 animate-bounce">👇</div>
-   
-    <div className="text-sm text-green-900 font-medium space-y-1">
-          <p className="font-semibold">Quick Actions</p>
-          <p className="text-sm text-purple-800">⚡ Below</p>
-    </div>
+    <div className="text-5xl mb-3 animate-bounce text-purple-900">⚡</div>
+    <p className="text-lg font-bold text-purple-900">Quick Actions</p>
+    <p className="mt-2 text-purple-700 font-semibold text-sm">Use the links below for fast navigation.</p>
   </motion.div>
+</div>
 
-        </div>
-      </div>
 
       {/* Quick Actions */}
-
- 
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-
-          <Link href="/student-table">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+        {[
+          { href: "/student-table", label: "📋 View Students", bg: "blue-100", hover: "blue-300", text: "blue-800" },
+          { href: "/register", label: "➕ Add Student", bg: "blue-100", hover: "blue-300", text: "blue-800" },
+          { href: "/attendance-form", label: "🟢 Take Attendance", bg: "green-100", hover: "green-300", text: "green-800" },
+          { href: "/lecturer/attendance/group-wise", label: "📅 Group wise Attendance", bg: "yellow-100", hover: "yellow-300", text: "yellow-800" },
+          { href: "/attendance-records", label: "📆 Attendance Records", bg: "indigo-100", hover: "indigo-300", text: "indigo-800" },
+          { href: "/lecturer/attendance", label: "📅 Attendance with names", bg: "pink-200", hover: "pink-300", text: "pink-800" },
+          { href: "/attendance-records/individual", label: "📅 Edit Attendance Records", bg: "yellow-300", hover: "yellow-400", text: "yellow-900" },
+          { href: "/attendance-records/attendance-calendar", label: "📅 Calendar View Attendance", bg: "green-200", hover: "green-400", text: "green-900" },
+          { href: "/attendance-records/monthly-summary", label: "📅 Monthly Summary Attendance", bg: "yellow-200", hover: "yellow-400", text: "yellow-900" },
+          { href: "/exams-form", label: "📝 Add Exam", bg: "green-200", hover: "green-400", text: "green-900" },
+          { href: "/exam-report", label: "📊 Exam Records", bg: "pink-200", hover: "pink-400", text: "pink-900" },
+          { href: "/caretaker", label: "🟢 Caretaker", bg: "cyan-200", hover: "cyan-400", text: "cyan-900" },
+        ].map(({ href, label, bg, hover, text }) => (
+          <Link key={href} href={href}>
             <motion.div
               whileHover={{ scale: 1.1, rotate: 2 }}
               whileTap={{ scale: 0.95 }}
-              className="cursor-pointer p-5 bg-blue-100 hover:bg-blue-200 rounded-xl text-center shadow-md transition-all"
+              className={`cursor-pointer p-5 rounded-xl text-center shadow-md transition-all bg-${bg} hover:bg-${hover} text-${text}`}
             >
-              <p className="text-xl font-semibold text-blue-800">📋 View Students</p>
+              <p className={`text-xl font-semibold`}>{label}</p>
             </motion.div>
           </Link>
-
-
-        <Link href="/register">
-            <motion.div
-              whileHover={{ scale: 1.1, rotate: 2 }}
-              whileTap={{ scale: 0.95 }}
-              className="cursor-pointer p-5 bg-blue-100 hover:bg-blue-200 rounded-xl text-center shadow-md transition-all"
-            >
-              <p className="text-xl font-semibold text-blue-800">➕ Add Student</p>
-            </motion.div>
-        </Link>
-
-        <Link href="/attendance-form">
-          <div className="cursor-pointer p-5 bg-green-100 hover:bg-green-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-green-800">
-              🟢 Take Attendance
-            </p>
-          </div>
-        </Link>
-
-       <Link href="/lecturer/attendance/group-wise">
-          <div className="cursor-pointer p-5 bg-yellow-100 hover:bg-yellow-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-yellow-800">📅 Group wise Attendance</p>
-          </div>
-        </Link>
-
-        <Link href="/attendance-records">
-          <div className="cursor-pointer p-5 bg-indigo-100 hover:bg-indigo-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-indigo-800">
-              📆 Attendance Records
-            </p>
-          </div>
-        </Link>
-
-
-
-        <Link href="/lecturer/attendance">
-          <div className="cursor-pointer p-5 bg-pink-100 hover:bg-indigo-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-indigo-800">
-              📅 Attendance with names
-            </p>
-          </div>
-        </Link>
-
-
-        <Link href="/attendance-records/individual">
-          <div className="cursor-pointer p-5 bg-yellow-300 hover:bg-yellow-200 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-yellow-800">📅 Edit Attendance Records</p>
-          </div>
-        </Link>
-
-        <Link href="/attendance-records/attendance-calendar">
-          <div className="cursor-pointer p-5 bg-green-200 hover:bg-amber-400 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-yellow-800">📅 Calendar View Attendance</p>
-          </div>
-        </Link>
-
-
-        <Link href="/attendance-records/monthly-summary">
-          <div className="cursor-pointer p-5 bg-yellow-200 hover:bg-cyan-500 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-yellow-800">📅 Monthly Summary  Attendance</p>
-          </div>
-        </Link>
-
-                <Link href="/exams-form">
-          <div className="cursor-pointer p-5 bg-green-200 hover:bg-slate-400 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-yellow-800">📝 Add Exam</p>
-          </div>
-        </Link>
-
-        <Link href="/exam-report">
-          <div className="cursor-pointer p-5 bg-pink-200 hover:bg-pink-500 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-pink-800">
-              📊 Exam Records
-            </p>
-          </div>
-        </Link>
-
-
-        <Link href="/caretaker">
-          <div className="cursor-pointer p-5 bg-cyan-200 hover:bg-slate-500 rounded-xl text-center shadow-md">
-            <p className="text-xl font-semibold text-green-800">
-              🟢 Caretaker
-            </p>
-          </div>
-        </Link>
-
-
+        ))}
       </div>
     </div>
   );

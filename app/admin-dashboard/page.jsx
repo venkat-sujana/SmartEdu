@@ -24,13 +24,13 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold mb-4">🔑 Admin Dashboard</h1>
         <button
           onClick={gotoLecturer}
-          className="w-52 bg-blue-600 text-white text-lg py-2 rounded font-semibold transition hover:bg-blue-700 mb-2"
+          className="w-52 bg-blue-600 text-white text-lg py-2 rounded font-semibold transition hover:bg-blue-700 mb-2 cursor-pointer"
         >
           Lecturer Login
         </button>
         <button
           onClick={gotoPrincipal}
-          className="w-52 bg-green-700 text-white text-lg py-2 rounded font-semibold transition hover:bg-green-800"
+          className="w-52 bg-green-700 text-white text-lg py-2 rounded font-semibold transition hover:bg-green-800 cursor-pointer"
         >
           Principal Login
         </button>

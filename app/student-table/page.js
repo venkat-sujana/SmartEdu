@@ -423,17 +423,9 @@ printWindow.document.write(
           </button>
         </Link>
 
-        <Link href="/dashboard/first-year">
-          <button className="bg-lime-800 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
-            🖥️&nbsp; First Year Dashboard
-          </button>
-        </Link>
 
-        <Link href="/dashboard/second-year">
-          <button className="bg-lime-800 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
-            🖥️&nbsp; Second Year Dashboard
-          </button>
-        </Link>
+
+
 
         <Link href="/attendance-records">
           <button className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition cursor-pointer font-bold">
