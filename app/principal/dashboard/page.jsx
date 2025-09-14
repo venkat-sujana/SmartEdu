@@ -8,10 +8,11 @@ import AbsenteesTable from '@/app/absentees-table/page'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
+
 import React, { useEffect, useState } from "react";
 import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
 import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
+import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
 
 
 
@@ -241,6 +242,17 @@ todaysPresent.forEach(student => {
                 Attendance Overview
               </CardTitle>
             </CardHeader>
+            <div className="mt-4">
+              <h3 className="mb-2 font-semibold">Today's Group-wise Attendance</h3>
+              {session?.user && (
+                <GroupWiseAttendanceTable
+                  collegeId={session.user.collegeId}
+                  collegeName={session.user.collegeName}
+                />
+              )}
+            </div>
+
+            
             <CardContent className="space-y-4">
               {isLoading ? (
                 <p>Loading attendance data...</p>
@@ -248,8 +260,7 @@ todaysPresent.forEach(student => {
                 <p className="text-red-600">Failed to load attendance data</p>
               ) : (
                 <>
-                  <AttendanceShortageSummary data={shortageData} />
-                  <div className="mt-4">
+                 <div className="mt-4">
                     <h3 className="mb-2 font-semibold">Today's Absentees</h3>
                     {absentees.length === 0 ? (
                       <p className="text-green-600">🎉 No Absentees Today</p>
@@ -260,15 +271,10 @@ todaysPresent.forEach(student => {
                 </>
               )}
             </CardContent>
-            <div className="mt-4">
-              <h3 className="mb-2 font-semibold">Today's Group-wise Attendance</h3>
-              {session?.user && (
-                <GroupWiseAttendanceTable
-                  collegeId={session.user.collegeId}
-                  collegeName={session.user.collegeName}
-                />
-              )}
-            </div>
+                  {/* <AttendanceShortageSummary data={shortageData} /> */}
+                  <AttendanceShortageSummary data={shortageData} />
+
+
           </Card>
 
           {/* Exam Module */}

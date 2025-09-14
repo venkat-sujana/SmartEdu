@@ -1,5 +1,5 @@
 // app/api/upload/route.js
-import { cloudinary } from "@/lib/cloudinary"; // ✅
+import cloudinary  from "@/lib/cloudinary"; // ✅
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import os from "os"; // ✅ OS-specific tmp dir
