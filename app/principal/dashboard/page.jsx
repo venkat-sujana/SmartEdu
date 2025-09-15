@@ -41,13 +41,8 @@ export default function PrincipalDashboard() {
   
   const { data: activeLecturersData, error: activeLecturersError } = useSWR('/api/lecturers/active', fetcher);
 
-
-
 const { data, error, isLoading } = useSWR('/api/attendance/today-absentees', fetcher);
 const absentees = data?.absentees || [];
-
-
-
 
 // Fetch today's present students list from API response (assuming it has)
 const todaysPresent = data?.presentStudents || []; // ఈ array API లో ఉండాలి
@@ -55,6 +50,12 @@ const todaysPresent = data?.presentStudents || []; // ఈ array API లో ఉ�
 // Calculate present and absent counts for stats cards
 const presentCount = todaysPresent.length;
 const absentCount = absentees.length;
+
+// Calculate attendance percentage
+const percentage =
+  totalStudents > 0
+    ? Math.round((presentCount / totalStudents) * 100)
+    : 0;
 
 // Initialize counts
 const presentAbsentByYear = {

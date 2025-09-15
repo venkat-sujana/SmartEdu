@@ -20,31 +20,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {typeof window !== "undefined" && (
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 3000,
-              style: {
-                background: "#0f766e",
-                color: "white",
-                fontWeight: "bold",
-                borderRadius: "0.5rem",
-              },
-              success: { icon: "✅" },
-              error: {
-                style: { background: "#dc2626" },
-                icon: "❌",
-              },
-            }}
-          />
-        )}
-
-        <SessionProviderWrapper>
-          <Navbar />
-          
-         <main className="p-4">{children}</main>
-       </SessionProviderWrapper>
+      <SessionProviderWrapper>
+        <Navbar />
+        
+        <Toaster />
+        
+        <main className="p-4">{children}</main>
+      </SessionProviderWrapper>
        
       </body>
     </html>

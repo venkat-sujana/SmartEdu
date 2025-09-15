@@ -18,16 +18,15 @@ export async function GET(req) {
 
     const collegeId = session.user.collegeId;
 
-// ✅ Today date start & end
-const today = new Date();
-const start = new Date(today);
-start.setHours(0, 0, 0, 0);
+    // Today date range
+    const today = new Date();
+    const start = new Date(today);
+    start.setHours(0, 0, 0, 0);
 
-const end = new Date(today);
-end.setHours(23, 59, 59, 999);
+    const end = new Date(today);
+    end.setHours(23, 59, 59, 999);
 
-
-    // ✅ ఈరోజు attendance తీసుకోవడం
+    // ఈరోజు attendance తీసుకోవడం
     const todayRecords = await Attendance.find({
       collegeId,
       date: { $gte: start, $lte: end },
@@ -37,15 +36,15 @@ end.setHours(23, 59, 59, 999);
       return NextResponse.json({ status: "no-data", message: "No attendance recorded today" });
     }
 
-    // ✅ Absentees మాత్రమే filter చేయడం
+    // Absentees and Present students filter
     const absentees = todayRecords.filter((r) => r.status === "Absent");
+    const presentStudents = todayRecords.filter((r) => r.status === "Present");
 
-    // ✅ % calculation
+    // % calculation
     const total = todayRecords.length;
     const absentCount = absentees.length;
-    const presentCount = total - absentCount;  
-    const percentage = ((total - absentCount) / total) * 100;
-      
+    const presentCount = presentStudents.length;
+    const percentage = total > 0 ? ((presentCount / total) * 100).toFixed(2) : "0.00";
 
     return NextResponse.json({
       status: "success",
@@ -54,12 +53,16 @@ end.setHours(23, 59, 59, 999);
         yearOfStudy: r.studentId.yearOfStudy,
         group: r.studentId.group,
       })),
-      percentage: percentage.toFixed(2),
-      total: total,
+      presentStudents: presentStudents.map((r) => ({
+        name: r.studentId.name,
+        yearOfStudy: r.studentId.yearOfStudy,
+        group: r.studentId.group,
+      })),
+      percentage,
+      total,
       present: presentCount,
       absent: absentCount,
-     
-     });
+    });
   } catch (err) {
     console.error("Error fetching today absentees:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
