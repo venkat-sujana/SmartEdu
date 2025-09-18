@@ -112,9 +112,9 @@ todaysPresent.forEach(student => {
 
       <main className="flex-1 space-y-6 p-6">
         {/* Header */}
-        <header className="flex flex-col items-start justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
+        <header className="flex flex-col items-start justify-between space-y-3 sm:flex-row sm:items-center sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">{collegeName}</h1>
+            <h1 className="text-2xl font-bold text-gray-800">{collegeName}</h1>
             <p className="text-gray-600">
               Welcome,Principal <span className="font-semibold">{principal?.name}</span>
             </p>
@@ -128,27 +128,27 @@ todaysPresent.forEach(student => {
 
 
 
-        {/* Profile Card */}
-        <Card className="max-w-md rounded-2xl bg-white p-4 shadow-lg">
-          <div className="flex items-center space-x-6">
-            {principal?.photo ? (
-              <img
-                src={principal.photo}
-                alt="Principal"
-                className="h-28 w-28 rounded-full border object-cover shadow"
-              />
-            ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gray-200 text-gray-500">
-                No Photo
-              </div>
-            )}
-            <div>
-              <p className="text-xl font-semibold">{principal?.name || 'Principal'}</p>
-              <p className="text-gray-600">{principal?.email}</p>
-              <p className="text-sm text-gray-500">{principal?.collegeName}</p>
-            </div>
-          </div>
-        </Card>
+<Card className="max-w-xs rounded-2xl bg-white p-4 shadow-lg">
+  <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+    {principal?.photo ? (
+      <img
+        src={principal.photo}
+        alt="Principal"
+        className="h-20 w-20 md:h-28 md:w-28 rounded-full border object-cover shadow"
+      />
+    ) : (
+      <div className="flex h-20 w-20 md:h-28 md:w-28 items-center justify-center rounded-full bg-gray-200 text-gray-500">
+        No Photo
+      </div>
+    )}
+    <div className="text-center sm:text-left">
+      <p className="text-xl font-semibold">{principal?.name || 'Principal'}</p>
+      <p className="text-gray-600">{principal?.email}</p>
+      <p className="text-sm text-gray-500">{principal?.collegeName}</p>
+    </div>
+  </div>
+</Card>
+
 
       <ActiveLecturersCard
       lecturers={activeLecturersData?.data || []}
@@ -158,7 +158,7 @@ todaysPresent.forEach(student => {
     />
 
         {/* Stats Cards */}
-        <section className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
+        <section className="grid gap-6 md:grid-cols-3 lg:grid-cols-5 ">
           {[
             {
               title: 'Total Students',
@@ -190,7 +190,7 @@ todaysPresent.forEach(student => {
               color: 'text-red-600',
             },
           ].map(({ title, value, color }) => (
-            <Card key={title} className="rounded-2xl bg-white shadow-md">
+            <Card key={title} className="rounded-2xl bg-white shadow-md max-w-xs">
               <CardHeader>
                 <CardTitle>{title}</CardTitle>
               </CardHeader>
@@ -202,7 +202,7 @@ todaysPresent.forEach(student => {
         </section>
 
 
-<section className="grid gap-6 md:grid-cols-4 lg:grid-cols-6">
+<section className="grid gap-6 md:grid-cols-4 lg:grid-cols-6 max-w-xs">
   <Card className="rounded-2xl bg-white shadow-md">
     <CardHeader><CardTitle>First Year Present</CardTitle></CardHeader>
     <CardContent className="text-3xl font-bold text-green-700 text-center">
@@ -235,7 +235,7 @@ todaysPresent.forEach(student => {
 
 
         {/* Modules - Attendance and Exams */}
-        <section className="grid gap-6 md:grid-cols-2">
+        <section className="grid gap-6 md:grid-cols-2 max-w-xs">
           {/* Attendance Module */}
           <Card className="rounded-2xl bg-white p-4 shadow-lg">
             <CardHeader>
@@ -279,7 +279,7 @@ todaysPresent.forEach(student => {
           </Card>
 
           {/* Exam Module */}
-          <Card className="rounded-2xl bg-white p-4 shadow-lg">
+          <Card className="rounded-2xl bg-white p-4 shadow-lg max-w-xs">
             <CardHeader>
               <CardTitle className="text-xl font-semibold text-gray-800">Exams Overview</CardTitle>
             </CardHeader>
@@ -300,7 +300,7 @@ todaysPresent.forEach(student => {
         </section>
 
         {/* Quick Links */}
-        <section className="grid gap-6 md:grid-cols-3">
+        <section className="grid gap-6 md:grid-cols-3 max-w-xs">
           <Link
             href="/attendance-records"
             className="cursor-pointer rounded-xl bg-indigo-100 p-5 text-center shadow-md transition hover:bg-indigo-200"

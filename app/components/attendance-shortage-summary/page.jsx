@@ -24,7 +24,7 @@ export default function AttendanceShortageSummary({ data }) {
 
   // Display table
   return (
-    <div className="rounded-lg shadow-lg p-4 bg-white w-full md:w-2/3 mx-auto my-6">
+    <div className="rounded-lg shadow-lg p-4 bg-white w-full md:w-2/3 mx-auto my-6 max-w-xs">
       <h3 className="text-lg font-semibold mb-4 text-green-700 text-center">
         Attendance Shortage Summary (&lt;75%)
       </h3>

@@ -15,7 +15,7 @@ export default function ActiveLecturersCard({
     return <div className="rounded bg-white p-4 shadow">No lecturers currently logged in.</div>
 
   return (
-    <div className="max-w-md rounded-lg bg-white p-4 shadow">
+    <div className="max-w-xs rounded-lg bg-white p-4 shadow">
       <h3 className="mb-3 text-lg font-semibold">{title}</h3>
       <ul className="max-h-60 list-inside list-disc overflow-y-auto">
         {lecturers.map((lecturer, idx) => (

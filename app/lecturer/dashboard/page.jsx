@@ -81,19 +81,19 @@ export default function LecturerDashboard() {
       {/* College Name */}
       <div className="mb-8 px-6 py-4 bg-blue-50 border-l-[6px] border-blue-600 rounded-lg flex items-center gap-4">
         <GraduationCap className="w-9 h-9 text-blue-700" />
-        <h1 className="text-2xl font-extrabold text-blue-800 tracking-wide">
+        <h1 className="text-xl font-bold text-blue-800 tracking-wide">
           {collegeName || "Loading..."}
         </h1>
       </div>
 
       {/* Title */}
-      <h1 className="text-4xl font-bold text-center mb-10 text-blue-900 tracking-tight">
+      <h1 className="text-2xl font-bold text-center mb-10 text-blue-900 tracking-tight">
         🎓 Lecturer Dashboard
       </h1>
 
       {/* Lecturer Info Card */}
       <div className="mb-10 flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-blue-100 shadow-md rounded-2xl border border-blue-200 max-w-3xl mx-auto">
-        <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-4xl font-semibold shadow-lg border-4 border-blue-400">
+        {/* <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-4xl font-semibold shadow-lg border-4 border-blue-400">
           {user?.name
             ? user.name
                 .split(" ")
@@ -102,18 +102,22 @@ export default function LecturerDashboard() {
                 .toUpperCase()
                 .slice(0, 2)
             : "👤"}
-        </div>
-        <div className="flex-1 space-y-1">
-          <p className="text-xl font-semibold text-blue-900 flex items-center gap-3">
+        </div> */}
+
+        {/* <div className="p-4 shadow-md rounded-xl bg-blue-50 max-w-md mx-auto" > */}
+        <div className="flex-1 space-y-1 max-w-md mx-auto">
+          <p className="text-md font-semibold text-blue-900 flex items-center gap-3 break-words">
             <span>👤</span> {user?.name || "Lecturer Name"}
           </p>
           <p className="text-md font-medium text-blue-800 flex items-center gap-3">
             <span>📧</span> {user?.email || "Lecturer Email"}
           </p>
-          <p className="text-md text-blue-700 flex items-center gap-3">
+          <p className="text-md text-blue-700 flex items-center gap-3 break-words">
             <span>📚</span> Junior Lecturer in {user?.subject || "Subject"}
           </p>
         </div>
+        {/* </div> */}
+
       </div>
 
       {/* Welcome Message */}
@@ -194,9 +198,9 @@ export default function LecturerDashboard() {
           { href: "/register", label: "➕ Add Student", bg: "blue-100", hover: "blue-300", text: "blue-800" },
           { href: "/attendance-form", label: "🟢 Take Attendance", bg: "green-100", hover: "green-300", text: "green-800" },
           { href: "/lecturer/attendance/group-wise", label: "📅 Group wise Attendance", bg: "yellow-100", hover: "yellow-300", text: "yellow-800" },
-          { href: "/attendance-records", label: "📆 Attendance Records", bg: "indigo-100", hover: "indigo-300", text: "indigo-800" },
+          { href: "/attendance-records", label: "📆 Attendance Records", bg: "indigo-500", hover: "indigo-300", text: "indigo-800" },
           { href: "/lecturer/attendance", label: "📅 Attendance with names", bg: "green-100", hover: "green-300", text: "green-800" },
-          { href: "/attendance-records/individual", label: "📅 Edit Attendance Records", bg: "blue-200", hover: "blue-400", text: "blue-900" },
+          { href: "/attendance-records/individual", label: "📅 Edit Attendance Records", bg: "indigo-200", hover: "blue-400", text: "blue-900" },
           { href: "/attendance-records/attendance-calendar", label: "📅 Calendar View Attendance", bg: "green-200", hover: "green-400", text: "green-900" },
           { href: "/attendance-records/monthly-summary", label: "📅 Monthly Summary Attendance", bg: "yellow-200", hover: "yellow-400", text: "yellow-900" },
           { href: "/exams-form", label: "📝 Add Exam", bg: "green-200", hover: "green-400", text: "green-900" },
