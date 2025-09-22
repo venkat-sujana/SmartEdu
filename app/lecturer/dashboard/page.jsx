@@ -76,10 +76,14 @@ export default function LecturerDashboard() {
 
   const { user } = session || {};
 
+
+
+
+
   return (
     <div className="max-w-6xl mx-auto mt-12 p-8 bg-white rounded-3xl shadow-lg border border-gray-200">
       {/* College Name */}
-      <div className="mb-8 px-6 py-4 bg-blue-50 border-l-[6px] border-blue-600 rounded-lg flex items-center gap-4">
+      <div className="mb-8 px-6 py-4 bg-blue-50 border-2-[6px] border-black-600 rounded-lg flex items-center gap-4 ">
         <GraduationCap className="w-9 h-9 text-blue-700" />
         <h1 className="text-xl font-bold text-blue-800 tracking-wide">
           {collegeName || "Loading..."}
@@ -93,26 +97,15 @@ export default function LecturerDashboard() {
 
       {/* Lecturer Info Card */}
       <div className="mb-10 flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-blue-100 shadow-md rounded-2xl border border-blue-200 max-w-3xl mx-auto">
-        {/* <div className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-4xl font-semibold shadow-lg border-4 border-blue-400">
-          {user?.name
-            ? user.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)
-            : "👤"}
-        </div> */}
 
-        {/* <div className="p-4 shadow-md rounded-xl bg-blue-50 max-w-md mx-auto" > */}
         <div className="flex-1 space-y-1 max-w-md mx-auto">
-          <p className="text-md font-semibold text-blue-900 flex items-center gap-3 break-words">
+          <p className="text-md font-bold text-blue-900 flex items-center gap-3 tracking-tight break-words">
             <span>👤</span> {user?.name || "Lecturer Name"}
           </p>
-          <p className="text-md font-medium text-blue-800 flex items-center gap-3">
+          <p className="text-md font-medium text-blue-800 flex items-center gap-3 tracking-tight break-words">
             <span>📧</span> {user?.email || "Lecturer Email"}
           </p>
-          <p className="text-md text-blue-700 flex items-center gap-3 break-words">
+          <p className="text-md text-black-800 flex items-center gap-3 tracking-tight break-words">
             <span>📚</span> Junior Lecturer in {user?.subject || "Subject"}
           </p>
         </div>
@@ -122,10 +115,10 @@ export default function LecturerDashboard() {
 
       {/* Welcome Message */}
       <div className="mb-10 p-6 shadow-md rounded-2xl bg-blue-50 text-center max-w-2xl mx-auto">
-        <h2 className="text-3xl font-semibold text-blue-800 mb-4">
+        <h2 className="text-3xl font-semibold text-black-800 mb-4">
           Welcome, {user?.name || "Lecturer"}!
         </h2>
-        <p className="text-blue-700 text-lg">
+        <p className="text-black-800 text-lg">
           You are now logged in as a Lecturer in {collegeName || "College"}.
         </p>
       </div>
@@ -149,7 +142,7 @@ export default function LecturerDashboard() {
     initial={{ opacity: 0, y: 40 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
-    className="bg-gradient-to-br from-green-100 to-green-400 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
+    className="bg-gradient-to-br from-green-100 to-green-200 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
   >
     <div className="text-5xl mb-3 animate-bounce text-green-900">📈</div>
     <p className="text-lg font-bold text-green-900">Today's Attendance</p>
@@ -167,7 +160,7 @@ export default function LecturerDashboard() {
     initial={{ opacity: 0, y: 40 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
-    className="bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
+    className="bg-gradient-to-br from-yellow-200 to-yellow-300 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
   >
     <div className="text-5xl mb-3 animate-bounce text-yellow-900">🗓️</div>
     <p className="text-lg font-bold text-yellow-900">Exams Scheduled</p>
@@ -184,7 +177,7 @@ export default function LecturerDashboard() {
     transition={{ duration: 0.5 }}
     className="bg-gradient-to-br from-purple-200 to-purple-400 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
   >
-    <div className="text-5xl mb-3 animate-bounce text-purple-900">⚡</div>
+    <div className="text-5xl mb-3 animate-bounce text-purple-500">⚡</div>
     <p className="text-lg font-bold text-purple-900">Quick Actions</p>
     <p className="mt-2 text-purple-700 font-semibold text-sm">Use the links below for fast navigation.</p>
   </motion.div>
@@ -198,14 +191,14 @@ export default function LecturerDashboard() {
           { href: "/register", label: "➕ Add Student", bg: "blue-100", hover: "blue-300", text: "blue-800" },
           { href: "/attendance-form", label: "🟢 Take Attendance", bg: "green-100", hover: "green-300", text: "green-800" },
           { href: "/lecturer/attendance/group-wise", label: "📅 Group wise Attendance", bg: "yellow-100", hover: "yellow-300", text: "yellow-800" },
-          { href: "/attendance-records", label: "📆 Attendance Records", bg: "indigo-500", hover: "indigo-300", text: "indigo-800" },
+          { href: "/attendance-records", label: "📆 Attendance Records", bg: "blue-100", hover: "indigo-300", text: "indigo-800" },
           { href: "/lecturer/attendance", label: "📅 Attendance with names", bg: "green-100", hover: "green-300", text: "green-800" },
-          { href: "/attendance-records/individual", label: "📅 Edit Attendance Records", bg: "indigo-200", hover: "blue-400", text: "blue-900" },
-          { href: "/attendance-records/attendance-calendar", label: "📅 Calendar View Attendance", bg: "green-200", hover: "green-400", text: "green-900" },
-          { href: "/attendance-records/monthly-summary", label: "📅 Monthly Summary Attendance", bg: "yellow-200", hover: "yellow-400", text: "yellow-900" },
+          { href: "/attendance-records/individual", label: "📅 Edit Attendance Records", bg: "blue-100", hover: "blue-400", text: "blue-900" },
+          { href: "/attendance-records/attendance-calendar", label: "📅 Calendar View Attendance", bg: "green-100", hover: "green-400", text: "green-900" },
+          { href: "/attendance-records/monthly-summary", label: "📅 Monthly Summary Attendance", bg: "blue-100", hover: "yellow-400", text: "yellow-900" },
           { href: "/exams-form", label: "📝 Add Exam", bg: "green-200", hover: "green-400", text: "green-900" },
-          { href: "/exam-report", label: "📊 Exam Records", bg: "pink-200", hover: "pink-400", text: "pink-900" },
-          { href: "/caretaker", label: "🟢 Caretaker", bg: "cyan-200", hover: "cyan-400", text: "cyan-900" },
+          { href: "/exam-report", label: "📊 Exam Records", bg: "green-200", hover: "pink-400", text: "pink-900" },
+          { href: "/caretaker", label: "🟢 Caretaker", bg: "blue-100", hover: "cyan-400", text: "cyan-900" },
         ].map(({ href, label, bg, hover, text }) => (
           <Link key={href} href={href}>
             <motion.div

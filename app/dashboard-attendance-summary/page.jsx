@@ -36,7 +36,7 @@ export default function StudentAttendanceSummary() {
   const { totalClasses, presentClasses, absentClasses, monthlyPercentage } = attendance;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-6">
       <div className="bg-green-100 shadow-md rounded-xl p-6 text-center">
         <p className="text-gray-600 font-semibold">Present</p>
         <p className="text-2xl font-bold text-green-700">{presentClasses}</p>

@@ -92,19 +92,19 @@ todaysPresent.forEach(student => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="hidden w-64 bg-white p-6 shadow-md md:block">
-        <h2 className="mb-8 text-2xl font-bold text-blue-600">OSRA</h2>
+      <aside className="hidden w-56 bg-black  p-6 shadow-md md:block">
+        <h2 className="mb-8 text-2xl font-bold text-white">OSRA</h2>
         <nav className="space-y-4">
-          <Link href="/dashboard" className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          <Link href="/dashboard" className="flex items-center gap-2 text-white hover:text-blue-600">
             <Users className="h-5 w-5" /> Students
           </Link>
-          <Link href="#" className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          <Link href="#" className="flex items-center gap-2 text-white hover:text-blue-600">
             <BookOpen className="h-5 w-5" /> Exams
           </Link>
-          <Link href="#" className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          <Link href="#" className="flex items-center gap-2 text-white hover:text-blue-600">
             <Calendar className="h-5 w-5" /> Attendance
           </Link>
-          <Link href="#" className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+          <Link href="#" className="flex items-center gap-2 text-white hover:text-blue-600">
             <BarChart className="h-5 w-5" /> Reports
           </Link>
         </nav>
@@ -128,7 +128,7 @@ todaysPresent.forEach(student => {
 
 
 
-<Card className="max-w-xs rounded-2xl bg-white p-4 shadow-lg">
+<Card className="max-w-xs rounded-2xl bg-blue-100 p-4 shadow-4lg border border-blue-200">
   <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
     {principal?.photo ? (
       <img
@@ -158,7 +158,7 @@ todaysPresent.forEach(student => {
     />
 
         {/* Stats Cards */}
-        <section className="grid gap-6 md:grid-cols-3 lg:grid-cols-5 ">
+        <section className="grid grid-cols-1 sm:grid-cols-3  md:grid-cols-3 lg:grid-cols-4 gap-4 ">
           {[
             {
               title: 'Total Students',
@@ -190,8 +190,8 @@ todaysPresent.forEach(student => {
               color: 'text-red-600',
             },
           ].map(({ title, value, color }) => (
-            <Card key={title} className="rounded-2xl bg-white shadow-md max-w-xs">
-              <CardHeader>
+            <Card key={title} className="rounded-2x shadow-md max-w-xs">
+              <CardHeader className='bg-blue-50 text-center'>
                 <CardTitle>{title}</CardTitle>
               </CardHeader>
               <CardContent className={`text-3xl font-bold ${color} text-center`}>
@@ -202,30 +202,30 @@ todaysPresent.forEach(student => {
         </section>
 
 
-<section className="grid gap-6 md:grid-cols-4 lg:grid-cols-6 max-w-xs">
-  <Card className="rounded-2xl bg-white shadow-md">
-    <CardHeader><CardTitle>First Year Present</CardTitle></CardHeader>
+<section className="grid grid-cols-1 sm:grid-cols-3  md:grid-cols-3 lg:grid-cols-4 gap-4">
+  <Card className="rounded-2xl shadow-lg">
+    <CardHeader className='bg-amber-50 text-center'><CardTitle>First Year Present</CardTitle></CardHeader>
     <CardContent className="text-3xl font-bold text-green-700 text-center">
       {presentAbsentByYear.firstYear.present}
     </CardContent>
   </Card>
 
   <Card className="rounded-2xl bg-white shadow-md">
-    <CardHeader><CardTitle>First Year Absent</CardTitle></CardHeader>
+    <CardHeader className='bg-orange-100 text-center'><CardTitle>First Year Absent</CardTitle></CardHeader>
     <CardContent className="text-3xl font-bold text-red-600 text-center">
       {presentAbsentByYear.firstYear.absent}
     </CardContent>
   </Card>
 
   <Card className="rounded-2xl bg-white shadow-md">
-    <CardHeader><CardTitle>Second Year Present</CardTitle></CardHeader>
+    <CardHeader className='bg-slate-200 text-center'><CardTitle>Second Year Present</CardTitle></CardHeader>
     <CardContent className="text-3xl font-bold text-green-700 text-center">
       {presentAbsentByYear.secondYear.present}
     </CardContent>
   </Card>
 
   <Card className="rounded-2xl bg-white shadow-md">
-    <CardHeader><CardTitle>Second Year Absent</CardTitle></CardHeader>
+    <CardHeader className='bg-emerald-100 text-center'><CardTitle>Second Year Absent</CardTitle></CardHeader>
     <CardContent className="text-3xl font-bold text-red-600 text-center">
       {presentAbsentByYear.secondYear.absent}
     </CardContent>
@@ -235,9 +235,9 @@ todaysPresent.forEach(student => {
 
 
         {/* Modules - Attendance and Exams */}
-        <section className="grid gap-6 md:grid-cols-2 max-w-xs">
+        <section className="grid grid-cols-1  gap-4">
           {/* Attendance Module */}
-          <Card className="rounded-2xl bg-white p-4 shadow-lg">
+          <Card className="rounded-2xl bg-white p-2 shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl font-semibold text-gray-800">
                 Attendance Overview
