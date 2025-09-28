@@ -195,10 +195,10 @@ export default function LecturerDashboard() {
           { href: "/lecturer/attendance", label: "📅 Attendance with names", bg: "green-100", hover: "green-300", text: "green-800" },
           { href: "/attendance-records/individual", label: "📅 Edit Attendance Records", bg: "blue-100", hover: "blue-400", text: "blue-900" },
           { href: "/attendance-records/attendance-calendar", label: "📅 Calendar View Attendance", bg: "green-100", hover: "green-400", text: "green-900" },
-          { href: "/attendance-records/monthly-summary", label: "📅 Monthly Summary Attendance", bg: "blue-100", hover: "yellow-400", text: "yellow-900" },
+          { href: "/attendance-records/monthly-summary", label: "📅 Monthly Attendance", bg: "blue-100", hover: "yellow-400", text: "yellow-900" },
           { href: "/exams-form", label: "📝 Add Exam", bg: "green-200", hover: "green-400", text: "green-900" },
           { href: "/exam-report", label: "📊 Exam Records", bg: "green-200", hover: "pink-400", text: "pink-900" },
-          { href: "/caretaker", label: "🟢 Caretaker", bg: "blue-100", hover: "cyan-400", text: "cyan-900" },
+          { href: "/create-question-paper", label: "🟢 Question paper genarator", bg: "blue-100", hover: "cyan-400", text: "cyan-900" },
         ].map(({ href, label, bg, hover, text }) => (
           <Link key={href} href={href}>
             <motion.div

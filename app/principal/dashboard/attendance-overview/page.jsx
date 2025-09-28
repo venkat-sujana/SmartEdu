@@ -45,7 +45,7 @@ export default function AttendanceOverview({ collegeId }) {
   );
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2 max-w-4xl mx-auto my-6">
       {/* College Average */}
       <Card className="col-span-2">
         <CardHeader>

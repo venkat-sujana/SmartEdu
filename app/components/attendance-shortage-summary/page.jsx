@@ -24,7 +24,7 @@ export default function AttendanceShortageSummary({ data }) {
 
   // Display table
   return (
-    <div className="rounded-lg shadow-lg p-4 bg-white w-full md:w-2/3 mx-auto my-6 max-w-xs">
+    <div className="rounded-lg shadow-lg p-4 bg-white w-full md:w-2/3 mx-auto my-6 max-w-4xl">
       <h3 className="text-lg font-semibold mb-4 text-green-700 text-center">
         Attendance Shortage Summary (&lt;75%)
       </h3>
@@ -48,7 +48,7 @@ export default function AttendanceShortageSummary({ data }) {
         </div>
       </div>
 
-      <table className="w-full text-sm border border-gray-300 rounded">
+      <table className="w-full  max-w-5xl max-auto text-sm border border-gray-300 rounded ">
         <thead className="bg-green-600 text-white">
           <tr>
             <th className="p-2 border-r">Group</th>

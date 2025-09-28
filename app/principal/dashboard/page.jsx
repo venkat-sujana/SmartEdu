@@ -17,6 +17,7 @@ import AttendanceShortageSummary from '@/app/components/attendance-shortage-summ
 
 
 
+
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function PrincipalDashboard() {
@@ -24,6 +25,7 @@ export default function PrincipalDashboard() {
   const { data: session } = useSession();
   const principal = session?.user;
   const collegeName = principal?.collegeName || 'Your College';
+ 
 
   useEffect(() => {
     fetch('/api/attendance/shortage-summary')
@@ -31,7 +33,13 @@ export default function PrincipalDashboard() {
       .then(data => setShortageData(data.data || []));
   }, []);
 
+ 
+
+
+
+
   
+
 
   const { data: studentData } = useSWR('/api/students', fetcher);
   const totalStudents = studentData?.data?.length || 0;
@@ -83,8 +91,7 @@ todaysPresent.forEach(student => {
 
 
 
-  const { data: unit1Failures } = useSWR('/api/exams/failures?examType=UNIT-1', fetcher);
-  const { data: unit2Failures } = useSWR('/api/exams/failures?examType=UNIT-2', fetcher);
+  
 
 
 
@@ -279,7 +286,7 @@ todaysPresent.forEach(student => {
           </Card>
 
           {/* Exam Module */}
-          <Card className="rounded-2xl bg-white p-4 shadow-lg max-w-xs">
+          <Card className="rounded-2xl bg-white p-4 shadow-lg max-w-4xl mx-auto">
             <CardHeader>
               <CardTitle className="text-xl font-semibold text-gray-800">Exams Overview</CardTitle>
             </CardHeader>
@@ -300,7 +307,7 @@ todaysPresent.forEach(student => {
         </section>
 
         {/* Quick Links */}
-        <section className="grid gap-6 md:grid-cols-3 max-w-xs">
+        <section className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
           <Link
             href="/attendance-records"
             className="cursor-pointer rounded-xl bg-indigo-100 p-5 text-center shadow-md transition hover:bg-indigo-200"
@@ -316,6 +323,7 @@ todaysPresent.forEach(student => {
               <p className="text-xl font-semibold text-blue-800">📋 View Students</p>
             </motion.div>
           </Link>
+          
           <Link href="/announcements">
             <p className="cursor-pointer rounded-xl bg-green-100 p-5 text-center shadow-md transition hover:bg-green-200">
               <span className="text-xl font-semibold text-green-800">📢 Announcements</span>
@@ -323,6 +331,10 @@ todaysPresent.forEach(student => {
           </Link>
         </section>
       </main>
+
+      
+      
     </div>
+    
   )
 }

@@ -5,6 +5,8 @@ import Link from "next/link";
 import EditExamForm from "@/app/edit-exam-form/page";
 import { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import ExamFailureTable from "@/app/components/exam-failure-table/page";
+
 
 export default function ExamReportPage() {
   const [reports, setReports] = useState([]);
@@ -421,7 +423,16 @@ export default function ExamReportPage() {
           }
         }
       `}</style>
+<div>
+  <ExamFailureTable reports={filteredReports} /> 
+</div>
+      
     </div>
+
+
+  
+
   );
+  
 }
 

@@ -100,7 +100,7 @@ export default function StudentIndividualExams({ studentId }) {
   if (examResults.length === 0) return <p>No exam results available.</p>;
 
   return (
-    <div className="max-w-5xl bg-emerald-50 border border-blue-500 mx-auto p-4  rounded shadow">
+    <div className="max-w-5xl bg-indigo-50 border border-blue-500 mx-auto p-4  rounded shadow">
       <h2 className="text-2xl font-bold mb-6 text-center">Exam Results</h2>
 
       {examResults.map((exam) => (
