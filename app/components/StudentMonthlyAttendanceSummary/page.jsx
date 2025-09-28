@@ -102,7 +102,7 @@ export default function StudentMonthlyAttendanceSummary({ studentId }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded shadow bg-white p-4 max-w-xl mx-auto">
+    <div className="overflow-x-auto bg-cyan-100 rounded shadow-2xl border-1 border-blue-500 p-4 max-w-5xl mx-auto">
       <h2 className="text-xl font-semibold mb-4 text-center">
         Monthly Attendance Summary
       </h2>
