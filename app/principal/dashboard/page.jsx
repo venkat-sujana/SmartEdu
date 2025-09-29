@@ -9,100 +9,83 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
 import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
 import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
 
-
-
-
-
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function PrincipalDashboard() {
-  const [shortageData, setShortageData] = useState([]);
-  const { data: session } = useSession();
-  const principal = session?.user;
-  const collegeName = principal?.collegeName || 'Your College';
- 
+  const [shortageData, setShortageData] = useState([])
+  const { data: session } = useSession()
+  const principal = session?.user
+  const collegeName = principal?.collegeName || 'Your College'
 
   useEffect(() => {
     fetch('/api/attendance/shortage-summary')
       .then(res => res.json())
-      .then(data => setShortageData(data.data || []));
-  }, []);
+      .then(data => setShortageData(data.data || []))
+  }, [])
 
- 
+  const { data: studentData } = useSWR('/api/students', fetcher)
+  const totalStudents = studentData?.data?.length || 0
 
+  const { data: lecturerData } = useSWR('/api/lecturers', fetcher)
+  const totalLecturers = lecturerData?.data?.length || 0
 
+  const { data: activeLecturersData, error: activeLecturersError } = useSWR(
+    '/api/lecturers/active',
+    fetcher
+  )
 
+  const { data, error, isLoading } = useSWR('/api/attendance/today-absentees', fetcher)
+  const absentees = data?.absentees || []
 
-  
+  // Fetch today's present students list from API response (assuming it has)
+  const todaysPresent = data?.presentStudents || [] // ఈ array API లో ఉండాలి
 
+  // Calculate present and absent counts for stats cards
+  const presentCount = todaysPresent.length
+  const absentCount = absentees.length
 
-  const { data: studentData } = useSWR('/api/students', fetcher);
-  const totalStudents = studentData?.data?.length || 0;
+  // Calculate attendance percentage
+  const percentage = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0
 
-  const { data: lecturerData } = useSWR('/api/lecturers', fetcher);
-  const totalLecturers = lecturerData?.data?.length || 0;
-  
-  const { data: activeLecturersData, error: activeLecturersError } = useSWR('/api/lecturers/active', fetcher);
-
-const { data, error, isLoading } = useSWR('/api/attendance/today-absentees', fetcher);
-const absentees = data?.absentees || [];
-
-// Fetch today's present students list from API response (assuming it has)
-const todaysPresent = data?.presentStudents || []; // ఈ array API లో ఉండాలి
-
-// Calculate present and absent counts for stats cards
-const presentCount = todaysPresent.length;
-const absentCount = absentees.length;
-
-// Calculate attendance percentage
-const percentage =
-  totalStudents > 0
-    ? Math.round((presentCount / totalStudents) * 100)
-    : 0;
-
-// Initialize counts
-const presentAbsentByYear = {
-  firstYear: { present: 0, absent: 0 },
-  secondYear: { present: 0, absent: 0 },
-};
-
-// Count absent students by year (absentees array)
-absentees.forEach(student => {
-  if (student.yearOfStudy?.toLowerCase().includes('first')) {
-    presentAbsentByYear.firstYear.absent++;
-  } else if (student.yearOfStudy?.toLowerCase().includes('second')) {
-    presentAbsentByYear.secondYear.absent++;
+  // Initialize counts
+  const presentAbsentByYear = {
+    firstYear: { present: 0, absent: 0 },
+    secondYear: { present: 0, absent: 0 },
   }
-});
 
-// Count present students by year (todaysPresent array)
-todaysPresent.forEach(student => {
-  if (student.yearOfStudy?.toLowerCase().includes('first')) {
-    presentAbsentByYear.firstYear.present++;
-  } else if (student.yearOfStudy?.toLowerCase().includes('second')) {
-    presentAbsentByYear.secondYear.present++;
-  }
-});
+  // Count absent students by year (absentees array)
+  absentees.forEach(student => {
+    if (student.yearOfStudy?.toLowerCase().includes('first')) {
+      presentAbsentByYear.firstYear.absent++
+    } else if (student.yearOfStudy?.toLowerCase().includes('second')) {
+      presentAbsentByYear.secondYear.absent++
+    }
+  })
 
-
-
-  
-
-
-
+  // Count present students by year (todaysPresent array)
+  todaysPresent.forEach(student => {
+    if (student.yearOfStudy?.toLowerCase().includes('first')) {
+      presentAbsentByYear.firstYear.present++
+    } else if (student.yearOfStudy?.toLowerCase().includes('second')) {
+      presentAbsentByYear.secondYear.present++
+    }
+  })
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="hidden w-56 bg-black  p-6 shadow-md md:block">
+      <aside className="hidden w-56 bg-black p-6 shadow-md md:block">
         <h2 className="mb-8 text-2xl font-bold text-white">OSRA</h2>
         <nav className="space-y-4">
-          <Link href="/dashboard" className="flex items-center gap-2 text-white hover:text-blue-600">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 text-white hover:text-blue-600"
+          >
             <Users className="h-5 w-5" /> Students
           </Link>
           <Link href="#" className="flex items-center gap-2 text-white hover:text-blue-600">
@@ -132,40 +115,36 @@ todaysPresent.forEach(student => {
           </Button>
         </header>
 
+        <Card className="shadow-4lg max-w-xs rounded-2xl border border-blue-200 bg-blue-100 p-4">
+          <div className="flex flex-col items-center space-y-4 sm:flex-row sm:items-start sm:space-y-0 sm:space-x-6">
+            {principal?.photo ? (
+              <img
+                src={principal.photo}
+                alt="Principal"
+                className="h-20 w-20 rounded-full border object-cover shadow md:h-28 md:w-28"
+              />
+            ) : (
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-gray-500 md:h-28 md:w-28">
+                No Photo
+              </div>
+            )}
+            <div className="text-center sm:text-left">
+              <p className="text-xl font-semibold">{principal?.name || 'Principal'}</p>
+              <p className="text-gray-600">{principal?.email}</p>
+              <p className="text-sm text-gray-500">{principal?.collegeName}</p>
+            </div>
+          </div>
+        </Card>
 
-
-
-<Card className="max-w-xs rounded-2xl bg-blue-100 p-4 shadow-4lg border border-blue-200">
-  <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
-    {principal?.photo ? (
-      <img
-        src={principal.photo}
-        alt="Principal"
-        className="h-20 w-20 md:h-28 md:w-28 rounded-full border object-cover shadow"
-      />
-    ) : (
-      <div className="flex h-20 w-20 md:h-28 md:w-28 items-center justify-center rounded-full bg-gray-200 text-gray-500">
-        No Photo
-      </div>
-    )}
-    <div className="text-center sm:text-left">
-      <p className="text-xl font-semibold">{principal?.name || 'Principal'}</p>
-      <p className="text-gray-600">{principal?.email}</p>
-      <p className="text-sm text-gray-500">{principal?.collegeName}</p>
-    </div>
-  </div>
-</Card>
-
-
-      <ActiveLecturersCard
-      lecturers={activeLecturersData?.data || []}
-      loading={!activeLecturersData && !activeLecturersError}
-      error={activeLecturersError}
-      title="Currently Active Lecturers"
-    />
+        <ActiveLecturersCard
+          lecturers={activeLecturersData?.data || []}
+          loading={!activeLecturersData && !activeLecturersError}
+          error={activeLecturersError}
+          title="Currently Active Lecturers"
+        />
 
         {/* Stats Cards */}
-        <section className="grid grid-cols-1 sm:grid-cols-3  md:grid-cols-3 lg:grid-cols-4 gap-4 ">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
           {[
             {
               title: 'Total Students',
@@ -197,8 +176,8 @@ todaysPresent.forEach(student => {
               color: 'text-red-600',
             },
           ].map(({ title, value, color }) => (
-            <Card key={title} className="rounded-2x shadow-md max-w-xs">
-              <CardHeader className='bg-blue-50 text-center'>
+            <Card key={title} className="rounded-2x max-w-xs shadow-md">
+              <CardHeader className="bg-blue-50 text-center">
                 <CardTitle>{title}</CardTitle>
               </CardHeader>
               <CardContent className={`text-3xl font-bold ${color} text-center`}>
@@ -208,41 +187,47 @@ todaysPresent.forEach(student => {
           ))}
         </section>
 
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
+          <Card className="rounded-2xl shadow-lg">
+            <CardHeader className="bg-amber-50 text-center">
+              <CardTitle>First Year Present</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-3xl font-bold text-green-700">
+              {presentAbsentByYear.firstYear.present}
+            </CardContent>
+          </Card>
 
-<section className="grid grid-cols-1 sm:grid-cols-3  md:grid-cols-3 lg:grid-cols-4 gap-4">
-  <Card className="rounded-2xl shadow-lg">
-    <CardHeader className='bg-amber-50 text-center'><CardTitle>First Year Present</CardTitle></CardHeader>
-    <CardContent className="text-3xl font-bold text-green-700 text-center">
-      {presentAbsentByYear.firstYear.present}
-    </CardContent>
-  </Card>
+          <Card className="rounded-2xl bg-white shadow-md">
+            <CardHeader className="bg-orange-100 text-center">
+              <CardTitle>First Year Absent</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-3xl font-bold text-red-600">
+              {presentAbsentByYear.firstYear.absent}
+            </CardContent>
+          </Card>
 
-  <Card className="rounded-2xl bg-white shadow-md">
-    <CardHeader className='bg-orange-100 text-center'><CardTitle>First Year Absent</CardTitle></CardHeader>
-    <CardContent className="text-3xl font-bold text-red-600 text-center">
-      {presentAbsentByYear.firstYear.absent}
-    </CardContent>
-  </Card>
+          <Card className="rounded-2xl bg-white shadow-md">
+            <CardHeader className="bg-slate-200 text-center">
+              <CardTitle>Second Year Present</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-3xl font-bold text-green-700">
+              {presentAbsentByYear.secondYear.present}
+            </CardContent>
+          </Card>
 
-  <Card className="rounded-2xl bg-white shadow-md">
-    <CardHeader className='bg-slate-200 text-center'><CardTitle>Second Year Present</CardTitle></CardHeader>
-    <CardContent className="text-3xl font-bold text-green-700 text-center">
-      {presentAbsentByYear.secondYear.present}
-    </CardContent>
-  </Card>
-
-  <Card className="rounded-2xl bg-white shadow-md">
-    <CardHeader className='bg-emerald-100 text-center'><CardTitle>Second Year Absent</CardTitle></CardHeader>
-    <CardContent className="text-3xl font-bold text-red-600 text-center">
-      {presentAbsentByYear.secondYear.absent}
-    </CardContent>
-  </Card>
-  {/* Existing other cards */}
-</section>
-
+          <Card className="rounded-2xl bg-white shadow-md">
+            <CardHeader className="bg-emerald-100 text-center">
+              <CardTitle>Second Year Absent</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-3xl font-bold text-red-600">
+              {presentAbsentByYear.secondYear.absent}
+            </CardContent>
+          </Card>
+          {/* Existing other cards */}
+        </section>
 
         {/* Modules - Attendance and Exams */}
-        <section className="grid grid-cols-1  gap-4">
+        <section className="grid grid-cols-1 gap-4">
           {/* Attendance Module */}
           <Card className="rounded-2xl bg-white p-2 shadow-lg">
             <CardHeader>
@@ -260,7 +245,6 @@ todaysPresent.forEach(student => {
               )}
             </div>
 
-            
             <CardContent className="space-y-4">
               {isLoading ? (
                 <p>Loading attendance data...</p>
@@ -268,7 +252,7 @@ todaysPresent.forEach(student => {
                 <p className="text-red-600">Failed to load attendance data</p>
               ) : (
                 <>
-                 <div className="mt-4">
+                  <div className="mt-4">
                     <h3 className="mb-2 font-semibold">Today's Absentees</h3>
                     {absentees.length === 0 ? (
                       <p className="text-green-600">🎉 No Absentees Today</p>
@@ -279,14 +263,12 @@ todaysPresent.forEach(student => {
                 </>
               )}
             </CardContent>
-                  {/* <AttendanceShortageSummary data={shortageData} /> */}
-                  <AttendanceShortageSummary data={shortageData} />
-
-
+            {/* <AttendanceShortageSummary data={shortageData} /> */}
+            <AttendanceShortageSummary data={shortageData} />
           </Card>
 
           {/* Exam Module */}
-          <Card className="rounded-2xl bg-white p-4 shadow-lg max-w-4xl mx-auto">
+          <Card className="mx-auto max-w-4xl rounded-2xl bg-white p-4 shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl font-semibold text-gray-800">Exams Overview</CardTitle>
             </CardHeader>
@@ -307,7 +289,7 @@ todaysPresent.forEach(student => {
         </section>
 
         {/* Quick Links */}
-        <section className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
+        <section className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
           <Link
             href="/attendance-records"
             className="cursor-pointer rounded-xl bg-indigo-100 p-5 text-center shadow-md transition hover:bg-indigo-200"
@@ -323,7 +305,7 @@ todaysPresent.forEach(student => {
               <p className="text-xl font-semibold text-blue-800">📋 View Students</p>
             </motion.div>
           </Link>
-          
+
           <Link href="/announcements">
             <p className="cursor-pointer rounded-xl bg-green-100 p-5 text-center shadow-md transition hover:bg-green-200">
               <span className="text-xl font-semibold text-green-800">📢 Announcements</span>
@@ -331,10 +313,6 @@ todaysPresent.forEach(student => {
           </Link>
         </section>
       </main>
-
-      
-      
     </div>
-    
   )
 }
