@@ -1,12 +1,11 @@
-
-//app/api/auth/[...nextauth]/route.js
+// app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";
 import Student from "@/models/Student";
 import Principal from "@/models/Principal";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
 const authOptions = {
   providers: [
@@ -19,40 +18,28 @@ const authOptions = {
       },
       async authorize(credentials) {
         console.log("🔑 Incoming credentials:", credentials);
-        await connectMongoDB();
-        const { identifier, password, role } = credentials;
-        const lecturer = await Lecturer.findOne({ email: identifier.trim().toLowerCase() });
 
-        if (!identifier || !password || !role) {
+        if (!credentials?.identifier || !credentials?.password || !credentials?.role) {
           console.log("❌ Missing credentials");
           return null;
         }
 
+        await connectMongoDB();
+
+        const { identifier, password, role } = credentials;
         let user = null;
 
         if (role.toLowerCase() === "lecturer") {
-          const lecturer = await Lecturer.findOne({
-            email: identifier.trim().toLowerCase(),
-          });
+          const lecturer = await Lecturer.findOne({ email: identifier.trim().toLowerCase() });
           if (!lecturer) {
             console.log("❌ Lecturer not found");
             return null;
           }
 
+          const isValid = await bcrypt.compare(password.trim(), lecturer.password);
+          console.log("✅ Password valid?", isValid);
+          if (!isValid) return null;
 
- 
-const isValid = await bcrypt.compare(password.trim(), lecturer.password);
-console.log("✅ Password valid?", isValid);
-console.log("Entered password:", `"${password}"`);
-console.log("Trimmed password:", `"${password.trim()}"`);
-console.log("DB hash:", lecturer.password);
-console.log("Compare result:", isValid);
-
-          
-
-
-
-    if (!isValid) return null;  // If password is invalid, reject login
           user = {
             id: lecturer._id.toString(),
             name: lecturer.name,
@@ -64,23 +51,19 @@ console.log("Compare result:", isValid);
           };
         }
 
-
-
-
-        if (role.toLowerCase() === "student") {
-          const student = await Student.findOne({ admissionNo: identifier }).populate(
-            "collegeId",
-            "name"
-          );
+        else if (role.toLowerCase() === "student") {
+          const student = await Student.findOne({ admissionNo: identifier.trim() }).populate("collegeId", "name");
           if (!student) {
-            console.log("❌ Student not found with admissionNo:", identifier);
+            console.log("❌ Student not found");
             return null;
           }
-          const isValid = await bcrypt.compare(password, student.password);
+
+          const isValid = await bcrypt.compare(password.trim(), student.password);
           if (!isValid) {
             console.log("❌ Invalid student password");
             return null;
           }
+
           user = {
             id: student._id.toString(),
             name: student.name,
@@ -100,19 +83,19 @@ console.log("Compare result:", isValid);
           };
         }
 
-        if (role.toLowerCase() === "principal") {
-          const principal = await Principal.findOne({
-            email: identifier.trim().toLowerCase(),
-          }).populate("collegeId", "name");
+        else if (role.toLowerCase() === "principal") {
+          const principal = await Principal.findOne({ email: identifier.trim().toLowerCase() }).populate("collegeId", "name");
           if (!principal) {
             console.log("❌ Principal not found");
             return null;
           }
-          const isValid = await bcrypt.compare(password, principal.password);
+
+          const isValid = await bcrypt.compare(password.trim(), principal.password);
           if (!isValid) {
             console.log("❌ Invalid principal password");
             return null;
           }
+
           user = {
             id: principal._id.toString(),
             name: principal.name,
@@ -138,10 +121,7 @@ console.log("Compare result:", isValid);
         token.collegeId = user.collegeId;
         token.collegeName = user.collegeName;
 
-        if (user.role === "lecturer") {
-          token.subject = user.subject;
-        }
-
+        if (user.role === "lecturer") token.subject = user.subject;
         if (user.role === "student") {
           token.admissionNo = user.admissionNo;
           token.yearOfStudy = user.yearOfStudy;
@@ -154,10 +134,7 @@ console.log("Compare result:", isValid);
           token.mobile = user.mobile;
           token.group = user.group;
         }
-
-        if (user.role === "principal") {
-          token.photo = user.photo;
-        }
+        if (user.role === "principal") token.photo = user.photo;
       }
       return token;
     },
@@ -168,10 +145,7 @@ console.log("Compare result:", isValid);
       session.user.collegeId = token.collegeId;
       session.user.collegeName = token.collegeName;
 
-      if (token.role === "lecturer") {
-        session.user.subject = token.subject;
-      }
-
+      if (token.role === "lecturer") session.user.subject = token.subject;
       if (token.role === "student") {
         session.user.admissionNo = token.admissionNo;
         session.user.yearOfStudy = token.yearOfStudy;
@@ -184,17 +158,14 @@ console.log("Compare result:", isValid);
         session.user.mobile = token.mobile;
         session.user.group = token.group;
       }
-
-      if (token.role === "principal") {
-        session.user.photo = token.photo;
-      }
+      if (token.role === "principal") session.user.photo = token.photo;
 
       return session;
     },
   },
 
   pages: {
-    signIn: "/student/login",
+    signIn: "/student/login", // you can customize per role later
   },
 
   secret: process.env.NEXTAUTH_SECRET,

@@ -1,23 +1,32 @@
-// app/api/lecturers/active/route.js
-import { NextResponse } from 'next/server';
-import connectMongoDB from '@/lib/mongodb';
-import Lecturer from '@/models/Lecturer';
 
-// Hypothetical: ఇక్కడ మీరు session store, Redis లేదా DB లో కాలేజ్ active lecturers ను ఫెచ్ చేస్తారు
-// ఇక్కడ సింపుల్ గా మూడల్ నుంచి lecturers fetch చేసి సంబంధించిన లాజిక్ చేయండి.
+// app/api/lecturers/active/route.js
+import { NextResponse } from 'next/server'
+import connectMongoDB from '@/lib/mongodb'
+import Lecturer from '@/models/Lecturer'
 
 export async function GET(req) {
-  await connectMongoDB();
+  await connectMongoDB()
 
-  // Example: అది మీ session tracking పై ఆధారపడి ఉంటుంది
-  // For demo: అన్ని lecturers fetch చేసి, మీరు ఏదైనా filter చేసుకోవచ్చు logged in అయితే
-  const lecturers = await Lecturer.find({ /*filter logged-in based on your session tracking*/ });
+  const { searchParams } = new URL(req.url)
+  const collegeId = searchParams.get('collegeId')
 
-  // మీకు కావలసిన name + subject
+  console.log("Incoming collegeId:", collegeId)
+
+  // 🔎 Fetch all lecturers
+  const allLecturers = await Lecturer.find({})
+  console.log("All Lecturers:", allLecturers)
+
+  // 🔎 Filter lecturers by collegeId
+  const lecturers = await Lecturer.find({ collegeId })
+  console.log("Filtered Lecturers by collegeId:", lecturers)
+
+  // 🔎 Map lecturers to active lecturers
   const activeLecturers = lecturers.map(l => ({
     name: l.name,
     subject: l.subject,
-  }));
+  }))
+  console.log("Active Lecturers:", activeLecturers)
 
-  return NextResponse.json({ data: activeLecturers });
+  return NextResponse.json(activeLecturers)
 }
+

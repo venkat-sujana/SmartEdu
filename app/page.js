@@ -12,7 +12,7 @@ export default function Home() {
           alt="SmartEdu Logo"
           width={600}
           height={600}
-          className="mt-20 border-2 border-gray-300 rounded-lg shadow-lg"
+          className="mt-5 border-2 border-gray-300 rounded-lg shadow-lg"
           priority
         />
       </div>

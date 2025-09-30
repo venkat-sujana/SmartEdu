@@ -6,7 +6,7 @@ import connectMongoDB from '@/lib/mongodb'
 import Student from '@/models/Student'
 import cloudinary from '@/lib/cloudinary'
 import mongoose from 'mongoose'
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcrypt'
 
 export async function POST(req) {
   try {

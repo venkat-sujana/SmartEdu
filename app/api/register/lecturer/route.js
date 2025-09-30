@@ -1,7 +1,7 @@
 
 //app/api/register/lecturer/route.js
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer"; // ✅ correct import
 import College from "@/models/College";
