@@ -2,7 +2,7 @@
 //app/students/activate/route.js
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
 export async function POST(request) {
   try {

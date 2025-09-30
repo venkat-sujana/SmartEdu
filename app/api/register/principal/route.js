@@ -1,7 +1,7 @@
 //app/api/register/principal/route.js
 import connectMongoDB from "@/lib/mongodb";
 import Principal from "@/models/Principal";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
 export async function POST(request) {
   try {
