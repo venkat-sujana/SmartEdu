@@ -18,8 +18,8 @@ export default function LecturerLogin() {
 
     const res = await signIn("credentials", {
       redirect: false,
-      identifier: email,
-      password,
+      identifier: email. trim().toLowerCase(), // 🔥 trim and lowercase email
+      password: password. trim(), // 🔥 trim password
       role: "lecturer", // 🔥 fixed role
       callbackUrl: "/lecturer/dashboard",
     });

@@ -1,7 +1,7 @@
 
 //app/api/register/lecturer/route.js
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer"; // ✅ correct import
 import College from "@/models/College";
@@ -23,16 +23,17 @@ export async function POST(req) {
       return NextResponse.json({ error: "Invalid college ID" }, { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+   const hashedPassword = await bcrypt.hash(password.trim(), 10);
 
-    const newLecturer = new Lecturer({
-      name,
-      email,
-      password: hashedPassword,
-      subject,
-      collegeId,
-      collegeName: college.name, // ✅ Add this line
-    });
+const newLecturer = new Lecturer({
+  name,
+  email: email.trim().toLowerCase(),   // lowercase
+  password: hashedPassword,
+  subject,
+  collegeId,
+  collegeName: college.name,
+});
+
 
     await newLecturer.save();
 

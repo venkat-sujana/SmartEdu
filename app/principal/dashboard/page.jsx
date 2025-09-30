@@ -13,6 +13,7 @@ import React, { useEffect, useState } from 'react'
 import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
 import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
+import ExamFailureTable from "@/app/components/exam-failure-table/page";
 
 const fetcher = url => fetch(url).then(res => res.json())
 
@@ -21,6 +22,8 @@ export default function PrincipalDashboard() {
   const { data: session } = useSession()
   const principal = session?.user
   const collegeName = principal?.collegeName || 'Your College'
+  const [filteredReports, setFilteredReports] = useState([])
+  // const [examData, setExamData] = useState([])
 
   useEffect(() => {
     fetch('/api/attendance/shortage-summary')
@@ -88,9 +91,14 @@ export default function PrincipalDashboard() {
           >
             <Users className="h-5 w-5" /> Students
           </Link>
-          <Link href="#" className="flex items-center gap-2 text-white hover:text-blue-600">
-            <BookOpen className="h-5 w-5" /> Exams
+
+          <Link href="/dashboard"
+            className="flex items-center gap-2 text-white hover:text-blue-600"
+          >
+            <Users className="h-5 w-5" /> exams
           </Link>
+
+          
           <Link href="#" className="flex items-center gap-2 text-white hover:text-blue-600">
             <Calendar className="h-5 w-5" /> Attendance
           </Link>
@@ -274,14 +282,7 @@ export default function PrincipalDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="mb-2 font-semibold">Upcoming Exams</h3>
-                <ul className="list-inside list-disc space-y-1 text-gray-700">
-                  <li>📅 Quarterly Exam - 15th Sept</li>
-                  <li>📅 Unit-III Exam - 10th Oct</li>
-                  <li>📅 Half Yearly - 17th Nov</li>
-                  <li>📅 Pre-Public 1 - 15th Dec</li>
-                  <li>📅 Pre-Public 2 - 21st Jan</li>
-                </ul>
+               <ExamFailureTable reports={filteredReports} enableFilters={true} />
               </div>
               {/* You can style unit1Failures, unit2Failures tables here */}
             </CardContent>
@@ -313,6 +314,8 @@ export default function PrincipalDashboard() {
           </Link>
         </section>
       </main>
+      
+
     </div>
   )
 }
