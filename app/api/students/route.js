@@ -100,8 +100,10 @@ export async function GET(req) {
       return Response.json({ status: 'error', message: 'Unauthorized' }, { status: 401 })
     }
 
-    let filter = {
-      collegeId: session.user.collegeId,
+     let filter = {}
+
+    if (session.user.collegeId) {
+      filter.collegeId = new mongoose.Types.ObjectId(session.user.collegeId)
     }
 
     // Vocational stream => filter by group
@@ -113,6 +115,9 @@ export async function GET(req) {
     if (session.user.stream === 'General' && session.user.subject) {
       filter.subjects = session.user.subject
     }
+
+    console.log("🎓 Student filter =>", filter) // ✅ Debug
+
 
     const students = await Student.find(filter)
     const totalStudents = await Student.countDocuments(filter)

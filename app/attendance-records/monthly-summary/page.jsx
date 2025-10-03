@@ -39,15 +39,26 @@ export default function MonthlySummary() {
         group: selectedGroup,
         yearOfStudy: selectedYear,
       });
+
       try {
+        console.log("Requesting:", `/api/attendance/monthly-summary?group=${encodeURIComponent(selectedGroup)}
+        &yearOfStudy=${encodeURIComponent(selectedYear)}&collegeId=${session.user.collegeId}`);
+
+
+
         const res = await fetch(
           `/api/attendance/monthly-summary?group=${encodeURIComponent(
             selectedGroup
-          )}&yearOfStudy=${encodeURIComponent(selectedYear)}`
+          )}&yearOfStudy=${encodeURIComponent(selectedYear)}&collegeId=${session.user.collegeId}`
         );
+
         console.log("Response:", res);
+
         const data = await res.json();
         console.log("Data:", data);
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to fetch data");
+        }
         setSummaryData(data.data || []);
       } catch (error) {
         console.error("Fetch error:", error);
@@ -62,8 +73,10 @@ export default function MonthlySummary() {
   );
 
   const handlePrint = () => {
+    console.log("Printing...");
     const printContent = document.getElementById("print-area").innerHTML;
     const printWindow = window.open("", "", "width=1000,height=700");
+    console.log("Print window:", printWindow);
     printWindow.document.write(`
       <html>
         <head>
@@ -78,8 +91,10 @@ export default function MonthlySummary() {
         <body>${printContent}</body>
       </html>
     `);
+    console.log("Print window document:", printWindow.document);
     printWindow.document.close();
     printWindow.print();
+    console.log("Printed");
   };
 
   return (

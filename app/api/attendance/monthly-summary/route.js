@@ -41,11 +41,13 @@ export async function GET(req) {
 
     console.log('Query params:', { group, yearOfStudy, collegeId })
 
-    // ✅ Students filter
+    // Students filter
     const studentQuery = {}
     if (group) studentQuery.group = group
     if (collegeId) studentQuery.collegeId = new ObjectId(collegeId)
     if (yearOfStudy) studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i')
+
+    console.log('Student filter:', studentQuery)
 
     const students = await Student.find(studentQuery)
     console.log('Fetched Students:', students.length)
@@ -54,11 +56,13 @@ export async function GET(req) {
       return NextResponse.json({ data: [] }, { status: 200 })
     }
 
-    // ✅ Attendance filter
+    // Attendance filter
     const attendanceQuery = {}
     if (group) attendanceQuery.group = group
     if (collegeId) attendanceQuery.collegeId = new ObjectId(collegeId)
     if (yearOfStudy) attendanceQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i')
+
+    console.log('Attendance filter:', attendanceQuery)
 
     const attendance = await Attendance.find(attendanceQuery)
     console.log('Fetched Attendance Records:', attendance.length)
@@ -67,7 +71,7 @@ export async function GET(req) {
       return NextResponse.json({ data: [] }, { status: 200 })
     }
 
-    // ✅ Month short codes
+    // Month short codes
     const monthMap = {
       January: 'JAN',
       February: 'FEB',
@@ -83,7 +87,7 @@ export async function GET(req) {
       December: 'DEC',
     }
 
-    // ✅ Process each student
+    // Process each student
     const summary = students.map(student => {
       const present = {}
       const workingDays = {}
@@ -93,17 +97,27 @@ export async function GET(req) {
       const doj = student.dateOfJoining ? new Date(student.dateOfJoining) : null
 
       attendance.forEach(r => {
-        if (r.studentId.toString() === student._id.toString()) {
+        console.log("🎯 Attendance Record =>", {
+            studentId: r.studentId.toString(),
+            month: r.month,
+            year: r.year,
+            date: r.date,
+            status: r.status,
+ })
+        
+ 
+ if (r.studentId.toString() === student._id.toString()) {
           const monthKey = `${monthMap[r.month]}-${r.year}`
           const recordDate = new Date(r.date)
+          console.log("🗓 MonthKey =>", monthKey, "RecordDate =>", recordDate)
 
-          // 👉 Only First Year Students కు DOJ చెక్ చేయాలి
+          // Only First Year Students DOJ skip
           if (student.yearOfStudy?.toLowerCase().includes('first') && doj && recordDate < doj) {
             console.log("Skipping record as it's before DOJ (First Year)")
             return
           }
 
-          // 🚫 Holiday అయితే skip
+          // Holiday skip
           if (isHoliday(recordDate)) {
             console.log("Skipping record as it's a holiday")
             return
@@ -121,7 +135,7 @@ export async function GET(req) {
         }
       })
 
-      // ✅ Calculate percentage + alerts
+      // Calculate percentage + alerts
       Object.keys(workingDays).forEach(monthKey => {
         const p = present[monthKey] || 0
         const w = workingDays[monthKey] || 0
@@ -129,6 +143,8 @@ export async function GET(req) {
         percentage[monthKey] = perc
         alerts[monthKey] = parseFloat(perc) < 75 ? 'RED ALERT' : 'OK'
       })
+
+     
 
       return {
         name: student.name,
@@ -145,7 +161,7 @@ export async function GET(req) {
 
     return NextResponse.json({ data: summary }, { status: 200 })
   } catch (err) {
-    console.error('❌ Error generating monthly summary:', err)
+    console.error('Error generating monthly summary:', err)
     return NextResponse.json({ error: 'Failed to generate monthly summary' }, { status: 500 })
   }
 }

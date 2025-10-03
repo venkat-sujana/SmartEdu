@@ -69,7 +69,8 @@ const [collegeName, setCollegeName] = useState('');
 
 
   // Password లేకపోతే default password ఇక్కడ set చేయండి
-  const passwordToSend = formData.password.trim() === "" ? "Welcome@2025" : formData.password;
+  const password = formData.password || "";
+const passwordToSend = password.trim() === "" ? "Welcome@2025" : password;
 
     const form = new FormData();
     form.append("name", formData.name);
@@ -122,6 +123,7 @@ const [collegeName, setCollegeName] = useState('');
           yearOfStudy: "",
           dateOfJoining: "",
           address: "",
+          password: ""  ,         // <-- password field reset చేయండి
         });
         setPhoto(null);
       } else {

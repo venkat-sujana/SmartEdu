@@ -28,6 +28,7 @@ export async function GET(req) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user || !session.user.collegeId) {
     console.log("❌ Unauthorized request:", req);
+    console.log("Session:", session);
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -73,7 +74,7 @@ export async function GET(req) {
       }
     ]);
 
-    console.log("📝 Summary:", summary);
+    console.log("📊 Summary:", summary);
 
     const formatted = {};
     summary.forEach(item => {
@@ -90,6 +91,7 @@ export async function GET(req) {
     return NextResponse.json(formatted);
   } catch (error) {
     console.error("❌ Aggregation error:", error);
+    console.log("Error stack:", error.stack);
     return NextResponse.json({ error: "Failed to fetch attendance" }, { status: 500 });
   }
 }

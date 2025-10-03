@@ -57,6 +57,7 @@ export default function CalendarView() {
 
   useEffect(() => {
     if (group && yearOfStudy && session?.user?.collegeId) {
+      
       fetch(`/api/students?collegeId=${session.user.collegeId}`)
         .then((res) => res.json())
         .then((data) => {

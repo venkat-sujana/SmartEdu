@@ -25,16 +25,20 @@ export async function POST(req) {
       return NextResponse.json({ message: "Invalid data", status: "error" }, { status: 400 });
     }
 
-    // 🆕 ప్రతి స్టూడెంట్ యొక్క joining date తీసుకొని filter చేయడం
     const processedRecords = [];
+
     for (let record of records) {
-      const student = await mongoose.model("Student").findById(record.studentId).lean();
+      // 👉 Student check
+      const student = await mongoose.model("Student").findOne({
+        _id: record.studentId,
+        collegeId: collegeId,
+      }).lean();
+
       if (!student) continue;
 
       const joinDate = student.dateOfJoining ? new Date(student.dateOfJoining) : null;
       const attendanceDate = new Date(record.date);
 
-      // joinDate ఉందే && attendanceDate < joinDate అయితే స్కిప్ చేయాలి
       if (joinDate && attendanceDate < joinDate) {
         continue;
       }
@@ -54,14 +58,24 @@ export async function POST(req) {
       return NextResponse.json({ message: "No valid attendance records to save", status: "error" });
     }
 
-    await Attendance.insertMany(processedRecords);
+    // 🔥 insertMany బదులు bulkWrite వాడుతున్నాం
+    const bulkOps = processedRecords.map((rec) => ({
+      updateOne: {
+        filter: { studentId: rec.studentId, date: rec.date },
+        update: { $set: rec },
+        upsert: true, // కొత్తదైతే insert అవుతుంది
+      },
+    }));
 
-    return NextResponse.json({ message: "Attendance submitted", status: "success" });
+    await Attendance.bulkWrite(bulkOps);
+
+    return NextResponse.json({ message: "Attendance submitted successfully", status: "success" });
   } catch (err) {
     console.error("POST Error:", err);
     return NextResponse.json({ message: "Error submitting attendance", status: "error" }, { status: 500 });
   }
 }
+
 
 
 // 🔽 GET Attendance Record + Summary

@@ -17,6 +17,8 @@ const AttendanceForm = () => {
 
  const { data: session } = useSession();
  console.log("SESSION: ", session);
+ console.log("selectedGroup", selectedGroup);
+
  
  const [collegeId, setCollegeId] = useState('');
  const [collegeName, setCollegeName] = useState('');
@@ -113,7 +115,7 @@ useEffect(() => {
       studentId: student._id,
       date: selectedDate,
       status: attendanceData[student._id] || "Absent",
-      group: selectedGroup,
+      group: selectedGroup.toUpperCase(),
       month,
       year,
       yearOfStudy: selectedYearOfStudy, // 🔥 Add this line

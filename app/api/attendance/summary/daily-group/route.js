@@ -1,33 +1,41 @@
 //app/api/attendance/summary/daily-group/route.js
-
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import { getServerSession } from "next-auth";
 import Student from "@/models/Student";
-// import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
 
 export async function GET(req) {
   await connectMongoDB();
+
+  const session = await getServerSession(authOptions);
+
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const collegeId = session.user.collegeId; // 👈 session నుంచి తీసుకుంటున్నాం
+console.log("🎓 Session collegeId:", session?.user?.collegeId);
 
   const { searchParams } = new URL(req.url);
   const start = searchParams.get("start");
   const end = searchParams.get("end");
   const group = searchParams.get("group");
   const filterYear = searchParams.get("year"); // frontend నుంచి yearOfStudy as 'year' వస్తుంది
-  const collegeId = searchParams.get("collegeId"); // 👈 కొత్త college ID filter
 
   const yearOptions = ["First Year", "Second Year"];
   const results = {};
 
   try {
     for (const yearOfStudy of yearOptions) {
-      // yearOfStudy filter ఇచ్చినా, ఆ year మాత్రమే చూపించాలి
-      if (filterYear && filterYear !== yearOfStudy) {
-        continue;
-      }
+      if (filterYear && filterYear !== yearOfStudy) continue;
 
       const matchStage = {};
+
 
       if (start && end) {
         matchStage.date = {
@@ -44,24 +52,23 @@ export async function GET(req) {
 
       if (group) matchStage.group = group;
 
-      // Debug: College ID filter చెక్ చేయడానికి
-      console.log("College ID filter:", collegeId);
-      
-      // Student match conditions build చేస్తున్నాం
+
+
+      // Student match conditions
       const studentMatchConditions = {
         "studentInfo.yearOfStudy": yearOfStudy,
+        "studentInfo.collegeId": collegeId, // 👈 ఇక్కడే filter
       };
-      
-      // College ID ఉంటే add చేస్తున్నాం
-      if (collegeId) {
-        studentMatchConditions["studentInfo.collegeId"] = collegeId;
-        console.log("Adding college filter:", collegeId);
-      }
-      
-      console.log("Student match conditions:", studentMatchConditions);
+
+if (collegeId) {
+  studentMatchConditions["studentInfo.collegeId"] = new mongoose.Types.ObjectId(collegeId);
+}
+console.log("🧾 Student match conditions:", studentMatchConditions);
+
 
       const pipeline = [
         { $match: matchStage },
+        
         {
           $lookup: {
             from: "students",
@@ -71,10 +78,10 @@ export async function GET(req) {
           },
         },
         { $unwind: "$studentInfo" },
+        { $match: studentMatchConditions },
+        
         {
-          $match: studentMatchConditions,
-        },
-        {
+          
           $group: {
             _id: {
               date: { $substr: ["$date", 0, 10] },
