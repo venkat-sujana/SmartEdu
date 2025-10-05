@@ -1,7 +1,6 @@
 
 //app/components/groupwise-attendance-table/page.jsx
 'use client';
-
 import { useEffect, useState } from 'react';
 
 const groupIcons = {
@@ -62,6 +61,16 @@ export default function GroupWiseAttendanceTable({ collegeId, collegeName, initi
           <h3 className="text-lg font-semibold text-gray-800 mb-2">
             {groupIcons[group] || '📘'} {group}
           </h3>
+
+                  <p className="text-sm text-gray-600 mb-2">
+          Marked by:{" "}
+          <span className="font-medium text-blue-700">
+            {Object.values(yearData)[0]?.lecturerName || "—"}
+          </span>
+        </p>
+
+
+
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm border border-gray-300">
               <thead>

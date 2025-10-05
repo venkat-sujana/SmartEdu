@@ -1,3 +1,5 @@
+
+
 //app/attendance-form/page.jsx
 "use client";
 import { useState, useEffect } from "react";
@@ -15,13 +17,20 @@ const AttendanceForm = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
- const { data: session } = useSession();
+
+
+  const { data: session } = useSession();
+  const [collegeId, setCollegeId] = useState("");
+  const [collegeName, setCollegeName] = useState("");
+  const router = useRouter();
+
+
  console.log("SESSION: ", session);
  console.log("selectedGroup", selectedGroup);
 
  
- const [collegeId, setCollegeId] = useState('');
- const [collegeName, setCollegeName] = useState('');
+
+
 
    useEffect(() => {
      if (session?.user?.collegeId) {
@@ -33,24 +42,19 @@ const AttendanceForm = () => {
    }, [session]);
 
 
-  const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
-  const monthsList = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const yearsList = ["First Year", "Second Year"];
-  const router = useRouter();
 
+
+  const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
+
+
+  const monthsList = [ "January","February","March","April","May","June",
+    "July","August","September","October","November","December",
+  ];
+
+  const yearsList = ["First Year", "Second Year"];
+
+
+ // 🔹 Fetch Students
 useEffect(() => {
   const fetchStudents = async () => {
     if (!selectedGroup || !session?.user?.collegeId) return;
@@ -70,9 +74,8 @@ useEffect(() => {
 
 
 
-
-
-  useEffect(() => {
+  // 🔹 Filter students by group + year
+useEffect(() => {
     if (selectedGroup && selectedYearOfStudy) {
       const filtered = students.filter(
         (s) =>
@@ -86,6 +89,8 @@ useEffect(() => {
 
 
 
+
+ // 🔹 Toggle present/absent
   const handleToggleChange = (studentId, status) => {
     setAttendanceData((prev) => ({
       ...prev,
@@ -95,7 +100,7 @@ useEffect(() => {
 
 
 
-
+  // 🔹 Submit attendance
   const handleSubmit = async () => {
     if (!selectedDate || !selectedGroup || filteredStudents.length === 0) {
       toast.error(
@@ -133,8 +138,24 @@ useEffect(() => {
 
       const result = await response.json();
       toast.dismiss(toastId);
-      toast.success(result.message || "Attendance submitted successfully!");
-     router.push("/attendance-form");
+
+
+
+      // ✅ Duplicate attendance handling
+      if (response.status === 400 && result.status === "error") {
+        toast.error(result.message || "Attendance already taken!");
+        return;
+      }
+
+
+
+
+      if (result.status === "success") {
+        toast.success(result.message || "Attendance submitted successfully!");
+        router.push("/attendance-form");
+      } else {
+        toast.error(result.message || "Something went wrong!");
+      }
     } catch (error) {
       toast.dismiss(toastId);
       toast.error("Error submitting attendance");

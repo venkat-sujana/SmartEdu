@@ -27,8 +27,17 @@ const attendanceSchema = new Schema({
     enum: ['First Year', 'Second Year'],
     required: true,
   },
+    lecturerName: { // 🔥 New fields
+    type: String,
+    required: true,
+  },
 
-  collegeId: {
+   lecturerName: { type: String },
+   lecturerId: { type: mongoose.Schema.Types.ObjectId, 
+    ref: "Lecturer" 
+
+   },
+    collegeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "College",
       required: true,

@@ -22,7 +22,7 @@ const publicHolidays = [
   { month: 9, day: 2, name: 'Gandhi Jayanthi' },
   { month: 9, day: 3, name: 'Dussara Holidays' },
   { month: 9, day: 4, name: 'Dussara Holidays' },
-  { month: 9, day: 6, name: 'Reopen after Dussara Holidays' },
+  
 ]
 
 function isHoliday(dateObj) {
