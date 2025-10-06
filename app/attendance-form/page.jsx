@@ -122,7 +122,6 @@ useEffect(() => {
       status: attendanceData[student._id] || "Absent",
       group: selectedGroup.toUpperCase(),
       month,
-      year,
       yearOfStudy: selectedYearOfStudy, // 🔥 Add this line
     }));
 

@@ -39,13 +39,13 @@ const lecturerId = session.user.id || session.user._id || null;
     
    
     // ✅ Extract common info (same for all students in this batch)
-    const { date, year, group } = records[0];
+    const { date, yearOfStudy, group } = records[0];
 
     
-    // 🔥 Step 1: Duplicate check (same date + year + group + collegeId)
+   // 🔥 Step 1: Duplicate check (same date + group + yearOfStudy + collegeId)
     const duplicate = await Attendance.findOne({
       date,
-      year,
+      yearOfStudy,
       group,
       collegeId,
     });
