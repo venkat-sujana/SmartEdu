@@ -101,68 +101,70 @@ useEffect(() => {
 
 
   // 🔹 Submit attendance
-  const handleSubmit = async () => {
-    if (!selectedDate || !selectedGroup || filteredStudents.length === 0) {
-      toast.error(
-        "Please select a date, group, and ensure students are visible."
-      );
+ const handleSubmit = async () => {
+  if (!selectedDate || !selectedGroup || filteredStudents.length === 0) {
+    toast.error("Please select a date, group, and ensure students are visible.");
+    return;
+  }
+
+  const dateObj = new Date(selectedDate);
+  const month = monthsList[dateObj.getMonth()];
+  const year = dateObj.getFullYear();
+
+  const attendanceRecords = filteredStudents.map((student) => ({
+    studentId: student._id,
+    date: selectedDate,
+    status: attendanceData[student._id] || "Absent",
+    group: selectedGroup.toUpperCase(),
+    month,
+    yearOfStudy: selectedYearOfStudy,
+  }));
+
+  setIsLoading(true);
+  const toastId = toast.loading("Submitting attendance...");
+
+  try {
+    const response = await fetch("/api/attendance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(attendanceRecords),
+      credentials: "include", // ✅ ensures session cookies sent
+    });
+
+    const result = await response.json();
+    toast.dismiss(toastId);
+
+    // ✅ Duplicate attendance
+    if (response.status === 400 && result.status === "error") {
+      toast.error(result.message || "Attendance already taken!");
       return;
     }
 
+    if (result.status === "success") {
+      toast.success(result.message || "Attendance submitted successfully!");
 
+      // ✅ Reset form fields after successful submit
+      setSelectedGroup("");
+      setSelectedYearOfStudy("");
+      setSelectedDate("");
+      setFilteredStudents([]);
+      setAttendanceData({});
+      setStudents([]);
 
-    const dateObj = new Date(selectedDate);
-    const month = monthsList[dateObj.getMonth()];
-    const year = dateObj.getFullYear();
-
-    const attendanceRecords = filteredStudents.map((student) => ({
-      
-      studentId: student._id,
-      date: selectedDate,
-      status: attendanceData[student._id] || "Absent",
-      group: selectedGroup.toUpperCase(),
-      month,
-      yearOfStudy: selectedYearOfStudy, // 🔥 Add this line
-    }));
-
-    setIsLoading(true);
-    const toastId = toast.loading("Submitting attendance...");
-
-    try {
-      const response = await fetch("/api/attendance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(attendanceRecords),
-      });
-
-      const result = await response.json();
-      toast.dismiss(toastId);
-
-
-
-      // ✅ Duplicate attendance handling
-      if (response.status === 400 && result.status === "error") {
-        toast.error(result.message || "Attendance already taken!");
-        return;
-      }
-
-
-
-
-      if (result.status === "success") {
-        toast.success(result.message || "Attendance submitted successfully!");
-        router.push("/attendance-form");
-      } else {
-        toast.error(result.message || "Something went wrong!");
-      }
-    } catch (error) {
-      toast.dismiss(toastId);
-      toast.error("Error submitting attendance");
-      console.error("Submit error", error);
-    } finally {
-      setIsLoading(false);
+      // Optional — refresh the same page (if you want to clear URL state)
+      router.refresh();
+    } else {
+      toast.error(result.message || "Something went wrong!");
     }
-  };
+  } catch (error) {
+    toast.dismiss(toastId);
+    toast.error("Error submitting attendance");
+    console.error("Submit error", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-100 to-white mt-4 ">
