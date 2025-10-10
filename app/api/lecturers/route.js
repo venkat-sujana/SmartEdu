@@ -1,6 +1,6 @@
 //app/api/lecturers/route.js
 import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import Lecturer from "@/models/Lecturer"; 
 import connectMongoDB from "@/lib/mongodb"; 
 import { getServerSession } from "next-auth";

@@ -3,7 +3,7 @@
 import connectMongoDB from "@/lib/mongodb";
 import Principal from "@/models/Principal";
 import cloudinary from "@/lib/cloudinary";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 
 export async function POST(request) {

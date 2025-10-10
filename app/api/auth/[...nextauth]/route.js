@@ -5,7 +5,7 @@ import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";
 import Student from "@/models/Student";
 import Principal from "@/models/Principal";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const authOptions = {
   providers: [
@@ -25,18 +25,22 @@ const authOptions = {
         }
 
         await connectMongoDB();
+        console.log("✅ Connected to MongoDB");
 
         const { identifier, password, role } = credentials;
+        console.log(`🔍 Authenticating as ${role} with identifier: ${identifier}`);
         let user = null;
 
         if (role.toLowerCase() === "lecturer") {
           const lecturer = await Lecturer.findOne({ email: identifier.trim().toLowerCase() });
+          console.log("🔍 Found lecturer:", lecturer);
           if (!lecturer) {
             console.log("❌ Lecturer not found");
             return null;
           }
 
           const isValid = await bcrypt.compare(password.trim(), lecturer.password);
+          console.log("🔍 Found lecturer:", lecturer);
           console.log("✅ Password valid?", isValid);
           if (!isValid) return null;
 
@@ -53,12 +57,14 @@ const authOptions = {
 
         else if (role.toLowerCase() === "student") {
           const student = await Student.findOne({ admissionNo: identifier.trim() }).populate("collegeId", "name");
+          console.log("🔍 Found student:", student);
           if (!student) {
             console.log("❌ Student not found");
             return null;
           }
 
           const isValid = await bcrypt.compare(password.trim(), student.password);
+          console.log("✅ Password valid?", isValid);
           if (!isValid) {
             console.log("❌ Invalid student password");
             return null;
@@ -85,12 +91,14 @@ const authOptions = {
 
         else if (role.toLowerCase() === "principal") {
           const principal = await Principal.findOne({ email: identifier.trim().toLowerCase() }).populate("collegeId", "name");
+          console.log("🔍 Found principal:", principal);
           if (!principal) {
             console.log("❌ Principal not found");
             return null;
           }
 
           const isValid = await bcrypt.compare(password.trim(), principal.password);
+          console.log("✅ Password valid?", isValid);
           if (!isValid) {
             console.log("❌ Invalid principal password");
             return null;
