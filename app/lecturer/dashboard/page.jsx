@@ -180,12 +180,14 @@ export default function LecturerDashboard() {
     <div className="text-5xl mb-3 animate-bounce text-purple-500">⚡</div>
     <p className="text-lg font-bold text-purple-900">Quick Actions</p>
     <p className="mt-2 text-purple-700 font-semibold text-sm">Use the links below for fast navigation.</p>
+    
   </motion.div>
 </div>
 
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+        
         {[
           { href: "/student-table", label: "📋 View Students", bg: "blue-100", hover: "blue-300", text: "blue-800" },
           { href: "/register", label: "➕ Add Student", bg: "blue-100", hover: "blue-300", text: "blue-800" },
@@ -198,7 +200,7 @@ export default function LecturerDashboard() {
           { href: "/attendance-records/monthly-summary", label: "📅 Monthly Attendance", bg: "blue-100", hover: "yellow-400", text: "yellow-900" },
           { href: "/exams-form", label: "📝 Add Exam", bg: "green-200", hover: "green-400", text: "green-900" },
           { href: "/exam-report", label: "📊 Exam Records", bg: "green-200", hover: "pink-400", text: "pink-900" },
-          { href: "/create-question-paper", label: "🟢 Question paper genarator", bg: "blue-100", hover: "cyan-400", text: "cyan-900" },
+          { href: "/", label: "🟢 Question paper genarator", bg: "blue-100", hover: "cyan-400", text: "cyan-900" },
         ].map(({ href, label, bg, hover, text }) => (
           <Link key={href} href={href}>
             <motion.div
@@ -210,7 +212,40 @@ export default function LecturerDashboard() {
             </motion.div>
           </Link>
         ))}
+        
       </div>
+            
+            
+
+
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4 gap-4">
+              <div className="bg-pink-100 shadow p-4 rounded-lg">
+                                 <a
+                    href="https://skr-learn-portal.netlify.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  >
+                    Voc Question paper
+                  </a>
+                </div>
+              <div className="bg-green-100 shadow p-4 rounded-lg">
+                <a
+                    href="https://advanced-question-paper-tailwindcss.netlify.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  >
+                  M&AT Question Paper
+                  </a>
+              </div>
+              <div className="bg-blue-100 shadow p-4 rounded-lg">Card 3</div>
+              <div className="bg-yellow-100 shadow p-4 rounded-lg">Card 4</div>
+     </div>
+      
+              
     </div>
+    
   );
 }
