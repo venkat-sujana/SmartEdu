@@ -1,3 +1,4 @@
+// models/Principal.js
 import mongoose from "mongoose";
 
 const PrincipalSchema = new mongoose.Schema(
@@ -8,7 +9,6 @@ const PrincipalSchema = new mongoose.Schema(
     collegeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "College",
-      required: true,
     },
     role: { type: String, enum: ["principal"], default: "principal" },
     photo: { type: String, default: "" },
@@ -19,5 +19,4 @@ const PrincipalSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.models.Principal ||
-  mongoose.model("Principal", PrincipalSchema);
+export default mongoose.models.Principal || mongoose.model("Principal", PrincipalSchema);

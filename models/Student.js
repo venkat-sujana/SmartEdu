@@ -1,6 +1,5 @@
-
-//app/models/Student.js
-const mongoose = require("mongoose");
+// models/Student.js
+import mongoose from "mongoose";
 
 const studentSchema = new mongoose.Schema(
   {
@@ -69,6 +68,4 @@ const studentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ CommonJS Export (important)
-module.exports =
-  mongoose.models.Student || mongoose.model("Student", studentSchema);
+export default mongoose.models.Student || mongoose.model("Student", studentSchema);
