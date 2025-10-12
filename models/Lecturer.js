@@ -26,6 +26,10 @@ const lecturerSchema = new mongoose.Schema(
       ref: 'College',
       required: [true, 'College ID is required'],
     },
+    role: {
+  type: String,
+  default: "lecturer"
+},
     subject: {
       type: String,
       enum: {
@@ -58,6 +62,7 @@ const lecturerSchema = new mongoose.Schema(
     },
      photo: { type: String, default: "" },
   },
+  
 
   {
     timestamps: true,

@@ -56,6 +56,8 @@ export default function LecturerDashboard() {
   }, [status, session]);
 
   useEffect(() => {
+    console.log("Session Data:", session);
+
     if (status === "authenticated" && session?.user?.collegeId) {
       fetch(`/api/attendance/today-breakdown?collegeId=${session.user.collegeId}`)
         .then((res) => res.json())
