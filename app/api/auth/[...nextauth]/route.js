@@ -1,3 +1,4 @@
+//app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
@@ -10,10 +11,24 @@ import bcrypt from "bcryptjs";
 // ----------- CUSTOM AUTH FUNCTIONS -----------
 
 async function authenticateLecturer(identifier, password) {
+  console.log("Authenticating lecturer with identifier:", identifier);
+  console.log("Authenticating lecturer with password:", password);
   const lecturer = await Lecturer.findOne({ email: identifier.trim().toLowerCase() });
-  if (!lecturer) return null;
+  if (!lecturer) {
+    console.log("No lecturer found with the given identifier:", identifier);
+    return null;
+  }
+  console.log("Comparing password with stored password:");
+
+  // ✅ proper bcrypt comparison
   const isValid = await bcrypt.compare(password.trim(), lecturer.password);
-  if (!isValid) return null;
+  if (!isValid) {
+    console.log("Password comparison failed for lecturer with identifier:", identifier);
+    return null;
+  }
+
+
+  console.log("Authentication successful for lecturer with identifier:", identifier);
 
   return {
     id: lecturer._id.toString(),
@@ -26,11 +41,31 @@ async function authenticateLecturer(identifier, password) {
   };
 }
 
+
+
+
+
 async function authenticateStudent(identifier, password) {
+  console.log("Authenticating student with identifier:", identifier);
+  console.log("Authenticating student with password:", password);
   const student = await Student.findOne({ admissionNo: identifier.trim() }).populate("collegeId", "name");
-  if (!student) return null;
-  const isValid = student.password === password.trim() || await bcrypt.compare(password.trim(), student.password);
-  if (!isValid) return null;
+  if (!student) {
+    console.log("No student found with the given identifier:", identifier);
+    return null;
+  }
+  console.log("Comparing password with stored password:");
+
+  // ✅ proper bcrypt comparison
+const isValid = await bcrypt.compare(password.trim(), student.password);
+if (!isValid) {
+  console.log("Password comparison failed for student with identifier:", identifier);
+  return null;
+}
+
+
+
+
+  console.log("Authentication successful for student with identifier:", identifier);
 
   return {
     id: student._id.toString(),
@@ -51,11 +86,28 @@ async function authenticateStudent(identifier, password) {
   };
 }
 
+
+
+
+
+
 async function authenticatePrincipal(identifier, password) {
+  console.log("Authenticating principal with identifier:", identifier);
   const principal = await Principal.findOne({ email: identifier.trim().toLowerCase() }).populate("collegeId", "name");
-  if (!principal) return null;
-  const isValid = principal.password === password.trim() || await bcrypt.compare(password.trim(), principal.password);
-  if (!isValid) return null;
+
+  if (!principal) {
+    console.log("No principal found with the given identifier:", identifier);
+    return null;
+  }
+
+  // ✅ proper bcrypt comparison
+  const isValid = await bcrypt.compare(password.trim(), principal.password);
+  if (!isValid) {
+    console.log("Password comparison failed for principal with identifier:", identifier);
+    return null;
+  }
+
+  console.log("Authentication successful for principal with identifier:", identifier);
 
   return {
     id: principal._id.toString(),
@@ -67,6 +119,12 @@ async function authenticatePrincipal(identifier, password) {
     photo: principal.photo,
   };
 }
+
+
+
+
+
+
 
 // ----------- NEXTAUTH CONFIG -----------
 
@@ -86,27 +144,50 @@ const authOptions = {
         password: { label: "Password", type: "password" },
         role: { label: "Role", type: "text" },
       },
-      async authorize(credentials) {
-        if (!credentials?.identifier || !credentials?.password || !credentials?.role) return null;
 
-        await connectMongoDB();
 
-        const { identifier, password, role } = credentials;
-        let user = null;
+async authorize(credentials) {
+  if (!credentials?.identifier || !credentials?.password || !credentials?.role) {
+    console.log("Error: Missing credentials in authorize function");
+    return null;
+  }
 
-        if (role.toLowerCase() === "lecturer") user = await authenticateLecturer(identifier, password);
-        else if (role.toLowerCase() === "student") user = await authenticateStudent(identifier, password);
-        else if (role.toLowerCase() === "principal") user = await authenticatePrincipal(identifier, password);
+  await connectMongoDB();
 
-        return user;
-      },
+  const { identifier, password, role } = credentials;
+  let user = null;
+
+  console.log("Authorize: trying to authenticate", role, "with identifier", identifier);
+
+  if (role.toLowerCase() === "lecturer") {
+    console.log("Authorize: authenticating lecturer");
+    user = await authenticateLecturer(identifier, password);
+  } else if (role.toLowerCase() === "student") {
+    console.log("Authorize: authenticating student");
+    user = await authenticateStudent(identifier, password);
+  } else if (role.toLowerCase() === "principal") {
+    console.log("Authorize: authenticating principal");
+    user = await authenticatePrincipal(identifier, password);
+  }
+
+  console.log("Authorize: result", user);
+
+  return user; // must be null if authentication failed
+}
     }),
   ],
+
+
+
+
+
+
 
   callbacks: {
     async jwt({ token, user, account, profile }) {
       // ✅ Google Login
       if (account?.provider === "google") {
+        console.log("Google Login:", profile);
         await connectMongoDB();
 
         // Try to match the Google email with any existing user
@@ -117,12 +198,13 @@ const authOptions = {
         let dbUser = lecturer || student || principal;
 
         if (dbUser) {
+          console.log("Existing user found:", dbUser);
           token.id = dbUser._id.toString();
           token.role = dbUser.role || (lecturer ? "lecturer" : student ? "student" : "principal");
           token.collegeId = dbUser.collegeId?._id?.toString() || dbUser.collegeId?.toString() || null;
           token.collegeName = dbUser.collegeName || dbUser.collegeId?.name || null;
         } else {
-          // If not found, default to Google user
+          console.log("No existing user found, defaulting to Google user");
           token.id = profile.sub;
           token.role = "student"; // default role
         }
@@ -133,6 +215,7 @@ const authOptions = {
 
       // ✅ Credentials login
       if (user) {
+        console.log("Credentials login:", user);
         token.id = user.id;
         token.role = user.role;
         token.collegeId = user.collegeId;
@@ -153,16 +236,26 @@ const authOptions = {
         if (user.role === "principal") token.photo = user.photo;
       }
 
+      console.log("Final token:", token);
+
       return token;
     },
 
+
+
+
+
+
+
     async session({ session, token }) {
+      console.log("Session function called with token:", token);
       session.user.id = token.id;
       session.user.role = token.role;
       session.user.collegeId = token.collegeId;
       session.user.collegeName = token.collegeName;
       if (token.role === "lecturer") session.user.subject = token.subject;
       if (token.role === "student") {
+        console.log("Student token:", token);
         session.user.admissionNo = token.admissionNo;
         session.user.yearOfStudy = token.yearOfStudy;
         session.user.photo = token.photo;
@@ -175,6 +268,7 @@ const authOptions = {
         session.user.group = token.group;
       }
       if (token.role === "principal") session.user.photo = token.photo;
+      console.log("Final session:", session);
       return session;
     },
   },
