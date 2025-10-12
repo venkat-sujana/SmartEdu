@@ -1,257 +1,190 @@
-// app/api/auth/[...nextauth]/route.js
-
+//app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";
 import Student from "@/models/Student";
 import Principal from "@/models/Principal";
 import bcrypt from "bcryptjs";
 
-
-
+// ----------- CUSTOM AUTH FUNCTIONS -----------
 
 async function authenticateLecturer(identifier, password) {
-    console.log("Authenticating lecturer...");
-    console.log("Identifier:", identifier);
-    console.log("Password:", password);
+  const lecturer = await Lecturer.findOne({ email: identifier.trim().toLowerCase() });
+  if (!lecturer) return null;
+  const isValid = await bcrypt.compare(password.trim(), lecturer.password);
+  if (!isValid) return null;
 
-    const lecturer = await Lecturer.findOne({ email: identifier.trim().toLowerCase() });
-
-    console.log("Found lecturer:", lecturer);
-
-    if (!lecturer) {
-        console.log("Lecturer not found");
-        return null;
-    }
-
-    const isValid = await bcrypt.compare(password.trim(), lecturer.password);
-
-    console.log("Password is valid:", isValid);
-
-    if (!isValid) {
-        console.log("Password is invalid");
-        return null;
-    }
-
-    console.log("Returning lecturer data...");
-
-    return {
-        id: lecturer._id.toString(),
-        name: lecturer.name,
-        email: lecturer.email,
-        role: "lecturer",
-        collegeId: lecturer.collegeId?.toString() || null,
-        collegeName: lecturer.collegeName || null,
-        subject: lecturer.subject,
-    };
+  return {
+    id: lecturer._id.toString(),
+    name: lecturer.name,
+    email: lecturer.email,
+    role: "lecturer",
+    collegeId: lecturer.collegeId?.toString() || null,
+    collegeName: lecturer.collegeName || null,
+    subject: lecturer.subject,
+  };
 }
-
-
-
-
 
 async function authenticateStudent(identifier, password) {
-    console.log("Authenticating student...");
-    console.log("Identifier:", identifier);
-    console.log("Password:", password);
+  const student = await Student.findOne({ admissionNo: identifier.trim() }).populate("collegeId", "name");
+  if (!student) return null;
+  const isValid = student.password === password.trim() || await bcrypt.compare(password.trim(), student.password);
+  if (!isValid) return null;
 
-    const student = await Student.findOne({ admissionNo: identifier.trim() }).populate("collegeId", "name");
-    console.log("Found student:", student);
-
-    if (!student) {
-        console.log("Student not found");
-        return null;
-    }
-
-    const isValid = await bcrypt.compare(password.trim(), student.password);
-    console.log("Password is valid:", isValid);
-
-    if (!isValid) {
-        console.log("Password is invalid");
-        return null;
-    }
-
-    console.log("Returning student data...");
-
-    return {
-        id: student._id.toString(),
-        name: student.name,
-        admissionNo: student.admissionNo,
-        role: "student",
-        collegeId: student.collegeId?._id?.toString() || null,
-        collegeName: student.collegeId?.name || null,
-        yearOfStudy: student.yearOfStudy,
-        photo: student.photo,
-        fatherName: student.fatherName,
-        caste: student.caste,
-        dob: student.dob,
-        gender: student.gender,
-        address: student.address,
-        mobile: student.mobile,
-        group: student.group,
-    };
+  return {
+    id: student._id.toString(),
+    name: student.name,
+    admissionNo: student.admissionNo,
+    role: "student",
+    collegeId: student.collegeId?._id?.toString() || null,
+    collegeName: student.collegeId?.name || null,
+    yearOfStudy: student.yearOfStudy,
+    photo: student.photo,
+    fatherName: student.fatherName,
+    caste: student.caste,
+    dob: student.dob,
+    gender: student.gender,
+    address: student.address,
+    mobile: student.mobile,
+    group: student.group,
+  };
 }
-
-
-
-
-
-
-
-
-
 
 async function authenticatePrincipal(identifier, password) {
-    console.log("Authenticating principal...");
-    console.log("Identifier:", identifier);
-    console.log("Password:", password);
+  const principal = await Principal.findOne({ email: identifier.trim().toLowerCase() }).populate("collegeId", "name");
+  if (!principal) return null;
+  const isValid = principal.password === password.trim() || await bcrypt.compare(password.trim(), principal.password);
+  if (!isValid) return null;
 
-    const principal = await Principal.findOne({ email: identifier.trim().toLowerCase() }).populate("collegeId", "name");
-    console.log("Found principal:", principal);
-
-    if (!principal) {
-        console.log("Principal not found");
-        return null;
-    }
-
-    const isValid = await bcrypt.compare(password.trim(), principal.password);
-    console.log("Password is valid:", isValid);
-
-    if (!isValid) {
-        console.log("Password is invalid");
-        return null;
-    }
-
-    console.log("Returning principal data...");
-
-    return {
-        id: principal._id.toString(),
-        name: principal.name,
-        email: principal.email,
-        role: "principal",
-        collegeId: principal.collegeId?._id?.toString() || null,
-        collegeName: principal.collegeId?.name || null,
-        photo: principal.photo,
-    };
+  return {
+    id: principal._id.toString(),
+    name: principal.name,
+    email: principal.email,
+    role: "principal",
+    collegeId: principal.collegeId?._id?.toString() || null,
+    collegeName: principal.collegeId?.name || null,
+    photo: principal.photo,
+  };
 }
 
-
-
-
-
+// ----------- NEXTAUTH CONFIG -----------
 
 const authOptions = {
-    providers: [
-        CredentialsProvider({
-            name: "Credentials",
-            credentials: {
-                identifier: { label: "Email / AdmissionNo", type: "text" },
-                password: { label: "Password", type: "password" },
-                role: { label: "Role", type: "text" },
-            },
+  providers: [
+    // 🧩 Google Sign-In Provider
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
 
+    // 🧑‍💻 Credentials Provider
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        identifier: { label: "Email / AdmissionNo", type: "text" },
+        password: { label: "Password", type: "password" },
+        role: { label: "Role", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.identifier || !credentials?.password || !credentials?.role) return null;
 
-            async authorize(credentials) {
-                if (!credentials?.identifier || !credentials?.password || !credentials?.role) {
-                    console.log("Missing required credentials")
-                    return null;
-                }
+        await connectMongoDB();
 
-                console.log("Connecting to MongoDB...")
-                await connectMongoDB();
+        const { identifier, password, role } = credentials;
+        let user = null;
 
-                const { identifier, password, role } = credentials;
-                let user = null;
-                if (role.toLowerCase() === "lecturer") {
-                    console.log("Authenticating lecturer...")
-                    user = await authenticateLecturer(identifier, password);
-                } else if (role.toLowerCase() === "student") {
-                    console.log("Authenticating student...")
-                    user = await authenticateStudent(identifier, password);
-                } else if (role.toLowerCase() === "principal") {
-                    console.log("Authenticating principal...")
-                    user = await authenticatePrincipal(identifier, password);
-                }
-                console.log("Returning user data...")
-                return user;
-            },
-        }),
-    ],
+        if (role.toLowerCase() === "lecturer") user = await authenticateLecturer(identifier, password);
+        else if (role.toLowerCase() === "student") user = await authenticateStudent(identifier, password);
+        else if (role.toLowerCase() === "principal") user = await authenticatePrincipal(identifier, password);
 
+        return user;
+      },
+    }),
+  ],
 
+  callbacks: {
+    async jwt({ token, user, account, profile }) {
+      // ✅ Google Login
+      if (account?.provider === "google") {
+        await connectMongoDB();
 
+        // Try to match the Google email with any existing user
+        const lecturer = await Lecturer.findOne({ email: profile.email });
+        const student = await Student.findOne({ email: profile.email });
+        const principal = await Principal.findOne({ email: profile.email });
 
+        let dbUser = lecturer || student || principal;
 
-    callbacks: {
-        async jwt({ token, user }) {
-            console.log("jwt callback called...");
-            console.log("Token:", token);
-            console.log("User:", user);
-            if (user) {
-                token.id = user.id;
-                token.role = user.role;
-                token.collegeId = user.collegeId;
-                token.collegeName = user.collegeName;
-                if (user.role === "lecturer") token.subject = user.subject;
-                if (user.role === "student") {
-                    token.admissionNo = user.admissionNo;
-                    token.yearOfStudy = user.yearOfStudy;
-                    token.photo = user.photo;
-                    token.fatherName = user.fatherName;
-                    token.caste = user.caste;
-                    token.dob = user.dob;
-                    token.gender = user.gender;
-                    token.address = user.address;
-                    token.mobile = user.mobile;
-                    token.group = user.group;
-                }
-                if (user.role === "principal") token.photo = user.photo;
-            }
-            console.log("Returning token:", token);
-            return token;
-        },
+        if (dbUser) {
+          token.id = dbUser._id.toString();
+          token.role = dbUser.role || (lecturer ? "lecturer" : student ? "student" : "principal");
+          token.collegeId = dbUser.collegeId?._id?.toString() || dbUser.collegeId?.toString() || null;
+          token.collegeName = dbUser.collegeName || dbUser.collegeId?.name || null;
+        } else {
+          // If not found, default to Google user
+          token.id = profile.sub;
+          token.role = "student"; // default role
+        }
 
+        token.name = profile.name;
+        token.email = profile.email;
+      }
 
+      // ✅ Credentials login
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+        token.collegeId = user.collegeId;
+        token.collegeName = user.collegeName;
+        if (user.role === "lecturer") token.subject = user.subject;
+        if (user.role === "student") {
+          token.admissionNo = user.admissionNo;
+          token.yearOfStudy = user.yearOfStudy;
+          token.photo = user.photo;
+          token.fatherName = user.fatherName;
+          token.caste = user.caste;
+          token.dob = user.dob;
+          token.gender = user.gender;
+          token.address = user.address;
+          token.mobile = user.mobile;
+          token.group = user.group;
+        }
+        if (user.role === "principal") token.photo = user.photo;
+      }
 
-
-
-
-
-
-        async session({ session, token }) {
-            console.log("Session callback called...");
-            console.log("Session:", session);
-            console.log("Token:", token);
-            session.user.id = token.id;
-            session.user.role = token.role;
-            session.user.collegeId = token.collegeId;
-            session.user.collegeName = token.collegeName;
-            if (token.role === "lecturer") session.user.subject = token.subject;
-            if (token.role === "student") {
-                session.user.admissionNo = token.admissionNo;
-                session.user.yearOfStudy = token.yearOfStudy;
-                session.user.photo = token.photo;
-                session.user.fatherName = token.fatherName;
-                session.user.caste = token.caste;
-                session.user.dob = token.dob;
-                session.user.gender = token.gender;
-                session.user.address = token.address;
-                session.user.mobile = token.mobile;
-                session.user.group = token.group;
-            }
-            if (token.role === "principal") session.user.photo = token.photo;
-            console.log("Returning session:", session);
-            return session;
+      return token;
     },
 
- },
-
-    pages: {
-        signIn: "/student/login", // customize per role if needed
+    async session({ session, token }) {
+      session.user.id = token.id;
+      session.user.role = token.role;
+      session.user.collegeId = token.collegeId;
+      session.user.collegeName = token.collegeName;
+      if (token.role === "lecturer") session.user.subject = token.subject;
+      if (token.role === "student") {
+        session.user.admissionNo = token.admissionNo;
+        session.user.yearOfStudy = token.yearOfStudy;
+        session.user.photo = token.photo;
+        session.user.fatherName = token.fatherName;
+        session.user.caste = token.caste;
+        session.user.dob = token.dob;
+        session.user.gender = token.gender;
+        session.user.address = token.address;
+        session.user.mobile = token.mobile;
+        session.user.group = token.group;
+      }
+      if (token.role === "principal") session.user.photo = token.photo;
+      return session;
     },
+  },
 
-    secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: "/student/login",
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

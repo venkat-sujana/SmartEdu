@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { FcGoogle } from "react-icons/fc";
 
 export default function LecturerLogin() {
   const [email, setEmail] = useState("");
@@ -17,10 +18,10 @@ export default function LecturerLogin() {
     setError("");
 
     const res = await signIn("credentials", {
-      redirect: false,
-      identifier: email. trim().toLowerCase(), // 🔥 trim and lowercase email
-      password: password. trim(), // 🔥 trim password
-      role: "lecturer", // 🔥 fixed role
+      redirect: true,
+      identifier: email.trim().toLowerCase(),
+      password: password.trim(),
+      role: "lecturer",
       callbackUrl: "/lecturer/dashboard",
     });
 
@@ -64,10 +65,27 @@ export default function LecturerLogin() {
         >
           Login
         </button>
-        if don't have an account?{" "}
-        <a href="/lecturer-registration" className="text-blue-600 hover:underline">
-          Register
-        </a>
+
+        <div className="my-4 text-center text-gray-500">or</div>
+
+        <button
+          type="button"
+          onClick={() => signIn("google", { callbackUrl: "/lecturer/dashboard" })}
+          className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded hover:bg-gray-100 transition"
+        >
+          <FcGoogle size={22} />
+          <span className="text-gray-700 font-medium">Sign in with Google</span>
+        </button>
+
+        <p className="text-center text-sm mt-4">
+          Don’t have an account?{" "}
+          <a
+            href="/lecturer-registration"
+            className="text-blue-600 hover:underline"
+          >
+            Register
+          </a>
+        </p>
       </form>
     </div>
   );
