@@ -18,14 +18,24 @@ export async function GET(req) {
     }
 
     // Student query
-    const studentQuery = { collegeId: new ObjectId(collegeId) };
+    const studentQuery = {};
+    if (ObjectId.isValid(collegeId)) {
+      studentQuery.collegeId = new ObjectId(collegeId);
+    } else {
+      studentQuery.collegeId = collegeId;
+    }
     if (group) studentQuery.group = group;
     if (yearOfStudy) studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i');
 
     const students = await Student.find(studentQuery);
 
     // Attendance query
-    const attendanceQuery = { collegeId: new ObjectId(collegeId) };
+    const attendanceQuery = {};
+    if (ObjectId.isValid(collegeId)) {
+      attendanceQuery.collegeId = new ObjectId(collegeId);
+    } else {
+      attendanceQuery.collegeId = collegeId;
+    }
     if (group) attendanceQuery.group = group;
     if (yearOfStudy) attendanceQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i');
 
@@ -40,10 +50,7 @@ export async function GET(req) {
       attendanceRecords.forEach((record) => {
         if (record.studentId.toString() === student._id.toString()) {
           const recordDate = new Date(record.date);
-
-          // Skip before joining date
           if (doj && recordDate < doj) return;
-
           totalWorking++;
           if (record.status === 'Present') totalPresent++;
         }
@@ -55,16 +62,14 @@ export async function GET(req) {
         name: student.name,
         yearOfStudy: student.yearOfStudy,
         group: student.group,
-        percentage: parseFloat(percentage.toFixed(2)), // round to 2 decimals
+        percentage: parseFloat(percentage.toFixed(2)),
       };
     });
 
-    // Only students with <75%
     const filtered = summary.filter((s) => s.percentage < 75);
-
-    return NextResponse.json(filtered, { status: 200 }); // return direct array for frontend
+    return NextResponse.json(filtered, { status: 200 });
   } catch (err) {
-    console.error("Error in shortage-summary API:", err);
+    console.error('Error in shortage-summary API:', err);
     return NextResponse.json({ error: 'Failed to generate shortage summary' }, { status: 500 });
   }
 }
