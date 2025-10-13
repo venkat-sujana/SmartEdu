@@ -26,9 +26,7 @@ async function authenticateLecturer(identifier, password) {
     console.log("Password comparison failed for lecturer with identifier:", identifier);
     return null;
   }
-
-
-  console.log("Authentication successful for lecturer with identifier:", identifier);
+console.log("Authentication successful for lecturer with identifier:", identifier);
 
   return {
     id: lecturer._id.toString(),
@@ -40,8 +38,6 @@ async function authenticateLecturer(identifier, password) {
     subject: lecturer.subject,
   };
 }
-
-
 
 
 
@@ -61,11 +57,7 @@ if (!isValid) {
   console.log("Password comparison failed for student with identifier:", identifier);
   return null;
 }
-
-
-
-
-  console.log("Authentication successful for student with identifier:", identifier);
+console.log("Authentication successful for student with identifier:", identifier);
 
   return {
     id: student._id.toString(),
@@ -91,7 +83,9 @@ if (!isValid) {
 
 
 
-async function authenticatePrincipal(identifier, password) {
+
+
+export async function authenticatePrincipal(identifier, password) {
   console.log("Authenticating principal with identifier:", identifier);
   const principal = await Principal.findOne({ email: identifier.trim().toLowerCase() }).populate("collegeId", "name");
 
@@ -100,7 +94,6 @@ async function authenticatePrincipal(identifier, password) {
     return null;
   }
 
-  // ✅ proper bcrypt comparison
   const isValid = await bcrypt.compare(password.trim(), principal.password);
   if (!isValid) {
     console.log("Password comparison failed for principal with identifier:", identifier);
@@ -108,7 +101,6 @@ async function authenticatePrincipal(identifier, password) {
   }
 
   console.log("Authentication successful for principal with identifier:", identifier);
-
   return {
     id: principal._id.toString(),
     name: principal.name,
@@ -147,12 +139,14 @@ const authOptions = {
 
 
 async authorize(credentials) {
+
   if (!credentials?.identifier || !credentials?.password || !credentials?.role) {
     console.log("Error: Missing credentials in authorize function");
     return null;
   }
 
   await connectMongoDB();
+  console.log("Authorize: credentials received", credentials);
 
   const { identifier, password, role } = credentials;
   let user = null;
