@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Student from '@/models/Student'
 import Attendance from '@/models/Attendance'
-import { ObjectId } from 'mongodb'
+import mongoose from 'mongoose'
+
 
 // 🎯 Public Holidays list (calendar లో వాడినట్లే)
 const publicHolidays = [
@@ -33,6 +34,7 @@ export async function GET(req) {
   try {
     console.log('GET /api/attendance/monthly-summary route called!')
     await connectDB()
+    console.log('Connected to database')
 
     const { searchParams } = new URL(req.url)
     const group = searchParams.get('group')
@@ -44,7 +46,7 @@ export async function GET(req) {
     // Students filter
     const studentQuery = {}
     if (group) studentQuery.group = group
-    if (collegeId) studentQuery.collegeId = new ObjectId(collegeId)
+    if (collegeId) studentQuery.collegeId = new mongoose.Types.ObjectId(collegeId)
     if (yearOfStudy) studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i')
 
     console.log('Student filter:', studentQuery)
@@ -59,7 +61,7 @@ export async function GET(req) {
     // Attendance filter
     const attendanceQuery = {}
     if (group) attendanceQuery.group = group
-    if (collegeId) attendanceQuery.collegeId = new ObjectId(collegeId)
+    if (collegeId) attendanceQuery.collegeId = new mongoose.Types.ObjectId(collegeId)
     if (yearOfStudy) attendanceQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i')
 
     console.log('Attendance filter:', attendanceQuery)

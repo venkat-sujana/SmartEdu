@@ -54,11 +54,12 @@ export default function MonthlySummary() {
 
         console.log("Response:", res);
 
+        if (!res.ok) {
+          throw new Error(`Failed to fetch data: ${res.status}`);
+        }
+
         const data = await res.json();
         console.log("Data:", data);
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to fetch data");
-        }
         setSummaryData(data.data || []);
       } catch (error) {
         console.error("Fetch error:", error);
