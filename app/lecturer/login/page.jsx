@@ -1,5 +1,3 @@
-
-//app/lecturer/login/page.jsx
 "use client";
 
 import { useState } from "react";
@@ -18,16 +16,16 @@ export default function LecturerLogin() {
 
     const res = await signIn("credentials", {
       redirect: false,
-      identifier: email. trim().toLowerCase(), // 🔥 trim and lowercase email
-      password: password. trim(), // 🔥 trim password
-      role: "lecturer", // 🔥 fixed role
-      callbackUrl: "/lecturer/dashboard",
+      identifier: email.trim().toLowerCase(),
+      password: password.trim(),
+      role: "lecturer",
+      callbackUrl: "/lecturer/dashboard", // ✅ redirect page after login
     });
 
     if (res?.error) {
-      setError("Invalid email or password");
-    } else {
-      router.push("/lecturer/dashboard");
+      setError("❌ Invalid Email or Password");
+    } else if (res?.ok) {
+      router.push(res.url); // ✅ NextAuth redirect
     }
   };
 
@@ -43,18 +41,18 @@ export default function LecturerLogin() {
         <input
           type="email"
           placeholder="Email"
-          className="w-full border px-3 py-2 rounded mb-3"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="w-full border px-3 py-2 rounded mb-3"
           required
         />
 
         <input
           type="password"
           placeholder="Password"
-          className="w-full border px-3 py-2 rounded mb-4"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="w-full border px-3 py-2 rounded mb-4"
           required
         />
 
@@ -64,11 +62,13 @@ export default function LecturerLogin() {
         >
           Login
         </button>
-        if don't have an account?{" "}
-        <a href="/lecturer-registration" className="text-blue-600 hover:underline">
-          Register
-        </a>
+        <p className="mt-3 text-center text-sm">
+          Don’t have an account?{" "}
+          <a href="/lecturer-registration" className="text-blue-600 hover:underline">
+            Register
+          </a>
+        </p>
       </form>
     </div>
   );
-} 
+}
