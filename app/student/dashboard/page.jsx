@@ -1,3 +1,5 @@
+
+//app/student/dashboard/page.jsx
 'use client'
 import StudentIndividualExams from '@/app/components/StudentIndividualExams/page'
 import StudentMonthlyAttendanceSummary from '@/app/components/StudentMonthlyAttendanceSummary/page'

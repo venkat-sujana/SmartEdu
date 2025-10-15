@@ -1,3 +1,4 @@
+//app/api/auth/[...nextauth]/route.js
 import "@/models/College";          // <<-- compulsory
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -43,6 +44,12 @@ async function authenticateStudent(admissionNo, password) {
     yearOfStudy: student.yearOfStudy,
     photo: student.photo,
     group: student.group,
+      fatherName: student.fatherName,
+  mobile: student.mobile,
+  caste: student.caste,
+  dob: student.dob,
+  gender: student.gender,
+  address: student.address
   };
 }
 
@@ -142,6 +149,12 @@ async authorize(credentials) {
           token.yearOfStudy = user.yearOfStudy;
           token.photo = user.photo;
           token.group = user.group;
+              token.fatherName = user.fatherName;
+    token.mobile = user.mobile;
+    token.caste = user.caste;
+    token.dob = user.dob;
+    token.gender = user.gender;
+    token.address = user.address;
         }
         if (user.role === "lecturer") token.subject = user.subject;
         if (user.role === "principal") token.photo = user.photo;
@@ -159,6 +172,12 @@ async authorize(credentials) {
         session.user.yearOfStudy = token.yearOfStudy;
         session.user.photo = token.photo;
         session.user.group = token.group;
+        session.user.fatherName = token.fatherName;
+  session.user.mobile = token.mobile;
+  session.user.caste = token.caste;
+  session.user.dob = token.dob;
+  session.user.gender = token.gender;
+  session.user.address = token.address;
       }
       if (token.role === "lecturer") session.user.subject = token.subject;
       if (token.role === "principal") session.user.photo = token.photo;
