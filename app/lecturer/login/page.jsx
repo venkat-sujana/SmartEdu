@@ -1,3 +1,4 @@
+//app/lecturer/login/page.jsx
 "use client";
 
 import { useState } from "react";
@@ -13,20 +14,20 @@ export default function LecturerLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+const res = await signIn("lecturer-login", {
+  redirect: false,
+  email: email.trim().toLowerCase(),
+  password: password.trim(),
+  callbackUrl: "/lecturer/dashboard",
+});
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      identifier: email.trim().toLowerCase(),
-      password: password.trim(),
-      role: "lecturer",
-      callbackUrl: "/lecturer/dashboard", // ✅ redirect page after login
-    });
 
-    if (res?.error) {
-      setError("❌ Invalid Email or Password");
-    } else if (res?.ok) {
-      router.push(res.url); // ✅ NextAuth redirect
-    }
+if (res?.error) {
+  setError("Invalid credentials");
+} else {
+  router.push(res.url || "/lecturer/dashboard");
+}
+
   };
 
   return (

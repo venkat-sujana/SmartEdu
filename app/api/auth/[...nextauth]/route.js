@@ -1,4 +1,4 @@
-// app/api/auth/[...nextauth]/route.js
+import "@/models/College";          // <<-- compulsory
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import connectMongoDB from "@/lib/mongodb";
@@ -7,15 +7,15 @@ import Student from "@/models/Student";
 import Principal from "@/models/Principal";
 import bcrypt from "bcryptjs";
 
+
+
 // ---------- AUTH FUNCTIONS ----------
 async function authenticateLecturer(email, password) {
   await connectMongoDB();
   const lecturer = await Lecturer.findOne({ email: email.trim().toLowerCase() });
   if (!lecturer) return null;
-
   const isValid = await bcrypt.compare(password.trim(), lecturer.password);
   if (!isValid) return null;
-
   return {
     id: lecturer._id.toString(),
     name: lecturer.name,
@@ -31,10 +31,8 @@ async function authenticateStudent(admissionNo, password) {
   await connectMongoDB();
   const student = await Student.findOne({ admissionNo: admissionNo.trim() }).populate("collegeId", "name");
   if (!student) return null;
-
   const isValid = await bcrypt.compare(password.trim(), student.password);
   if (!isValid) return null;
-
   return {
     id: student._id.toString(),
     name: student.name,
@@ -52,10 +50,8 @@ async function authenticatePrincipal(email, password) {
   await connectMongoDB();
   const principal = await Principal.findOne({ email: email.trim().toLowerCase() }).populate("collegeId", "name");
   if (!principal) return null;
-
   const isValid = await bcrypt.compare(password.trim(), principal.password);
   if (!isValid) return null;
-
   return {
     id: principal._id.toString(),
     name: principal.name,
@@ -78,12 +74,20 @@ const authOptions = {
         admissionNo: { label: "Admission No", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        const user = await authenticateStudent(credentials.admissionNo, credentials.password);
-        return user;
-      },
-    }),
+async authorize(credentials) {
+  console.log("Received credentials", credentials);
+  if (!credentials || !credentials.admissionNo || !credentials.password) {
+    console.log("Missing credentials");
+    return null;
+  }
+  const user = await authenticateStudent(credentials.admissionNo, credentials.password);
+  if (!user) {
+    console.log("Student authentication failed");
+  }
+  return user;
+}
 
+    }),
     // 👨‍🏫 Lecturer Login
     CredentialsProvider({
       id: "lecturer-login",
@@ -93,11 +97,17 @@ const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        if (
+          !credentials ||
+          !credentials.email ||
+          !credentials.password
+        ) {
+          return null;
+        }
         const user = await authenticateLecturer(credentials.email, credentials.password);
         return user;
       },
     }),
-
     // 🧑‍💼 Principal Login
     CredentialsProvider({
       id: "principal-login",
@@ -107,6 +117,13 @@ const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        if (
+          !credentials ||
+          !credentials.email ||
+          !credentials.password
+        ) {
+          return null;
+        }
         const user = await authenticatePrincipal(credentials.email, credentials.password);
         return user;
       },
@@ -137,7 +154,6 @@ const authOptions = {
       session.user.role = token.role;
       session.user.collegeId = token.collegeId;
       session.user.collegeName = token.collegeName;
-
       if (token.role === "student") {
         session.user.admissionNo = token.admissionNo;
         session.user.yearOfStudy = token.yearOfStudy;
@@ -146,7 +162,6 @@ const authOptions = {
       }
       if (token.role === "lecturer") session.user.subject = token.subject;
       if (token.role === "principal") session.user.photo = token.photo;
-
       return session;
     },
   },

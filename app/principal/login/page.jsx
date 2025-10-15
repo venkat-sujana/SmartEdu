@@ -1,3 +1,4 @@
+//app/principal/login/page.jsx
 "use client";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
@@ -13,19 +14,20 @@ export default function PrincipalLogin() {
     e.preventDefault();
     setError("");
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      identifier: email.trim().toLowerCase(),
-      password: password.trim(),
-      role: "principal",
-      callbackUrl: "/principal/dashboard",
-    });
+const res = await signIn("principal-login", {
+  redirect: false,
+  email: email.trim().toLowerCase(),
+  password: password.trim(),
+  callbackUrl: "/principal/dashboard",
+});
 
-    if (res?.error) {
-      setError("❌ Invalid Email or Password");
-    } else if (res?.ok) {
-      router.push(res.url);
-    }
+
+if (res?.error) {
+  setError("Invalid credentials");
+} else {
+  router.push(res.url || "/principal/dashboard");
+}
+
   };
 
   return (

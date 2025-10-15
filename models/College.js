@@ -20,3 +20,4 @@ const collegeSchema = new mongoose.Schema({
 
 const College = mongoose.models.College || mongoose.model("College", collegeSchema);
 export default College;
+
