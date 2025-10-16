@@ -1,17 +1,26 @@
+//app/api/attendance/shortage-summary/route.js
+
+import "@/models/College";
 import { NextResponse } from 'next/server';
 import connectMongoDB from '@/lib/mongodb';
 import Student from '@/models/Student';
 import Attendance from '@/models/Attendance';
-import { ObjectId } from 'mongodb';
+import mongoose from "mongoose";                // <-- Add this
+const ObjectId = mongoose.Types.ObjectId;        // <-- Add thi
+
+
 
 export async function GET(req) {
   try {
     await connectMongoDB();
+    console.log('GET /api/attendance/shortage-summary called');
 
     const { searchParams } = new URL(req.url);
     const group = searchParams.get('group');
     const yearOfStudy = searchParams.get('yearOfStudy');
     const collegeId = searchParams.get('collegeId');
+
+    console.log('URL search params:', searchParams);
 
     if (!collegeId) {
       return NextResponse.json({ error: 'collegeId required' }, { status: 400 });
@@ -27,7 +36,11 @@ export async function GET(req) {
     if (group) studentQuery.group = group;
     if (yearOfStudy) studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i');
 
+    console.log('Student query:', studentQuery);
+
     const students = await Student.find(studentQuery);
+
+    console.log('Students found:', students);
 
     // Attendance query
     const attendanceQuery = {};
@@ -39,7 +52,11 @@ export async function GET(req) {
     if (group) attendanceQuery.group = group;
     if (yearOfStudy) attendanceQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i');
 
+    console.log('Attendance query:', attendanceQuery);
+
     const attendanceRecords = await Attendance.find(attendanceQuery);
+
+    console.log('Attendance records found:', attendanceRecords);
 
     // Process each student for attendance percentage
     const summary = students.map((student) => {
@@ -57,6 +74,8 @@ export async function GET(req) {
       });
 
       const percentage = totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0;
+
+      console.log(`Attendance percentage for ${student.name}: ${percentage.toFixed(2)}%`);
 
       return {
         name: student.name,

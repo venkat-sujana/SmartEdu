@@ -1,3 +1,4 @@
+//app/components/attendance-shortage-summary/page.jsx
 "use client"
 export const dynamic = "force-dynamic"; // ✅ disable prerendering
 
@@ -16,20 +17,24 @@ export default function AttendanceShortageSummary() {
 
     const fetchShortage = async () => {
       try {
+        console.log("Fetching attendance shortage summary...");
         setLoading(true);
         const res = await fetch(
           `/api/attendance/shortage-summary?collegeId=${session.user.collegeId}`
         );
+        console.log("Response:", res);
         if (!res.ok) throw new Error("Failed to fetch shortage summary");
         const data = await res.json();
+        console.log("Response JSON:", data);
         setStudents(Array.isArray(data) ? data : []);
       } catch (err) {
+        console.error("Error fetching attendance shortage summary:", err);
         setError(err.message);
       } finally {
         setLoading(false);
+        console.log("Done fetching attendance shortage summary");
       }
     };
-
     fetchShortage();
   }, [session]);
 

@@ -63,7 +63,7 @@ export default function GroupWiseAttendanceTable({ collegeId, collegeName, initi
           </h3>
 
                   <p className="text-sm text-gray-600 mb-2">
-          Marked by:{" "}
+          Attendance Recorded by:{" "}
           <span className="font-medium text-blue-700">
             {Object.values(yearData)[0]?.lecturerName || "—"}
           </span>
