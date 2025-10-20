@@ -31,10 +31,10 @@ if (res?.error) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-start justify-center min-h-screen bg-gray-200 bg-[url('/images/bg-6.jpg')] bg-cover bg-center">
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-lg rounded-lg p-6 w-96"
+        className="bg-white shadow-lg rounded-lg p-6 w-72 mt-10"
       >
         <h2 className="text-2xl font-bold mb-4 text-center">Lecturer Login</h2>
         {error && <p className="text-red-500 text-sm mb-3">{error}</p>}

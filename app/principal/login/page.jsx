@@ -31,8 +31,8 @@ if (res?.error) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-100 flex items-center justify-center">
-      <form className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl space-y-6" onSubmit={handleLogin}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-100 flex items-start justify-center bg-[url('/images/college.jpg')] bg-cover bg-center">
+      <form className="w-64 max-w-md bg-white p-4 rounded-2xl shadow-xl space-y-6 mt-8" onSubmit={handleLogin}>
         <div className="flex flex-col items-center space-y-2 mb-2">
           <span className="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-3xl">🎓</span>
           <h2 className="text-2xl font-extrabold text-gray-800">Principal Login</h2>

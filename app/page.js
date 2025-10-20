@@ -6,16 +6,17 @@ export default function Home() {
     <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gray-100 text-gray-800">
 
       {/* Main Heading */}
-      <div>
-        <Image
-          src="/images/college.jpg"
-          alt="SmartEdu Logo"
-          width={600}
-          height={600}
-          className="mt-5 border-2 border-gray-300 rounded-lg shadow-lg"
-          priority
-        />
-      </div>
+<div className="relative w-screen h-screen bg-cover bg-center bg-auto">
+  <Image 
+    src="/images/homepage-1.jpg"
+    alt="SmartEdu Logo"
+    layout="fill"
+    objectFit="cover"
+    priority
+  />
+</div>
+
+
 
 
       <h1 className="text-2xl text-black font-bold mt-2">

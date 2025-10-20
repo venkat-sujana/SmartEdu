@@ -19,12 +19,12 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className=" bg-amber-50 flex flex-col items-center justify-center h-screen">
-      <h1 className="text-3xl font-bold mb-6">👤&nbsp;Admin Login</h1>
+    <div className=" bg-white flex flex-col items-center justify-start h-screen bg-[url('/images/bg-9.jpg')] bg-cover bg-center mb-5 pt-10">
+      <h1 className="text-xl font-bold mb-5 text-white">👤&nbsp;Admin Login</h1>
       <input
-        type="password"
+        type="password" 
         placeholder="Enter Admin Password"
-        className="border border-black-300 p-2 mb-4"
+        className="border border-black-500 p-2 mb-4 text-white"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
