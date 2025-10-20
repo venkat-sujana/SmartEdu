@@ -1,3 +1,5 @@
+//app/lecturer/dashboard/page.jsx
+
 "use client";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -83,7 +85,7 @@ export default function LecturerDashboard() {
 
 
   return (
-    <div className="max-w-6xl mx-auto mt-12 p-8 bg-white rounded-3xl shadow-lg border border-gray-200">
+    <div className="max-w-6xl mx-auto mt-12 p-8 bg-white rounded-3xl shadow-lg border border-gray-200 bg-[url('/images/bg-9.jpg')] bg-cover bg-center">
       {/* College Name */}
       <div className="mb-8 px-6 py-4 bg-blue-50 border-2-[6px] border-black-600 rounded-lg flex items-center gap-4 ">
         <GraduationCap className="w-9 h-9 text-blue-700" />
@@ -93,7 +95,7 @@ export default function LecturerDashboard() {
       </div>
 
       {/* Title */}
-      <h1 className="text-2xl font-bold text-center mb-10 text-blue-900 tracking-tight">
+      <h1 className="text-2xl font-bold text-center mb-10 text-white tracking-tight ">
         🎓 Lecturer Dashboard
       </h1>
 
@@ -120,7 +122,7 @@ export default function LecturerDashboard() {
         <h2 className="text-3xl font-semibold text-black-800 mb-4">
           Welcome, {user?.name || "Lecturer"}!
         </h2>
-        <p className="text-black-800 text-lg">
+        <p className="text-black-800 text-lg font-bold">
           You are now logged in as a Lecturer in {collegeName || "College"}.
         </p>
       </div>
@@ -222,22 +224,22 @@ export default function LecturerDashboard() {
 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4 gap-4">
-              <div className="bg-pink-100 shadow p-4 rounded-lg">
+              <div className="bg-blue-500 shadow p-4 rounded-lg font-bold text-blue-50">
                                  <a
                     href="https://skr-learn-portal.netlify.app/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
+                    
                   >
-                    Voc Question paper
+                    Voc Question Paper
                   </a>
                 </div>
-              <div className="bg-green-100 shadow p-4 rounded-lg">
+              <div className="bg-green-100 shadow p-4 rounded-lg font-bold">
                 <a
                     href="https://advanced-question-paper-tailwindcss.netlify.app/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
+                    
                   >
                   M&AT Question Paper
                   </a>

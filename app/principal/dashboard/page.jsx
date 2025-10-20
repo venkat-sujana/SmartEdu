@@ -80,7 +80,7 @@ export default function PrincipalDashboard() {
   })
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100 bg-[url('/images/bg-8.jpg')] bg-cover bg-center">
       {/* Sidebar */}
       <aside className="hidden w-56 bg-black p-6 shadow-md md:block">
         <h2 className="mb-8 text-2xl font-bold text-white">OSRA</h2>
@@ -112,11 +112,11 @@ export default function PrincipalDashboard() {
         {/* Header */}
         <header className="flex flex-col items-start justify-between space-y-3 sm:flex-row sm:items-center sm:space-y-0">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">{collegeName}</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl font-bold text-white">{collegeName}</h1>
+            <p className="text-white">
               Welcome,Principal <span className="font-semibold">{principal?.name}</span>
             </p>
-            <p className="text-sm text-gray-500">{principal?.email}</p>
+            <p className="text-sm text-white">{principal?.email}</p>
           </div>
           <Button className="rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700">
             + Add Announcement
