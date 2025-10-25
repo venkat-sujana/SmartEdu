@@ -79,6 +79,18 @@ export default function PrincipalDashboard() {
     }
   })
 
+  // Calculate percentages (add these at top in your component)
+const firstYearTotal = presentAbsentByYear.firstYear.present + presentAbsentByYear.firstYear.absent;
+const firstYearPercentage = firstYearTotal > 0 
+  ? Math.round((presentAbsentByYear.firstYear.present / firstYearTotal) * 100) 
+  : 0;
+
+const secondYearTotal = presentAbsentByYear.secondYear.present + presentAbsentByYear.secondYear.absent;
+const secondYearPercentage = secondYearTotal > 0 
+  ? Math.round((presentAbsentByYear.secondYear.present / secondYearTotal) * 100)
+  : 0;
+
+
   return (
     <div className="flex min-h-screen bg-gray-100 bg-[url('/images/bg-8.jpg')] bg-cover bg-center">
       {/* Sidebar */}
@@ -151,88 +163,81 @@ export default function PrincipalDashboard() {
           title="Currently Active Lecturers"
         />
 
-        {/* Stats Cards */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
-          {[
-            {
-              title: 'Total Students',
-              value: totalStudents,
-              color: 'text-blue-600',
-            },
-            {
-              title: 'Lecturers',
-              value: totalLecturers,
-              color: 'text-green-600',
-            },
-            {
-              title: 'Attendance %',
-              value: isLoading
-                ? '--%'
-                : error || typeof data?.percentage === 'undefined'
-                  ? '0%'
-                  : `${percentage}%`,
-              color: 'text-purple-600',
-            },
-            {
-              title: 'Present Today',
-              value: isLoading || error ? '--' : presentCount,
-              color: 'text-green-700',
-            },
-            {
-              title: 'Absent Today',
-              value: isLoading || error ? '--' : absentCount,
-              color: 'text-red-600',
-            },
-          ].map(({ title, value, color }) => (
-            <Card key={title} className="rounded-2x max-w-xs shadow-md">
-              <CardHeader className="bg-blue-50 text-center">
-                <CardTitle>{title}</CardTitle>
-              </CardHeader>
-              <CardContent className={`text-3xl font-bold ${color} text-center`}>
-                {value}
-              </CardContent>
-            </Card>
-          ))}
-        </section>
+      
+{/* 1. Overall Attendance Card */}
+<Card className="rounded-2xl shadow-lg p-4">
+  <CardHeader>
+    <CardTitle className="text-xl font-semibold">Overall Attendance</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+      <div>
+        <p className="font-bold text-blue-600">Attendance %</p>
+        <p className="text-2xl">{percentage}%</p>
+      </div>
+      <div>
+        <p className="font-bold text-green-700">Present Today</p>
+        <p className="text-2xl">{presentCount}</p>
+      </div>
+      <div>
+        <p className="font-bold text-red-600">Absent Today</p>
+        <p className="text-2xl">{absentCount}</p>
+      </div>
+    </div>
+  </CardContent>
+</Card>
 
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
-          <Card className="rounded-2xl shadow-lg">
-            <CardHeader className="bg-amber-50 text-center">
-              <CardTitle>First Year Present</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center text-3xl font-bold text-green-700">
-              {presentAbsentByYear.firstYear.present}
-            </CardContent>
-          </Card>
+{/* 2. First Year Attendance Card */}
+<Card className="rounded-2xl shadow-lg p-4">
+  <CardHeader>
+    <CardTitle className="text-xl font-semibold">First Year Attendance</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="grid grid-cols-3 gap-4">
+      <div>
+        <p className="font-bold text-green-700">Present</p>
+        <p className="text-2xl">{presentAbsentByYear.firstYear.present}</p>
+      </div>
+      <div>
+        <p className="font-bold text-red-600">Absent</p>
+        <p className="text-2xl">{presentAbsentByYear.firstYear.absent}</p>
+      </div>
+      <div>
+        <p className="font-bold text-blue-600">% Attendance</p>
+        <p className="text-2xl">{firstYearPercentage}%</p>
+      </div>
+    </div>
+  </CardContent>
+</Card>
 
-          <Card className="rounded-2xl bg-white shadow-md">
-            <CardHeader className="bg-orange-100 text-center">
-              <CardTitle>First Year Absent</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center text-3xl font-bold text-red-600">
-              {presentAbsentByYear.firstYear.absent}
-            </CardContent>
-          </Card>
+{/* 3. Second Year Attendance Card */}
+<Card className="rounded-2xl shadow-lg p-4">
+  <CardHeader>
+    <CardTitle className="text-xl font-semibold">Second Year Attendance</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="grid grid-cols-3 gap-4">
+      <div>
+        <p className="font-bold text-green-700">Present</p>
+        <p className="text-2xl">{presentAbsentByYear.secondYear.present}</p>
+      </div>
+      <div>
+        <p className="font-bold text-red-600">Absent</p>
+        <p className="text-2xl">{presentAbsentByYear.secondYear.absent}</p>
+      </div>
+      <div>
+        <p className="font-bold text-blue-600">% Attendance</p>
+        <p className="text-2xl">{secondYearPercentage}%</p>
+      </div>
+    </div>
+  </CardContent>
+</Card>
 
-          <Card className="rounded-2xl bg-white shadow-md">
-            <CardHeader className="bg-slate-200 text-center">
-              <CardTitle>Second Year Present</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center text-3xl font-bold text-green-700">
-              {presentAbsentByYear.secondYear.present}
-            </CardContent>
-          </Card>
 
-          <Card className="rounded-2xl bg-white shadow-md">
-            <CardHeader className="bg-emerald-100 text-center">
-              <CardTitle>Second Year Absent</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center text-3xl font-bold text-red-600">
-              {presentAbsentByYear.secondYear.absent}
-            </CardContent>
-          </Card>
-          {/* Existing other cards */}
-        </section>
+
+
+
+
 
         {/* Modules - Attendance and Exams */}
         <section className="grid grid-cols-1 gap-4">
@@ -240,7 +245,7 @@ export default function PrincipalDashboard() {
           <Card className="rounded-2xl bg-white p-2 shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl font-semibold text-gray-800">
-                Attendance Overview
+               Group wise  Attendance Overview
               </CardTitle>
             </CardHeader>
             <div className="mt-4">
