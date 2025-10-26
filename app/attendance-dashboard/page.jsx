@@ -296,35 +296,59 @@ export default function AttendanceDashboard() {
         {/* Main Feature Grid */}
         <div>
           <h2 className="mb-6 text-2xl font-bold text-gray-900">Attendance Features</h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {attendanceFeatures.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <div
-                  onClick={() => setShowShortage(true)}
-                  className={`cursor-pointer border-2 bg-gradient-to-br transition-all duration-300 hover:shadow-xl ${feature.gradient} hover:scale-105`}
-                >
-                  <CardHeader>
-                    <CardTitle className={`flex items-center gap-3 text-${feature.color}-800`}>
-                      <div
-                        className={`rounded-lg bg-white p-2 shadow-sm text-${feature.color}-600`}
-                      >
-                        {feature.icon}
-                      </div>
-                      <span className="text-lg">{feature.title}</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className={`text-sm text-${feature.color}-700`}>{feature.description}</p>
-                  </CardContent>
+<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+  {attendanceFeatures.map((feature, index) =>
+    feature.title === "Shortage Summary" ? (
+      <motion.div
+        key={feature.title}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: index * 0.1 }}
+      >
+        <div
+          onClick={() => setShowShortage(true)}
+          className={`cursor-pointer border-2 bg-gradient-to-br transition-all duration-300 hover:shadow-xl ${feature.gradient} hover:scale-105 p-0 rounded-2xl`}
+        >
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-red-800">
+              <div className="rounded-lg bg-white p-2 shadow-sm text-red-600">
+                {feature.icon}
+              </div>
+              <span className="text-lg">{feature.title}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-red-700">{feature.description}</p>
+          </CardContent>
+        </div>
+      </motion.div>
+    ) : (
+      <motion.div
+        key={feature.title}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: index * 0.1 }}
+      >
+        <Link href={feature.href}>
+          <Card className={`cursor-pointer border-2 bg-gradient-to-br transition-all duration-300 hover:shadow-xl ${feature.gradient} hover:scale-105 rounded-2xl`}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-gray-800">
+                <div className="rounded-lg bg-white p-2 shadow-sm text-gray-600">
+                  {feature.icon}
                 </div>
-              </motion.div>
-            ))}
-          </div>
+                <span className="text-lg">{feature.title}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-700">{feature.description}</p>
+            </CardContent>
+          </Card>
+        </Link>
+      </motion.div>
+    )
+  )}
+</div>
+
         </div>
       </div>
 

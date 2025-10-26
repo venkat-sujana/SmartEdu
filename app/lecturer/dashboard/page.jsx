@@ -294,6 +294,7 @@ useEffect(() => {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto mt-8">
         {[
+          { href: "/attendance-form", label: "➕ Take Attendance ", bg: "green-200", hover: "pink-400", text: "pink-900" },
           { href: "/student-table", label: "📋 View Students", bg: "blue-100", hover: "blue-300", text: "blue-800" },
           { href: "/register", label: "➕ Add Student", bg: "blue-100", hover: "blue-300", text: "blue-800" },
           { href: "/exams-form", label: "📝 Add Exam", bg: "green-200", hover: "green-400", text: "green-900" },
