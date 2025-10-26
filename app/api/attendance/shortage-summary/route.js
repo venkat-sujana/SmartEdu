@@ -1,3 +1,4 @@
+// app/api/attendance/shortage-summary/route.js
 import "@/models/College";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
@@ -28,6 +29,8 @@ export async function GET(req) {
     await connectMongoDB();
     console.log("✅ /api/attendance/shortage-summary called");
 
+
+
     const { searchParams } = new URL(req.url);
     const group = searchParams.get("group");
     const yearOfStudyRaw = searchParams.get("yearOfStudy");
@@ -51,6 +54,8 @@ export async function GET(req) {
       studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, "i");
 
     const students = await Student.find(studentQuery);
+
+
     console.log(
       "👨‍🎓 Students fetched:",
       students.map((s) => ({
@@ -60,6 +65,9 @@ export async function GET(req) {
         group: s.group,
       }))
     );
+
+
+
 
     /** 🗓️ Build Attendance Query */
     const attendanceQuery = {};
@@ -113,11 +121,13 @@ export async function GET(req) {
         yearOfStudy: student.yearOfStudy,
         group: student.group,
         percentage: parseFloat(percentage.toFixed(2)),
+        totalWorking, // <-- ADD THIS
       };
     });
 
     /** 🚫 Filter students below 75% */
-    const filtered = summary.filter((s) => s.percentage < 75);
+    const filtered = summary.filter((s) => s.totalWorking > 0 && s.percentage < 75);
+
 
     return NextResponse.json(filtered, { status: 200 });
   } catch (err) {

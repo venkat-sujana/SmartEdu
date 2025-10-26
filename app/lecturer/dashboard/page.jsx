@@ -186,8 +186,11 @@ useEffect(() => {
         </p>
       </div>
 
+
+
+
       {/* Summary Cards - Updated with Correct Calculations */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 mt-12">
         {/* Total Students Card */}
         <motion.div
           whileHover={{ scale: 1.07 }}
@@ -274,21 +277,28 @@ useEffect(() => {
         </motion.div>
       </div>
 
+
+
+     // Add this in Quick Actions section
+<Link href="/attendance-dashboard">
+  <motion.div
+    whileHover={{ scale: 1.1, rotate: 2 }}
+    whileTap={{ scale: 0.95 }}
+    className="cursor-pointer p-5 rounded-xl text-center shadow-md transition-all bg-indigo-100 hover:bg-indigo-300 text-indigo-800"
+  >
+    <p className="text-xl font-semibold ">📊 Attendance Dashboard</p>
+  </motion.div>
+</Link>
+
+
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto mt-8">
         {[
           { href: "/student-table", label: "📋 View Students", bg: "blue-100", hover: "blue-300", text: "blue-800" },
           { href: "/register", label: "➕ Add Student", bg: "blue-100", hover: "blue-300", text: "blue-800" },
-          { href: "/attendance-form", label: "🟢 Take Attendance", bg: "green-100", hover: "green-300", text: "green-800" },
-          { href: "/lecturer/attendance/group-wise", label: "📅 Group wise Attendance", bg: "yellow-100", hover: "yellow-300", text: "yellow-800" },
-          { href: "/attendance-records", label: "📆 Attendance Records", bg: "blue-100", hover: "indigo-300", text: "indigo-800" },
-          { href: "/lecturer/attendance", label: "📅 Attendance with names", bg: "green-100", hover: "green-300", text: "green-800" },
-          { href: "/attendance-records/individual", label: "📅 Edit Attendance Records", bg: "blue-100", hover: "blue-400", text: "blue-900" },
-          { href: "/attendance-records/attendance-calendar", label: "📅 Calendar View Attendance", bg: "green-100", hover: "green-400", text: "green-900" },
-          { href: "/attendance-records/monthly-summary", label: "📅 Monthly Attendance", bg: "blue-100", hover: "yellow-400", text: "yellow-900" },
           { href: "/exams-form", label: "📝 Add Exam", bg: "green-200", hover: "green-400", text: "green-900" },
           { href: "/exam-report", label: "📊 Exam Records", bg: "green-200", hover: "pink-400", text: "pink-900" },
-          { href: "/", label: "🟢 Question paper generator", bg: "blue-100", hover: "cyan-400", text: "cyan-900" },
+          
         ].map(({ href, label, bg, hover, text }) => (
           <Link key={href} href={href}>
             <motion.div

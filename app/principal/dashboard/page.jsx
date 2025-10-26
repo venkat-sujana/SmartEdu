@@ -276,7 +276,7 @@ const secondYearPercentage = secondYearTotal > 0
                 </>
               )}
             </CardContent>
-            {/* <AttendanceShortageSummary data={shortageData} /> */}
+            
             <AttendanceShortageSummary data={shortageData} />
           </Card>
 
