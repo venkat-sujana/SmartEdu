@@ -5,6 +5,19 @@ import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+import {
+  Calendar,
+  Users,
+  FileText,
+  Edit,
+  BarChart,
+  ClipboardList,
+  UserCheck,
+  AlertCircle,
+  TrendingUp,
+  Home,
+} from 'lucide-react'
+
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthsList = [
   "January", "February", "March", "April", "May", "June",
@@ -140,9 +153,9 @@ export default function AttendanceForm() {
 
         {/* Action */}
         <div className="mb-4 flex justify-end">
-          <Link href="/attendance-records">
-            <button className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-lg font-bold shadow">
-              🏠 Attendance Records
+          <Link href="/attendance-dashboard">
+            <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer font-bold">
+              <Home className="w-5 h-5" /> Back to  Dashboard
             </button>
           </Link>
         </div>

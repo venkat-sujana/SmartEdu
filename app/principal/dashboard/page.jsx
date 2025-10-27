@@ -13,7 +13,8 @@ import React, { useEffect, useState } from 'react'
 import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
 import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
-import ExamFailureTable from "@/app/components/exam-failure-table/page";
+import ExamReportPage from '@/app/exam-report/page'
+
 
 const fetcher = url => fetch(url).then(res => res.json())
 
@@ -23,7 +24,10 @@ export default function PrincipalDashboard() {
   const principal = session?.user
   const collegeName = principal?.collegeName || 'Your College'
   const [filteredReports, setFilteredReports] = useState([])
-  // const [examData, setExamData] = useState([])
+
+
+
+
 
   useEffect(() => {
     fetch('/api/attendance/shortage-summary')
@@ -234,12 +238,7 @@ const secondYearPercentage = secondYearTotal > 0
 </Card>
 
 
-
-
-
-
-
-        {/* Modules - Attendance and Exams */}
+           {/* Modules - Attendance and Exams */}
         <section className="grid grid-cols-1 gap-4">
           {/* Attendance Module */}
           <Card className="rounded-2xl bg-white p-2 shadow-lg">
@@ -249,7 +248,7 @@ const secondYearPercentage = secondYearTotal > 0
               </CardTitle>
             </CardHeader>
             <div className="mt-4">
-              <h3 className="mb-2 font-semibold">Today's Group-wise Attendance</h3>
+             
               {session?.user && (
                 <GroupWiseAttendanceTable
                   collegeId={session.user.collegeId}
@@ -280,6 +279,12 @@ const secondYearPercentage = secondYearTotal > 0
             <AttendanceShortageSummary data={shortageData} />
           </Card>
 
+
+
+
+
+
+
           {/* Exam Module */}
           <Card className="mx-auto max-w-4xl rounded-2xl bg-white p-4 shadow-lg">
             <CardHeader>
@@ -287,12 +292,17 @@ const secondYearPercentage = secondYearTotal > 0
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-               <ExamFailureTable reports={filteredReports} enableFilters={true} />
+                <ExamReportPage />
               </div>
               {/* You can style unit1Failures, unit2Failures tables here */}
             </CardContent>
           </Card>
         </section>
+
+
+
+
+
 
         {/* Quick Links */}
         <section className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">

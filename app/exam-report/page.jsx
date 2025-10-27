@@ -1,3 +1,4 @@
+//app/exam-report/page.jsx
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -5,6 +6,19 @@ import EditExamForm from "@/app/edit-exam-form/page";
 import { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import ExamFailureTable from "@/app/components/exam-failure-table/page";
+
+import {
+  Calendar,
+  Users,
+  FileText,
+  Edit,
+  BarChart,
+  ClipboardList,
+  UserCheck,
+  AlertCircle,
+  TrendingUp,
+  Home,
+} from 'lucide-react';
 
 export default function ExamReportPage() {
   const [reports, setReports] = useState([]);
@@ -164,21 +178,35 @@ export default function ExamReportPage() {
 
       {/* Summary Stats Cards */}
       <div className="flex flex-wrap justify-center gap-4 mb-8">
+
         <div className="bg-green-50 border-2 border-green-200 rounded-xl px-8 py-5 text-center shadow-lg min-w-[120px]">
           <div className="text-3xl mb-2">✅</div>
           <div className="text-2xl font-bold text-green-700">{passCount}</div>
           <div className="text-sm font-semibold text-green-800">Passed</div>
         </div>
+
         <div className="bg-red-50 border-2 border-red-200 rounded-xl px-8 py-5 text-center shadow-lg min-w-[120px]">
           <div className="text-3xl mb-2">❌</div>
           <div className="text-2xl font-bold text-red-700">{failCount}</div>
           <div className="text-sm font-semibold text-red-800">Failed</div>
         </div>
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl px-8 py-5 text-center shadow-lg min-w-[120px]">
+
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl px-8 py-5 text-center shadow-lg min-w-[120px] mr-8">
           <div className="text-3xl mb-2">📈</div>
           <div className="text-2xl font-bold text-blue-700">{passPercentage}%</div>
           <div className="text-sm font-semibold text-blue-800">Pass Rate</div>
         </div>
+
+                <div className="mb-4 flex justify-end">
+                  <Link href="/attendance-dashboard">
+                    <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer font-bold">
+                      <Home className="w-5 h-5" /> Back to  Dashboard
+                    </button>
+                  </Link>
+                </div>
+
+
+
       </div>
 
       {/* Action Buttons */}

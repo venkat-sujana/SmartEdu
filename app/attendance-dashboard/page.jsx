@@ -133,7 +133,7 @@ export default function AttendanceDashboard() {
       title: 'Group-wise View',
       description: 'View attendance by groups',
       icon: <Users className="h-6 w-6" />,
-      href: '/lecturer/attendance/group-wise',
+      href: '/components/groupwise-attendance-table',
       color: 'yellow',
       gradient: 'from-yellow-100 to-yellow-300',
     },

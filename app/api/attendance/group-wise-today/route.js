@@ -1,3 +1,5 @@
+//app/api/attendance/group-wise-today/route.js
+
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
@@ -44,9 +46,16 @@ export async function GET(req) {
     }
 
     // First record లో lecturerName assign చేయడం (duplicate overwrite కాకుండా)
-    if (!result[group][yearOfStudy].lecturerName && lecturerName) {
-      result[group][yearOfStudy].lecturerName = lecturerName;
-    }
+// Always keep first TRUTHY (non-empty) lecturerName for that group/year
+if (
+  !result[group][yearOfStudy].lecturerName ||
+  result[group][yearOfStudy].lecturerName === "—"
+) {
+  if (lecturerName && lecturerName.trim() !== "") {
+    result[group][yearOfStudy].lecturerName = lecturerName;
+  }
+}
+
 
     const yearData = result[group][yearOfStudy];
     if (status === "Present") yearData.present++;

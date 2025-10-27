@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { motion } from "framer-motion";
+import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
+import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
+import { Card } from '@/components/ui/card'
 
 export default function LecturerDashboard() {
   const { data: session, status } = useSession();
@@ -18,6 +21,7 @@ export default function LecturerDashboard() {
   const [firstYearAbsent, setFirstYearAbsent] = useState(0);
   const [secondYearAbsent, setSecondYearAbsent] = useState(0);
   const [totalPresent, setTotalPresent] = useState(0);
+  
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -30,6 +34,10 @@ export default function LecturerDashboard() {
         .then((data) => {
           if (data?.name) setCollegeName(data.name);
         });
+
+
+
+
 
       fetch(
         `/api/students/count?collegeId=${session.user.collegeId}&subject=${encodeURIComponent(
@@ -140,68 +148,65 @@ useEffect(() => {
     : 0;
 
   return (
-    <div className="max-w-6xl mx-auto mt-12 p-8 bg-white rounded-3xl shadow-lg border border-gray-200 bg-[url('/images/bg-9.jpg')] bg-cover bg-center">
+    <div className="mx-auto mt-12 max-w-6xl rounded-3xl border border-gray-200  bg-black  bg-[url('/images/')] bg-cover bg-center p-8 shadow-lg">
       {/* College Name */}
-      <div className="mb-8 px-6 py-4 bg-blue-50 border-2 border-black-600 rounded-lg flex items-center gap-4">
-        <GraduationCap className="w-9 h-9 text-blue-700" />
-        <h1 className="text-xl font-bold text-blue-800 tracking-wide">
-          {collegeName || "Loading..."}
+      <div className="border-black-600 mb-8 flex items-center gap-4 rounded-lg border-2 bg-blue-50 px-6 py-4">
+        <GraduationCap className="h-9 w-9 text-blue-700" />
+        <h1 className="text-xl font-bold tracking-wide text-blue-800">
+          {collegeName || 'Loading...'}
         </h1>
       </div>
-
       {/* Title */}
-      <div className="flex items-center justify-center mb-10">
-        <h1 className="text-2xl font-bold text-white tracking-tight mr-5">
-          Lecturer Dashboard
-        </h1>
+      <div className="mb-10 flex items-center justify-center">
+        <h1 className="mr-5 text-2xl font-bold tracking-tight text-white">Lecturer Dashboard</h1>
         <img
           src="/images/classroombg.jpg"
           alt="Lecturer Dashboard Icon"
-          className="w-10 h-10 rounded"
+          className="h-10 w-10 rounded"
         />
       </div>
-
       {/* Lecturer Info Card */}
-      <div className="mb-10 flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-blue-100 shadow-md rounded-2xl border border-blue-200 max-w-3xl mx-auto">
-        <div className="flex-1 space-y-1 max-w-md mx-auto">
-          <p className="text-md font-bold text-blue-900 flex items-center gap-3 tracking-tight break-words">
-            <span>👤</span> {user?.name || "Lecturer Name"}
+      <div className="mx-auto mb-10 flex max-w-3xl items-center gap-6 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-6 shadow-md">
+        <div className="mx-auto max-w-md flex-1 space-y-1">
+          <p className="text-md flex items-center gap-3 font-bold tracking-tight break-words text-blue-900">
+            <span>👤</span> {user?.name || 'Lecturer Name'}
           </p>
-          <p className="text-md font-medium text-blue-800 flex items-center gap-3 tracking-tight break-words">
-            <span>📧</span> {user?.email || "Lecturer Email"}
+          <p className="text-md flex items-center gap-3 font-medium tracking-tight break-words text-blue-800">
+            <span>📧</span> {user?.email || 'Lecturer Email'}
           </p>
           <p className="text-md text-black-800 flex items-center gap-3 tracking-tight break-words">
-            <span>📚</span> Junior Lecturer in {user?.subject || "Subject"}
+            <span>📚</span> Junior Lecturer in {user?.subject || 'Subject'}
           </p>
         </div>
       </div>
-
       {/* Welcome Message */}
-      <div className="mb-10 p-6 shadow-md rounded-2xl bg-blue-50 text-center max-w-2xl mx-auto">
-        <h2 className="text-3xl font-semibold text-black-800 mb-4">
-          Welcome, {user?.name || "Lecturer"}!
+      <div className="mx-auto mb-10 max-w-2xl rounded-2xl bg-blue-50 p-6 text-center shadow-md">
+        <h2 className="text-black-800 mb-4 text-3xl font-semibold">
+          Welcome, {user?.name || 'Lecturer'}!
         </h2>
         <p className="text-black-800 text-lg font-bold">
-          You are now logged in as a Lecturer in {collegeName || "College"}.
+          You are now logged in as a Lecturer in {collegeName || 'College'}.
         </p>
       </div>
-
-
-
-
+      <ActiveLecturersCard
+        lecturers={ActiveLecturersCard?.data || []}
+        loading={!ActiveLecturersCard && !ActiveLecturersCard}
+        error={ActiveLecturersCard}
+        title="Currently Active Lecturers"
+      />
       {/* Summary Cards - Updated with Correct Calculations */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 mt-12">
+      <div className="mt-12 mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Students Card */}
         <motion.div
           whileHover={{ scale: 1.07 }}
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-gradient-to-br from-blue-100 to-blue-400 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
+          className="flex cursor-default flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-blue-100 to-blue-400 py-8 text-center shadow-lg"
         >
-          <div className="text-2xl mb-3 animate-pulse text-blue-900">👥</div>
+          <div className="mb-3 animate-pulse text-2xl text-blue-900">👥</div>
           <p className="text-2xl font-bold text-blue-900">Total Students</p>
-          <p className="text-2xl font-extrabold text-blue-900 mt-2">{studentCount}</p>
+          <p className="mt-2 text-2xl font-extrabold text-blue-900">{studentCount}</p>
         </motion.div>
 
         {/* Today's Attendance Card (Overall) */}
@@ -209,23 +214,25 @@ useEffect(() => {
           whileHover={{ scale: 1.04, y: -3 }}
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-emerald-100 via-white to-emerald-200 border border-emerald-300/40 px-10 py-8 cursor-default max-w-md mx-auto flex flex-col items-center text-center"
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="relative mx-auto flex max-w-md cursor-default flex-col items-center overflow-hidden rounded-3xl border border-emerald-300/40 bg-gradient-to-br from-emerald-100 via-white to-emerald-200 px-10 py-8 text-center shadow-2xl"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/20 via-transparent to-green-300/30 blur-3xl"></div>
-          <div className="relative z-10 text-6xl mb-3 text-emerald-700 drop-shadow-lg animate-pulse">
+          <div className="relative z-10 mb-3 animate-pulse text-6xl text-emerald-700 drop-shadow-lg">
             📈
           </div>
-          <p className="relative z-10 text-xl font-extrabold text-emerald-900 tracking-wide">
+          <p className="relative z-10 text-xl font-extrabold tracking-wide text-emerald-900">
             Today's Attendance
           </p>
-          <div className="relative z-10 w-2/5 h-[3px] bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-400 rounded-full my-4 shadow-md"></div>
-          <div className="relative z-10 space-y-2 text-emerald-900 font-medium text-base">
+          <div className="relative z-10 my-4 h-[3px] w-2/5 rounded-full bg-gradient-to-r from-emerald-400 via-green-500 to-emerald-400 shadow-md"></div>
+          <div className="relative z-10 space-y-2 text-base font-medium text-emerald-900">
             <p>
-              College Total: <span className="text-lg font-extrabold text-emerald-950">{totalPresent}</span>
+              College Total:{' '}
+              <span className="text-lg font-extrabold text-emerald-950">{totalPresent}</span>
             </p>
             <p>
-              Percentage: <span className="text-lg font-extrabold text-green-700">{attendancePercent}%</span>
+              Percentage:{' '}
+              <span className="text-lg font-extrabold text-green-700">{attendancePercent}%</span>
             </p>
           </div>
         </motion.div>
@@ -236,10 +243,10 @@ useEffect(() => {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-gradient-to-br from-green-100 to-green-300 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
+          className="flex cursor-default flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-green-300 py-8 text-center shadow-lg"
         >
-          <div className="text-3xl mb-3 text-green-800 animate-pulse">🥇</div>
-          <p className="text-xl font-bold text-green-900 mb-2">First Year</p>
+          <div className="mb-3 animate-pulse text-3xl text-green-800">🥇</div>
+          <p className="mb-2 text-xl font-bold text-green-900">First Year</p>
           <div className="space-y-1">
             <p className="text-md text-green-800">
               Present: <span className="font-bold">{firstYearPresent}</span>
@@ -247,9 +254,7 @@ useEffect(() => {
             <p className="text-md text-red-700">
               Absent: <span className="font-bold">{firstYearAbsent}</span>
             </p>
-            <p className="text-lg text-blue-700 font-bold">
-              {firstYearPercent}%
-            </p>
+            <p className="text-lg font-bold text-blue-700">{firstYearPercent}%</p>
           </div>
         </motion.div>
 
@@ -259,10 +264,10 @@ useEffect(() => {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-gradient-to-br from-blue-100 to-blue-300 rounded-3xl shadow-lg py-8 cursor-default flex flex-col justify-center items-center text-center"
+          className="flex cursor-default flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-blue-100 to-blue-300 py-8 text-center shadow-lg"
         >
-          <div className="text-3xl mb-3 text-blue-800 animate-pulse">🥈</div>
-          <p className="text-xl font-bold text-blue-900 mb-2">Second Year</p>
+          <div className="mb-3 animate-pulse text-3xl text-blue-800">🥈</div>
+          <p className="mb-2 text-xl font-bold text-blue-900">Second Year</p>
           <div className="space-y-1">
             <p className="text-md text-green-700">
               Present: <span className="font-bold">{secondYearPresent}</span>
@@ -270,61 +275,86 @@ useEffect(() => {
             <p className="text-md text-red-700">
               Absent: <span className="font-bold">{secondYearAbsent}</span>
             </p>
-            <p className="text-lg text-blue-700 font-bold">
-              {secondYearPercent}%
-            </p>
+            <p className="text-lg font-bold text-blue-700">{secondYearPercent}%</p>
           </div>
         </motion.div>
       </div>
 
+      <Card className="rounded-2xl bg-white p-2 shadow-lg">
+        <div className="mt-4">
+          {session?.user && (
+            <GroupWiseAttendanceTable
+              collegeId={session.user.collegeId}
+              collegeName={session.user.collegeName}
+            />
+          )}
+        </div>
+      </Card>
 
 
-     // Add this in Quick Actions section
-<Link href="/attendance-dashboard">
-  <motion.div
-    whileHover={{ scale: 1.1, rotate: 2 }}
-    whileTap={{ scale: 0.95 }}
-    className="cursor-pointer p-5 rounded-xl text-center shadow-md transition-all bg-indigo-100 hover:bg-indigo-300 text-indigo-800"
-  >
-    <p className="text-xl font-semibold ">📊 Attendance Dashboard</p>
-  </motion.div>
-</Link>
-
-
+    
+      <Link href="/attendance-dashboard">
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 2 }}
+          whileTap={{ scale: 0.95 }}
+          className="cursor-pointer rounded-xl bg-indigo-100 p-5 text-center text-indigo-800 shadow-md transition-all hover:bg-indigo-300 mt-4"
+        >
+          <p className="text-xl font-semibold">📊 Attendance Dashboard</p>
+        </motion.div>
+      </Link>
+      <Link href="/exam-report">
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 2 }}
+          whileTap={{ scale: 0.95 }}
+          className="mt-4 cursor-pointer rounded-xl bg-indigo-100 p-5 text-center text-indigo-800 shadow-md transition-all hover:bg-indigo-300"
+        >
+          <p className="text-xl font-semibold">📊 Exams Dashboard</p>
+        </motion.div>
+      </Link>
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-5xl mx-auto mt-8">
+      <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
         {[
-          { href: "/attendance-form", label: "➕ Take Attendance ", bg: "green-200", hover: "pink-400", text: "pink-900" },
-          { href: "/student-table", label: "📋 View Students", bg: "blue-100", hover: "blue-300", text: "blue-800" },
-          { href: "/register", label: "➕ Add Student", bg: "blue-100", hover: "blue-300", text: "blue-800" },
-          { href: "/exams-form", label: "📝 Add Exam", bg: "green-200", hover: "green-400", text: "green-900" },
-          { href: "/exam-report", label: "📊 Exam Records", bg: "green-200", hover: "pink-400", text: "pink-900" },
-          
+          {
+            href: '/student-table',
+            label: '📋 View Students',
+            bg: 'blue-100',
+            hover: 'blue-300',
+            text: 'blue-800',
+          },
+          {
+            href: '/register',
+            label: '➕ Add Student',
+            bg: 'blue-100',
+            hover: 'blue-300',
+            text: 'blue-800',
+          },
+          {
+            href: '/exams-form',
+            label: '📝 Add Exam',
+            bg: 'green-200',
+            hover: 'green-400',
+            text: 'green-900',
+          },
         ].map(({ href, label, bg, hover, text }) => (
           <Link key={href} href={href}>
             <motion.div
               whileHover={{ scale: 1.1, rotate: 2 }}
               whileTap={{ scale: 0.95 }}
-              className={`cursor-pointer p-5 rounded-xl text-center shadow-md transition-all bg-${bg} hover:bg-${hover} text-${text}`}
+              className={`cursor-pointer rounded-xl p-5 text-center shadow-md transition-all bg-${bg} hover:bg-${hover} text-${text}`}
             >
               <p className={`text-xl font-semibold`}>{label}</p>
             </motion.div>
           </Link>
         ))}
       </div>
-
       {/* External Links Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4 gap-4 mt-8">
-        <div className="bg-blue-500 shadow p-4 rounded-lg font-bold text-blue-50">
-          <a
-            href="https://skr-learn-portal.netlify.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+      <div className="mt-8 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="rounded-lg bg-blue-500 p-4 font-bold text-blue-50 shadow">
+          <a href="https://skr-learn-portal.netlify.app/" target="_blank" rel="noopener noreferrer">
             Voc Question Paper
           </a>
         </div>
-        <div className="bg-green-100 shadow p-4 rounded-lg font-bold">
+        <div className="rounded-lg bg-green-100 p-4 font-bold shadow">
           <a
             href="https://advanced-question-paper-tailwindcss.netlify.app/"
             target="_blank"
@@ -333,9 +363,9 @@ useEffect(() => {
             M&AT Question Paper
           </a>
         </div>
-        <div className="bg-blue-100 shadow p-4 rounded-lg">Card 3</div>
-        <div className="bg-yellow-100 shadow p-4 rounded-lg">Card 4</div>
+        <div className="rounded-lg bg-blue-100 p-4 shadow">Card 3</div>
+        <div className="rounded-lg bg-yellow-100 p-4 shadow">Card 4</div>
       </div>
     </div>
-  );
+  )
 }
