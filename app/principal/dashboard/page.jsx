@@ -13,7 +13,7 @@ import React, { useEffect, useState } from 'react'
 import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
 import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
-import ExamReportPage from '@/app/exam-report/page'
+
 
 const fetcher = url => fetch(url).then(res => res.json())
 
@@ -94,7 +94,7 @@ export default function PrincipalDashboard() {
       : 0
 
   return (
-    <div className="flex min-h-screen bg-gray-100 bg-[url('/images/bg-8.jpg')] bg-cover bg-center">
+    <div className="flex min-h-screen bg-gradient-to-br from-indigo-100 via-white to-blue-100  bg-[url('/images/texture.jpg')] bg-cover bg-center">
       {/* Sidebar */}
       <aside className="hidden w-56 bg-black p-6 shadow-md md:block">
         <h2 className="mb-8 text-2xl font-bold text-white">OSRA</h2>
@@ -107,7 +107,7 @@ export default function PrincipalDashboard() {
           </Link>
 
           <Link
-            href="/dashboard"
+            href="/exam-report"
             className="flex items-center gap-2 text-white hover:text-blue-600"
           >
             <Users className="h-5 w-5" /> exams
@@ -272,21 +272,10 @@ export default function PrincipalDashboard() {
             </CardContent>
 
             <AttendanceShortageSummary data={shortageData} />
-          </Card>
+          </Card>         
 
-          {/* Exam Module */}
-          <Card className="mx-auto max-w-4xl rounded-2xl bg-white p-4 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold text-gray-800">Exams Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <ExamReportPage />
-              </div>
-              {/* You can style unit1Failures, unit2Failures tables here */}
-            </CardContent>
-          </Card>
         </section>
+
 
         {/* Quick Links */}
         <section className="mx-auto grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 max-w-4xl w-full">

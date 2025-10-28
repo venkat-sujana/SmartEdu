@@ -81,26 +81,33 @@ export default function GroupDashboard() {
   )
 
   return (
-    <div className="mx-auto max-w-6xl p-6">
-      {/* YEAR SELECTOR */}
-      <div className="flex justify-center mb-4">
-        <select value={selectedYear}
-          onChange={e => setSelectedYear(e.target.value)}
-          className="border rounded px-2 py-1 text-lg font-semibold">
-          <option value="First Year">First Year</option>
-          <option value="Second Year">Second Year</option>
-        </select>
-      </div>
-      <div className="mb-4 flex items-center justify-center rounded border border-blue-200 bg-blue-50 px-4 py-2 font-semibold text-blue-800 shadow-sm">
-        <span className="font-semibold">🏫</span> {collegeName || 'Loading...'}
-      </div>
-      {renderTable('Group-Wise Strength', groupCounts)}
-      {renderTable('Caste-Wise Strength', casteCounts)}
-      {renderTable('Gender-Wise Strength', genderCounts)}
-      {renderTable('Year-Wise Strength', admissionYearCounts)}
-      <div className="flex justify-end">
-        <button onClick={() => window.print()} className="rounded bg-purple-600 px-4 py-2 text-white font-bold">Print All Tables</button>
-      </div>
+<div className="
+  min-h-screen w-full
+  bg-gradient-to-tr from-[#c7d2fe] via-[#f1f5f9] to-[#a5b4fc]
+  flex items-center justify-center
+">
+  <div className="mx-auto max-w-6xl p-6 bg-white/80 rounded-3xl shadow-2xl">
+    {/* YEAR SELECTOR */}
+    <div className="flex justify-center mb-4">
+      <select value={selectedYear}
+        onChange={e => setSelectedYear(e.target.value)}
+        className="border rounded px-2 py-1 text-lg font-semibold">
+        <option value="First Year">First Year</option>
+        <option value="Second Year">Second Year</option>
+      </select>
     </div>
+    <div className="mb-4 flex items-center justify-center rounded border border-blue-200 bg-blue-50 px-4 py-2 font-semibold text-blue-800 shadow-sm">
+      <span className="font-semibold">🏫</span> {collegeName || 'Loading...'}
+    </div>
+    {renderTable('Group-Wise Strength', groupCounts)}
+    {renderTable('Caste-Wise Strength', casteCounts)}
+    {renderTable('Gender-Wise Strength', genderCounts)}
+    {renderTable('Year-Wise Strength', admissionYearCounts)}
+    <div className="flex justify-end">
+      <button onClick={() => window.print()} className="rounded bg-purple-600 px-4 py-2 text-white font-bold">Print All Tables</button>
+    </div>
+  </div>
+</div>
+
   )
 }

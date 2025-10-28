@@ -100,25 +100,35 @@ export default function StudentIndividualExams({ studentId }) {
   if (examResults.length === 0) return <p>No exam results available.</p>;
 
   return (
-    <div className="max-w-5xl bg-indigo-50 border border-blue-500 mx-auto p-4  rounded shadow">
-      <h2 className="text-2xl font-bold mb-6 text-center">Exam Results</h2>
+    <div className="max-w-5xl bg-indigo-50 border border-blue-500 mx-auto p-4 rounded shadow">
+      <h2 className="text-2xl font-bold mb-6 text-center flex items-center justify-center gap-2">
+        <span>📄</span> Exam Results
+      </h2>
 
       {examResults.map((exam) => (
         <div
           key={exam._id}
           className="mb-8 border border-gray-300 rounded p-6 shadow-sm"
         >
-          <h3 className="text-xl font-semibold mb-1">{exam.examType}</h3>
-          <p className="text-gray-700 mb-3">
-            Date: {formatDate(exam.examDate)} | Stream: {exam.stream} | Year:{" "}
-            {exam.yearOfStudy} | Academic Year: {exam.academicYear}
+          <h3 className="text-xl font-semibold mb-1 flex items-center gap-2">
+            <span>📝</span> {exam.examType}
+          </h3>
+          <p className="text-gray-700 mb-3 flex flex-wrap gap-x-4 gap-y-1">
+            <span>📅 Date: {formatDate(exam.examDate)}</span>
+            <span>📚 Stream: {exam.stream}</span>
+            <span>🎓 Year: {exam.yearOfStudy}</span>
+            <span>🗓️ Academic Year: {exam.academicYear}</span>
           </p>
 
           <table className="w-full border-collapse border border-gray-300 text-center text-sm">
             <thead className="bg-green-600 text-white">
               <tr>
-                <th className="border border-green-700 p-2">Subject</th>
-                <th className="border border-green-700 p-2">Marks</th>
+                <th className="border border-green-700 p-2">
+                  <span>📘</span> Subject
+                </th>
+                <th className="border border-green-700 p-2">
+                  <span>🔢</span> Marks
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -126,7 +136,7 @@ export default function StudentIndividualExams({ studentId }) {
                 Object.entries(exam.generalSubjects).map(([subject, score]) => (
                   <tr key={subject} className="even:bg-gray-50">
                     <td className="border border-gray-300 p-2 font-semibold">
-                      {subject}
+                      <span>📘</span> {subject}
                     </td>
                     <td className="border border-gray-300 p-2">{score}</td>
                   </tr>
@@ -135,7 +145,7 @@ export default function StudentIndividualExams({ studentId }) {
                 Object.entries(exam.vocationalSubjects).map(([subject, score]) => (
                   <tr key={subject} className="even:bg-gray-50">
                     <td className="border border-gray-300 p-2 font-semibold">
-                      {subject}
+                      <span>📗</span> {subject}
                     </td>
                     <td className="border border-gray-300 p-2">{score}</td>
                   </tr>
@@ -143,18 +153,22 @@ export default function StudentIndividualExams({ studentId }) {
             </tbody>
           </table>
 
-          <div className="mt-4 font-semibold text-gray-800">
-            <p>Total Marks: {exam.total} / {exam.stream && (["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream) ? 6 : 5) *
-              (["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(exam.examType)
-                ? 25
-                : ["QUARTERLY", "HALF-YEARLY"].includes(exam.examType)
-                ? 50
-                : ["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream)
-                ? 100
-                : 50)}</p>
-            <p>Percentage: {exam.percentage.toFixed(2)}%</p>
+          <div className="mt-4 font-semibold text-gray-800 flex flex-wrap gap-4">
             <p>
-              Result:{" "}
+              <span>🧮 Total Marks:</span> {exam.total} / {exam.stream && (["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream) ? 6 : 5) *
+                (["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(exam.examType)
+                  ? 25
+                  : ["QUARTERLY", "HALF-YEARLY"].includes(exam.examType)
+                  ? 50
+                  : ["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream)
+                  ? 100
+                  : 50)}
+            </p>
+            <p>
+              <span>📊 Percentage:</span> {exam.percentage.toFixed(2)}%
+            </p>
+            <p>
+              <span>🏁 Result:</span>{" "}
               <span
                 className={
                   exam.result === "Pass"
@@ -162,7 +176,7 @@ export default function StudentIndividualExams({ studentId }) {
                     : "text-red-600 font-bold"
                 }
               >
-                {exam.result}
+                {exam.result === "Pass" ? "✅ Pass" : "❌ Fail"}
               </span>
             </p>
           </div>

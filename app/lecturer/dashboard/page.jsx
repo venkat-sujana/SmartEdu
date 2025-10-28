@@ -148,7 +148,7 @@ useEffect(() => {
     : 0;
 
   return (
-    <div className="mx-auto mt-12 max-w-6xl rounded-3xl border border-gray-200  bg-black  bg-[url('/images/')] bg-cover bg-center p-8 shadow-lg">
+    <div className="mx-auto mt-12 max-w-6xl rounded-3xl border border-gray-200  bg-black  bg-[url('/images/bg-texture.jpg')] bg-cover bg-center p-8 shadow-lg">
       {/* College Name */}
       <div className="border-black-600 mb-8 flex items-center gap-4 rounded-lg border-2 bg-blue-50 px-6 py-4">
         <GraduationCap className="h-9 w-9 text-blue-700" />
