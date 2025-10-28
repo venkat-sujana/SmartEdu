@@ -15,7 +15,6 @@ import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
 import ExamReportPage from '@/app/exam-report/page'
 
-
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function PrincipalDashboard() {
@@ -24,10 +23,6 @@ export default function PrincipalDashboard() {
   const principal = session?.user
   const collegeName = principal?.collegeName || 'Your College'
   const [filteredReports, setFilteredReports] = useState([])
-
-
-
-
 
   useEffect(() => {
     fetch('/api/attendance/shortage-summary')
@@ -84,16 +79,19 @@ export default function PrincipalDashboard() {
   })
 
   // Calculate percentages (add these at top in your component)
-const firstYearTotal = presentAbsentByYear.firstYear.present + presentAbsentByYear.firstYear.absent;
-const firstYearPercentage = firstYearTotal > 0 
-  ? Math.round((presentAbsentByYear.firstYear.present / firstYearTotal) * 100) 
-  : 0;
+  const firstYearTotal =
+    presentAbsentByYear.firstYear.present + presentAbsentByYear.firstYear.absent
+  const firstYearPercentage =
+    firstYearTotal > 0
+      ? Math.round((presentAbsentByYear.firstYear.present / firstYearTotal) * 100)
+      : 0
 
-const secondYearTotal = presentAbsentByYear.secondYear.present + presentAbsentByYear.secondYear.absent;
-const secondYearPercentage = secondYearTotal > 0 
-  ? Math.round((presentAbsentByYear.secondYear.present / secondYearTotal) * 100)
-  : 0;
-
+  const secondYearTotal =
+    presentAbsentByYear.secondYear.present + presentAbsentByYear.secondYear.absent
+  const secondYearPercentage =
+    secondYearTotal > 0
+      ? Math.round((presentAbsentByYear.secondYear.present / secondYearTotal) * 100)
+      : 0
 
   return (
     <div className="flex min-h-screen bg-gray-100 bg-[url('/images/bg-8.jpg')] bg-cover bg-center">
@@ -108,13 +106,13 @@ const secondYearPercentage = secondYearTotal > 0
             <Users className="h-5 w-5" /> Students
           </Link>
 
-          <Link href="/dashboard"
+          <Link
+            href="/dashboard"
             className="flex items-center gap-2 text-white hover:text-blue-600"
           >
             <Users className="h-5 w-5" /> exams
           </Link>
 
-          
           <Link href="#" className="flex items-center gap-2 text-white hover:text-blue-600">
             <Calendar className="h-5 w-5" /> Attendance
           </Link>
@@ -124,9 +122,9 @@ const secondYearPercentage = secondYearTotal > 0
         </nav>
       </aside>
 
-      <main className="flex-1 space-y-6 p-6">
+      <main className="flex-1 space-y-6 p-2 md:p-6 sm:p-4 w-full">
         {/* Header */}
-        <header className="flex flex-col items-start justify-between space-y-3 sm:flex-row sm:items-center sm:space-y-0">
+        <header className="flex flex-col gap-2 items-start sm:justify-between sm:flex-row sm:items-center w-full">
           <div>
             <h1 className="text-2xl font-bold text-white">{collegeName}</h1>
             <p className="text-white">
@@ -139,8 +137,8 @@ const secondYearPercentage = secondYearTotal > 0
           </Button>
         </header>
 
-        <Card className="shadow-4lg max-w-xs rounded-2xl border border-blue-200 bg-blue-100 p-4">
-          <div className="flex flex-col items-center space-y-4 sm:flex-row sm:items-start sm:space-y-0 sm:space-x-6">
+        <Card className="mx-auto max-w-xs w-full rounded-2xl border border-blue-200 bg-blue-100 p-4 shadow-4lg">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
             {principal?.photo ? (
               <img
                 src={principal.photo}
@@ -160,95 +158,92 @@ const secondYearPercentage = secondYearTotal > 0
           </div>
         </Card>
 
-        <ActiveLecturersCard
+        <ActiveLecturersCard className="w-full max-w-md mx-auto"
           lecturers={activeLecturersData?.data || []}
           loading={!activeLecturersData && !activeLecturersError}
           error={activeLecturersError}
           title="Currently Active Lecturers"
         />
 
-      
-{/* 1. Overall Attendance Card */}
-<Card className="rounded-2xl shadow-lg p-4">
-  <CardHeader>
-    <CardTitle className="text-xl font-semibold">Overall Attendance</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-      <div>
-        <p className="font-bold text-blue-600">Attendance %</p>
-        <p className="text-2xl">{percentage}%</p>
-      </div>
-      <div>
-        <p className="font-bold text-green-700">Present Today</p>
-        <p className="text-2xl">{presentCount}</p>
-      </div>
-      <div>
-        <p className="font-bold text-red-600">Absent Today</p>
-        <p className="text-2xl">{absentCount}</p>
-      </div>
-    </div>
-  </CardContent>
-</Card>
+        {/* 1. Overall Attendance Card */}
+        <Card className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold">Overall Attendance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              <div>
+                <p className="font-bold text-blue-600">Attendance %</p>
+                <p className="text-2xl">{percentage}%</p>
+              </div>
+              <div>
+                <p className="font-bold text-green-700">Present Today</p>
+                <p className="text-2xl">{presentCount}</p>
+              </div>
+              <div>
+                <p className="font-bold text-red-600">Absent Today</p>
+                <p className="text-2xl">{absentCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-{/* 2. First Year Attendance Card */}
-<Card className="rounded-2xl shadow-lg p-4">
-  <CardHeader>
-    <CardTitle className="text-xl font-semibold">First Year Attendance</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="grid grid-cols-3 gap-4">
-      <div>
-        <p className="font-bold text-green-700">Present</p>
-        <p className="text-2xl">{presentAbsentByYear.firstYear.present}</p>
-      </div>
-      <div>
-        <p className="font-bold text-red-600">Absent</p>
-        <p className="text-2xl">{presentAbsentByYear.firstYear.absent}</p>
-      </div>
-      <div>
-        <p className="font-bold text-blue-600">% Attendance</p>
-        <p className="text-2xl">{firstYearPercentage}%</p>
-      </div>
-    </div>
-  </CardContent>
-</Card>
+        {/* 2. First Year Attendance Card */}
+        <Card className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold">First Year Attendance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="font-bold text-green-700">Present</p>
+                <p className="text-2xl">{presentAbsentByYear.firstYear.present}</p>
+              </div>
+              <div>
+                <p className="font-bold text-red-600">Absent</p>
+                <p className="text-2xl">{presentAbsentByYear.firstYear.absent}</p>
+              </div>
+              <div>
+                <p className="font-bold text-blue-600">% Attendance</p>
+                <p className="text-2xl">{firstYearPercentage}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-{/* 3. Second Year Attendance Card */}
-<Card className="rounded-2xl shadow-lg p-4">
-  <CardHeader>
-    <CardTitle className="text-xl font-semibold">Second Year Attendance</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="grid grid-cols-3 gap-4">
-      <div>
-        <p className="font-bold text-green-700">Present</p>
-        <p className="text-2xl">{presentAbsentByYear.secondYear.present}</p>
-      </div>
-      <div>
-        <p className="font-bold text-red-600">Absent</p>
-        <p className="text-2xl">{presentAbsentByYear.secondYear.absent}</p>
-      </div>
-      <div>
-        <p className="font-bold text-blue-600">% Attendance</p>
-        <p className="text-2xl">{secondYearPercentage}%</p>
-      </div>
-    </div>
-  </CardContent>
-</Card>
+        {/* 3. Second Year Attendance Card */}
+        <Card className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold">Second Year Attendance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="font-bold text-green-700">Present</p>
+                <p className="text-2xl">{presentAbsentByYear.secondYear.present}</p>
+              </div>
+              <div>
+                <p className="font-bold text-red-600">Absent</p>
+                <p className="text-2xl">{presentAbsentByYear.secondYear.absent}</p>
+              </div>
+              <div>
+                <p className="font-bold text-blue-600">% Attendance</p>
+                <p className="text-2xl">{secondYearPercentage}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-
-           {/* Modules - Attendance and Exams */}
-        <section className="grid grid-cols-1 gap-4">
+        {/* Modules - Attendance and Exams */}
+        <section className="grid grid-cols-1 gap-4 w-full">
           {/* Attendance Module */}
           <Card className="rounded-2xl bg-white p-2 shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl font-semibold text-gray-800">
-               Group wise  Attendance Overview
+                Group wise Attendance Overview
               </CardTitle>
             </CardHeader>
             <div className="mt-4">
-             
               {session?.user && (
                 <GroupWiseAttendanceTable
                   collegeId={session.user.collegeId}
@@ -275,15 +270,9 @@ const secondYearPercentage = secondYearTotal > 0
                 </>
               )}
             </CardContent>
-            
+
             <AttendanceShortageSummary data={shortageData} />
           </Card>
-
-
-
-
-
-
 
           {/* Exam Module */}
           <Card className="mx-auto max-w-4xl rounded-2xl bg-white p-4 shadow-lg">
@@ -299,13 +288,8 @@ const secondYearPercentage = secondYearTotal > 0
           </Card>
         </section>
 
-
-
-
-
-
         {/* Quick Links */}
-        <section className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+        <section className="mx-auto grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 max-w-4xl w-full">
           <Link
             href="/attendance-records"
             className="cursor-pointer rounded-xl bg-indigo-100 p-5 text-center shadow-md transition hover:bg-indigo-200"
@@ -329,8 +313,6 @@ const secondYearPercentage = secondYearTotal > 0
           </Link>
         </section>
       </main>
-      
-
     </div>
   )
 }
