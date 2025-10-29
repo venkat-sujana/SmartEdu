@@ -12,6 +12,52 @@ import AttendanceShortageSummary from '@/app/components/attendance-shortage-summ
 import useSWR from 'swr'
 import AbsenteesTable from '../absentees-table/page'
 
+// Define attendance features for the dashboard
+const attendanceFeatures = [
+  {
+    title: 'Take Attendance',
+    description: 'Quickly mark student attendance for FN/AN sessions.',
+    href: '/attendance-form',
+    icon: <UserCheck className="h-6 w-6" />,
+    gradient: 'from-blue-100 to-blue-200'
+  },
+  {
+    title: 'Attendance Records',
+    description: 'Detailed attendance reports and analytics.',
+    href: '/attendance-records',
+    icon: <BarChart className="h-6 w-6" />,
+    gradient: 'from-green-100 to-green-200'
+  },
+  {
+    title: 'Calender View',
+    description: 'See who is absent today and take action.',
+    href: '/attendance-records/attendance-calendar',
+    icon: <AlertCircle className="h-6 w-6" />,
+    gradient: 'from-red-100 to-red-200'
+  },
+  {
+    title: 'Group-Wise View',
+    description: 'Monitor students with attendance shortage.',
+    href: '/components/groupwise-attendance-table',
+    icon: <ClipboardList className="h-6 w-6" />,
+    gradient: 'from-purple-100 to-purple-200'
+  },
+  {
+    title: 'Edit-Records',
+    description: 'Edit attendance records for corrections.',
+    href: '/attendance-records/individual',
+    icon: <Edit className="h-6 w-6" />,
+    gradient: 'from-yellow-100 to-yellow-200'
+  },
+  {
+    title: 'Attendance with names',
+    description: 'View attendance in a calendar format.',
+    href: '/lecturer/attendance',
+    icon: <Calendar className="h-6 w-6" />,
+    gradient: 'from-indigo-100 to-indigo-200'
+  }
+]
+
 export default function AttendanceDashboard() {
   const { data: session, status } = useSession()
   const user = session?.user
@@ -221,10 +267,36 @@ export default function AttendanceDashboard() {
 
         {/* ------ Rest Dashboard content same (features, shortage summary, absentees table...) ----- */}
 
-        <div>
-          <h2 className="mb-6 text-2xl font-bold text-gray-900">Attendance Features</h2>
-          {/* ...Features grid same as your code... */}
-        </div>
+<div>
+  <h2 className="mb-6 text-2xl font-bold text-gray-900">Attendance Features</h2>
+  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    {attendanceFeatures.map((feature, index) => (
+      <motion.div
+        key={feature.title}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: index * 0.1 }}
+      >
+        <Link href={feature.href}>
+          <Card className={`cursor-pointer border-2 bg-gradient-to-br transition-all duration-300 hover:shadow-xl ${feature.gradient} hover:scale-105 rounded-2xl`}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-gray-800">
+                <div className="rounded-lg bg-white p-2 shadow-sm text-gray-600">
+                  {feature.icon}
+                </div>
+                <span className="text-lg">{feature.title}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-700">{feature.description}</p>
+            </CardContent>
+          </Card>
+        </Link>
+      </motion.div>
+    ))}
+  </div>
+</div>
+
 
         <div className="mt-12">
           <h2 className="mb-6 text-2xl font-bold text-gray-900">Attendance Shortage Summary</h2>

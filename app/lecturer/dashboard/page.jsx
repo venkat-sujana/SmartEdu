@@ -187,6 +187,27 @@ export default function LecturerDashboard() {
         </div>
       </div>
 
+      <Link href="/attendance-dashboard">
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 2 }}
+          whileTap={{ scale: 0.95 }}
+          className="cursor-pointer rounded-xl bg-indigo-100 p-5 text-center text-indigo-800 shadow-md transition-all hover:bg-indigo-300 mt-4"
+        >
+          <p className="text-xl font-semibold">📊 Attendance Dashboard</p>
+        </motion.div>
+      </Link>
+      <Link href="/exam-report">
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 2 }}
+          whileTap={{ scale: 0.95 }}
+          className="mt-4 cursor-pointer rounded-xl bg-indigo-100 p-5 text-center text-indigo-800 shadow-md transition-all hover:bg-indigo-300"
+        >
+          <p className="text-xl font-semibold">📊 Exams Dashboard</p>
+        </motion.div>
+      </Link>
+
+
+
       {/* Quick Actions */}
       <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
         {[
