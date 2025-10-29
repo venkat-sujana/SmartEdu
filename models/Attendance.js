@@ -12,6 +12,7 @@ const attendanceSchema = new Schema({
     type: Date,
     required: true,
   },
+  session: { type: String, enum: ["FN", "AN", "EN"], default: "FN" },   // NEW!
   status: {
     type: String,
     enum: ["Present", "Absent"],
@@ -58,6 +59,8 @@ year: {
 }, {
   timestamps: true,
 });
-attendanceSchema.index({ studentId: 1, date: 1 }, { unique: true });
+
+attendanceSchema.index({ studentId: 1, date: 1,session: 1 }, { unique: true }); // Ensure unique attendance per student per date per session 
+// so that multiple entries for different sessions can exist
 
 export default mongoose.models.Attendance || mongoose.model("Attendance", attendanceSchema);

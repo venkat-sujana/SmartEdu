@@ -1,5 +1,3 @@
-
-//app/api/attendance/today-absentees/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
@@ -22,11 +20,10 @@ export async function GET(req) {
     const today = new Date();
     const start = new Date(today);
     start.setHours(0, 0, 0, 0);
-
     const end = new Date(today);
     end.setHours(23, 59, 59, 999);
 
-    // ఈరోజు attendance తీసుకోవడం
+    // Fetch today attendance (all sessions)
     const todayRecords = await Attendance.find({
       collegeId,
       date: { $gte: start, $lte: end },
@@ -36,32 +33,48 @@ export async function GET(req) {
       return NextResponse.json({ status: "no-data", message: "No attendance recorded today" });
     }
 
-    // Absentees and Present students filter
-    const absentees = todayRecords.filter((r) => r.status === "Absent");
-    const presentStudents = todayRecords.filter((r) => r.status === "Present");
+    // Group absentees by session
+    const sessions = ["FN", "AN", "EN"];
+    const sessionWiseAbsentees = {};
+    const sessionWisePresent = {};
+    let grandTotal = 0, grandAbsent = 0, grandPresent = 0;
 
-    // % calculation
-    const total = todayRecords.length;
-    const absentCount = absentees.length;
-    const presentCount = presentStudents.length;
-    const percentage = total > 0 ? ((presentCount / total) * 100).toFixed(2) : "0.00";
+    for (const session of sessions) {
+      const absentees = todayRecords.filter((r) => r.session === session && r.status === "Absent");
+      const presentStudents = todayRecords.filter((r) => r.session === session && r.status === "Present");
+      const total = todayRecords.filter(r => r.session === session).length;
+
+      sessionWiseAbsentees[session] = absentees.map((r) => ({
+        name: r.studentId.name,
+        yearOfStudy: r.studentId.yearOfStudy,
+        group: r.studentId.group,
+        session: r.session,
+        lecturerName: r.lecturerName || "—"
+      }));
+      sessionWisePresent[session] = presentStudents.map((r) => ({
+        name: r.studentId.name,
+        yearOfStudy: r.studentId.yearOfStudy,
+        group: r.studentId.group,
+        session: r.session,
+        lecturerName: r.lecturerName || "—"
+      }));
+
+      grandTotal += total;
+      grandAbsent += absentees.length;
+      grandPresent += presentStudents.length;
+    }
 
     return NextResponse.json({
       status: "success",
-      absentees: absentees.map((r) => ({
-        name: r.studentId.name,
-        yearOfStudy: r.studentId.yearOfStudy,
-        group: r.studentId.group,
-      })),
-      presentStudents: presentStudents.map((r) => ({
-        name: r.studentId.name,
-        yearOfStudy: r.studentId.yearOfStudy,
-        group: r.studentId.group,
-      })),
-      percentage,
-      total,
-      present: presentCount,
-      absent: absentCount,
+      sessions: sessions,
+      sessionWiseAbsentees,
+      sessionWisePresent,
+      summary: {
+        grandTotal,
+        grandAbsent,
+        grandPresent,
+        percentage: grandTotal > 0 ? ((grandPresent / grandTotal) * 100).toFixed(2) : "0.00"
+      }
     });
   } catch (err) {
     console.error("Error fetching today absentees:", err);

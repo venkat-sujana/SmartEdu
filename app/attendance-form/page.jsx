@@ -1,3 +1,4 @@
+//app/attendance-form/page.jsx
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -5,34 +6,24 @@ import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-import {
-  Calendar,
-  Users,
-  FileText,
-  Edit,
-  BarChart,
-  ClipboardList,
-  UserCheck,
-  AlertCircle,
-  TrendingUp,
-  Home,
-} from 'lucide-react'
-
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthsList = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
 const yearsList = ["First Year", "Second Year"];
+const sessionList = ["FN", "AN"]; // If you use session-wise
 
 export default function AttendanceForm() {
-  // State
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [attendanceData, setAttendanceData] = useState({});
   const [selectedYearOfStudy, setSelectedYearOfStudy] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedSession, setSelectedSession] = useState("");
+  const [lecturers, setLecturers] = useState([]);
+  const [selectedLecturerId, setSelectedLecturerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: session } = useSession();
@@ -40,12 +31,24 @@ export default function AttendanceForm() {
   const [collegeName, setCollegeName] = useState("");
   const router = useRouter();
 
+  // Fullscreen overlay toast message
+  const [fullscreenToastMessage, setFullscreenToastMessage] = useState(null);
+
   useEffect(() => {
     if (session?.user?.collegeId) setCollegeId(session.user.collegeId);
     if (session?.user?.collegeName) setCollegeName(session.user.collegeName);
   }, [session]);
 
-  // Fetch Students list by group
+  useEffect(() => {
+    if (!collegeId) return;
+    fetch(`/api/lecturers?collegeId=${collegeId}`)
+      .then(res => res.json())
+      .then(json => {
+        console.log('Lecturers API Response:', json); // Add this line
+        if (json.status === "success") setLecturers(json.data);
+      });
+  }, [collegeId]);
+
   useEffect(() => {
     const fetchStudents = async () => {
       if (!selectedGroup || !session?.user?.collegeId) return;
@@ -58,7 +61,6 @@ export default function AttendanceForm() {
     fetchStudents();
   }, [selectedGroup, session]);
 
-  // Filter by group + year
   useEffect(() => {
     if (selectedGroup && selectedYearOfStudy) {
       setFilteredStudents(
@@ -78,14 +80,15 @@ export default function AttendanceForm() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedDate || !selectedGroup || filteredStudents.length === 0) {
-      toast.error("Please select a date, group, and ensure students are visible.");
+    if (!selectedDate || !selectedGroup || filteredStudents.length === 0 || !selectedLecturerId || !selectedSession) {
+      setFullscreenToastMessage("Select date, group, session and lecturer. Ensure students visible.");
       return;
     }
-
     const dateObj = new Date(selectedDate);
     const month = monthsList[dateObj.getMonth()];
     const year = dateObj.getFullYear();
+
+    const lecturerInfo = lecturers.find(l => l._id === selectedLecturerId);
 
     const attendanceRecords = filteredStudents.map((student) => ({
       studentId: student._id,
@@ -94,11 +97,14 @@ export default function AttendanceForm() {
       group: selectedGroup.toUpperCase(),
       month,
       yearOfStudy: selectedYearOfStudy,
+      lecturerId: selectedLecturerId,
+      lecturerName: lecturerInfo?.name || "",
+      collegeId,
+      year,
+      session: selectedSession
     }));
 
     setIsLoading(true);
-    const toastId = toast.loading("Submitting attendance...");
-
     try {
       const response = await fetch("/api/attendance", {
         method: "POST",
@@ -107,26 +113,27 @@ export default function AttendanceForm() {
         credentials: "include"
       });
       const result = await response.json();
-      toast.dismiss(toastId);
       if (response.status === 400 && result.status === "error") {
-        toast.error(result.message || "Attendance already taken!");
+        setFullscreenToastMessage(result.message || "Attendance already taken!");
+        setIsLoading(false);
         return;
       }
       if (result.status === "success") {
-        toast.success(result.message || "Attendance submitted successfully!");
+        setFullscreenToastMessage(result.message || "Attendance submitted successfully!");
         setSelectedGroup("");
         setSelectedYearOfStudy("");
         setSelectedDate("");
+        setSelectedLecturerId("");
+        setSelectedSession("");
         setFilteredStudents([]);
         setAttendanceData({});
         setStudents([]);
         router.refresh();
       } else {
-        toast.error(result.message || "Something went wrong!");
+        setFullscreenToastMessage(result.message || "Something went wrong!");
       }
     } catch (error) {
-      toast.dismiss(toastId);
-      toast.error("Error submitting attendance");
+      setFullscreenToastMessage("Error submitting attendance");
     } finally {
       setIsLoading(false);
     }
@@ -134,13 +141,39 @@ export default function AttendanceForm() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-200 via-white to-green-50 py-5 px-2">
+      {/* Fullscreen Toast Overlay */}
+      {fullscreenToastMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div
+            className={`bg-white rounded-xl px-8 py-6 text-xl font-bold shadow-xl border-2 flex flex-col items-center ${
+              fullscreenToastMessage && fullscreenToastMessage.includes("already marked")
+                ? "text-red-700 border-red-400"
+                : "text-green-700 border-green-400"
+            }`}
+          >
+            <span className="text-3xl mb-3">
+              {fullscreenToastMessage && fullscreenToastMessage.includes("already marked") ? "❌" : "✅"}
+            </span>
+            <span className="mb-3">{fullscreenToastMessage}</span>
+            <button
+              className="mt-2 px-6 py-2 bg-blue-700 text-white rounded shadow hover:bg-blue-800 font-bold text-lg"
+              onClick={() => setFullscreenToastMessage(null)}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       {isLoading && (
-        <div className="fixed inset-0 z-50 bg-white bg-opacity-80 flex items-center justify-center">
+        <div className="fixed inset-0 z-40 bg-white bg-opacity-80 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
         </div>
       )}
 
-      <Toaster position="top-center" />
+      {/* Original Toaster can be kept for instant feedback if desired */}
+      {/* <Toaster position="top-center" /> */}
+
       <div className="max-w-4xl mx-auto p-6 bg-white shadow-xl rounded-2xl border-2 border-blue-100">
         <div className="flex flex-col items-center mb-5">
           <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 via-green-50 to-indigo-50 border px-4 py-2 rounded-2xl text-blue-700 font-bold shadow">
@@ -148,20 +181,20 @@ export default function AttendanceForm() {
             <span className="tracking-wide">{collegeName || "Loading..."}</span>
           </div>
           <h1 className="text-2xl font-bold my-2 text-blue-800">Mark Attendance</h1>
-          <p className="text-gray-500">Please select a date, group, and ensure students are visible.</p>
+          <p className="text-gray-500">Select date, group, session and ensure students are visible.</p>
         </div>
 
         {/* Action */}
         <div className="mb-4 flex justify-end">
           <Link href="/attendance-dashboard">
             <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer font-bold">
-              <Home className="w-5 h-5" /> Back to  Dashboard
+              Back to Dashboard
             </button>
           </Link>
         </div>
 
         {/* Form Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6">
           <div>
             <label className="block text-sm font-semibold mb-1 text-gray-700">Date</label>
             <input
@@ -198,7 +231,39 @@ export default function AttendanceForm() {
               ))}
             </select>
           </div>
-        </div>
+          <div>
+            <label className="block text-sm font-semibold mb-1 text-gray-700">Session</label>
+            <select
+              value={selectedSession}
+              onChange={(e) => setSelectedSession(e.target.value)}
+              className="block w-full border-2 border-blue-400 rounded-xl px-3 py-2 text-base bg-white focus:ring-2 focus:ring-indigo-400"
+              required
+            >
+              <option value="">Select Session</option>
+              {sessionList.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+<div>
+  <label className="block text-sm font-semibold mb-1 text-gray-700">Lecturer</label>
+  <select
+    value={selectedLecturerId}
+    onChange={(e) => setSelectedLecturerId(e.target.value)}
+    className="block w-full border-2 border-blue-400 rounded-xl px-3 py-2 text-base bg-white focus:ring-2 focus:ring-indigo-400"
+    required
+  >
+    <option value="">Select Lecturer</option>
+    {lecturers.map((lec) => (
+      <option key={lec._id} value={lec._id}>
+        {lec.name}
+      </option>
+    ))}
+  </select>
+</div>
+</div>
+
 
         {/* Students Grid */}
         {filteredStudents.length > 0 && (

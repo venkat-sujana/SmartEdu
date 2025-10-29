@@ -1,176 +1,103 @@
-//app/attendance-records
 'use client'
 import { useEffect, useState } from 'react'
-import * as XLSX from 'xlsx'
-import { saveAs } from 'file-saver'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
-import Link from 'next/link'
+import { Users2, CalendarDays, Printer } from 'lucide-react'
 
-import { useSession } from 'next-auth/react'
-import {
-  FileDown, FileSpreadsheet, Printer, Table2, School, Gauge, Users2
-} from 'lucide-react'
+const groupIcons = {
+  MPC: <span className="text-xl text-blue-500">📘</span>,
+  BiPC: <span className="text-xl text-fuchsia-700">🧬</span>,
+  CEC: <span className="text-xl text-amber-800">💼</span>,
+  HEC: <span className="text-xl text-orange-800">🍽️</span>,
+  'M&AT': <span className="text-xl text-indigo-700">🧮</span>,
+  MLT: <span className="text-xl text-emerald-600">🧪</span>,
+  CET: <span className="text-xl text-gray-600">⚙️</span>,
+}
 
-export default function AttendanceRecords() {
-  const [records, setRecords] = useState([])
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [group, setGroup] = useState('')
-
-  const { data: session } = useSession()
-  console.log('SESSION: ', session)
-
-  const [collegeId, setCollegeId] = useState('')
-  const [collegeName, setCollegeName] = useState('')
+export default function GroupWiseAttendanceTable({ collegeId, collegeName, initialDate }) {
+  const [data, setData] = useState({})
+  const [selectedDate, setSelectedDate] = useState(
+    initialDate || new Date().toISOString().split('T')[0]
+  )
 
   useEffect(() => {
-    if (session?.user?.collegeId) {
-      setCollegeId(session.user.collegeId)
+    if (!collegeId || !selectedDate) return
+    async function fetchData() {
+      const res = await fetch(
+        `/api/attendance/group-wise-today?collegeId=${collegeId}&date=${selectedDate}`
+      )
+      const result = await res.json()
+      // Expected backend format:
+      // {groupWise: { MPC: { "First Year": [{session:"FN",...},{session:"AN",...}], ...}, ...}}
+      setData(result.groupWise || {})
     }
-    if (session?.user?.collegeName) {
-      setCollegeName(session.user.collegeName)
-    }
-  }, [session])
+    fetchData()
+  }, [collegeId, selectedDate])
 
-  const [attendanceData, setAttendanceData] = useState({
-    'First Year': [],
-    'Second Year': [],
-  })
-
-  const [yearOfStudy, setYearOfStudy] = useState('')
-
-  const groups = ['MPC', 'BiPC', 'CEC', 'HEC', 'CET', 'M&AT', 'MLT']
-
-  const firstYearData = attendanceData['First Year'] || []
-  const secondYearData = attendanceData['Second Year'] || []
-
-  const combinedData = [...firstYearData, ...secondYearData]
-
-  const totalPresent = combinedData.reduce((acc, item) => acc + (item.present || 0), 0)
-  const totalAbsent = combinedData.reduce((acc, item) => acc + (item.absent || 0), 0)
-  const totalAll = totalPresent + totalAbsent
-
-  const collegePercentage = totalAll > 0 ? ((totalPresent / totalAll) * 100).toFixed(2) : 0
-
-  const fetchAttendanceRecords = async () => {
-    const query = `start=${encodeURIComponent(startDate)}&end=${encodeURIComponent(endDate)}&group=${encodeURIComponent(group)}&year=${encodeURIComponent(yearOfStudy)}`
-
-    try {
-      const url = `/api/attendance/summary/daily-group?${query}`
-      console.log('Requesting:', url) // ✅ Debug
-      const res = await fetch(url)
-      const json = await res.json()
-      console.log('Response JSON:', json) // ✅ Debug
-
-      setAttendanceData({
-        'First Year': json.data?.['First Year'] || [],
-        'Second Year': json.data?.['Second Year'] || [],
-      })
-      console.log('Attendance Data:', json.data) // ✅ Debug
-    } catch (error) {
-      console.error('Error fetching attendance records:', error) // ✅ Check here
-    }
-  }
-
-  // Encode before fetch
-  const query = new URLSearchParams({
-    startDate,
-    endDate,
-    group,
-    yearOfStudy,
-  }).toString()
-
-  const res = fetch(`/api/attendance/summary/daily-group?${query}`)
-
-  const today = new Date().toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
+  const handlePrint = () => window.print()
 
   return (
-    <div className="mx-auto max-w-6xl p-4">
-    <div className="mb-4 flex items-center gap-3 justify-center rounded border border-blue-200 bg-blue-50 px-4 py-2 font-bold text-blue-800 shadow-sm text-2xl">
-      <School className="w-8 h-8 mr-1 text-indigo-500" /> {collegeName || 'Loading...'}
-    </div>
-    <p className="mb-2 text-sm flex items-center gap-2">
-      <Gauge className="inline w-4 h-4 text-green-700" />
-      <span className="font-semibold">Generated:</span>
-      {today} &nbsp; | &nbsp; {new Date().toLocaleTimeString()}
-    </p>
-    {/* Filters */}
-    <div className="mb-6 flex flex-wrap gap-4">
-      {/* ...Date, Group, Year select [same as before] */}
-      <div className="flex items-end">
+    <div className="p-1 md:p-4 print:bg-white print:p-0">
+      {/* Responsive Header & Filter */}
+      <div className="mb-6 flex w-full flex-col items-center justify-between gap-4 md:flex-row">
+        <div className="flex w-full flex-col items-center gap-2 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-green-100 px-3 py-2 text-lg font-bold text-blue-900 shadow sm:flex-row md:w-auto md:text-xl">
+          <Users2 className="h-6 w-6 text-cyan-700" />
+          <span className="max-w-[120px] truncate sm:max-w-xs">{collegeName}</span>
+          <div className="flex w-full items-center gap-2 md:w-auto">
+            <CalendarDays className="h-5 w-5 text-gray-500" />
+            <input
+              type="date"
+              className="rounded border border-gray-300 px-2 py-1 text-base font-semibold focus:outline-blue-500"
+              value={selectedDate}
+              onChange={e => setSelectedDate(e.target.value)}
+              style={{ minWidth: 0, width: '100%' }}
+            />
+          </div>
+        </div>
         <button
-          onClick={fetchAttendanceRecords}
-          className="cursor-pointer rounded bg-blue-600 px-4 py-2 text-white flex items-center gap-2 font-semibold"
+          onClick={handlePrint}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 font-bold text-white shadow hover:bg-blue-700 md:w-auto"
         >
-          <FileSpreadsheet className="w-5 h-5" /> Apply Filters
+          <Printer className="h-5 w-5" />
+          Print
         </button>
       </div>
-    </div>
-    {/* Export/Print Buttons */}
-    <div className="mb-4 flex flex-wrap gap-2">
-      <button
-        onClick={() => window.print()}
-        className="cursor-pointer rounded bg-green-600 px-4 py-2 text-white flex items-center gap-2"
-      >
-        <Printer className="inline w-5 h-5" /> Print Table
-      </button>
-      {/* FileDown can be used for future Excel/PDF export */}
-    </div>
-    {/* Print Style and main data */}
-    <style jsx global>{`
-      @media print { /* ...print styles same as before */ }
-    `}</style>
-    <div className="print-area">
-      <div className="mb-6 text-center">
-        <div className="flex items-center gap-2 justify-center mb-2">
-          <Table2 className="w-6 h-6 text-blue-700" />
-          <span className="text-lg font-bold">Attendance as on {today}</span>
-        </div>
-      </div>
-      {/* All tables/attendanceData as before */}
-      <div className="space-y-8">
-        {/* First Year Table */}
-        <div>
-          <h2 className="mb-2 flex items-center text-lg font-semibold text-blue-700 gap-2">
-            <Users2 className="w-5 h-5 text-blue-500" /> 📘 First Year Attendance
+
+      {/* Group-wise attendance tables */}
+      {Object.entries(data).map(([group, yearData]) => (
+        <div key={group} className="mb-6 w-full rounded-2xl border-2 border-blue-100 bg-gradient-to-r from-blue-50 to-emerald-50 shadow p-1 md:p-3">
+          {/* Group Title */}
+          <h2 className="mb-2 flex items-center gap-2 px-2 text-lg font-extrabold text-indigo-800 md:text-xl">
+            {groupIcons[group] || <span className="text-xl text-blue-500">📘</span>} {group}
           </h2>
-          {/* ...table as before */}
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[340px] border-collapse rounded-lg bg-white text-sm">
+              <thead>
+                <tr className="bg-gradient-to-r from-blue-200 via-green-200 to-purple-100 text-gray-900">
+                  <th className="border px-2 py-2 text-left">Year</th>
+                  <th className="border px-2 py-2 text-center">Session</th>
+                  <th className="border px-2 py-2 text-center">Lecturer</th>
+                  <th className="border px-2 py-2 text-center">✅ Present</th>
+                  <th className="border px-2 py-2 text-center">❌ Absent</th>
+                  <th className="border px-2 py-2 text-center">% Attendance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(yearData).map(([year, sessions]) =>
+                  sessions.map((stats, idx) => (
+                    <tr key={`${group}-${year}-${stats.session || 'FN'}-${idx}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-blue-50'}>
+                      <td className="border px-2 py-2 font-semibold text-blue-800">{year}</td>
+                      <td className="border px-2 py-2 text-center font-bold text-gray-700">{stats.session || 'FN'}</td>
+                      <td className="border px-2 py-2 text-center font-medium text-indigo-700">{stats.lecturerName || '—'}</td>
+                      <td className="border px-2 py-2 text-center font-bold text-green-700">{stats.present}</td>
+                      <td className="border px-2 py-2 text-center font-bold text-red-700">{stats.absent}</td>
+                      <td className="border px-2 py-2 text-center font-bold text-blue-700">{stats.percent}%</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-        {/* Second Year Table */}
-        <div>
-          <h2 className="mb-2 flex items-center text-lg font-semibold text-green-700 gap-2">
-            <Users2 className="w-5 h-5 text-green-500" /> 📗 Second Year Attendance
-          </h2>
-          {/* ...table as before */}
-        </div>
-      </div>
-      {/* College Total Attendance Row */}
-      <table className="mt-4 w-full table-auto border">
-        <tbody>
-          <tr className="bg-green-100 font-semibold">
-            <td colSpan={2} className="border px-4 py-2 text-right flex items-center gap-2 justify-end">
-              <Gauge className="w-5 h-5 text-lime-700" /> College Total Attendance
-            </td>
-            <td className="border px-4 py-2">{totalPresent}</td>
-            <td className="border px-4 py-2">{totalAbsent}</td>
-            <td className="border px-4 py-2">{totalAll}</td>
-            <td className="border px-4 py-2">{collegePercentage}%</td>
-          </tr>
-        </tbody>
-      </table>
+      ))}
     </div>
-    {/* Footer/Notes */}
-    <div className="text-center mt-5">
-      <p className="text-xs font-semibold text-gray-500">
-        Note: This is a computer-generated report and does not require a signature.<br />
-        For any discrepancies, please contact the administration.
-      </p>
-    </div>
-  </div>
   )
 }

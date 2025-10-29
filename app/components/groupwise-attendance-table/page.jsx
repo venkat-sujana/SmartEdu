@@ -1,4 +1,3 @@
-//app/components/groupwise-attendance-table/page.jsx
 'use client'
 import { useEffect, useState } from 'react'
 import { Users2, CalendarDays, Printer } from 'lucide-react'
@@ -26,9 +25,12 @@ export default function GroupWiseAttendanceTable({ collegeId, collegeName, initi
         `/api/attendance/group-wise-today?collegeId=${collegeId}&date=${selectedDate}`
       )
       const result = await res.json()
+      // Expected backend format:
+//{groupWise: { MPC: { "First Year": [{session:"FN",...},{session:"AN",...}], ...}, ...}}
       setData(result.groupWise || {})
     }
     fetchData()
+    console.log("Fetching:", collegeId, selectedDate);
   }, [collegeId, selectedDate])
 
   const handlePrint = () => window.print()
@@ -60,45 +62,38 @@ export default function GroupWiseAttendanceTable({ collegeId, collegeName, initi
         </button>
       </div>
 
-      {/* Main Group Cards */}
+      {/* Group-wise attendance tables */}
       {Object.entries(data).map(([group, yearData]) => (
-        <div className="mb-3 w-full rounded-2xl border-2 border-blue-100 bg-gradient-to-r from-blue-50 to-emerald-50 p-1 shadow md:mb-6 md:p-3">
-          <h3 className="mb-2 flex items-center gap-2 text-base font-bold text-blue-800 md:text-lg">
+        <div key={group} className="mb-6 w-full rounded-2xl border-2 border-blue-100 bg-gradient-to-r from-blue-50 to-emerald-50 shadow p-1 md:p-3">
+          {/* Group Title */}
+          <h2 className="mb-2 flex items-center gap-2 px-2 text-lg font-extrabold text-indigo-800 md:text-xl">
             {groupIcons[group] || <span className="text-xl text-blue-500">📘</span>} {group}
-          </h3>
+          </h2>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[280px] border-collapse rounded-lg bg-white text-xs md:text-sm">
+            <table className="w-full min-w-[340px] border-collapse rounded-lg bg-white text-sm">
               <thead>
-                <tr className="bg-gradient-to-r from-blue-200 via-green-200 to-purple-100 text-xs tracking-tight text-gray-900 md:text-sm">
-                  <th className="border px-1 py-1 text-left md:px-3 md:py-2">Year</th>
-                  <th className="border px-1 py-1 text-center md:px-3 md:py-2">✅</th>
-                  <th className="border px-1 py-1 text-center md:px-3 md:py-2">❌</th>
-                  <th className="border px-1 py-1 text-center md:px-3 md:py-2">%</th>
+                <tr className="bg-gradient-to-r from-blue-200 via-green-200 to-purple-100 text-gray-900">
+                  <th className="border px-2 py-2 text-left">Year</th>
+                  <th className="border px-2 py-2 text-center">Session</th>
+                  <th className="border px-2 py-2 text-center">Lecturer</th>
+                  <th className="border px-2 py-2 text-center">✅ Present</th>
+                  <th className="border px-2 py-2 text-center">❌ Absent</th>
+                  <th className="border px-2 py-2 text-center">% Attendance</th>
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(yearData).map(([year, stats], idx) => (
-                  <tr
-                    key={`${group}-${year}`}
-                    className={idx % 2 === 0 ? 'bg-white' : 'bg-blue-50'}
-                  >
-                    <td className="max-w-[90px] truncate border px-1 py-1 font-bold text-blue-800 md:px-3 md:py-2">
-                      {year}
-                      <div className="mt-0.5 text-xs font-medium text-gray-500">
-                        Lecturer: <span className="text-blue-700">{stats.lecturerName || '—'}</span>
-                      </div>
-                    </td>
-                    <td className="border px-1 py-1 text-center font-bold text-green-700 md:px-3 md:py-2">
-                      {stats.present}
-                    </td>
-                    <td className="border px-1 py-1 text-center font-bold text-red-700 md:px-3 md:py-2">
-                      {stats.absent}
-                    </td>
-                    <td className="border px-1 py-1 text-center font-bold text-blue-700 md:px-3 md:py-2">
-                      {stats.percent}%
-                    </td>
-                  </tr>
-                ))}
+                {Object.entries(yearData).map(([year, sessions]) =>
+                  (Array.isArray(sessions) ? sessions : []).map((stats, idx) => (
+                    <tr key={`${group}-${year}-${stats.session || 'FN'}-${idx}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-blue-50'}>
+                      <td className="border px-2 py-2 font-semibold text-blue-800">{year}</td>
+                      <td className="border px-2 py-2 text-center font-bold text-gray-700">{stats.session || 'FN'}</td>
+                      <td className="border px-2 py-2 text-center font-medium text-indigo-700">{stats.lecturerName || '—'}</td>
+                      <td className="border px-2 py-2 text-center font-bold text-green-700">{stats.present}</td>
+                      <td className="border px-2 py-2 text-center font-bold text-red-700">{stats.absent}</td>
+                      <td className="border px-2 py-2 text-center font-bold text-blue-700">{stats.percent}%</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

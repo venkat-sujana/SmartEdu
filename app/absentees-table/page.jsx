@@ -1,73 +1,100 @@
 "use client";
+import { useEffect, useState } from "react";
 
-import React from "react";
-import { User } from "lucide-react";
+const sessionLabels = {
+  FN: "Forenoon",
+  AN: "Afternoon",
+  EN: "Evening"
+};
 
-export default function AbsenteesTable({ absentees }) {
-  // Ensure absentees is always an array internally
-  const safeAbsentees = Array.isArray(absentees) ? absentees : [];
+export default function TodayAbsenteesTable({ collegeId }) {
+  const [loading, setLoading] = useState(true);
+  const [absData, setAbsData] = useState(null);
 
-  // Grouping
-  const grouped = safeAbsentees.reduce((acc, item) => {
-    if (!item?.yearOfStudy || !item?.group) return acc; // Defensive check
-    if (!acc[item.yearOfStudy]) acc[item.yearOfStudy] = {};
-    if (!acc[item.yearOfStudy][item.group]) acc[item.yearOfStudy][item.group] = [];
-    acc[item.yearOfStudy][item.group].push(item);
-    return acc;
-  }, {});
+  useEffect(() => {
+    const fetchAbsentees = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/attendance/today-absentees`);
+        const json = await res.json();
+        setAbsData(json);
+      } catch (err) {
+        setAbsData(null);
+      }
+      setLoading(false);
+    };
+    fetchAbsentees();
+  }, [collegeId]);
+
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!absData || absData.status !== "success") {
+    return (
+      <div className="w-full p-8 text-xl text-center text-red-600 font-bold">
+        No attendance recorded today.
+      </div>
+    );
+  }
+
+  const { sessionWiseAbsentees, summary, sessions } = absData;
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-green-50 rounded-2xl shadow-xl p-5 md:p-8 my-2">
-      <div className="flex items-center gap-3 mb-3">
-        <span className="inline-flex w-9 h-9 items-center justify-center rounded-full bg-yellow-100 text-yellow-700 shadow-lg text-xl">
-          <User className="w-5 h-5" />
-        </span>
-        <h3 className="text-xl md:text-2xl font-bold text-blue-800 tracking-wide">Today's Absentees</h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[400px] border border-blue-200 rounded-lg bg-white shadow">
-          <thead>
-            <tr>
-              <th className="bg-blue-200 text-blue-900 py-2 px-3 rounded-tl-lg w-32">Year</th>
-              <th className="bg-green-200 text-green-900 py-2 px-3 w-32">Group</th>
-              <th className="bg-yellow-200 text-yellow-800 py-2 px-3 rounded-tr-lg w-auto">Names</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(grouped).length > 0 ? (
-              Object.entries(grouped).map(([year, groups]) =>
-                Object.entries(groups).map(([group, students], idx) => (
-                  <tr key={`${year}-${group}`} className="even:bg-blue-50 hover:bg-green-50 transition-all">
-                    <td className="py-2 px-3 text-center">
-                      <span className={`inline-block rounded-full px-3 py-1 text-sm font-semibold 
-                        ${year.toLowerCase().includes('first') ? 'bg-blue-100 text-blue-800' : year.toLowerCase().includes('second') ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {year}
-                      </span>
-                    </td>
-                    <td className="py-2 px-3 text-center">
-                      <span className="inline-block rounded-full px-3 py-1 text-sm font-medium bg-green-100 text-green-900 shadow"> {group} </span>
-                    </td>
-                    <td className="py-2 px-3 ">
-                      <div className="flex flex-wrap gap-2">
-                        {students.map((s, i) => (
-                          <span key={i} className="bg-gradient-to-tr from-yellow-100 to-blue-100 rounded-full px-3 py-1 text-sm text-indigo-800 font-semibold shadow">
-                            {s?.name}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
+    <div className="max-w-4xl mx-auto">
+      <h2 className="text-2xl font-extrabold text-blue-900 mb-3">
+        Today's Absentees (Session-wise)
+      </h2>
+      {sessions.map((sessionKey) => (
+        <div key={sessionKey} className="mb-5">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg font-bold text-blue-700">
+              {sessionLabels[sessionKey] || sessionKey}
+            </span>
+          </div>
+          <div className="bg-white rounded-xl border border-blue-100 shadow pb-2 mb-2">
+            <h3 className="font-bold text-base bg-blue-50 px-4 py-2 mb-2 rounded-t-xl text-blue-700">
+              Absentees
+            </h3>
+            {sessionWiseAbsentees[sessionKey] && sessionWiseAbsentees[sessionKey].length > 0 ? (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-blue-200">
+                    <th className="px-2 py-1 text-left">Name</th>
+                    <th className="px-2 py-1 text-center">Year</th>
+                    <th className="px-2 py-1 text-center">Group</th>
+                    <th className="px-2 py-1 text-center">Lecturer</th>
                   </tr>
-                ))
-              )
+                </thead>
+                <tbody>
+                  {sessionWiseAbsentees[sessionKey].map((student, idx) => (
+                    <tr key={student.name + idx} className={idx % 2 === 0 ? '' : 'bg-blue-50'}>
+                      <td className="px-2 py-1">{student.name}</td>
+                      <td className="px-2 py-1 text-center">{student.yearOfStudy}</td>
+                      <td className="px-2 py-1 text-center">{student.group}</td>
+                      <td className="px-2 py-1 text-center">{student.lecturerName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             ) : (
-              <tr>
-                <td colSpan={3} className="text-center text-gray-400 italic py-5">
-                  🎉 No absentees found
-                </td>
-              </tr>
+              <div className="px-4 py-3 text-green-700 font-bold">
+                No absentees in this session.
+              </div>
             )}
-          </tbody>
-        </table>
+          </div>
+        </div>
+      ))}
+      {/* Summary */}
+      <div className="bg-blue-50 rounded-xl p-4 mt-4 text-lg font-bold flex items-center gap-8 justify-center">
+        <span>Total: {summary.grandTotal}</span>
+        <span>Present: {summary.grandPresent}</span>
+        <span>Absent: {summary.grandAbsent}</span>
+        <span>Attendance%: {summary.percentage}</span>
       </div>
     </div>
   );
