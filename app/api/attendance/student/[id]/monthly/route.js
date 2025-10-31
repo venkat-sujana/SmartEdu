@@ -1,33 +1,48 @@
-//app/api/attendance/student/[id]/monthly/route.js
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
-  console.log("GET /api/attendance/student/[id]/monthly", req, params);
   await connectMongoDB();
   const { id } = params;
-
-  console.log("Fetching records for student ID:", id);
-
   const allRecords = await Attendance.find({ studentId: id });
-  console.log("All Records:", allRecords);
 
   const summary = {};
+  const daySet = {};         // unique working days per month
+  const presentDaySet = {};  // present days per month
 
   allRecords.forEach(record => {
-    console.log("Processing record:", record);
+    console.log(record.date, record.session, record.status);
+
+    const recordDate = new Date(record.date);
     const key = `${record.month}-${record.year}`;
-    console.log("Key:", key);
-    if (!summary[key]) summary[key] = { present: 0, total: 0 };
-    console.log("Summary before:", summary[key]);
-    if (record.status === "Present") summary[key].present += 1;
-    summary[key].total += 1;
-    console.log("Summary after:", summary[key]);
+    const dayKey = recordDate.toDateString();
+
+    // Unique working days
+    if (!daySet[key]) daySet[key] = new Set();
+    daySet[key].add(dayKey);
+
+    // Unique present days
+    if (record.status === "Present") {
+      if (!presentDaySet[key]) presentDaySet[key] = new Set();
+      presentDaySet[key].add(dayKey);
+    }
   });
 
-  console.log("Summary:", summary);
+  Object.keys(daySet).forEach(key => {
+    if (!summary[key]) summary[key] = {};
+    summary[key].totalWorkingDays = daySet[key].size; // per-day count (not per-session)
+    summary[key].presentDays = presentDaySet[key]?.size || 0; // per-day present (at least 1 PRESENT session)
+    summary[key].percent = summary[key].totalWorkingDays > 0
+      ? ((summary[key].presentDays / summary[key].totalWorkingDays) * 100).toFixed(2) + '%'
+      : '0.00%';
+
+    // Shortage & status
+    summary[key].shortage = Math.max(0, Math.ceil(summary[key].totalWorkingDays * 0.75) - summary[key].presentDays);
+    summary[key].status = parseFloat(summary[key].percent) < 75 ? "RED ALERT❌" : "Eligible ✅";
+  });
+
+  
 
   return NextResponse.json(summary);
 }
-
