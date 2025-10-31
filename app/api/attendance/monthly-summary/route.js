@@ -1,5 +1,4 @@
 //app/api/attendance/monthly-summary/route.js
-
 import { NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Student from '@/models/Student'
@@ -126,8 +125,10 @@ export async function GET(req) {
           }
 
           // Working days count
-          if (!workingDays[monthKey]) workingDays[monthKey] = 0
-          workingDays[monthKey]++
+          
+          if (!workingDays[monthKey]) workingDays[monthKey] = new Set()
+          workingDays[monthKey].add(recordDate.toDateString()) // Use only date as string, ignores different sessions on same day
+
 
           // Present count
           if (r.status === 'Present') {
@@ -140,13 +141,13 @@ export async function GET(req) {
       // Calculate percentage + alerts
       Object.keys(workingDays).forEach(monthKey => {
         const p = present[monthKey] || 0
-        const w = workingDays[monthKey] || 0
+        const w = workingDays[monthKey] ? workingDays[monthKey].size : 0 // <-- Only unique days now
         const perc = w > 0 ? ((p / w) * 100).toFixed(2) + '%' : '0.00%'
         percentage[monthKey] = perc
         alerts[monthKey] = parseFloat(perc) < 75 ? 'RED ALERT' : 'OK'
+        // Optionally, for frontend convenience:
+        workingDays[monthKey] = w
       })
-
-     
 
       return {
         name: student.name,

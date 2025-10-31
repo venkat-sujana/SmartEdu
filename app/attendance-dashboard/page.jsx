@@ -22,9 +22,9 @@ const attendanceFeatures = [
     gradient: 'from-blue-100 to-blue-200'
   },
   {
-    title: 'Attendance Records',
+    title: 'Monthly Attendance',
     description: 'Detailed attendance reports and analytics.',
-    href: '/attendance-records',
+    href: '/attendance-records/monthly-summary',
     icon: <BarChart className="h-6 w-6" />,
     gradient: 'from-green-100 to-green-200'
   },
@@ -38,7 +38,7 @@ const attendanceFeatures = [
   {
     title: 'Group-Wise View',
     description: 'Monitor students with attendance shortage.',
-    href: '/components/groupwise-attendance-table',
+    href: '/lecturer/attendance/group-wise',
     icon: <ClipboardList className="h-6 w-6" />,
     gradient: 'from-purple-100 to-purple-200'
   },
