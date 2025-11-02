@@ -3,10 +3,10 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen p-6 md:p-24 flex flex-col items-center justify-center bg-gray-100 text-gray-800">
+    <div className="relative min-h-screen p-2 md:p-24 flex flex-col items-center justify-center bg-gray-100 text-gray-800">
 
       {/* Main Heading */}
-<div className="relative w-screen h-screen bg-cover bg-center bg-auto">
+<div className="relative w-screen h-screen  bg-center ">
   <Image 
     src="/images/college.jpg"
     alt="SmartEdu Logo"

@@ -27,6 +27,7 @@ import {
   Home,
 } from 'lucide-react'
 import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
+import TodayAbsenteesTable from '@/app/absentees-table/page'
 
 export default function LecturerDashboard() {
   const { data: shortageApiData } = useSWR('/api/attendance/shortage-summary', fetcher)
@@ -60,6 +61,8 @@ export default function LecturerDashboard() {
   const years = ['First Year', 'Second Year']
   const sessionLabels = { FN: 'Forenoon', AN: 'Afternoon', EN: 'Evening' }
   const sessions = ['FN', 'AN', 'EN']
+
+  const absentees = absApiData?.absentees || []
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -166,7 +169,7 @@ export default function LecturerDashboard() {
   }
 
   return (
-    <div className="mx-auto mt-10 max-w-7xl rounded-3xl border border-gray-200 bg-black bg-[url('/images/bg-texture.jpg')] bg-cover bg-center p-6 shadow-lg">
+    <div className="mx-auto mt-10 max-w-7xl rounded-3xl border border-gray-200 bg-blend-normal bg-[url('/images/')] bg-cover bg-center p-6 shadow-lg">
       {/* College Name Title */}
       <div className="border-black-600 mb-8 flex items-center gap-4 rounded-lg border-2 bg-blue-50 px-6 py-4">
         <GraduationCap className="h-9 w-9 text-blue-700" />
@@ -174,25 +177,70 @@ export default function LecturerDashboard() {
           {collegeName || 'Loading...'}
         </h1>
       </div>
+
       <div className="mb-10 flex items-center justify-center">
-        <h1 className="mr-5 text-xl font-bold tracking-tight text-white">Lecturer Dashboard</h1>
+        <h1 className="mr-5 text-2xl font-bold tracking-tight text-black">LECTURER DASHBOARD</h1>
         <img
           src="/images/classroombg.jpg"
           alt="Lecturer Dashboard Icon"
-          className="mr-2 h-10 w-10 rounded object-cover"
+          className="mr-2 h-15 w-15 rounded object-cover"
         />
+        </div>
 
-        <Link href="/attendance-form">
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 2 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white shadow-lg transition hover:bg-blue-700"
-          >
-            <ClipboardList className="h-5 w-5" />
-            <p className="text-xl font-semibold">Take Attendance </p>
-          </motion.div>
-        </Link>
-      </div>
+
+         <div className="my-6 flex justify-center gap-4">
+                    <Link href="/attendance-dashboard">
+                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        Attendance-Dashboard
+                      </button>
+                    </Link>
+                    <Link href="/attendance-records/individual">
+                      <button className="cursor-pointer rounded-full border-2 border-green-500 bg-white px-6 py-2 font-bold text-green-700 shadow transition hover:scale-105 hover:bg-green-50">
+                        Edit Records
+                      </button>
+                    </Link>
+                    <Link href="/attendance-records/monthly-summary">
+                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        MOnthly-Summary
+                      </button>
+                    </Link>
+        
+                    <Link href="/attendance-form">
+                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        Take attendance
+                      </button>
+                    </Link>
+
+                    <Link href="/attendance-records/attendance-calendar">
+                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      Calendar-View
+                      </button>
+                    </Link>
+                    
+                    <Link href="/exam-report">
+                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      Exam Dashboard
+                      </button>
+                    </Link>
+
+                    <Link href="/student-table">
+                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        View Students
+                      </button>
+                    </Link>
+                    <Link href="/register">
+                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        Add Student
+                      </button>
+                    </Link>
+                    <Link href="/exams-form">
+                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        Add Exam
+                      </button>
+                    </Link>
+                    
+
+          </div>
 
       {/* Lecturer Info Card */}
       <div className="mx-auto mb-10 flex max-w-3xl items-center gap-6 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-6 shadow-md">
@@ -212,7 +260,7 @@ export default function LecturerDashboard() {
       {/* Students Count Quick Card */}
       <div className="mb-6 flex items-center justify-center gap-4">
         <div className="rounded-2xl bg-gradient-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
-          <p className="text-lg font-bold text-blue-800">Total Stregth:</p>
+          <p className="text-lg font-bold text-blue-800">Total Strength:</p>
           <p className="text-2xl font-extrabold text-indigo-900">{studentCount}</p>
         </div>
       </div>
@@ -276,61 +324,12 @@ export default function LecturerDashboard() {
         ))}
       </div>
 
-      <Link href="/attendance-dashboard">
-        <motion.div
-          whileHover={{ scale: 1.1, rotate: 2 }}
-          whileTap={{ scale: 0.95 }}
-          className="mt-4 cursor-pointer rounded-xl bg-indigo-100 p-5 text-center text-indigo-800 shadow-md transition-all hover:bg-indigo-300"
-        >
-          <p className="text-xl font-semibold">📊 Attendance Dashboard</p>
-        </motion.div>
-      </Link>
-      <Link href="/exam-report">
-        <motion.div
-          whileHover={{ scale: 1.1, rotate: 2 }}
-          whileTap={{ scale: 0.95 }}
-          className="mt-4 cursor-pointer rounded-xl bg-indigo-100 p-5 text-center text-indigo-800 shadow-md transition-all hover:bg-indigo-300"
-        >
-          <p className="text-xl font-semibold">📊 Exams Dashboard</p>
-        </motion.div>
-      </Link>
-
-      {/* Quick Actions */}
-      <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
-        {[
-          {
-            href: '/student-table',
-            label: '📋 View Students',
-            bg: 'blue-100',
-            hover: 'blue-300',
-            text: 'blue-800',
-          },
-          {
-            href: '/register',
-            label: '➕ Add Student',
-            bg: 'blue-100',
-            hover: 'blue-300',
-            text: 'blue-800',
-          },
-          {
-            href: '/exams-form',
-            label: '📝 Add Exam',
-            bg: 'green-200',
-            hover: 'green-400',
-            text: 'green-900',
-          },
-        ].map(({ href, label, bg, hover, text }) => (
-          <Link key={href} href={href}>
-            <motion.div
-              whileHover={{ scale: 1.1, rotate: 2 }}
-              whileTap={{ scale: 0.95 }}
-              className={`cursor-pointer rounded-xl p-5 text-center shadow-md transition-all bg-${bg} hover:bg-${hover} text-${text}`}
-            >
-              <p className={`text-xl font-semibold`}>{label}</p>
-            </motion.div>
-          </Link>
-        ))}
+      <div className="mt-12">
+        <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
+        <TodayAbsenteesTable absetees={absentees} />
       </div>
+
+      
 
       {/* External Links */}
       <div className="mt-8 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
