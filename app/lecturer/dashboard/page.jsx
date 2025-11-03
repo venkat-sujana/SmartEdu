@@ -179,7 +179,7 @@ export default function LecturerDashboard() {
       </div>
 
       <div className="mb-10 flex items-center justify-center">
-        <h1 className="mr-5 text-2xl font-bold tracking-tight text-black">LECTURER DASHBOARD</h1>
+        <h1 className="mr-5 text-xl font-bold tracking-tight text-black">LECTURER DASHBOARD</h1>
         <img
           src="/images/classroombg.jpg"
           alt="Lecturer Dashboard Icon"
@@ -188,53 +188,53 @@ export default function LecturerDashboard() {
         </div>
 
 
-         <div className="my-6 flex justify-center gap-4">
+         <div className="flex-wrap my-6 flex justify-center gap-3">
                     <Link href="/attendance-dashboard">
-                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
                         Attendance-Dashboard
                       </button>
                     </Link>
                     <Link href="/attendance-records/individual">
-                      <button className="cursor-pointer rounded-full border-2 border-green-500 bg-white px-6 py-2 font-bold text-green-700 shadow transition hover:scale-105 hover:bg-green-50">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full border-2 border-green-500 bg-white px-6 py-2 font-bold text-green-700 shadow transition hover:scale-105 hover:bg-green-50">
                         Edit Records
                       </button>
                     </Link>
                     <Link href="/attendance-records/monthly-summary">
-                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
                         MOnthly-Summary
                       </button>
                     </Link>
         
                     <Link href="/attendance-form">
-                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
                         Take attendance
                       </button>
                     </Link>
 
                     <Link href="/attendance-records/attendance-calendar">
-                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
                       Calendar-View
                       </button>
                     </Link>
                     
                     <Link href="/exam-report">
-                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
                       Exam Dashboard
                       </button>
                     </Link>
 
                     <Link href="/student-table">
-                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
                         View Students
                       </button>
                     </Link>
                     <Link href="/register">
-                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
                         Add Student
                       </button>
                     </Link>
                     <Link href="/exams-form">
-                      <button className="cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
                         Add Exam
                       </button>
                     </Link>

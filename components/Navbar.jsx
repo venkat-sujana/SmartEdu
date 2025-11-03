@@ -56,10 +56,10 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/images/apbise.png" // public లో పక్క logo image ఉంచండి, లేక absolute cdn link
+            src="/images/osra-4.jpg" // public లో పక్క logo image ఉంచండి, లేక absolute cdn link
             alt="Logo"
-            width={40}
-            height={40}
+            width={50}
+            height={50}
             className="rounded-full border-2 border-white bg-white shadow-md"
           />
           {/* You want text also beside logo: */}

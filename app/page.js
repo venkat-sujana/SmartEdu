@@ -8,7 +8,7 @@ export default function Home() {
       {/* Main Heading */}
 <div className="relative w-screen h-screen  bg-center ">
   <Image 
-    src="/images/college.jpg"
+    src="/images/students.jpg"
     alt="SmartEdu Logo"
     layout="fill"
     objectFit="cover"
