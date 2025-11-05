@@ -33,25 +33,36 @@ function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees })
   const groupTotalPresent = yearTotals[0].present + yearTotals[1].present
 
   // FN/AN total present (all years)
-  const fnTotalPresent =
-    stats('First Year', 'FN').present + stats('Second Year', 'FN').present
-  const anTotalPresent =
-    stats('First Year', 'AN').present + stats('Second Year', 'AN').present
+  const fnTotalPresent = stats('First Year', 'FN').present + stats('Second Year', 'FN').present
+  const anTotalPresent = stats('First Year', 'AN').present + stats('Second Year', 'AN').present
+
+  // FN total percent
+  const fnTotalAll =
+    fnTotalPresent + stats('First Year', 'FN').absent + stats('Second Year', 'FN').absent
+  const fnPercent = fnTotalAll > 0 ? Math.round((fnTotalPresent / fnTotalAll) * 100) : 0
+
+  // AN total percent
+  const anTotalAll =
+    anTotalPresent + stats('First Year', 'AN').absent + stats('Second Year', 'AN').absent
+  const anPercent = anTotalAll > 0 ? Math.round((anTotalPresent / anTotalAll) * 100) : 0
+
+  // Difference: FN Total Present - AN Total Present
+  const fnMinusAn = fnTotalPresent - anTotalPresent
 
   return (
-    <Card className="mb-6 max-w-xl mx-auto overflow-x-auto rounded-xl border-2 border-blue-300 bg-white shadow-xl">
-      <CardHeader className="mb-2 bg-blue-600 py-4 text-center text-white rounded-t-xl">
-        <CardTitle className="text-lg md:text-xl font-bold tracking-wide">
-          {groupName}
-        </CardTitle>
+    <Card className="mx-auto mb-6 max-w-xl overflow-x-auto rounded-xl border-2 border-blue-300 bg-white shadow-xl">
+      <CardHeader className="mb-2 rounded-t-xl bg-blue-600 py-4 text-center text-white">
+        <CardTitle className="text-lg font-bold tracking-wide md:text-xl">{groupName}</CardTitle>
       </CardHeader>
-      <CardContent className="p-4 overflow-x-auto">
-        <table className="min-w-full text-center border border-blue-200 text-sm">
+      <CardContent className="overflow-x-auto p-4">
+        <table className="min-w-full border border-blue-200 text-center text-sm">
           <thead>
             <tr className="bg-blue-100 text-blue-900">
               <th className="p-2"></th>
               {years.map(year => (
-                <th key={year} colSpan={sessions.length} className="p-2 font-bold">{year}</th>
+                <th key={year} colSpan={sessions.length} className="p-2 font-bold">
+                  {year}
+                </th>
               ))}
             </tr>
             <tr className="bg-blue-200 text-blue-900">
@@ -93,7 +104,7 @@ function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees })
               <td className="font-bold text-blue-900">Total</td>
               {years.map(year =>
                 sessions.map(session => (
-                  <td key={year + session + "total"} className="font-bold">
+                  <td key={year + session + 'total'} className="font-bold">
                     {stats(year, session).total}
                   </td>
                 ))
@@ -101,26 +112,26 @@ function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees })
             </tr>
           </tbody>
           <tfoot>
-            <tr className="bg-emerald-50 border-t-2 border-blue-300 font-bold text-green-700">
+            <tr className="bg-emerald-50 font-bold text-green-700">
               <td className="text-right">FN Total Present</td>
-              <td colSpan={sessions.length + 1}>{fnTotalPresent}</td>
+              <td colSpan={2}>{fnTotalPresent}</td>
+              <td className="text-right"> </td>
+              <td colSpan={2}>{fnPercent}%</td>
             </tr>
-            <tr className="bg-emerald-50 border-t-2 border-blue-300 font-bold text-green-700">
+            <tr className="bg-emerald-50 font-bold text-green-700">
               <td className="text-right">AN Total Present</td>
-              <td colSpan={sessions.length + 1}>{anTotalPresent}</td>
+              <td colSpan={2}>{anTotalPresent}</td>
+              <td className="text-right"> </td>
+              <td colSpan={2}>{anPercent}%</td>
             </tr>
-            {/* <tr className="bg-emerald-50 font-bold text-green-700">
-              <td className="text-right">Year-wise Total Present</td>
-              {yearTotals.map(({ present }) => (
-                <td key={"present" + present} colSpan={sessions.length}>
-                  {present}
-                </td>
-              ))}
+            <tr className="bg-yellow-50 font-bold text-purple-700">
+              <td colSpan={3} className="text-right">
+                FN Total - AN Total
+              </td>
+              <td colSpan={3} className="text-xl">
+                {fnMinusAn}
+              </td>
             </tr>
-            <tr className="font-bold text-blue-700 bg-blue-50">
-              <td className="text-right" colSpan={sessions.length + 1}>Total Present (FN+AN):</td>
-              <td colSpan={sessions.length + 1} className="text-xl text-green-700">{groupTotalPresent}</td>
-            </tr> */}
           </tfoot>
         </table>
       </CardContent>
@@ -134,15 +145,15 @@ export default function AllGroupsAttendanceCards() {
   const sessionWiseAbsentees = absApiData?.sessionWiseAbsentees || {}
 
   return (
-    <div className="flex flex-wrap gap-8 justify-center">
-      {groupNames.map(groupName =>
+    <div className="flex flex-wrap justify-center gap-8">
+      {groupNames.map(groupName => (
         <GroupTableCard
           key={groupName}
           groupName={groupName}
           sessionWisePresent={sessionWisePresent}
           sessionWiseAbsentees={sessionWiseAbsentees}
         />
-      )}
+      ))}
     </div>
   )
 }

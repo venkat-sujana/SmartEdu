@@ -260,7 +260,7 @@ export default function LecturerDashboard() {
       {/* Students Count Quick Card */}
       <div className="mb-6 flex items-center justify-center gap-4">
         <div className="rounded-2xl bg-gradient-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
-          <p className="text-lg font-bold text-blue-800">Total Strength:</p>
+          <p className="text-lg font-bold text-blue-800">Total Strength</p>
           <p className="text-2xl font-extrabold text-indigo-900">{studentCount}</p>
         </div>
       </div>

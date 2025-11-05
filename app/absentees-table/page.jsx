@@ -81,7 +81,7 @@ export default function TodayAbsenteesTable({ collegeId }) {
                   <div className="font-semibold text-blue-800 flex flex-row gap-2 items-center">
                     🎓 {yearKey}
                     <span className="text-gray-500 text-base font-normal ml-2">
-                      Attendance Marked By: <span className="text-blue-700 font-bold">{lecturerName}</span>
+                      Marked By: <span className="text-blue-700 font-bold">{lecturerName}</span>
                     </span>
                   </div>
                 </div>
