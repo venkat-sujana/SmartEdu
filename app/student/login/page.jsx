@@ -30,7 +30,7 @@ export default function StudentLoginPage() {
   };
 
   return (
- <div className="min-h-screen flex flex-col items-center justify-start bg-blue-500 pt-10 bg-[url('/images/bg-8.jpg')] bg-cover bg-center">
+ <div className="min-h-screen mt-12 flex flex-col items-center justify-start bg-blue-500 pt-10 bg-[url('/images/bg-8.jpg')] bg-cover bg-center">
   <form className="bg-white p-4 rounded-xl shadow-md space-y-4 w-60 max-w-sm" onSubmit={handleSubmit}>
     <h1 className="text-xl font-bold text-center text-gray-800">Student Login</h1>
     {error && <div className="text-red-600 bg-red-50 p-2 rounded text-center">{error}</div>}

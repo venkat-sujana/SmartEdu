@@ -1,12 +1,10 @@
-//app/components/Navbar.jsx
-
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import Tutorials from './tutorials/page'
-import Image from 'next/image' // Next.js Image component recommended!
+import Image from 'next/image'
 
 export default function Navbar() {
   const { data: session, status } = useSession()
@@ -20,7 +18,7 @@ export default function Navbar() {
           const res = await fetch(`/api/colleges/${session.user.collegeId}`)
           const data = await res.json()
           if (res.ok) {
-            setCollegeName(data.name) // assuming { name: "ABC College" }
+            setCollegeName(data.name)
           } else {
             console.error('College fetch failed:', data.error)
           }
@@ -39,7 +37,6 @@ export default function Navbar() {
     if (session?.user?.role === 'lecturer') redirectPath = '/lecturer/login'
     else if (session?.user?.role === 'student') redirectPath = '/student/login'
     else if (session?.user?.role === 'principal') redirectPath = '/principal/login'
-
     signOut({ callbackUrl: redirectPath })
   }
 
@@ -52,62 +49,72 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="mt-10 bg-black px-4 py-3 text-white shadow-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/images/osra-4.jpg" // public లో పక్క logo image ఉంచండి, లేక absolute cdn link
-            alt="Logo"
-            width={50}
-            height={50}
-            className="rounded-full border-2 border-white bg-white shadow-md"
-          />
-          {/* You want text also beside logo: */}
-          <span className="ml-1 hidden text-xl font-bold sm:inline">OSRA</span>
+    <nav className="fixed top-0 w-full  backdrop-blur-md bg-gradient-to-r from-blue-600/90 via-indigo-600/90 to-blue-800/90 text-white shadow-lg z-50">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-8">
+        {/* ==== Left: Logo + Title ==== */}
+        <Link href="/" className="flex items-center gap-3">
+          <div className="relative flex items-center justify-center bg-white p-1 rounded-full shadow-md">
+            <Image
+              src="/images/123.jpeg" // public folderలో logo ఉంచండి
+              alt="OSRA Logo"
+              width={45}
+              height={45}
+              className="rounded-full drop-shadow-md"
+              priority
+            />
+          </div>
+          <div className="flex flex-col leading-tight">
+            <span className="text-lg font-bold tracking-wide">OSRA</span>
+            <span className="text-[10px] text-gray-200">Digital Platform for Modern Education</span>
+          </div>
         </Link>
 
+        {/* ==== Right: Links + Buttons ==== */}
         <div className="flex items-center gap-4">
           {/* ✅ College name */}
           {collegeName && (
-            <span className="hidden text-sm font-semibold sm:inline">{collegeName}</span>
+            <span className="hidden text-sm font-semibold text-blue-100 md:inline">
+              {collegeName}
+            </span>
           )}
 
-          {status === 'authenticated' && (
+          {status === 'authenticated' ? (
             <>
-              <Link href={getDashboardLink()} className="font-semibold hover:underline">
+              <Link
+                href={getDashboardLink()}
+                className="font-semibold hover:text-yellow-300 transition"
+              >
                 Dashboard
               </Link>
 
-              {/* ✅ Tutorials అన్ని role కి కనిపిస్తుంది */}
+              {/* ✅ Tutorials menu */}
               <Tutorials />
 
-              <span className="text-md mr-3 hidden font-semibold sm:inline">
+              <span className="hidden text-sm font-semibold md:inline">
                 {session?.user?.name}
               </span>
 
               <button
                 onClick={handleLogout}
-                className="cursor-pointer rounded-md bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600"
+                className="rounded-md bg-red-500 px-3 py-1 text-sm font-semibold hover:bg-red-600 transition"
               >
                 Logout
               </button>
             </>
-          )}
-
-          {status === 'unauthenticated' && (
+          ) : (
             <div className="flex gap-2">
-              <Link
+              {/* <Link
                 href="/student/login"
-                className="rounded-md  px-3 py-1 text-sm font-semibold text-white-600 hover:bg-blue-500"
+                className="rounded-md bg-white/10 px-3 py-1 text-sm font-semibold hover:bg-blue-500/70 transition"
               >
                 Student Login
               </Link>
               <Link
                 href="/admin"
-                className="rounded-md  px-3 py-1 text-sm font-semibold text-white-600 hover:bg-blue-500"
+                className="rounded-md bg-white/10 px-3 py-1 text-sm font-semibold hover:bg-blue-500/70 transition"
               >
                 Admin
-              </Link>
+              </Link> */}
             </div>
           )}
         </div>
@@ -115,3 +122,35 @@ export default function Navbar() {
     </nav>
   )
 }
+
+// "use client";
+// import Link from "next/link";
+// import { GraduationCap } from "lucide-react";
+
+// export default function Navbar() {
+//   return (
+//     <header className="fixed top-0 w-full z-50 bg-white shadow-sm">
+//       <nav className="flex items-center justify-between px-6 py-3 md:px-10">
+//         <div className="flex items-center space-x-2">
+//           <GraduationCap className="text-blue-600 w-7 h-7" />
+//           <h1 className="text-xl font-bold text-blue-700">SmartCollege</h1>
+//         </div>
+
+//         <ul className="hidden md:flex space-x-8 font-medium">
+//           <li><Link href="/" className="hover:text-blue-600">Home</Link></li>
+//           <li><Link href="/#features" className="hover:text-blue-600">Features</Link></li>
+//           <li><Link href="/#login" className="hover:text-blue-600">Login</Link></li>
+//           <li><Link href="/#contact" className="hover:text-blue-600">Contact</Link></li>
+//         </ul>
+
+//         <Link
+//           href="/lecturer-login"
+//           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
+//         >
+//           Login
+//         </Link>
+//       </nav>
+//     </header>
+//   );
+// }
+

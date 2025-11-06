@@ -1,94 +1,80 @@
-import Image from "next/image";
+//app/page.jsx
+"use client";
+import { motion } from "framer-motion";
 import Link from "next/link";
+import { Users, ClipboardList, School } from "lucide-react";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="relative min-h-screen p-2 md:p-24 flex flex-col items-center justify-center bg-gray-100 text-gray-800">
-
-      {/* Main Heading */}
-<div className="relative w-screen h-screen  bg-center ">
-  <Image 
-    src="/images/students.jpg"
-    alt="SmartEdu Logo"
-    layout="fill"
-    objectFit="cover"
-    priority
-  />
-</div>
-
-
-
-
-      <h1 className="text-2xl text-black font-bold mt-2">
-        Welcome to 🧑‍🏫&nbsp;SmartEdu
-      </h1>
-      <h2 className="text-2xl text-black font-semibold mt-4">
-        Online Student Registration & Analysis
-      </h2>
-
-      <p className="text-lg mt-4  text-left text-black max-w-2xl">
-        🏫 <strong>SmartEdu</strong> – Online Student Registration & Analysis SmartEdu
-        is a modern, full-stack web application designed to streamline student
-        registration, attendance tracking, and examination analysis for Junior
-        Colleges.
-        <br />
-        Developed using <strong>Next.js</strong> and{" "}
-        <strong>Tailwind CSS</strong>, <strong>SmartEdu</strong> empowers lecturers
-        and administrators to efficiently manage student data, academic
-        performance, and attendance across academic years and streams.
-      </p>
-
-      <strong>
-        <p className="text-md mt-3 text-black flex items-center justify-left gap-2">
-          🔑 Key Features:
-          <br />
-          <br /> 📝 Student Registration: Easy-to-use form for registering
-          students with personal details, photos, and stream allocation
-          (General/Vocational). <br />
-          <br />
-          📅 Attendance Management: Track daily, monthly, and year-wise
-          attendance; generate printable attendance summaries.
-          <br />
-          <br /> 🧮 Exam Management: Enter subject-wise marks for each exam type
-          (Unit, Quarterly, Half-Yearly, Pre-Public); <br />
-          calculate totals, percentages, and pass/fail status based on dynamic
-          rules.
-          <br />
-          <br /> 📊 Performance Reports: Generate A4-format profiles with photo,
-          attendance, and exam summaries; exportable as PDF. <br />
-          <br />
-          🔒 Lecturer Login: Secure access for lecturers with individual profile
-          photo support.
-          <br />
-          <br /> ☁️ Cloud Integration: Cloudinary used for managing student and
-          lecturer photos.
-        </p>
-      </strong>
-
-      <strong>
-        {" "}
-        <p className="text-md mt-3 flex items-center justify-left text-black">
-          🎯 Why SmartEdu?
-          <br /> Simplifies administrative tasks in government junior colleges.
-          Offers real-time, visual insights into student performance.
-          <br />
-          <br />
-          Reduces paperwork and enhances digital record-keeping. Tailored for
-          both General (MPC, BiPC, CEC, HEC) and Vocational (MLT, M&AT, CET)
-          streams.
-        </p>
-      </strong>
-
-      <p className="text-lg mt-4 text-center text-black">
-        <a
-          href="https://github.com/venkat-sujana/SmartEdu"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:text-blue-600"
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white text-gray-800 text-center">
+      <section className="pt-20 md:pt-28 pb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-3xl mx-auto px-6"
         >
-          📂 View Source on GitHub
-        </a>
-      </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-blue-800">
+            Welcome to SmartCollege Portal
+          </h1>
+          <p className="mt-4 text-gray-600 text-lg">
+            Manage Students, Lecturers, and Principals in one connected platform.
+          </p>
+        </motion.div>
+      </section>
+
+      <section id="login" className="py-16 bg-white">
+        <h3 className="text-3xl font-bold text-blue-700 mb-10">Login as</h3>
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto px-6">
+          <LoginCard
+            icon={<Users className="w-10 h-10 text-blue-600 mx-auto" />}
+            title="Student"
+            desc="Access courses, attendance, and results."
+            link="/student/login"
+            color="blue"
+          />
+          <LoginCard
+            icon={<ClipboardList className="w-10 h-10 text-green-600 mx-auto" />}
+            title="Lecturer"
+            desc="Manage attendance and exams."
+            link="/lecturer/login"
+            color="green"
+          />
+          <LoginCard
+            icon={<School className="w-10 h-10 text-purple-600 mx-auto" />}
+            title="Principal"
+            desc="Monitor academics and performance."
+            link="/principal/login"
+            color="purple"
+          />
+        </div>
+      </section>
     </div>
   );
 }
+
+function LoginCard({ icon, title, desc, link, color }) {
+  const bg = {
+    blue: "bg-blue-50 hover:bg-blue-100",
+    green: "bg-green-50 hover:bg-green-100",
+    purple: "bg-purple-50 hover:bg-purple-100",
+  }[color];
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      className={`p-8 rounded-2xl shadow-md ${bg} transition-all`}
+    >
+      {icon}
+      <h4 className="text-xl font-semibold mt-3 mb-2">{title}</h4>
+      <p className="text-gray-600 mb-4">{desc}</p>
+      <Link
+        href={link}
+        className={`text-white bg-${color}-600 px-4 py-2 rounded-lg hover:bg-${color}-700 transition-all`}
+      >
+        {title} Login
+      </Link>
+    </motion.div>
+  );
+}
+
