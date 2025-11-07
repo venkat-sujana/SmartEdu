@@ -1,3 +1,5 @@
+//app/principal/dashboard/page.jsx
+
 'use client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -110,7 +112,7 @@ export default function PrincipalDashboard() {
     : 0
 
   return (
-    <div className="flex mt-12 min-h-screen bg-gradient-to-br bg-[url('/images/texture.jpg')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
+    <div className="flex mt-24 min-h-screen bg-gradient-to-br bg-[url('/images/texture.jpg')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
       {/* Sidebar */}
       <aside className="hidden w-56 bg-black p-6 shadow-md md:block">
         <h2 className="mb-8 text-2xl font-bold text-white">OSRA</h2>

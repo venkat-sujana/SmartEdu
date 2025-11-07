@@ -99,7 +99,7 @@ export default function MonthlySummary() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-6">
+    <div className="max-w-7xl mx-auto p-4 md:p-6 mt-20">
       {/* Filters */}
 <div className="mb-6 flex flex-wrap gap-4 items-center bg-white p-5 rounded-lg shadow-md">
   <select

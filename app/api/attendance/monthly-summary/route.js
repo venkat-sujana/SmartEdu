@@ -127,19 +127,22 @@ export async function GET(req) {
           // Working days count
           
           if (!workingDays[monthKey]) workingDays[monthKey] = new Set()
-          workingDays[monthKey].add(recordDate.toDateString()) // Use only date as string, ignores different sessions on same day
+          workingDays[monthKey].add(recordDate.toDateString()) // Use only date as string, ignores different sessions on same 
+        
+      console.log(present[monthKey]); // Inspect datatype
 
 
-          // Present count
+          // For every present attendance record/date
           if (r.status === 'Present') {
-            if (!present[monthKey]) present[monthKey] = 0
-            present[monthKey]++
+            if (!present[monthKey]) present[monthKey] = new Set();
+            present[monthKey].add(recordDate.toDateString()); // each date only once
           }
         }
       })
 
       // Calculate percentage + alerts
       Object.keys(workingDays).forEach(monthKey => {
+       present[monthKey] = present[monthKey] ? present[monthKey].size : 0;
         const p = present[monthKey] || 0
         const w = workingDays[monthKey] ? workingDays[monthKey].size : 0 // <-- Only unique days now
         const perc = w > 0 ? ((p / w) * 100).toFixed(2) + '%' : '0.00%'
@@ -148,6 +151,12 @@ export async function GET(req) {
         // Optionally, for frontend convenience:
         workingDays[monthKey] = w
       })
+     
+      console.log('Present:', present)
+      console.log('Working Days:', workingDays)
+      console.log('Percentage:', percentage)
+      console.log('Alerts:', alerts)
+
 
       return {
         name: student.name,
