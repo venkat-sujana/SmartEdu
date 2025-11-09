@@ -1,3 +1,4 @@
+//app/lecturer/dashboard/page.jsx
 'use client'
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
@@ -7,6 +8,8 @@ import { GraduationCap } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import useSWR from 'swr'
+import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
+import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
 
 const fetcher = (...args) =>
   fetch(...args).then(res => {
@@ -28,6 +31,7 @@ import {
 } from 'lucide-react'
 import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
+
 
 export default function LecturerDashboard() {
   const { data: shortageApiData } = useSWR('/api/attendance/shortage-summary', fetcher)
@@ -120,6 +124,7 @@ export default function LecturerDashboard() {
           setAnSecondYearAbsent(
             (absent.AN || []).filter(s => s.yearOfStudy?.toLowerCase().includes('second')).length
           )
+          
 
           // Overall
           const totalPresent =
@@ -169,7 +174,7 @@ export default function LecturerDashboard() {
   }
 
   return (
-    <div className="mx-auto mt-10 max-w-7xl rounded-3xl border border-gray-200 bg-blend-normal bg-[url('/images/')] bg-cover bg-center p-6 shadow-lg">
+    <div className="mx-auto mt-24 max-w-7xl rounded-3xl border border-gray-200 bg-[url('/images/')] bg-cover bg-center p-6 bg-blend-normal shadow-lg">
       {/* College Name Title */}
       <div className="border-black-600 mb-8 flex items-center gap-4 rounded-lg border-2 bg-blue-50 px-6 py-4">
         <GraduationCap className="h-9 w-9 text-blue-700" />
@@ -179,68 +184,65 @@ export default function LecturerDashboard() {
       </div>
 
       <div className="mb-10 flex items-center justify-center">
-        <h1 className="mr-5 text-xl font-bold tracking-tight text-black">LECTURER DASHBOARD</h1>
+        <h1 className="text-xl font-bold tracking-tight text-black">LECTURER DASHBOARD</h1>
         <img
           src="/images/classroombg.jpg"
           alt="Lecturer Dashboard Icon"
           className="mr-2 h-15 w-15 rounded object-cover"
         />
-        </div>
+      </div>
 
+      <div className="my-6 flex flex-wrap justify-center gap-3">
+        <Link href="/attendance-dashboard">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            Attendance-Dashboard
+          </button>
+        </Link>
+        <Link href="/attendance-records/individual">
+          <button className="w-full cursor-pointer rounded-full border-2 border-green-500 bg-white px-6 py-2 font-bold text-green-700 shadow transition hover:scale-105 hover:bg-green-50 sm:w-auto">
+            Edit Records
+          </button>
+        </Link>
+        <Link href="/attendance-records/monthly-summary">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            MOnthly-Summary
+          </button>
+        </Link>
 
-         <div className="flex-wrap my-6 flex justify-center gap-3">
-                    <Link href="/attendance-dashboard">
-                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                        Attendance-Dashboard
-                      </button>
-                    </Link>
-                    <Link href="/attendance-records/individual">
-                      <button className="w-full sm:w-auto cursor-pointer rounded-full border-2 border-green-500 bg-white px-6 py-2 font-bold text-green-700 shadow transition hover:scale-105 hover:bg-green-50">
-                        Edit Records
-                      </button>
-                    </Link>
-                    <Link href="/attendance-records/monthly-summary">
-                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                        MOnthly-Summary
-                      </button>
-                    </Link>
-        
-                    <Link href="/attendance-form">
-                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                        Take attendance
-                      </button>
-                    </Link>
+        <Link href="/attendance-form">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            Take attendance
+          </button>
+        </Link>
 
-                    <Link href="/attendance-records/attendance-calendar">
-                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                      Calendar-View
-                      </button>
-                    </Link>
-                    
-                    <Link href="/exam-report">
-                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                      Exam Dashboard
-                      </button>
-                    </Link>
+        <Link href="/attendance-records/attendance-calendar">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            Calendar-View
+          </button>
+        </Link>
 
-                    <Link href="/student-table">
-                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                        View Students
-                      </button>
-                    </Link>
-                    <Link href="/register">
-                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                        Add Student
-                      </button>
-                    </Link>
-                    <Link href="/exams-form">
-                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                        Add Exam
-                      </button>
-                    </Link>
-                    
+        <Link href="/exam-report">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            Exam Dashboard
+          </button>
+        </Link>
 
-          </div>
+        <Link href="/student-table">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            View Students
+          </button>
+        </Link>
+        <Link href="/register">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            Add Student
+          </button>
+        </Link>
+        <Link href="/exams-form">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            Add Exam
+          </button>
+        </Link>
+      </div>
 
       {/* Lecturer Info Card */}
       <div className="mx-auto mb-10 flex max-w-3xl items-center gap-6 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-6 shadow-md">
@@ -256,6 +258,8 @@ export default function LecturerDashboard() {
           </p>
         </div>
       </div>
+
+      
 
       {/* Students Count Quick Card */}
       <div className="mb-6 flex items-center justify-center gap-4">
@@ -327,9 +331,11 @@ export default function LecturerDashboard() {
       <div className="mt-12">
         <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
         <TodayAbsenteesTable absetees={absentees} />
-      </div>
-
-      
+        </div>
+       {/* All other sections as in your original dashboard */}
+      <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
+        <AttendanceShortageSummary data={shortageData} />
+      </Card>
 
       {/* External Links */}
       <div className="mt-8 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -353,3 +359,4 @@ export default function LecturerDashboard() {
     </div>
   )
 }
+

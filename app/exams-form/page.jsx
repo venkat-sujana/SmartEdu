@@ -177,7 +177,7 @@ export default function ExamsFormPage() {
   }, [formData.stream]);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-green-100 p-4">
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-green-100 p-4 mt-20">
       <Toaster />
       {isSubmitting && (
         <div className="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
@@ -333,17 +333,7 @@ export default function ExamsFormPage() {
             ))}
           </div>
 
-          {/* Display total and percentage */}
-          <div className="flex gap-4 mt-4">
-            <div className="font-semibold text-slate-700 bg-slate-100 rounded px-2 py-1">
-              <span className="font-bold text-cyan-700">Total: </span>
-              {formData.total}&nbsp;marks
-            </div>
-            <div className="font-semibold text-slate-700 bg-slate-100 rounded px-2 py-1">
-              <span className="font-bold text-lime-700">%</span>
-              {formData.percentage}
-            </div>
-          </div>
+          
 
           <button
             type="submit"

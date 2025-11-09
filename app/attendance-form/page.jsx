@@ -140,7 +140,7 @@ export default function AttendanceForm() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-200 via-white to-green-50 py-5 px-2">
+    <div className="mt-24 relative min-h-screen bg-gradient-to-br from-blue-200 via-white to-green-50 py-5 px-2">
       {/* Fullscreen Toast Overlay */}
       {fullscreenToastMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

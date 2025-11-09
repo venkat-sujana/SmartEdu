@@ -173,7 +173,7 @@ export default function ExamReportPage() {
 
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-7xl bg-gradient-to-br from-blue-50 via-white to-green-50 p-1 font-sans sm:p-4">
+    <div className="mt-24 mx-auto min-h-screen w-full max-w-7xl bg-gradient-to-br from-blue-50 via-white to-green-50 p-1 font-sans sm:p-4">
       <Toaster />
 
       {/* College Header */}

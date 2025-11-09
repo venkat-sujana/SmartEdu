@@ -1,3 +1,4 @@
+//app/api/attendance/student/[id]
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import { NextResponse } from "next/server";

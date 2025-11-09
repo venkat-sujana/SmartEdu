@@ -79,7 +79,7 @@ export default function AttendanceDashboard() {
   }, [session?.user?.collegeId])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6 mt-24">
       <div className="mx-auto max-w-7xl">
         <div>
           <h1 className="mb-2 text-xl font-bold text-gray-900">{collegeName}</h1>

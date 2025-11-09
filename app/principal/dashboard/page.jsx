@@ -13,6 +13,8 @@ import React, { useEffect, useState } from 'react'
 import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
 import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
+import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
+import TodayAbsenteesTable from '@/app/absentees-table/page'
 
 const fetcher = url => fetch(url).then(res => res.json())
 
@@ -135,7 +137,7 @@ export default function PrincipalDashboard() {
       <main className="w-full flex-1 space-y-6 p-2 sm:p-4 md:p-6">
         {/* Header, Info, Lecturers etc... (same as before) */}
         
-        <Card className="shadow-4lg mx-auto w-full max-w-xs rounded-2xl border border-blue-200 bg-blue-100 p-4 mb-6">
+  <Card className="shadow-4lg mx-auto w-full max-w-xs rounded-2xl border border-blue-200 bg-blue-100 p-4 mb-6">
   <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
     {principal?.photo ? (
       <img
@@ -157,6 +159,61 @@ export default function PrincipalDashboard() {
 </Card>
 
 
+ <div className="flex-wrap my-6 flex justify-center gap-3">
+                    <Link href="/attendance-dashboard">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        Attendance-Dashboard
+                      </button>
+                    </Link>
+                    <Link href="/attendance-records/individual">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full border-2 border-green-500 bg-white px-6 py-2 font-bold text-green-700 shadow transition hover:scale-105 hover:bg-green-50">
+                        Edit Records
+                      </button>
+                    </Link>
+                    <Link href="/attendance-records/monthly-summary">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        MOnthly-Summary
+                      </button>
+                    </Link>
+        
+                    <Link href="/attendance-form">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        Take attendance
+                      </button>
+                    </Link>
+
+                    <Link href="/attendance-records/attendance-calendar">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      Calendar-View
+                      </button>
+                    </Link>
+                    
+                    <Link href="/exam-report">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                      Exam Dashboard
+                      </button>
+                    </Link>
+
+                    <Link href="/student-table">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        View Students
+                      </button>
+                    </Link>
+                    <Link href="/register">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        Add Student
+                      </button>
+                    </Link>
+                    <Link href="/exams-form">
+                      <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                        Add Exam
+                      </button>
+                    </Link>
+                    
+
+          </div>
+
+
 <ActiveLecturersCard
   className="mx-auto w-full max-w-md mb-6"
   lecturers={activeLecturersData?.data || []}
@@ -165,123 +222,19 @@ export default function PrincipalDashboard() {
   title="Currently Active Lecturers"
 />
 
+      <div className="mt-12">
+        <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
+        <TodayAbsenteesTable absetees={absentees} />
+      </div>
 
+      <OverallAttendanceMatrixCard />
 
-        <div className="mt-6 mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* Overall Attendance Card */}
-          <Card className="rounded-2xl border-2 border-blue-200 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 p-6">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold">Overall Attendance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1 text-base">
-                <div className="flex justify-between">
-                  <span className="font-bold text-green-700">Present (FN+AN):</span>
-                  <span className="font-bold">{overallPresent}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-red-600">Absent (FN+AN):</span>
-                  <span className="font-bold">{overallAbsent}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-blue-600">Attendance %:</span>
-                  <span className="font-bold">{overallPercent}%</span>
-                </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="font-semibold text-gray-700">Total (FN+AN):</span>
-                  <span className="font-bold">{overallTotal}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        
+        
 
-          {/* First Year Attendance Card */}
-          <Card className="rounded-2xl border-2 border-green-200 shadow-lg bg-gradient-to-br from-green-50 to-green-200 p-6">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold">First Year Attendance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1 text-base">
-                <div className="flex justify-between">
-                  <span className="font-bold text-green-700">FN Present:</span>
-                  <span className="font-bold">{presentAbsentByYear.firstYear.fnPresent}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-red-600">FN Absent:</span>
-                  <span className="font-bold">{presentAbsentByYear.firstYear.fnAbsent}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-green-700">AN Present:</span>
-                  <span className="font-bold">{presentAbsentByYear.firstYear.anPresent}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-red-600">AN Absent:</span>
-                  <span className="font-bold">{presentAbsentByYear.firstYear.anAbsent}</span>
-                </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="font-semibold text-gray-700">Total:</span>
-                  <span className="font-bold">{firstYearTotal}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-blue-700">Attendance %:</span>
-                  <span className="font-bold">{firstYearPercent}%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Second Year Attendance Card */}
-          <Card className="rounded-2xl border-2 border-purple-200 shadow-lg bg-gradient-to-br from-purple-50 to-purple-200 p-6">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold">Second Year Attendance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1 text-base">
-                <div className="flex justify-between">
-                  <span className="font-bold text-green-700">FN Present:</span>
-                  <span className="font-bold">{presentAbsentByYear.secondYear.fnPresent}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-red-600">FN Absent:</span>
-                  <span className="font-bold">{presentAbsentByYear.secondYear.fnAbsent}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-green-700">AN Present:</span>
-                  <span className="font-bold">{presentAbsentByYear.secondYear.anPresent}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-red-600">AN Absent:</span>
-                  <span className="font-bold">{presentAbsentByYear.secondYear.anAbsent}</span>
-                </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="font-semibold text-gray-700">Total:</span>
-                  <span className="font-bold">{secondYearTotal}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-blue-700">Attendance %:</span>
-                  <span className="font-bold">{secondYearPercent}%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* All other sections as in your original dashboard */}
-        <Card className="rounded-2xl bg-white p-2 shadow-lg mt-6">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-gray-800">
-              Group wise Attendance Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {session?.user && (
-              <GroupWiseAttendanceTable
-                collegeId={session.user.collegeId}
-                collegeName={session.user.collegeName}
-              />
-            )}
-          </CardContent>
-          <AttendanceShortageSummary data={shortageData} />
+      
+        <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
+        <AttendanceShortageSummary data={shortageData} />
         </Card>
 
         {/* Absentees table section (optional, per your use) */}

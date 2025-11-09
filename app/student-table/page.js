@@ -203,7 +203,7 @@ export default function StudentsPage() {
   const pageCount = Math.ceil((filteredStudents ? filteredStudents.length : 0) / studentsPerPage);
 
   return (
-    <div className="p-6 max-w-8xl mx-auto">
+    <div className="p-6 max-w-8xl mx-auto mt-24">
       {/* College Header with Icon */}
       <div className="flex flex-col items-center justify-center mb-6">
         <div className="flex items-center gap-3 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 via-white to-green-50 px-6 py-3 font-extrabold text-blue-900 text-xl shadow-xl">

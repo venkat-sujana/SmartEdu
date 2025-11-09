@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic"
 export default function AttendanceShortageSummary() {
   const { data: session, status } = useSession()
   const [students, setStudents] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true) 
   const [error, setError] = useState(null)
 
   useEffect(() => {
