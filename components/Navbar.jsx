@@ -96,25 +96,14 @@ export default function Navbar() {
 
               <button
                 onClick={handleLogout}
-                className="rounded-md bg-red-500 px-3 py-1 text-sm font-semibold hover:bg-red-600 transition"
+                className="rounded-md bg-red-500 px-3 py-1 text-sm font-semibold hover:bg-red-600 transition cursor-pointer"
               >
                 Logout
               </button>
             </>
           ) : (
             <div className="flex gap-2">
-              {/* <Link
-                href="/student/login"
-                className="rounded-md bg-white/10 px-3 py-1 text-sm font-semibold hover:bg-blue-500/70 transition"
-              >
-                Student Login
-              </Link>
-              <Link
-                href="/admin"
-                className="rounded-md bg-white/10 px-3 py-1 text-sm font-semibold hover:bg-blue-500/70 transition"
-              >
-                Admin
-              </Link> */}
+              
             </div>
           )}
         </div>
@@ -123,34 +112,5 @@ export default function Navbar() {
   )
 }
 
-// "use client";
-// import Link from "next/link";
-// import { GraduationCap } from "lucide-react";
 
-// export default function Navbar() {
-//   return (
-//     <header className="fixed top-0 w-full z-50 bg-white shadow-sm">
-//       <nav className="flex items-center justify-between px-6 py-3 md:px-10">
-//         <div className="flex items-center space-x-2">
-//           <GraduationCap className="text-blue-600 w-7 h-7" />
-//           <h1 className="text-xl font-bold text-blue-700">SmartCollege</h1>
-//         </div>
-
-//         <ul className="hidden md:flex space-x-8 font-medium">
-//           <li><Link href="/" className="hover:text-blue-600">Home</Link></li>
-//           <li><Link href="/#features" className="hover:text-blue-600">Features</Link></li>
-//           <li><Link href="/#login" className="hover:text-blue-600">Login</Link></li>
-//           <li><Link href="/#contact" className="hover:text-blue-600">Contact</Link></li>
-//         </ul>
-
-//         <Link
-//           href="/lecturer-login"
-//           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
-//         >
-//           Login
-//         </Link>
-//       </nav>
-//     </header>
-//   );
-// }
 

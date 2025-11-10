@@ -156,24 +156,27 @@ export default function IndividualReport() {
               </tr>
             </thead>
             <tbody>
-              {fnRecords.map((r, i) => (
-                <tr key={r._id || i} className="hover:bg-gray-50">
-                  <td className="border px-4 py-2">{i + 1}</td>
-                  <td className="border px-4 py-2">{r.student}</td>
-                  <td className="border px-4 py-2">{r.present}</td>
-                  <td className="border px-4 py-2">{r.absent}</td>
-                  <td className="border px-4 py-2">{new Date(r.date).toLocaleDateString()}</td>
-                  <td className="border px-4 py-2 flex gap-2 justify-center">
-                    <button onClick={() => setSelectedRecord(r)} className="text-blue-600 hover:text-blue-800">
-                      <Pencil size={18} />
-                    </button>
-                    <button onClick={() => handleDelete(r._id)} className="text-red-600 hover:text-red-800">
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+  {fnRecords.map((r, i) => (
+    <tr key={r._id || i} className="hover:bg-gray-50">
+      <td className="border px-4 py-2">{i + 1}</td>
+      <td className="border px-4 py-2">{r.student}</td>
+      {/* Present as green tick */}
+      <td className="border px-4 py-2 text-center">{r.present ? <span className="text-green-600">✅</span> : null}</td>
+      {/* Absent as red cross */}
+      <td className="border px-4 py-2 text-center">{r.absent ? <span className="text-red-600">❌</span> : null}</td>
+      <td className="border px-4 py-2">{new Date(r.date).toLocaleDateString()}</td>
+      <td className="border px-4 py-2 flex gap-2 justify-center">
+        <button onClick={() => setSelectedRecord(r)} className="text-blue-600 hover:text-blue-800">
+          <Pencil size={18} />
+        </button>
+        <button onClick={() => handleDelete(r._id)} className="text-red-600 hover:text-red-800">
+          <Trash2 size={18} />
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
           </table>
         ) : (
           <p className="text-center text-gray-500">No Forenoon session records found.</p>
@@ -195,25 +198,28 @@ export default function IndividualReport() {
                 <th className="border px-4 py-2">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {anRecords.map((r, i) => (
-                <tr key={r._id || i} className="hover:bg-gray-50">
-                  <td className="border px-4 py-2">{i + 1}</td>
-                  <td className="border px-4 py-2">{r.student}</td>
-                  <td className="border px-4 py-2">{r.present}</td>
-                  <td className="border px-4 py-2">{r.absent}</td>
-                  <td className="border px-4 py-2">{new Date(r.date).toLocaleDateString()}</td>
-                  <td className="border px-4 py-2 flex gap-2 justify-center">
-                    <button onClick={() => setSelectedRecord(r)} className="text-blue-600 hover:text-blue-800">
-                      <Pencil size={18} />
-                    </button>
-                    <button onClick={() => handleDelete(r._id)} className="text-red-600 hover:text-red-800">
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+<tbody>
+  {fnRecords.map((r, i) => (
+    <tr key={r._id || i} className="hover:bg-gray-50">
+      <td className="border px-4 py-2">{i + 1}</td>
+      <td className="border px-4 py-2">{r.student}</td>
+      {/* Present as green tick */}
+      <td className="border px-4 py-2 text-center">{r.present ? <span className="text-green-600">✅</span> : null}</td>
+      {/* Absent as red cross */}
+      <td className="border px-4 py-2 text-center">{r.absent ? <span className="text-red-600">❌</span> : null}</td>
+      <td className="border px-4 py-2">{new Date(r.date).toLocaleDateString()}</td>
+      <td className="border px-4 py-2 flex gap-2 justify-center">
+        <button onClick={() => setSelectedRecord(r)} className="text-blue-600 hover:text-blue-800">
+          <Pencil size={18} />
+        </button>
+        <button onClick={() => handleDelete(r._id)} className="text-red-600 hover:text-red-800">
+          <Trash2 size={18} />
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
           </table>
         ) : (
           <p className="text-center text-gray-500">No Afternoon session records found.</p>

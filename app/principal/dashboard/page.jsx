@@ -15,6 +15,7 @@ import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
 import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
+import AttendanceStatsTable from '@/app/components/attendance-stats-table/AttendanceStatsTable'
 
 const fetcher = url => fetch(url).then(res => res.json())
 
@@ -23,6 +24,7 @@ export default function PrincipalDashboard() {
   const { data: session } = useSession()
   const principal = session?.user
   const collegeName = principal?.collegeName || 'Your College'
+  const [studentCount, setStudentCount] = useState(0)
 
   useEffect(() => {
     fetch('/api/attendance/shortage-summary')
@@ -113,8 +115,20 @@ export default function PrincipalDashboard() {
     ? Math.round((secondYearPresent / secondYearTotal) * 100)
     : 0
 
+  function stats(group, year, session) {
+    const present =
+      sessionWisePresent[session]?.filter(s => s.group === group && s.yearOfStudy === year)
+        .length || 0
+    const absent =
+      sessionWiseAbsentees[session]?.filter(s => s.group === group && s.yearOfStudy === year)
+        .length || 0
+    const total = present + absent
+    const percent = total > 0 ? Math.round((present / total) * 100) : 0
+    return { present, absent, total, percent }
+  }
+
   return (
-    <div className="flex mt-24 min-h-screen bg-gradient-to-br bg-[url('/images/texture.jpg')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
+    <div className="flex mt-24 min-h-screen bg-gradient-to-br bg-[url('/images/')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
       {/* Sidebar */}
       <aside className="hidden w-56 bg-black p-6 shadow-md md:block">
         <h2 className="mb-8 text-2xl font-bold text-white">OSRA</h2>
@@ -157,6 +171,14 @@ export default function PrincipalDashboard() {
     </div>
   </div>
 </Card>
+
+{/* Students Count Quick Card */}
+      <div className="mb-6 flex items-center justify-center gap-4">
+        <div className="rounded-2xl bg-gradient-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
+          <p className="text-lg font-bold text-blue-800">Total Strength</p>
+          <p className="text-2xl font-extrabold text-indigo-900">{studentCount}</p>
+        </div>
+      </div>
 
 
  <div className="flex-wrap my-6 flex justify-center gap-3">
@@ -222,6 +244,14 @@ export default function PrincipalDashboard() {
   title="Currently Active Lecturers"
 />
 
+
+<div className="p-6">
+      <h1 className="text-2xl font-extrabold mb-4 tracking-tight text-blue-900">Attendance At a Glance</h1>
+      <AttendanceStatsTable stats={stats} />
+    </div>
+
+
+
       <div className="mt-12">
         <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
         <TodayAbsenteesTable absetees={absentees} />
@@ -237,15 +267,7 @@ export default function PrincipalDashboard() {
         <AttendanceShortageSummary data={shortageData} />
         </Card>
 
-        {/* Absentees table section (optional, per your use) */}
-        <div className="mt-6">
-          <h3 className="mb-2 font-semibold">Today's Absentees</h3>
-          {absentees.length === 0 ? (
-            <p className="text-green-600">🎉 No Absentees Today</p>
-          ) : (
-            <AbsenteesTable absentees={absentees} />
-          )}
-        </div>
+        
 
         {/* Quick Links */}
         <section className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">

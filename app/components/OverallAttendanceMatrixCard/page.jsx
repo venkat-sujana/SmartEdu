@@ -126,7 +126,7 @@ function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees })
             </tr>
             <tr className="bg-yellow-50 font-bold text-purple-700">
               <td colSpan={3} className="text-right">
-                 AN Absentees
+                 FN Total Present-AN Total Present
               </td>
               <td colSpan={3} className="text-xl">
                 {fnMinusAn}
