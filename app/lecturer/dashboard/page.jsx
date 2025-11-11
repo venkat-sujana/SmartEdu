@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import useSWR from 'swr'
 import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
-import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
+import AttendanceShortageTable from '@/app/components/attendance-shortage-summary/page'
 
 
 const fetcher = (...args) =>
@@ -354,7 +354,7 @@ export default function LecturerDashboard() {
         </div>
        {/* All other sections as in your original dashboard */}
       <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
-        <AttendanceShortageSummary data={shortageData} />
+        <AttendanceShortageTable data={shortageData} />
       </Card>
 
       {/* External Links */}

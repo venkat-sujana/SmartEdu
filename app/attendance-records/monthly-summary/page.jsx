@@ -31,6 +31,26 @@ export default function MonthlySummary() {
 
   const collegeName = session?.user?.collegeName || "College";
 
+  const filteredData = summaryData.filter((student) =>
+  student.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+
+const shortageFilteredData = filteredData.filter((student) => {
+  const totalPresent = months.reduce((sum, { label, year }) => {
+    const key = `${label}-${year}`;
+    return sum + (student.present?.[key] || 0);
+  }, 0);
+  const totalWorking = months.reduce((sum, { label, year }) => {
+    const key = `${label}-${year}`;
+    return sum + (student.workingDays?.[key] || 0);
+  }, 0);
+  const overallPercent = totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0;
+  return overallPercent < 75;
+});
+
+
+
   useEffect(() => {
     if (!selectedGroup || !selectedYear) return;
 
@@ -69,9 +89,7 @@ export default function MonthlySummary() {
     fetchData();
   }, [selectedGroup, selectedYear]);
 
-  const filteredData = summaryData.filter((student) =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  
 
   const handlePrint = () => {
     console.log("Printing...");

@@ -1,140 +1,216 @@
-//app/components/attendance-shortage-summary/page.jsx
+"use client";
+import { useEffect, useState } from "react";
+import React from "react";
+import Link from "next/link";
+import { Printer } from "lucide-react";
+import { useSession } from "next-auth/react";
 
-"use client"
-import React, { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
+const months = [
+  { label: "JUN", year: "2025" },
+  { label: "JUL", year: "2025" },
+  { label: "AUG", year: "2025" },
+  { label: "SEP", year: "2025" },
+  { label: "OCT", year: "2025" },
+  { label: "NOV", year: "2025" },
+  { label: "DEC", year: "2025" },
+  { label: "JAN", year: "2026" },
+  { label: "FEB", year: "2026" },
+  { label: "MAR", year: "2026" },
+];
 
+const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
+const years = ["First Year", "Second Year"];
 
-export const dynamic = "force-dynamic"
+export default function MonthlySummary() {
+  const [summaryData, setSummaryData] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const { data: session } = useSession();
 
-export default function AttendanceShortageSummary() {
-  const { data: session, status } = useSession()
-  const [students, setStudents] = useState([])
-  const [loading, setLoading] = useState(true) 
-  const [error, setError] = useState(null)
+  const collegeName = session?.user?.collegeName || "College";
 
   useEffect(() => {
-    if (!session?.user?.collegeId) return
-    const fetchShortage = async () => {
+    if (!selectedGroup || !selectedYear) return;
+    const fetchData = async () => {
       try {
-        setLoading(true)
-        const res = await fetch(`/api/attendance/shortage-summary?collegeId=${session.user.collegeId}`)
-        if (!res.ok) throw new Error("Failed to fetch shortage summary")
-        const data = await res.json()
-        setStudents(Array.isArray(data) ? data : [])
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
+        const res = await fetch(
+          `/api/attendance/monthly-summary?group=${encodeURIComponent(
+            selectedGroup
+          )}&yearOfStudy=${encodeURIComponent(
+            selectedYear
+          )}&collegeId=${session.user.collegeId}`
+        );
+        if (!res.ok) {
+          throw new Error(`Failed to fetch data: ${res.status}`);
+        }
+        const data = await res.json();
+        setSummaryData(data.data || []);
+      } catch (error) {
+        console.error("Fetch error:", error);
       }
-    }
-    fetchShortage()
-  }, [session])
+    };
+    fetchData();
+  }, [selectedGroup, selectedYear, session?.user?.collegeId]);
 
-  if (loading)
-    return <div className="p-4 text-center text-gray-500">Loading...</div>
-  if (error)
-    return <div className="p-4 text-center text-red-600">{error}</div>
-  if (!students.length)
-    return <div className="p-4 text-center text-gray-500">No students with &lt;75% attendance</div>
+  // Search filter
+  const filteredData = summaryData.filter((student) =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // Group-wise, year-wise split
-  const groupedByYear = students.reduce((acc, curr) => {
-    const group = curr.group
-    const year = curr.yearOfStudy
-    if (!acc[group]) acc[group] = { "First Year": [], "Second Year": [] }
-    acc[group][year] = acc[group][year] || []
-    acc[group][year].push(curr)
-    return acc
-  }, {})
+  // 👉 Shortage filter: Only <75% overall attendance
+  const shortageFilteredData = filteredData.filter((student) => {
+    const totalPresent = months.reduce((sum, { label, year }) => {
+      const key = `${label}-${year}`;
+      return sum + (student.present?.[key] || 0);
+    }, 0);
+    const totalWorking = months.reduce((sum, { label, year }) => {
+      const key = `${label}-${year}`;
+      return sum + (student.workingDays?.[key] || 0);
+    }, 0);
+    const overallPercent =
+      totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0;
+    return overallPercent < 75;
+  });
 
-  // Year-wise counts summary
-  const yearCounts = students.reduce((acc, curr) => {
-    const year = curr.yearOfStudy
-    acc[year] = (acc[year] || 0) + 1
-    return acc
-  }, {})
+  const handlePrint = () => {
+    const printContent = document.getElementById("print-area").innerHTML;
+    const printWindow = window.open("", "", "width=1000,height=700");
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Shortage Students</title>
+          <style>
+            body { font-family: Arial, sans-serif; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid black; padding: 6px; text-align: center; font-size: 13px; }
+            th { background-color: #16a34a; color: white; }
+          </style>
+        </head>
+        <body>${printContent}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
 
   return (
-    <div className="rounded-2xl shadow-2xl p-2 sm:p-4 bg-gradient-to-br from-green-50 via-white to-blue-50 w-full max-w-4xl mx-auto my-4 border border-green-100">
-  {/* Title/Badge */}
-  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-4">
-    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-center tracking-wide bg-gradient-to-r from-emerald-600 via-green-600 to-blue-400 bg-clip-text text-transparent">
-      Attendance Shortage Summary (&lt;75%)
-    </h3>
-  </div>
-  {/* Year counts row */}
-  <div className="flex flex-wrap justify-center gap-3 my-4 font-bold text-green-800 text-sm">
-    <div className="flex items-center gap-1"><span className="bg-green-100 px-2 py-1 rounded-full text-green-800">First Year</span><span className="text-red-600 text-base">{yearCounts["First Year"] || 0}</span></div>
-    <div className="flex items-center gap-1"><span className="bg-blue-100 px-2 py-1 rounded-full text-blue-800">Second Year</span><span className="text-red-600 text-base">{yearCounts["Second Year"] || 0}</span></div>
-    <div className="flex items-center gap-1"><span className="bg-purple-100 px-2 py-1 rounded-full text-purple-800">Total</span>
-      <span className="text-blue-700 text-base">{(yearCounts["First Year"] || 0) + (yearCounts["Second Year"] || 0)}</span></div>
-  </div>
-  {/* Group-wise tables by year */}
-  <div className="space-y-7">
-    {Object.entries(groupedByYear).map(([group, years]) => (
-      <div key={group} className="bg-white rounded-2xl shadow-lg p-2 sm:p-4 mb-4 border border-blue-100 w-full">
-        <h4 className="font-semibold text-base sm:text-lg mb-2 text-blue-800">{group}</h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* First Year Table */}
-          <div>
-            <h5 className="text-green-600 font-bold mb-1 text-center">First Year</h5>
-            <div className="overflow-x-auto">
-              <table className="min-w-[180px] w-full border border-green-200 rounded-lg bg-green-50 text-xs sm:text-sm">
-                <thead className="bg-green-200 text-green-900">
-                  <tr>
-                    <th className="p-1 w-10">S.No</th>
-                    <th className="p-1">Name</th>
-                    <th className="p-1 w-10">%</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(years["First Year"] || []).length === 0 && (
-                    <tr><td colSpan={3} className="py-3 text-center text-gray-400 italic">No shortage</td></tr>
-                  )}
-                  {(years["First Year"] || []).map((student, idx) => (
-                    <tr key={student._id || idx} className="even:bg-green-100 hover:bg-green-200 transition">
-                      <td className="text-center">{idx + 1}</td>
-                      <td className="font-medium truncate max-w-[90px]">{student.name}</td>
-                      <td className="text-center text-red-600 font-bold">{student.percentage.toFixed(2)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          {/* Second Year Table */}
-          <div>
-            <h5 className="text-blue-600 font-bold mb-1 text-center">Second Year</h5>
-            <div className="overflow-x-auto">
-              <table className="min-w-[180px] w-full border border-blue-200 rounded-lg bg-blue-50 text-xs sm:text-sm">
-                <thead className="bg-blue-200 text-blue-900">
-                  <tr>
-                    <th className="p-1 w-10">S.No</th>
-                    <th className="p-1">Name</th>
-                    <th className="p-1 w-10">%</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(years["Second Year"] || []).length === 0 && (
-                    <tr><td colSpan={3} className="py-3 text-center text-gray-400 italic">No shortage</td></tr>
-                  )}
-                  {(years["Second Year"] || []).map((student, idx) => (
-                    <tr key={student._id || idx} className="even:bg-blue-100 hover:bg-blue-200 transition">
-                      <td className="text-center">{idx + 1}</td>
-                      <td className="font-medium truncate max-w-[90px]">{student.name}</td>
-                      <td className="text-center text-red-600 font-bold">{student.percentage.toFixed(2)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+    <div className="max-w-3xl mx-auto p-5 mt-20">
+      {/* Filters */}
+      <div className="mb-6 flex flex-wrap gap-4 items-center bg-white p-5 rounded-lg shadow-md">
+        <select
+          value={selectedGroup}
+          onChange={(e) => setSelectedGroup(e.target.value)}
+          className="border border-gray-300 px-4 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none transition"
+        >
+          <option value="">Select Group</option>
+          {groups.map((g) => (
+            <option key={g} value={g}>
+              {g}
+            </option>
+          ))}
+        </select>
+        <select
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
+          className="border border-gray-300 px-4 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none transition"
+        >
+          <option value="">Select Year</option>
+          {years.map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          placeholder="🔍 Search Student"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition flex-grow min-w-[200px]"
+        />
+        <button
+          onClick={handlePrint}
+          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          <Printer size={18} />
+          Print
+        </button>
+        <Link href="/attendance-form" passHref>
+          <button className="bg-cyan-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-cyan-700 transition">
+            📝 Attendance Form
+          </button>
+        </Link>
+        <Link href="/attendance-records" passHref>
+          <button className="bg-green-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+            🧾 Attendance Records
+          </button>
+        </Link>
       </div>
-    ))}
-  </div>
-</div>
 
-  )
+      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+        {collegeName} 🧾 Attendance Shortage (&lt;75% Only)
+      </h2>
+
+      {/* Shortage Students Table */}
+      <div
+        id="print-area"
+        className="overflow-x-auto bg-white rounded-lg shadow-lg"
+      >
+        {shortageFilteredData.length === 0 ? (
+          <p className="text-gray-500 mt-4 text-center py-6">
+            All students above 75% attendance.
+          </p>
+        ) : (
+          <table className="table-auto w-full border border-gray-300 text-sm font-sans shadow-lg rounded-lg overflow-hidden">
+            <thead className="bg-green-700 text-white text-sm uppercase tracking-wide">
+              <tr>
+                <th className="p-3 border-r border-green-600 w-14 text-center">S.No</th>
+                <th className="p-3 border-r border-green-600 text-left">🧑‍🎓 Students</th>
+                <th className="p-3 border-r border-green-600 text-center">Total Working Days</th>
+                <th className="p-3 border-r border-green-600 text-center">Total Present Days</th>
+                <th className="p-3 border-r border-green-600 text-center">% Attendance</th>
+                <th className="p-3 border-r border-green-600 text-center">Shortage (days)</th>
+                <th className="p-3 text-center w-28">Status ✅</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shortageFilteredData.map((student, idx) => {
+                const totalPresent = months.reduce((sum, { label, year }) => {
+                  const key = `${label}-${year}`;
+                  return sum + (student.present?.[key] || 0);
+                }, 0);
+                const totalWorking = months.reduce((sum, { label, year }) => {
+                  const key = `${label}-${year}`;
+                  return sum + (student.workingDays?.[key] || 0);
+                }, 0);
+                const percent =
+                  totalWorking > 0
+                    ? ((totalPresent / totalWorking) * 100).toFixed(2)
+                    : "0.00";
+                const requiredDays = Math.ceil(totalWorking * 0.75);
+                const shortage = requiredDays - totalPresent;
+
+                return (
+                  <tr key={idx} className="odd:bg-white even:bg-gray-50 hover:bg-green-100 transition">
+                    <td className="p-3 border border-green-200 text-center">{idx + 1}</td>
+                    <td className="p-3 border border-green-200 font-semibold text-gray-900">{student.name}</td>
+                    <td className="p-3 border border-green-200 text-center">{totalWorking}</td>
+                    <td className="p-3 border border-green-200 text-center">{totalPresent}</td>
+                    <td className="p-3 border border-green-200 text-center">{percent}%</td>
+                    <td className="p-3 border border-green-200 text-center">
+                      <span className="text-red-600 font-bold">{shortage}</span>
+                    </td>
+                    <td className="p-3 border border-green-200 text-center">
+                      <span className="text-red-600 font-bold">Not Eligible ❌</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
 }
