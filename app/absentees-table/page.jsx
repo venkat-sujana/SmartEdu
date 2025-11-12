@@ -44,6 +44,17 @@ export default function TodayAbsenteesTable({ collegeId }) {
 
   const { sessionWiseAbsentees, summary, sessions } = absData;
 
+  // Helper: Time format (e.g. 9:25 AM)
+  const formatTime = (timestamp) => {
+    if (!timestamp) return "-";
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   return (
    <div className="max-w-4xl mx-auto">
   <h2
@@ -70,11 +81,15 @@ export default function TodayAbsenteesTable({ collegeId }) {
             const absList = sessionWiseAbsentees[sessionKey]?.filter(
               (student) => student.yearOfStudy === yearKey
             );
-            // Find Lecturer name
+            // Find Lecturer name and marked time
             const lecturerName =
               absList && absList.length > 0
                 ? absList[0]?.lecturerName || "-"
                 : "-";
+            const markedAt =
+              absList && absList.length > 0
+                ? absList[0]?.markedAt || null
+                : null;
             return (
               <div key={yearKey} className="mb-3 px-6 py-4 bg-cyan-50 rounded-xl">
                 <div className="flex flex-row gap-6 items-center mb-2">
@@ -82,6 +97,10 @@ export default function TodayAbsenteesTable({ collegeId }) {
                     🎓 {yearKey}
                     <span className="text-gray-500 text-base font-normal ml-2">
                       Marked By: <span className="text-blue-700 font-bold">{lecturerName}</span>
+                    </span>{" "}
+
+                    <span className="text-gray-500 ml-3">
+                            ⏱ {formatTime(markedAt)}
                     </span>
                   </div>
                 </div>

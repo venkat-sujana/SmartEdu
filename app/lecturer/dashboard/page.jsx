@@ -279,6 +279,17 @@ export default function LecturerDashboard() {
 <OverallAttendanceMatrixCard />
 
 
+
+      <div className="mt-12">
+        <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
+        <TodayAbsenteesTable absetees={absentees} />
+        </div>
+       {/* All other sections as in your original dashboard */}
+      <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
+        <AttendanceShortageTable data={shortageData} />
+      </Card>
+
+
   <div className="mb-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
   {groupNames.map((group, groupIdx) => (
     <motion.div
@@ -348,14 +359,7 @@ export default function LecturerDashboard() {
 
 
 
-      <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
-        <TodayAbsenteesTable absetees={absentees} />
-        </div>
-       {/* All other sections as in your original dashboard */}
-      <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
-        <AttendanceShortageTable data={shortageData} />
-      </Card>
+      
 
       {/* External Links */}
       <div className="mt-8 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

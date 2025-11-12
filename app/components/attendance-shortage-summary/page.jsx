@@ -136,20 +136,11 @@ export default function MonthlySummary() {
           <Printer size={18} />
           Print
         </button>
-        <Link href="/attendance-form" passHref>
-          <button className="bg-cyan-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-cyan-700 transition">
-            📝 Attendance Form
-          </button>
-        </Link>
-        <Link href="/attendance-records" passHref>
-          <button className="bg-green-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
-            🧾 Attendance Records
-          </button>
-        </Link>
+        
       </div>
 
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-        {collegeName} 🧾 Attendance Shortage (&lt;75% Only)
+         🧾 Attendance Shortage (&lt;75% Only)
       </h2>
 
       {/* Shortage Students Table */}
