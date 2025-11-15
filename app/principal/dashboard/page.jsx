@@ -47,6 +47,22 @@ export default function PrincipalDashboard() {
   const absentees = data?.absentees || []
   const todaysPresent = data?.presentStudents || []
 
+  useEffect(() => {
+    if (!session?.user) return
+    fetch(
+      `/api/students/count?collegeId=${encodeURIComponent(session.user.collegeId)}&subject=${encodeURIComponent(
+        session.user.subject || ''
+      )}`
+    )
+      .then(res => res.json())
+      .then(data => {
+        if (data?.count !== undefined) setStudentCount(data.count)
+      })
+      .catch(err => {
+        console.error('Failed to fetch student count', err)
+      })
+  }, [session])
+
   // ---- Session-wise Accurate Calculation ----
   const presentAbsentByYear = {
     firstYear: { fnPresent: 0, fnAbsent: 0, anPresent: 0, anAbsent: 0 },
@@ -271,22 +287,6 @@ export default function PrincipalDashboard() {
 
         {/* Quick Links */}
         <section className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-          <Link
-            href="/attendance-records"
-            className="cursor-pointer rounded-xl bg-indigo-100 p-5 text-center shadow-md transition hover:bg-indigo-200"
-          >
-            <p className="text-xl font-semibold text-indigo-800">📆 Attendance Records</p>
-          </Link>
-          <Link href="/student-table">
-            <motion.div
-              whileHover={{ scale: 1.05, rotate: 2 }}
-              whileTap={{ scale: 0.95 }}
-              className="cursor-pointer rounded-xl bg-blue-100 p-5 text-center shadow-md transition hover:bg-blue-200"
-            >
-              <p className="text-xl font-semibold text-blue-800">📋 View Students</p>
-            </motion.div>
-          </Link>
-
           <Link href="/announcements">
             <p className="cursor-pointer rounded-xl bg-green-100 p-5 text-center shadow-md transition hover:bg-green-200">
               <span className="text-xl font-semibold text-green-800">📢 Announcements</span>

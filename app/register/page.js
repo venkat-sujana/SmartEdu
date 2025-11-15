@@ -307,7 +307,7 @@ export default function RegisterPage() {
 
             <div>
             <label className="flex items-center gap-2 text-base text-blue-700 font-semibold mb-1">
-              <Users2 className="w-5 h-5 text-purple-500" /> Group
+              <Users2 className="w-5 h-5 text-purple-500" /> DOB
             </label>
               <input
                 type="date"

@@ -47,6 +47,19 @@ export default function LecturerDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
+  // Helper: given group, year, session => stats
+  function stats(group, year, session) {
+    const present =
+      sessionWisePresent[session]?.filter(s => s.group === group && s.yearOfStudy === year)
+        .length || 0
+    const absent =
+      sessionWiseAbsentees[session]?.filter(s => s.group === group && s.yearOfStudy === year)
+        .length || 0
+    const total = present + absent
+    const percent = total > 0 ? Math.round((present / total) * 100) : 0
+    return { present, absent, total, percent }
+  }
+
   // Session-wise states
   const [collegeName, setCollegeName] = useState('')
   const [studentCount, setStudentCount] = useState(0)
@@ -189,7 +202,7 @@ export default function LecturerDashboard() {
       </div>
 
       <div className="mb-10 flex items-center justify-center">
-        <h1 className="text-xl font-bold tracking-tight text-black">LECTURER DASHBOARD</h1>
+        <h1 className="text-md font-bold tracking-tight text-black">LECTURER DASHBOARD</h1>
         <img
           src="/images/classroombg.jpg"
           alt="Lecturer Dashboard Icon"

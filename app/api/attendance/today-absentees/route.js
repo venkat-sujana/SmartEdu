@@ -1,5 +1,4 @@
-
-//app/
+//app/api/attendance/today-absentees/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
@@ -46,20 +45,28 @@ export async function GET(req) {
       const presentStudents = todayRecords.filter((r) => r.session === session && r.status === "Present");
       const total = todayRecords.filter(r => r.session === session).length;
 
-      sessionWiseAbsentees[session] = absentees.map((r) => ({
-        name: r.studentId.name,
-        yearOfStudy: r.studentId.yearOfStudy,
-        group: r.studentId.group,
-        session: r.session,
-        lecturerName: r.lecturerName || "—"
-      }));
-      sessionWisePresent[session] = presentStudents.map((r) => ({
-        name: r.studentId.name,
-        yearOfStudy: r.studentId.yearOfStudy,
-        group: r.studentId.group,
-        session: r.session,
-        lecturerName: r.lecturerName || "—"
-      }));
+
+
+  sessionWiseAbsentees[session] = absentees.map((r) => ({
+  name: r.studentId.name,
+  yearOfStudy: r.studentId.yearOfStudy,
+  group: r.studentId.group,
+  session: r.session,
+  lecturerName: r.lecturerName || "—",
+   markedAt: r.markedAt || r.updatedAt || null   // ⭐ VERY IMPORTANT
+}));
+
+sessionWisePresent[session] = presentStudents.map((r) => ({
+  name: r.studentId.name,
+  yearOfStudy: r.studentId.yearOfStudy,
+  group: r.studentId.group,
+  session: r.session,
+  lecturerName: r.lecturerName || "—",
+   markedAt: r.markedAt || r.updatedAt || null   // ⭐ VERY IMPORTANT
+}));
+
+
+
 
       grandTotal += total;
       grandAbsent += absentees.length;

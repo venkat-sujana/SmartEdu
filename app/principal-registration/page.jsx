@@ -1,4 +1,4 @@
-
+//app/principal-registration/page.jsx
 
 "use client";
 
@@ -77,7 +77,7 @@ export default function PrincipalRegistrationForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-md mx-auto bg-white p-6 rounded-xl shadow space-y-4"
+      className="max-w-md mx-auto bg-white p-6 rounded-xl shadow space-y-4 mt-24"
     >
       <h2 className="text-xl font-bold text-center">👨‍💼 Principal Registration</h2>
 

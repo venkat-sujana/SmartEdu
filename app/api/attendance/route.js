@@ -90,7 +90,9 @@ if (alreadyMarked) {
         date: new Date(record.date),
         yearOfStudy: record.yearOfStudy,
         group: record.group,
-        session: record.session || 'FN', // Default to 'FN' if session not provided
+        session: record.session || 'FN', // Default to 'FN' if session not 
+        
+         markedAt: new Date(),   // ⭐ add this
       })
     }
 

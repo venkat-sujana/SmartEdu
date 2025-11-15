@@ -52,11 +52,18 @@ const attendanceSchema = new Schema({
     ],
   },
 
-year: {
-    type: Number,
-  }
-  
-}, {
+   year: {
+      type: Number,
+    },
+
+    // ⭐⭐ NEW FIELD — Attendance Marked Time
+    markedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  }, 
+
+{
   timestamps: true,
 });
 
