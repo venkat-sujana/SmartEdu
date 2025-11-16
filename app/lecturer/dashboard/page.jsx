@@ -246,7 +246,7 @@ export default function LecturerDashboard() {
 
         <Link href="/exam-report">
           <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            Exam Dashboard
+            Cetral Marks Register
           </button>
         </Link>
 
@@ -265,6 +265,11 @@ export default function LecturerDashboard() {
             Add Exam
           </button>
         </Link>
+        <Link href="/students/bulk-upload">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            Bulk Upload Students
+          </button>
+        </Link> 
       </div>
 
       {/* Lecturer Info Card */}

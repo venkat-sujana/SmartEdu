@@ -10,7 +10,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
 
   const handleLogin = () => {
-    if (password === 'admin123') {
+    if (password === 'admin324') {
       localStorage.setItem('admin-auth', 'true')
       router.push('/admin-dashboard')
     } else {
