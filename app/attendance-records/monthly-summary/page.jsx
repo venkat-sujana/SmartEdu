@@ -152,7 +152,7 @@ export default function MonthlySummary() {
 
         <button
           onClick={handlePrint}
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700"
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700 cursor-pointer"
         >
           {/* Assuming Printer is a valid React icon component */}
           <Printer size={18} />
@@ -160,15 +160,20 @@ export default function MonthlySummary() {
         </button>
       </div>
 
-      <h2 className="mb-6 text-center text-xl font-bold text-gray-800 md:text-2xl">
-        {collegeName} 🧾 Central Attendance Register - 2025
-      </h2>
+      
 
       {/* Attendance Table */}
       <div id="print-area" className="overflow-x-auto rounded-lg bg-white shadow-lg">
+        <div className="mb-4 text-center text-xl font-bold text-gray-800 md:text-2xl items-center flex justify-center pt-6">
+           {collegeName} <br/>
+          Central Attendance Register – {selectedYear} ({selectedGroup})
+     </div>
+
         {filteredData.length === 0 ? (
           <p className="mt-4 py-6 text-center text-gray-500">No data available.</p>
+          
         ) : (
+          
           <table className="w-full table-auto border border-gray-400 font-sans text-sm">
             <thead className="bg-green-700 text-sm tracking-wide text-white uppercase">
               <tr>

@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import useSWR from 'swr'
 import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
 import AttendanceShortageTable from '@/app/components/attendance-shortage-summary/page'
-
+import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 
 const fetcher = (...args) =>
   fetch(...args).then(res => {
@@ -59,6 +59,11 @@ export default function LecturerDashboard() {
     const percent = total > 0 ? Math.round((present / total) * 100) : 0
     return { present, absent, total, percent }
   }
+
+    const { data: activeLecturersData, error: activeLecturersError } = useSWR(
+      '/api/lecturers/active',
+      fetcher
+    )
 
   // Session-wise states
   const [collegeName, setCollegeName] = useState('')
@@ -217,13 +222,13 @@ export default function LecturerDashboard() {
           </button>
         </Link>
         <Link href="/attendance-records/individual">
-          <button className="w-full cursor-pointer rounded-full border-2 border-green-500 bg-white px-6 py-2 font-bold text-green-700 shadow transition hover:scale-105 hover:bg-green-50 sm:w-auto">
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 border-2 border-green-500 bg-white px-6 py-2 font-bold text-white shadow transition hover:scale-105 hover:bg-green-50 sm:w-auto">
             Edit Records
           </button>
         </Link>
         <Link href="/attendance-records/monthly-summary">
           <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            MOnthly-Summary
+            Cetral Attendance Register
           </button>
         </Link>
 
@@ -277,6 +282,15 @@ export default function LecturerDashboard() {
         </div>
       </div>
 
+      <ActiveLecturersCard
+                className="mx-auto mb-6 w-full max-w-md"
+                lecturers={activeLecturersData?.data || []}
+                loading={!activeLecturersData && !activeLecturersError}
+                error={activeLecturersError}
+                title="Currently Active Lecturers"
+              />
+
+
       
 
       {/* Students Count Quick Card */}
@@ -287,6 +301,8 @@ export default function LecturerDashboard() {
         </div>
       </div>
 
+
+      
       
 
 <OverallAttendanceMatrixCard />

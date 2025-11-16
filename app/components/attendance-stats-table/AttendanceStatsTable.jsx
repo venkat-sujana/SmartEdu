@@ -1,28 +1,19 @@
-
 // app/components/attendance-stats-table/AttendanceStatsTable.jsx
-const groups = ["MPC", "BiPC", "CEC", "HEC", "M&AT", "MLT", "CET"];
-const years = ["First Year", "Second Year"];
-const yearLabels = ["I", "II"];
-const sessions = ["FN", "AN"];
-const rowLabels = [
-  "Present",
-  "Absent",
-  "Total",
-  "FN Total Present",
-  "AN Total Present"
-];
+const groups = ['MPC', 'BiPC', 'CEC', 'HEC', 'M&AT', 'MLT', 'CET']
+const years = ['First Year', 'Second Year']
+const yearLabels = ['I', 'II']
+const sessions = ['FN', 'AN']
+const rowLabels = ['Present', 'Absent', 'Total', 'FN Total Present', 'AN Total Present']
 
 const groupColors = {
-  MPC: "bg-red-300",
-  BiPC: "bg-green-300",
-  CEC: "bg-yellow-300",
-  HEC: "bg-purple-300",
-  "M&AT": "bg-pink-300",
-  MLT: "bg-orange-300",
-  CET: "bg-cyan-300",
-};
-
-
+  MPC: 'bg-red-100',
+  BiPC: 'bg-green-100',
+  CEC: 'bg-yellow-100',
+  HEC: 'bg-purple-100',
+  'M&AT': 'bg-pink-100',
+  MLT: 'bg-orange-100',
+  CET: 'bg-cyan-100',
+}
 
 // Table component as before
 export default function AtAGlanceAttendanceTable({ stats }) {
@@ -30,44 +21,44 @@ export default function AtAGlanceAttendanceTable({ stats }) {
   function getCellData({ group, year, session, row }) {
     // stats may be provided as a function or as a nested data object; support both
     const s =
-      typeof stats === "function"
+      typeof stats === 'function'
         ? stats(group, year, session)
-        : (stats?.[group]?.[year]?.[session] ?? {});
+        : (stats?.[group]?.[year]?.[session] ?? {})
 
     // Define cell return values based on requested row
-    if (row === "Present") return s.present ?? "";
-    if (row === "Absent") return s.absent ?? "";
-    if (row === "Total") return s.total ?? "";
-    if (row === "FN Total Present" && session === "FN") return s.present ?? "";
-    if (row === "AN Total Present" && session === "AN") return s.present ?? "";
-    return "";
+    if (row === 'Present') return s.present ?? ''
+    if (row === 'Absent') return s.absent ?? ''
+    if (row === 'Total') return s.total ?? ''
+    if (row === 'FN Total Present' && session === 'FN') return s.present ?? ''
+    if (row === 'AN Total Present' && session === 'AN') return s.present ?? ''
+    return ''
   }
 
-    return (
-    <div className="w-full overflow-x-auto bg-white rounded-2xl shadow-md p-5 border border-blue-200 my-2">
-      <table className="min-w-[1080px] w-full text-xs md:text-sm border-collapse">
+  return (
+    <div className="my-2 w-full overflow-x-auto rounded-2xl border border-blue-200 bg-white p-5 shadow-md">
+      <table className="w-full min-w-[1080px] border-collapse text-xs md:text-sm">
         <thead>
           <tr>
-            <th className="p-2 border bg-blue-200 sticky left-0 z-20" rowSpan={3}>
-              {" "}
+            <th className="sticky left-0 z-20 border bg-blue-200 p-2" rowSpan={3}>
+              {' '}
             </th>
-            {groups.map((group) => (
+            {groups.map(group => (
               <th
                 key={group}
                 colSpan={4}
-                className={`p-2 border text-blue-900 font-extrabold text-center ${groupColors[group]}`}
+                className={`border p-2 text-center font-extrabold text-blue-900 ${groupColors[group]}`}
               >
                 {group}
               </th>
             ))}
           </tr>
           <tr>
-            {groups.map((group) =>
-              yearLabels.map((year) => (
+            {groups.map(group =>
+              yearLabels.map(year => (
                 <th
                   key={`${group}-${year}`}
                   colSpan={2}
-                  className={`p-1 border text-blue-800 font-bold text-center ${groupColors[group]}`}
+                  className={`border p-1 text-center font-bold text-blue-800 ${groupColors[group]}`}
                 >
                   {year}
                 </th>
@@ -75,12 +66,12 @@ export default function AtAGlanceAttendanceTable({ stats }) {
             )}
           </tr>
           <tr>
-            {groups.map((group) =>
-              yearLabels.map((year) =>
-                sessions.map((session) => (
+            {groups.map(group =>
+              yearLabels.map(year =>
+                sessions.map(session => (
                   <th
                     key={`${group}-${year}-${session}`}
-                    className={`p-1 border text-black-200 font-semibold text-center ${groupColors[group]}`}
+                    className={`text-black-200 border p-1 text-center font-semibold ${groupColors[group]}`}
                   >
                     {session}
                   </th>
@@ -90,21 +81,21 @@ export default function AtAGlanceAttendanceTable({ stats }) {
           </tr>
         </thead>
         <tbody>
-          {rowLabels.map((rowLabel) => (
+          {rowLabels.map(rowLabel => (
             <tr key={rowLabel}>
-              <td className="p-1 border text-right font-bold bg-teal-50 sticky left-0 z-10">
+              <td className="sticky left-0 z-10 border bg-teal-50 p-1 text-right font-bold">
                 {rowLabel}
               </td>
-              {groups.map((group) =>
-                yearLabels.map((year) =>
-                  sessions.map((session) => (
+              {groups.map(group =>
+                yearLabels.map(year =>
+                  sessions.map(session => (
                     <td
                       key={`${group}-${year}-${session}-row${rowLabel}`}
-                      className={`${groupColors[group]} p-1 border text-center`}
+                      className={`${groupColors[group]} border p-1 text-center`}
                     >
                       {getCellData({
                         group,
-                        year: year === "I" ? "First Year" : "Second Year",
+                        year: year === 'I' ? 'First Year' : 'Second Year',
                         session,
                         row: rowLabel,
                       })}
@@ -117,5 +108,5 @@ export default function AtAGlanceAttendanceTable({ stats }) {
         </tbody>
       </table>
     </div>
-  );
+  )
 }
