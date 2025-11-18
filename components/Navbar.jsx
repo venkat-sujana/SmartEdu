@@ -66,7 +66,7 @@ export default function Navbar() {
           </div>
           <div className="flex flex-col leading-tight">
             <span className="text-lg font-bold tracking-wide">OSRA</span>
-            <span className="text-[10px] text-gray-200">Digital Platform for Modern Education</span>
+            <span className="text-[20px] text-gray-200 font-bold">Digital Platform for Modern Education</span>
           </div>
         </Link>
 

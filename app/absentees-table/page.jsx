@@ -1,3 +1,5 @@
+//app/absentees-table/page.jsx
+
 "use client";
 import { useEffect, useState } from "react";
 
@@ -6,6 +8,7 @@ const sessionLabels = {
   AN: "Afternoon",
   EN: "Evening",
 };
+import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 export default function TodayAbsenteesTable({ collegeId }) {
   const [loading, setLoading] = useState(true);
@@ -103,8 +106,8 @@ export default function TodayAbsenteesTable({ collegeId }) {
                             className="mb-4 border border-cyan-300 rounded-xl bg-white shadow-sm"
                           >
                             <div className="px-4 py-2 bg-cyan-200 rounded-t-xl flex justify-between items-center">
-                              <span className="font-bold text-blue-900">
-                                📚 Group: {grp}
+                              <span className="font-bold text-blue-900 flex flex items-center gap-1">
+                                 Group:<UserGroupIcon className="h-5 w-5 text-indigo-600" /> {grp}
                               </span>
                               <span className="text-sm text-blue-900">
                                 Marked By:
@@ -158,22 +161,6 @@ export default function TodayAbsenteesTable({ collegeId }) {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Summary */}
-      <div className="bg-gradient-to-r from-blue-100 via-cyan-100 to-emerald-100 rounded-2xl p-4 mt-6 text-lg font-bold flex items-center gap-10 justify-center shadow">
-        <span>
-          👥 Total: <span className="text-blue-700">{summary.grandTotal}</span>
-        </span>
-        <span>
-          🟢 Present: <span className="text-emerald-600">{summary.grandPresent}</span>
-        </span>
-        <span>
-          🔴 Absent: <span className="text-red-600">{summary.grandAbsent}</span>
-        </span>
-        <span>
-          📈 Attendance%: <span className="text-purple-600">{summary.percentage}</span>
-        </span>
       </div>
     </div>
   );

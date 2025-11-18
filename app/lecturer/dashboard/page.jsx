@@ -11,7 +11,7 @@ import useSWR from 'swr'
 import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
 import AttendanceShortageTable from '@/app/components/attendance-shortage-summary/page'
 import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
-
+import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 const fetcher = (...args) =>
   fetch(...args).then(res => {
     if (!res.ok) throw new Error('Network response was not ok')
@@ -35,6 +35,7 @@ import {
 
 import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
+import OverallStrengthCard from '@/app/components/overall-strength-card/OverallStrengthCard'
 
 
 
@@ -60,10 +61,10 @@ export default function LecturerDashboard() {
     return { present, absent, total, percent }
   }
 
-    const { data: activeLecturersData, error: activeLecturersError } = useSWR(
-      '/api/lecturers/active',
-      fetcher
-    )
+  const { data: activeLecturersData, error: activeLecturersError } = useSWR(
+    '/api/lecturers/active',
+    fetcher
+  )
 
   // Session-wise states
   const [collegeName, setCollegeName] = useState('')
@@ -147,7 +148,7 @@ export default function LecturerDashboard() {
           setAnSecondYearAbsent(
             (absent.AN || []).filter(s => s.yearOfStudy?.toLowerCase().includes('second')).length
           )
-          
+
 
           // Overall
           const totalPresent =
@@ -269,7 +270,7 @@ export default function LecturerDashboard() {
           <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
             Bulk Upload Students
           </button>
-        </Link> 
+        </Link>
       </div>
 
       {/* Lecturer Info Card */}
@@ -288,112 +289,124 @@ export default function LecturerDashboard() {
       </div>
 
       <ActiveLecturersCard
-                className="mx-auto mb-6 w-full max-w-md"
-                lecturers={activeLecturersData?.data || []}
-                loading={!activeLecturersData && !activeLecturersError}
-                error={activeLecturersError}
-                title="Currently Active Lecturers"
-              />
+        className="mx-auto mb-10 w-full max-w-md"
+        lecturers={activeLecturersData?.data || []}
+        loading={!activeLecturersData && !activeLecturersError}
+        error={activeLecturersError}
+        title="Currently Active Lecturers"
+      />
 
 
-      
+
+
+
+
+
 
       {/* Students Count Quick Card */}
-      <div className="mb-6 flex items-center justify-center gap-4">
-        <div className="rounded-2xl bg-gradient-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
-          <p className="text-lg font-bold text-blue-800">Total Strength</p>
+      <div className=" flex items-center justify-center gap-4 m-10">
+        
+        <div className="rounded-2xl flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
+          
+          <p className="text-lg font-bold text-blue-800">Total Strength</p>&nbsp;<UserGroupIcon className="h-7 w-7 mr-2 " />
           <p className="text-2xl font-extrabold text-indigo-900">{studentCount}</p>
         </div>
       </div>
 
+      {/* Overall Strength Card */}
+      <OverallStrengthCard
+        sessionWisePresent={sessionWisePresent}
+        sessionWiseAbsentees={sessionWiseAbsentees}
+      />
 
-      
-      
 
-<OverallAttendanceMatrixCard />
+
+
+
+      <OverallAttendanceMatrixCard />
 
 
 
       <div className="mt-12">
         <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
         <TodayAbsenteesTable absetees={absentees} />
-        </div>
-       {/* All other sections as in your original dashboard */}
+      </div>
+      {/* All other sections as in your original dashboard */}
       <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
         <AttendanceShortageTable data={shortageData} />
       </Card>
 
 
-  <div className="mb-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
-  {groupNames.map((group, groupIdx) => (
-    <motion.div
-      key={group}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 + groupIdx * 0.1 }}
-    >
-      <Card className="rounded-2xl border-2 border-blue-200 bg-white shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-blue-100 to-blue-200">
-          <CardTitle className="flex items-center gap-2 text-xl font-bold text-blue-700">
-            {group}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-7 pt-2">
-          {years.map(year => (
-            <div key={year} className="rounded-xl bg-blue-50 p-4">
-              <div className="mb-3 text-lg font-semibold text-blue-900">{year}</div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                {sessions.map(session => {
-                  const s = stats(group, year, session);
-                  return (
-                    <div
-                      key={session}
-                      className="rounded-xl border border-blue-100 bg-white p-3 shadow"
-                    >
-                      <div className="mb-2 font-semibold text-blue-600">
-                        {sessionLabels[session]}
-                      </div>
+      <div className="mb-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
+        {groupNames.map((group, groupIdx) => (
+          <motion.div
+            key={group}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 + groupIdx * 0.1 }}
+          >
+            <Card className="rounded-2xl border-2 border-blue-200 bg-white shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-blue-100 to-blue-200">
+                <CardTitle className="flex items-center gap-2 text-xl font-bold text-blue-700">
+                  {group}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-7 pt-2">
+                {years.map(year => (
+                  <div key={year} className="rounded-xl bg-blue-50 p-4">
+                    <div className="mb-3 text-lg font-semibold text-blue-900">{year}</div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      {sessions.map(session => {
+                        const s = stats(group, year, session);
+                        return (
+                          <div
+                            key={session}
+                            className="rounded-xl border border-blue-100 bg-white p-3 shadow"
+                          >
+                            <div className="mb-2 font-semibold text-blue-600">
+                              {sessionLabels[session]}
+                            </div>
 
-                      <div className="flex justify-between items-center gap-1">
-                        <CheckCircle className="text-green-600 w-5 h-5" />
-                        <span>Present:</span>
-                        <span className="font-bold text-green-700">{s.present}</span>
-                      </div>
+                            <div className="flex justify-between items-center gap-1">
+                              <CheckCircle className="text-green-600 w-5 h-5" />
+                              <span>Present:</span>
+                              <span className="font-bold text-green-700">{s.present}</span>
+                            </div>
 
-                      <div className="flex justify-between items-center gap-1">
-                        <XCircle className="text-red-600 w-5 h-5" />
-                        <span>Absent:</span>
-                        <span className="font-bold text-red-600">{s.absent}</span>
-                      </div>
+                            <div className="flex justify-between items-center gap-1">
+                              <XCircle className="text-red-600 w-5 h-5" />
+                              <span>Absent:</span>
+                              <span className="font-bold text-red-600">{s.absent}</span>
+                            </div>
 
-                      <div className="flex justify-between items-center gap-1">
-                        <BarChart2 className="text-gray-700 w-5 h-5" />
-                        <span>Total:</span>
-                        <span className="font-bold">{s.total}</span>
-                      </div>
+                            <div className="flex justify-between items-center gap-1">
+                              <BarChart2 className="text-gray-700 w-5 h-5" />
+                              <span>Total:</span>
+                              <span className="font-bold">{s.total}</span>
+                            </div>
 
-                      <div className="flex justify-between items-center gap-1">
-                        <Percent className="text-blue-700 w-5 h-5" />
-                        <span>%:</span>
-                        <span className="font-bold text-blue-700">{s.percent}%</span>
-                      </div>
+                            <div className="flex justify-between items-center gap-1">
+                              <Percent className="text-blue-700 w-5 h-5" />
+                              <span>%:</span>
+                              <span className="font-bold text-blue-700">{s.percent}%</span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </motion.div>
-  ))}
-</div>
-
-    
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
 
 
 
-      
+
+
+
 
       {/* External Links */}
       <div className="mt-8 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

@@ -15,6 +15,8 @@ import AttendanceShortageSummary from '@/app/components/attendance-shortage-summ
 import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
 import AttendanceStatsTable from '@/app/components/attendance-stats-table/AttendanceStatsTable'
+import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import OverallStrengthCard from '@/app/components/overall-strength-card/OverallStrengthCard'
 
 const fetcher = url => fetch(url).then(res => res.json())
 
@@ -180,7 +182,7 @@ export default function PrincipalDashboard() {
       <main className="w-full flex-1 space-y-6 p-2 sm:p-4 md:p-6">
         {/* Header, Info, Lecturers etc... (same as before) */}
 
-        <Card className="shadow-4lg mx-auto mb-6 w-full max-w-xs rounded-2xl border border-blue-200 bg-blue-100 p-4">
+        <Card className="shadow-xl mx-auto mb-6 w-full max-w-xs rounded-2xl border border-blue-200 bg-blue-100 p-4">
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
             {principal?.photo ? (
               <img
@@ -201,13 +203,7 @@ export default function PrincipalDashboard() {
           </div>
         </Card>
 
-        {/* Students Count Quick Card */}
-        <div className="mb-6 flex items-center justify-center gap-4">
-          <div className="rounded-2xl bg-gradient-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
-            <p className="text-lg font-bold text-blue-800">Total Strength</p>
-            <p className="text-2xl font-extrabold text-indigo-900">{studentCount}</p>
-          </div>
-        </div>
+
 
         <div className="my-6 flex flex-wrap justify-center gap-3">
           <Link href="/attendance-dashboard">
@@ -222,7 +218,7 @@ export default function PrincipalDashboard() {
           </Link>
           <Link href="/attendance-records/monthly-summary">
             <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              MOnthly-Summary
+              Central Attendance Register
             </button>
           </Link>
 
@@ -240,7 +236,7 @@ export default function PrincipalDashboard() {
 
           <Link href="/exam-report">
             <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              Exam Dashboard
+              Central Marks Register
             </button>
           </Link>
 
@@ -262,12 +258,42 @@ export default function PrincipalDashboard() {
         </div>
 
         <ActiveLecturersCard
-          className="mx-auto mb-6 w-full max-w-md"
+          className="mx-auto mb-6 w-full max-w-md shadow-xl"
           lecturers={activeLecturersData?.data || []}
           loading={!activeLecturersData && !activeLecturersError}
           error={activeLecturersError}
           title="Currently Active Lecturers"
         />
+
+        {/* Students Count Quick Card */}
+        <div className="mb-6 flex items-center justify-center gap-4">
+          <div className="rounded-2xl flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
+            <p className="text-lg font-bold text-blue-800">Total Strength</p>&nbsp;<UserGroupIcon className="h-7 w-7 mr-2 " />
+            <p className="text-2xl font-extrabold text-indigo-900">{studentCount}</p>
+          </div>
+        </div>
+
+
+        {/* Overall Strength Card */}
+        <OverallStrengthCard
+          sessionWisePresent={sessionWisePresent}
+          sessionWiseAbsentees={sessionWiseAbsentees}
+        />
+
+        <OverallAttendanceMatrixCard />
+
+        
+
+        <div className="mt-12">
+          <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
+          <TodayAbsenteesTable absetees={absentees} />
+        </div>
+
+
+
+        <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
+          <AttendanceShortageSummary data={shortageData} />
+        </Card>
 
         <div className="p-6">
           <h1 className="mb-4 text-2xl font-extrabold tracking-tight text-blue-900">
@@ -276,16 +302,8 @@ export default function PrincipalDashboard() {
           <AttendanceStatsTable stats={stats} />
         </div>
 
-        <div className="mt-12">
-          <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
-          <TodayAbsenteesTable absetees={absentees} />
-        </div>
 
-        <OverallAttendanceMatrixCard />
-
-        <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
-          <AttendanceShortageSummary data={shortageData} />
-        </Card>
+        
 
         {/* Quick Links */}
         <section className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">

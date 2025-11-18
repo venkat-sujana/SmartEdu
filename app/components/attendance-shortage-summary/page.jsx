@@ -95,7 +95,7 @@ export default function MonthlySummary() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-5 mt-20">
+    <div className="max-w-3xl mx-auto p-5 mt-20 bg-gray-100 border border-2 rounded-lg shadow-lg">
       {/* Filters */}
       <div className="mb-6 flex flex-wrap gap-4 items-center bg-white p-5 rounded-lg shadow-md">
         <select
@@ -150,7 +150,7 @@ export default function MonthlySummary() {
       >
         {shortageFilteredData.length === 0 ? (
           <p className="text-gray-500 mt-4 text-center py-6">
-            All students above 75% attendance.
+            All students below 75% attendance.
           </p>
         ) : (
           <table className="table-auto w-full border border-gray-300 text-sm font-sans shadow-lg rounded-lg overflow-hidden">
