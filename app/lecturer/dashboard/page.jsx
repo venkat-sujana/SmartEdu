@@ -305,9 +305,9 @@ export default function LecturerDashboard() {
 
       {/* Students Count Quick Card */}
       <div className=" flex items-center justify-center gap-4 m-10">
-        
+
         <div className="rounded-2xl flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
-          
+
           <p className="text-lg font-bold text-blue-800">Total Strength</p>&nbsp;<UserGroupIcon className="h-7 w-7 mr-2 " />
           <p className="text-2xl font-extrabold text-indigo-900">{studentCount}</p>
         </div>
@@ -331,13 +331,15 @@ export default function LecturerDashboard() {
         <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
         <TodayAbsenteesTable absetees={absentees} />
       </div>
+
+
       {/* All other sections as in your original dashboard */}
       <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
         <AttendanceShortageTable data={shortageData} />
       </Card>
 
 
-      <div className="mb-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
         {groupNames.map((group, groupIdx) => (
           <motion.div
             key={group}

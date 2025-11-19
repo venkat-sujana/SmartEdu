@@ -1,14 +1,12 @@
-//app/absentees-table/page.jsx
-
 "use client";
 import { useEffect, useState } from "react";
+import { UserGroupIcon } from '@heroicons/react/24/solid';
 
 const sessionLabels = {
   FN: "Forenoon",
   AN: "Afternoon",
   EN: "Evening",
 };
-import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 export default function TodayAbsenteesTable({ collegeId }) {
   const [loading, setLoading] = useState(true);
@@ -45,7 +43,7 @@ export default function TodayAbsenteesTable({ collegeId }) {
     );
   }
 
-  const { sessionWiseAbsentees, summary, sessions } = absData;
+  const { sessionWiseAbsentees, sessionWisePresent, summary, sessions } = absData;
 
   const formatTime = (timestamp) => {
     if (!timestamp) return "-";
@@ -58,28 +56,27 @@ export default function TodayAbsenteesTable({ collegeId }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-extrabold mb-4 text-center bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 text-white rounded-xl py-2 shadow-lg tracking-wide flex items-center justify-center gap-2">
+    <div className="max-w-5xl mx-auto my-6">
+      <h2 className="text-3xl font-extrabold mb-7 text-center bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 text-white rounded-2xl py-4 shadow-xl tracking-wide flex items-center justify-center gap-3 drop-shadow-lg border border-blue-300">
         <span>📋</span>
         Today's Absentees{" "}
-        <span className="text-base font-normal italic text-white/80">(Session-wise)</span>
+        <span className="text-lg font-light italic text-white/80">(Session-wise)</span>
       </h2>
 
-      <div className="space-y-6">
+      <div className="space-y-9">
         {sessions.map((sessionKey) => (
           <div key={sessionKey} className="mb-3">
-            <div className="flex items-center gap-2 mb-2 ml-2">
-              <span className="inline-flex bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-5 py-1 rounded-full text-lg font-bold shadow">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="inline-flex bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-6 py-2 rounded-xl text-xl font-bold shadow-lg border border-blue-300 drop-shadow">
                 {sessionLabels[sessionKey] || sessionKey}
               </span>
             </div>
 
-            <div className="bg-white rounded-2xl border border-cyan-100 shadow-lg pb-2 mb-2">
-              <h3 className="font-semibold text-base bg-gradient-to-r from-cyan-100 to-emerald-50 px-6 py-2 mb-2 rounded-t-2xl text-blue-900 tracking-wide">
+            <div className="bg-gradient-to-br from-white via-cyan-100 to-blue-50 rounded-3xl border-2 border-cyan-200 shadow-lg pb-2 mb-2">
+              <h3 className="font-semibold text-lg bg-gradient-to-r from-cyan-300 to-emerald-100 px-7 py-4 mb-2 rounded-t-3xl text-blue-900 tracking-wide border-b border-blue-200">
                 Absentees List
               </h3>
 
-              {/* First & Second Years */}
               {["First Year", "Second Year"].map((yearKey) => {
                 const yearStudents = sessionWiseAbsentees[sessionKey]?.filter(
                   (student) => student.yearOfStudy === yearKey
@@ -87,10 +84,17 @@ export default function TodayAbsenteesTable({ collegeId }) {
 
                 const groups = [...new Set(yearStudents?.map((s) => s.group))];
 
+                // Modern effect for present in FN & absent in AN
+                const fnPresentNames = new Set(
+                  (sessionWisePresent?.FN || [])
+                    .filter(stu => stu.yearOfStudy === yearKey)
+                    .map(stu => stu.name)
+                );
+
                 return (
-                  <div key={yearKey} className="mb-3 px-6 py-4 bg-cyan-50 rounded-xl">
-                    <div className="font-semibold text-blue-800 text-lg mb-2">
-                      🎓 {yearKey}
+                  <div key={yearKey} className="mb-7 px-7 py-5 bg-gradient-to-br from-cyan-50 via-white to-emerald-50 rounded-2xl border border-cyan-200 shadow-sm">
+                    <div className="font-semibold text-blue-800 text-xl mb-3 flex items-center gap-2">
+                      <span>🎓</span> {yearKey}
                     </div>
 
                     {groups.length > 0 ? (
@@ -103,13 +107,14 @@ export default function TodayAbsenteesTable({ collegeId }) {
                         return (
                           <div
                             key={grp}
-                            className="mb-4 border border-cyan-300 rounded-xl bg-white shadow-sm"
+                            className="mb-6 border-2 border-cyan-400 rounded-2xl bg-white shadow-md hover:shadow-2xl transition-shadow duration-300"
                           >
-                            <div className="px-4 py-2 bg-cyan-200 rounded-t-xl flex justify-between items-center">
-                              <span className="font-bold text-blue-900 flex flex items-center gap-1">
-                                 Group:<UserGroupIcon className="h-5 w-5 text-indigo-600" /> {grp}
+                            <div className="px-4 py-3 bg-gradient-to-r from-cyan-200 to-blue-100 rounded-t-2xl flex justify-between items-center border-b border-cyan-300">
+                              <span className="font-bold text-blue-900 flex flex items-center gap-2 text-lg">
+                                Group:
+                                <UserGroupIcon className="h-6 w-6 text-indigo-600" /> {grp}
                               </span>
-                              <span className="text-sm text-blue-900">
+                              <span className="text-base text-blue-900">
                                 Marked By:
                                 <span className="font-bold ml-1">{lecturerName}</span>
                                 <span className="ml-4">⏱ {formatTime(markedAt)}</span>
@@ -117,33 +122,43 @@ export default function TodayAbsenteesTable({ collegeId }) {
                             </div>
 
                             {groupList.length > 0 ? (
-                              <table className="w-full">
+                              <table className="w-full rounded-b-2xl">
                                 <thead>
-                                  <tr className="bg-blue-200 text-blue-900">
-                                    <th className="px-2 py-1 w-12 text-center rounded-l-xl">
+                                  <tr className="bg-blue-100 text-blue-900">
+                                    <th className="px-2 py-2 w-12 text-center rounded-l-xl font-bold">
                                       S.No
                                     </th>
-                                    <th className="px-2 py-1 text-left">👤 Name</th>
+                                    <th className="px-2 py-2 text-left font-bold">👤 Name</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {groupList.map((student, idx) => (
-                                    <tr
-                                      key={student.name + idx}
-                                      className={idx % 2 === 0 ? "bg-white" : "bg-blue-50"}
-                                    >
-                                      <td className="px-2 py-1 text-center font-bold">
-                                        {idx + 1}
-                                      </td>
-                                      <td className="px-2 py-1 font-medium text-blue-900">
-                                        {student.name}
-                                      </td>
-                                    </tr>
-                                  ))}
+                                  {groupList.map((student, idx) => {
+                                    const highlightRed = sessionKey === "AN" && fnPresentNames.has(student.name);
+                                    return (
+                                      <tr
+                                        key={student.name + idx}
+                                        className={idx % 2 === 0 ? "bg-white" : "bg-blue-50 hover:bg-blue-100"}
+                                      >
+                                        <td className="px-2 py-2 text-center font-bold">
+                                          {idx + 1}
+                                        </td>
+                                        <td className={`px-2 py-2 font-medium transition-colors duration-200 ${
+                                          highlightRed
+                                            ? "bg-red-100 text-red-600 font-extrabold animate-pulse rounded"
+                                            : "text-blue-900"
+                                        }`}>
+                                          {student.name}
+                                          {highlightRed && (
+                                            <span className="ml-2 text-xs bg-red-200 px-2 rounded font-semibold text-red-700 shadow-sm">FN Present⮕AN Absent</span>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
                                 </tbody>
                               </table>
                             ) : (
-                              <div className="py-2 text-green-700 text-center font-semibold">
+                              <div className="py-4 text-green-700 text-center font-semibold">
                                 No absentees in this group
                               </div>
                             )}
@@ -151,7 +166,7 @@ export default function TodayAbsenteesTable({ collegeId }) {
                         );
                       })
                     ) : (
-                      <div className="py-2 text-green-700 text-center font-semibold">
+                      <div className="py-4 text-green-700 text-center font-semibold">
                         No absentees in {yearKey}
                       </div>
                     )}
@@ -163,5 +178,17 @@ export default function TodayAbsenteesTable({ collegeId }) {
         ))}
       </div>
     </div>
+    
   );
+  
+<style jsx>{`
+  .blink-red {
+    animation: blinkRed 1s linear infinite;
+  }
+  @keyframes blinkRed {
+    0%, 100% { color: #dc2626; background-color: #d38e8eff; }
+    50% { color: #b91c1c; background-color: #d11e1eff; }
+  }
+`}</style>
+
 }

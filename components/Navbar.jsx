@@ -4,7 +4,7 @@
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import Tutorials from './tutorials/page'
+// import Tutorials from './tutorials/page'
 import Image from 'next/image'
 
 export default function Navbar() {
@@ -65,8 +65,8 @@ export default function Navbar() {
             />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-lg font-bold tracking-wide">OSRA</span>
-            <span className="text-[20px] text-gray-200 font-bold">Digital Platform for Modern Education</span>
+            <span className="text-sm font-bold tracking-wide">OSRA</span>
+            <span className="text-[10px] text-gray-200 font-bold">Digital Platform for Modern Education</span>
           </div>
         </Link>
 
@@ -88,8 +88,12 @@ export default function Navbar() {
                 Dashboard
               </Link>
 
+              <Link href="/components/about" className="font-semibold hover:text-yellow-300 transition">
+                About
+              </Link>
+
               {/* ✅ Tutorials menu */}
-              <Tutorials />
+              {/* <Tutorials /> */}
 
               <span className="hidden text-sm font-semibold md:inline">
                 {session?.user?.name}
