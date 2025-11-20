@@ -184,7 +184,7 @@ export default function ExamReportPage() {
 
       {/* Main Title */}
       <h1 className="mb-6 text-center text-xl font-extrabold tracking-tight text-blue-900 sm:text-2xl md:text-4xl">
-        📊 Exam Summary Dashboard
+        📊 Central Marks Register
       </h1>
 
       {/* Summary Stats Cards */}
@@ -210,7 +210,7 @@ export default function ExamReportPage() {
       <div className="mb-6 flex flex-wrap justify-center gap-2 sm:gap-4">
         <Link href="/student-table">
           <button className="rounded-xl bg-cyan-600 px-3 py-2 text-xs font-semibold text-white shadow-lg transition hover:bg-cyan-700 sm:px-6 sm:py-3 sm:text-base">
-            👥 Student Table
+            👥 View Students
           </button>
         </Link>
         <Link href="/exams-form">
@@ -428,13 +428,13 @@ export default function ExamReportPage() {
                                   <td className="space-x-1 border px-2 py-1">
                                     <button
                                       onClick={() => setEditingExam(report)}
-                                      className="rounded bg-indigo-600 px-2 py-1 text-xs text-white transition hover:bg-indigo-700"
+                                      className="rounded bg-indigo-600 px-2 py-1 text-xs text-white transition cursor-pointer hover:bg-indigo-700"
                                     >
                                       ✏️
                                     </button>
                                     <button
                                       onClick={() => handleDelete(report._id)}
-                                      className="rounded bg-rose-600 px-2 py-1 text-xs text-white transition hover:bg-rose-700"
+                                      className="rounded bg-rose-600 px-2 py-1 text-xs text-white transition cursor-pointer hover:bg-rose-700"
                                     >
                                       🗑️
                                     </button>
@@ -454,15 +454,33 @@ export default function ExamReportPage() {
         )}
       </div>
 
-      {/* Edit Form Modal */}
-      {editingExam && (
-        <EditExamForm
-          key={editingExam._id}
-          examData={editingExam}
-          onClose={() => setEditingExam(null)}
-          onUpdated={fetchReports}
-        />
-      )}
+            {/* Edit Form Modal */}
+{editingExam && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    {/* Modal box */}
+    <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
+      {/* Close button (top-right) */}
+      <button
+        onClick={() => setEditingExam(null)}
+        className="absolute right-3 top-3 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white hover:bg-red-600"
+      >
+        ✕
+      </button>
+
+      {/* Existing EditExamForm */}
+      <EditExamForm
+        key={editingExam._id}
+        examData={editingExam}
+        onClose={() => setEditingExam(null)}
+        onUpdated={() => {
+          fetchReports()
+          setEditingExam(null) // update ఐన వెంటనే modal close కావాలి అనుకుంటే
+        }}
+      />
+    </div>
+  </div>
+)}
+
 
       {/* Failure Summary */}
       <div className="mt-12">

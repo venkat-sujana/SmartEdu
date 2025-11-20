@@ -187,7 +187,7 @@ export default function TodayAbsenteesTable({ collegeId }) {
   }
   @keyframes blinkRed {
     0%, 100% { color: #dc2626; background-color: #d38e8eff; }
-    50% { color: #b91c1c; background-color: #d11e1eff; }
+    80% { color: #b91c1c; background-color: #d11e1eff; }
   }
 `}</style>
 
