@@ -21,6 +21,8 @@ import OverallStrengthCard from '@/app/components/overall-strength-card/OverallS
 import MetricsCards from "./MetricsCards";
 import PromotionCard from "./PromotionCard";
 
+
+
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function PrincipalDashboard() {
@@ -185,6 +187,10 @@ export default function PrincipalDashboard() {
       <main className="w-full flex-1 space-y-6 p-2 sm:p-4 md:p-6">
         {/* Header, Info, Lecturers etc... (same as before) */}
 
+        <div className="flex items-center justify-content">
+          <h1 className="text-2xl font-bold">Principal Dashboard</h1>
+        </div>
+
         <Card className="shadow-xl mx-auto mb-6 w-full max-w-xs rounded-2xl border border-blue-200 bg-blue-100 p-4">
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
             {principal?.photo ? (
@@ -263,10 +269,22 @@ export default function PrincipalDashboard() {
             </button>
           </Link>
           <Link href="/students/bulk-upload">
-                    <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
                       Bulk Upload Students
-                    </button>
+            </button>
           </Link>
+
+          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+          <a href="https://skr-learn-portal.netlify.app/" target="_blank" rel="noopener noreferrer">
+            Vocational Question Paper
+          </a>
+        </button>
+
+        <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+          <a href="https://advanced-question-paper-tailwindcss.netlify.app/" target="_blank" rel="noopener noreferrer">
+            M&AT Question Paper
+          </a>
+        </button>
         </div>
 
         

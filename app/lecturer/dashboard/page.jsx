@@ -271,6 +271,20 @@ export default function LecturerDashboard() {
             Bulk Upload Students
           </button>
         </Link>
+
+        <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+          <a href="https://skr-learn-portal.netlify.app/" target="_blank" rel="noopener noreferrer">
+            Vocational Question Paper
+          </a>
+        </button>
+
+        <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+          <a href="https://advanced-question-paper-tailwindcss.netlify.app/" target="_blank" rel="noopener noreferrer">
+            M&AT Question Paper
+          </a>
+        </button>
+
+
       </div>
 
       {/* Lecturer Info Card */}
@@ -296,14 +310,7 @@ export default function LecturerDashboard() {
         title="Currently Active Lecturers"
       />
 
-
-
-
-
-
-
-
-      {/* Students Count Quick Card */}
+     {/* Students Count Quick Card */}
       <div className=" flex items-center justify-center gap-4 m-10">
 
         <div className="rounded-2xl flex items-center justify-center bg-gradient-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
@@ -318,20 +325,12 @@ export default function LecturerDashboard() {
         sessionWisePresent={sessionWisePresent}
         sessionWiseAbsentees={sessionWiseAbsentees}
       />
-
-
-
-
-
       <OverallAttendanceMatrixCard />
-
-
 
       <div className="mt-12">
         <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
         <TodayAbsenteesTable absetees={absentees} />
       </div>
-
 
       {/* All other sections as in your original dashboard */}
       <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
@@ -339,7 +338,7 @@ export default function LecturerDashboard() {
       </Card>
 
 
-      <div className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
+      {/* <div className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
         {groupNames.map((group, groupIdx) => (
           <motion.div
             key={group}
@@ -402,32 +401,8 @@ export default function LecturerDashboard() {
             </Card>
           </motion.div>
         ))}
-      </div>
+      </div> */}
 
-
-
-
-
-
-
-      {/* External Links */}
-      <div className="mt-8 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        <div className="rounded-lg bg-blue-500 p-4 font-bold text-blue-50 shadow">
-          <a href="https://skr-learn-portal.netlify.app/" target="_blank" rel="noopener noreferrer">
-            Voc Question Paper
-          </a>
-        </div>
-        <div className="rounded-lg bg-green-100 p-4 font-bold shadow">
-          <a
-            href="https://advanced-question-paper-tailwindcss.netlify.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            M&AT Question Paper
-          </a>
-        </div>
-
-      </div>
 
       {/* Footer */}
       <footer className="w-full flex flex-col items-center gap-3 pt-10 pb-6 text-gray-600">
@@ -440,10 +415,6 @@ export default function LecturerDashboard() {
         </div>
         <p className="text-sm">© {new Date().getFullYear()} OSRA System • All Rights Reserved</p>
       </footer>
-
-
-
-
     </div>
 
   )

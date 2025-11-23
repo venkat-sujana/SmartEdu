@@ -2,6 +2,21 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import {
+  Calendar,
+  Users,
+  FileText,
+  Edit,
+  BarChart,
+  ClipboardList,
+  UserCheck,
+  AlertCircle,
+  TrendingUp,
+  Home,
+  CheckCircle, XCircle, BarChart2, Percent
+} from 'lucide-react'
+import { UsersIcon } from "@heroicons/react/24/solid";
+
 export default function MetricsCards({ onPromoteClick }) {
   const [stats, setStats] = useState({
     total: 0,
@@ -32,29 +47,31 @@ export default function MetricsCards({ onPromoteClick }) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
 
       {/* Total Students */}
-      <div className="bg-white p-5 rounded-xl shadow-xl border border-gray-100">
-        <h3 className="text-gray-500 text-sm">Total Students</h3>
+      <div className="bg-white p-5 rounded-xl flex shadow-xl border border-gray-100">
+        <h3 className="text-gray-500 text-sm"><Users className="mr-2" color="blue" />Total Students</h3>
         <p className="text-3xl font-bold text-blue-600">
           {loading ? "…" : stats.total}
         </p>
       </div>
 
       {/* Active Students */}
-      <div className="bg-white p-5 rounded-xl shadow-xl border border-gray-100">
-        <h3 className="text-gray-500 text-sm">Active Students</h3>
+      <div className="bg-white p-5 flex  rounded-xl shadow-xl border border-gray-100">
+        <h3 className="text-gray-500 text-sm"><Users className="mr-2" color="green" />Active Students</h3>
         <p className="text-3xl font-bold text-green-600">
           {loading ? "…" : stats.active}
         </p>
       </div>
 
       {/* Terminated Students */}
-      <div className="bg-white p-5 rounded-xl shadow-xl border border-gray-100 flex flex-col justify-between">
-        <div>
-          <h3 className="text-gray-500 text-sm">Terminated Students</h3>
+      <div className="bg-white p-5 rounded-xl shadow-xl border flex border-gray-100 flex  justify-between">
+        
+          <h3 className="text-gray-500 text-sm"><Users className="mr-2" color="red" />Terminated Students</h3>
           <p className="text-3xl font-bold text-red-600">
             {loading ? "…" : stats.terminated}
           </p>
         </div>
+      <div className="bg-white p-5 rounded-xl shadow-xl border border-gray-100 flex flex-col items-center">
+     
 
         {/* Button inside Card */}
         <button
