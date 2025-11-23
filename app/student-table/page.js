@@ -1,3 +1,4 @@
+//app/student-table/page.js
 "use client";
 import { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";

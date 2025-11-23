@@ -18,6 +18,9 @@ import AttendanceStatsTable from '@/app/components/attendance-stats-table/Attend
 import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import OverallStrengthCard from '@/app/components/overall-strength-card/OverallStrengthCard'
 
+import MetricsCards from "./MetricsCards";
+import PromotionCard from "./PromotionCard";
+
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function PrincipalDashboard() {
@@ -203,6 +206,10 @@ export default function PrincipalDashboard() {
           </div>
         </Card>
 
+        <MetricsCards />
+
+        <PromotionCard />
+
 
 
         <div className="my-6 flex flex-wrap justify-center gap-3">
@@ -255,7 +262,14 @@ export default function PrincipalDashboard() {
               Add Exam
             </button>
           </Link>
+          <Link href="/students/bulk-upload">
+                    <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
+                      Bulk Upload Students
+                    </button>
+          </Link>
         </div>
+
+        
 
         <ActiveLecturersCard
           className="mx-auto mb-6 w-full max-w-md shadow-xl"
@@ -303,17 +317,19 @@ export default function PrincipalDashboard() {
         </div>
 
 
-        
+{/* Footer */}
+<footer className="w-full flex flex-col items-center gap-3 pt-10 pb-6 text-gray-600">
+<div className="flex gap-6 text-xl">
+{/* Heroicons (Tailwind official) */}
+<a href="#" className="hover:text-blue-600 transition"><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-6 h-6"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987H7.898v-2.89h2.54V9.845c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.874h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12z"/></svg></a>
+<a href="#" className="hover:text-blue-600 transition"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/></svg></a>
+<a href="#" className="hover:text-pink-600 transition"><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-6 h-6"><path d="M7.75 2A5.75 5.75 0 002 7.75v8.5A5.75 5.75 0 007.75 22h8.5A5.75 5.75 0 0022 16.25v-8.5A5.75 5.75 0 0016.25 2h-8.5zm8.72 6.03a.75.75 0 011.06 1.06l-5.25 5.25a.75.75 0 01-1.06 0L6.47 11.53a.75.75 0 011.06-1.06l3.47 3.47 4.47-4.47z"/></svg></a>
+<a href="#" className="hover:text-blue-700 transition"><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-6 h-6"><path d="M4.98 3.5C3.33 3.5 2 4.83 2 6.48v11.04C2 19.17 3.33 20.5 4.98 20.5h14.04c1.65 0 2.98-1.33 2.98-2.98V6.48c0-1.65-1.33-2.98-2.98-2.98H4.98zM8.75 17h-2v-7h2v7zm-1-8.27a1.27 1.27 0 110-2.54 1.27 1.27 0 010 2.54zM18 17h-2v-3.6c0-2.07-2.5-1.91-2.5 0V17h-2v-7h2v1.06c.87-1.61 4.5-1.73 4.5 1.55V17z"/></svg></a>
+</div>
+<p className="text-sm">© {new Date().getFullYear()} OSRA System • All Rights Reserved</p>
+</footer>
 
-        {/* Quick Links */}
-        <section className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-          <Link href="/announcements">
-            <p className="cursor-pointer rounded-xl bg-green-100 p-5 text-center shadow-md transition hover:bg-green-200">
-              <span className="text-xl font-semibold text-green-800">📢 Announcements</span>
-            </p>
-          </Link>
-        </section>
-      </main>
-    </div>
+</main>
+</div>
   )
 }

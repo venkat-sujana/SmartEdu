@@ -7,8 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 const groupNames = ['MPC', 'BiPC', 'CEC', 'HEC', 'CET', 'M&AT', 'MLT']
 const years = ['First Year', 'Second Year']
-const sessions = ['FN', 'AN','EN']
-const sessionLabels = { FN: 'FN', AN: 'AN' , EN:'EN' }
+const sessions = ['FN', 'AN', 'EN']
+const sessionLabels = { FN: 'FN', AN: 'AN', EN: 'EN' }
 import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 
@@ -16,18 +16,18 @@ import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24
 
 const fetcher = url => fetch(url).then(res => res.json())
 
-function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees}) {
-  
-  
+function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees }) {
+
+
   const { data: studentsData } = useSWR('/api/students', fetcher);
   // normalize studentsData to an array to avoid .filter not being a function
   const studentsArray = Array.isArray(studentsData)
     ? studentsData
     : Array.isArray(studentsData?.students)
-    ? studentsData.students
-    : Array.isArray(studentsData?.data)
-    ? studentsData.data
-    : [];
+      ? studentsData.students
+      : Array.isArray(studentsData?.data)
+        ? studentsData.data
+        : [];
   const groupStrength = studentsArray.filter(s => s.group === groupName).length;
 
   function stats(year, session) {
@@ -78,9 +78,7 @@ function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees}) 
 
 
 
-  // Difference: FN Total Present - AN Total Present
-  const fnMinusAn = fnTotalPresent - anTotalPresent
-
+ 
   return (
     <Card className="mx-auto mb-6 max-w-xl overflow-x-auto rounded-xl border border-blue-300 bg-white shadow-xl">
       <CardHeader className="mb-2 rounded-t-xl bg-blue-600 py-4 text-center text-white border border-blue-400 ">

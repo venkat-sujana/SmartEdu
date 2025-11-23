@@ -130,44 +130,53 @@ export default function ExamReportPage() {
 
   // Calculate Pass/Fail stats
   const { passCount, failCount, passPercentage } = (() => {
-    let pass = 0,
-      fail = 0
-    for (const report of filteredReports) {
-      const subjectMarks = report.generalSubjects || report.vocationalSubjects || {}
-      let isFail = false
-      for (const mark of Object.values(subjectMarks)) {
-        const markStr = String(mark).toUpperCase()
-        if (markStr === 'A' || markStr === 'AB' || Number(mark) === 0) {
+  let pass = 0, fail = 0
+  for (const report of filteredReports) {
+    const subjectMarks = report.generalSubjects || report.vocationalSubjects || {}
+    const marksArr = Object.values(subjectMarks)
+    // If ANY subject is 'A' or 'AB' (absent), skip, don't count in pass/fail at all
+    const isAbsent = marksArr.some(
+      val => {
+        const v = String(val).toUpperCase()
+        return v === 'A' || v === 'AB'
+      }
+    )
+    if (isAbsent) continue // skip this student in pass/fail
+
+    let isFail = false
+    for (const mark of marksArr) {
+      const numericMark = Number(mark)
+      if (!isNaN(numericMark)) {
+        if (
+          ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4'].includes(report.examType) &&
+          numericMark < 9
+        ) {
           isFail = true
           break
         }
-        const numericMark = Number(mark)
-        if (!isNaN(numericMark)) {
-          if (
-            ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4'].includes(report.examType) &&
-            numericMark < 9
-          ) {
-            isFail = true
-            break
-          }
-          if (['QUARTERLY', 'HALFYEARLY'].includes(report.examType) && numericMark < 18) {
-            isFail = true
-            break
-          }
-          if (['PRE-PUBLIC-1', 'PRE-PUBLIC-2'].includes(report.examType) && numericMark < 35) {
-            isFail = true
-            break
-          }
+        if (
+          ['QUARTERLY', 'HALFYEARLY'].includes(report.examType) &&
+          numericMark < 18
+        ) {
+          isFail = true
+          break
+        }
+        if (
+          ['PRE-PUBLIC-1', 'PRE-PUBLIC-2'].includes(report.examType) &&
+          numericMark < 35
+        ) {
+          isFail = true
+          break
         }
       }
-      if (isFail) fail++
-      else pass++
     }
-    const total = pass + fail
-    const percentage = total > 0 ? ((pass / total) * 100).toFixed(2) : '0.00'
-    return { passCount: pass, failCount: fail, passPercentage: percentage }
-  })()
-
+    if (isFail) fail++
+    else pass++
+  }
+  const total = pass + fail
+  const percentage = total > 0 ? ((pass / total) * 100).toFixed(2) : '0.00'
+  return { passCount: pass, failCount: fail, passPercentage: percentage }
+})()
 
 
 
@@ -407,7 +416,7 @@ export default function ExamReportPage() {
                                   {columnsToRender.map((subject, i) => (
                                     <td key={i} className="border px-2 py-1 text-xs">
                                       {subjectMarks[subject] != undefined &&
-                                      subjectMarks[subject] != null
+                                        subjectMarks[subject] != null
                                         ? subjectMarks[subject]
                                         : '-'}
                                     </td>
@@ -416,11 +425,10 @@ export default function ExamReportPage() {
                                   <td className="border px-2 py-1 font-bold">{percentage}</td>
                                   <td className="border px-2 py-1">
                                     <span
-                                      className={`inline-block rounded-full px-2 py-1 text-xs font-bold ${
-                                        status === 'Fail'
+                                      className={`inline-block rounded-full px-2 py-1 text-xs font-bold ${status === 'Fail'
                                           ? 'bg-red-200 text-red-800'
                                           : 'bg-green-200 text-green-800'
-                                      }`}
+                                        }`}
                                     >
                                       {status}
                                     </span>
@@ -454,32 +462,32 @@ export default function ExamReportPage() {
         )}
       </div>
 
-            {/* Edit Form Modal */}
-{editingExam && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    {/* Modal box */}
-    <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
-      {/* Close button (top-right) */}
-      <button
-        onClick={() => setEditingExam(null)}
-        className="absolute right-3 top-3 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white hover:bg-red-600"
-      >
-        ✕
-      </button>
+      {/* Edit Form Modal */}
+      {editingExam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          {/* Modal box */}
+          <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
+            {/* Close button (top-right) */}
+            <button
+              onClick={() => setEditingExam(null)}
+              className="absolute right-3 top-3 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white hover:bg-red-600"
+            >
+              ✕
+            </button>
 
-      {/* Existing EditExamForm */}
-      <EditExamForm
-        key={editingExam._id}
-        examData={editingExam}
-        onClose={() => setEditingExam(null)}
-        onUpdated={() => {
-          fetchReports()
-          setEditingExam(null) // update ఐన వెంటనే modal close కావాలి అనుకుంటే
-        }}
-      />
-    </div>
-  </div>
-)}
+            {/* Existing EditExamForm */}
+            <EditExamForm
+              key={editingExam._id}
+              examData={editingExam}
+              onClose={() => setEditingExam(null)}
+              onUpdated={() => {
+                fetchReports()
+                setEditingExam(null) // update ఐన వెంటనే modal close కావాలి అనుకుంటే
+              }}
+            />
+          </div>
+        </div>
+      )}
 
 
       {/* Failure Summary */}

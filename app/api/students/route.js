@@ -96,39 +96,37 @@ export async function GET(req) {
     const session = await getServerSession(authOptions)
 
     if (!session) {
-      console.log('Unauthorized: No session')
       return Response.json({ status: 'error', message: 'Unauthorized' }, { status: 401 })
     }
 
-     let filter = {}
+    let filter = {}
 
     if (session.user.collegeId) {
       filter.collegeId = new mongoose.Types.ObjectId(session.user.collegeId)
     }
 
-    // Vocational stream => filter by group
+    // ✔ Only Active Students
+    filter.status = "Active"
+
+    // Vocational
     if (session.user.stream === 'Vocational' && session.user.group) {
       filter.group = session.user.group
     }
 
-    // General stream => filter by subject array match
+    // General
     if (session.user.stream === 'General' && session.user.subject) {
       filter.subjects = session.user.subject
     }
-
-    console.log("🎓 Student filter =>", filter) // ✅ Debug
-
 
     const students = await Student.find(filter)
     const totalStudents = await Student.countDocuments(filter)
 
     return Response.json({
       status: 'success',
-      totalStudents, // 👈 ఇప్పుడు count వస్తుంది
+      totalStudents,
       data: students,
     })
   } catch (error) {
-    console.error('GET /api/students/route.js:', error)
     return Response.json({ status: 'error', message: 'Server error' }, { status: 500 })
   }
 }

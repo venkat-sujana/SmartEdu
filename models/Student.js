@@ -3,9 +3,18 @@ import mongoose from "mongoose";
 
 const studentSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    fatherName: { type: String, required: true },
-    mobile: { type: String, required: true },
+    name: {
+       type: String, 
+       required: true 
+      },
+    fatherName: { 
+      type: String, 
+      required: true 
+    },
+    mobile: { 
+      type: String, 
+      required: true 
+    },
 
     group: {
       type: String,
@@ -16,43 +25,69 @@ const studentSchema = new mongoose.Schema(
     caste: {
       type: String,
       required: true,
-      enum: [
-        "OC",
-        "OBC",
-        "BC-A",
-        "BC-B",
-        "BC-C",
-        "BC-D",
-        "BC-E",
-        "SC-A",
-        "SC-B",
-        "SC-C",
-        "SC",
-        "ST",
-        "OTHER",
-      ],
+      enum: ["OC","OBC","BC-A","BC-B","BC-C","BC-D","BC-E","SC-A","SC-B","SC-C","SC","ST","OTHER"],
     },
 
-    dob: { type: Date, required: true },
-    gender: { type: String, required: true, enum: ["Male", "Female", "Other"] },
+    dob: { 
+      type: Date, 
+      required: true 
+    },
 
-    admissionNo: { type: String, required: true, unique: true, index: true },
+    gender: { 
+      type: String, 
+      required: true,
+       enum: ["Male", "Female", "Other"] 
+      },
 
-    password: { type: String, required: true },
-    mustChangePassword: { type: Boolean, default: true },
+    admissionNo: { 
+      type: String, 
+      required: true, 
+      unique: true, 
+      index: true
+     },
+
+    password: { 
+      type: String,
+       required: true 
+      },
+
+    mustChangePassword: { 
+      type: Boolean, 
+      default: true 
+    },
 
     yearOfStudy: {
       type: String,
       required: true,
       enum: ["First Year", "Second Year"],
     },
-    admissionYear: { type: Number, required: true },
 
-    dateOfJoining: { type: Date, default: Date.now },
+     // ⭐ NEW FIELD — second year complete అయినప్పుడు ఈ ఫీల్డ్ update అవుతుంది
+    status: {
+      type: String,
+      enum: ["Active", "Terminated"],
+      default: "Active",
+    },
 
-    address: { type: String, required: true },
+    admissionYear: 
+    { type: Number, 
+      required: true 
+    },
 
-    photo: { type: String, default: "" },
+    dateOfJoining: 
+    { type: Date, 
+      default: Date.now 
+    },
+
+    address: 
+    { type: String, 
+      required: true 
+    },
+
+    photo: { 
+      type: String, 
+      default: "" 
+    },
 
     collegeId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -63,7 +98,10 @@ const studentSchema = new mongoose.Schema(
 
     subjects: [String],
 
-    role: { type: String, default: "student" },
+    role: 
+    { type: String, 
+      default: "student" 
+    },
   },
   { timestamps: true }
 );
