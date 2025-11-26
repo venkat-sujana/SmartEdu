@@ -1,4 +1,5 @@
-//app/absentees-table/page.jsx
+
+// app/components/Attendance/TodayAbsenteesTable.jsx
 
 "use client";
 import { useEffect, useState } from "react";
@@ -10,7 +11,7 @@ const sessionLabels = {
   EN: "Evening",
 };
 
-export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
+export default function TodayAbsenteesTable({ collegeId, header = true, groupFilter = null }) {
   const [loading, setLoading] = useState(true);
   const [absData, setAbsData] = useState(null);
 
@@ -45,7 +46,7 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
     );
   }
 
-  const { sessionWiseAbsentees, sessionWisePresent, summary, sessions } = absData;
+  const { sessionWiseAbsentees, sessionWisePresent, sessions } = absData;
 
   const formatTime = (timestamp) => {
     if (!timestamp) return "-";
@@ -59,11 +60,13 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
 
   return (
     <div className="max-w-5xl mx-auto my-6">
-      <h2 className="text-3xl font-extrabold mb-7 text-center bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 text-white rounded-2xl py-4 shadow-xl tracking-wide flex items-center justify-center gap-3 drop-shadow-lg border border-blue-300">
-        <span>📋</span>
-        Today's Absentees{" "}
-        <span className="text-lg font-light italic text-white/80">(Session-wise)</span>
-      </h2>
+      {header && (
+        <h2 className="text-2xl font-extrabold mb-4 text-center bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 text-white rounded-2xl py-2 shadow-xl tracking-wide flex items-center justify-center gap-3 drop-shadow-lg border border-blue-300">
+          <span>📋</span>
+          Today's Absentees{" "}
+          <span className="text-lg font-light italic text-white/80">(Session-wise)</span>
+        </h2>
+      )}
 
       <div className="space-y-9">
         {sessions.map((sessionKey) => (
@@ -79,21 +82,18 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
                 Absentees List
               </h3>
 
-             {["First Year", "Second Year"].map((yearKey) => {
-  // Apply groupFilter here!
-  const yearStudents = sessionWiseAbsentees[sessionKey]?.filter(
-    (student) =>
-      student.yearOfStudy === yearKey &&
-      (!groupFilter || (student.group && student.group.toLowerCase() === groupFilter.toLowerCase()))
-  ) || [];
-  
+              {["First Year", "Second Year"].map((yearKey) => {
+                let yearStudents = sessionWiseAbsentees[sessionKey]?.filter(
+                  (student) => student.yearOfStudy === yearKey
+                ) || [];
 
-  
+                // Group filter enabled (for group-specific dashboards)
+                if (groupFilter) {
+                  yearStudents = yearStudents.filter((s) => s.group === groupFilter);
+                }
 
+                const groups = [...new Set(yearStudents.map((s) => s.group))];
 
-                const groups = [...new Set(yearStudents?.map((s) => s.group))];
-
-                // Modern effect for present in FN & absent in AN
                 const fnPresentNames = new Set(
                   (sessionWisePresent?.FN || [])
                     .filter(stu => stu.yearOfStudy === yearKey)
@@ -119,7 +119,7 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
                             className="mb-6 border-2 border-cyan-400 rounded-2xl bg-white shadow-md hover:shadow-2xl transition-shadow duration-300"
                           >
                             <div className="px-4 py-3 bg-gradient-to-r from-cyan-200 to-blue-100 rounded-t-2xl flex justify-between items-center border-b border-cyan-300">
-                              <span className="font-bold text-blue-900 flex flex items-center gap-2 text-lg">
+                              <span className="font-bold text-blue-900 flex items-center gap-2 text-lg">
                                 Group:
                                 <UserGroupIcon className="h-6 w-6 text-indigo-600" /> {grp}
                               </span>
@@ -187,17 +187,5 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
         ))}
       </div>
     </div>
-    
   );
-  
-<style jsx>{`
-  .blink-red {
-    animation: blinkRed 1s linear infinite;
-  }
-  @keyframes blinkRed {
-    0%, 100% { color: #dc2626; background-color: #d38e8eff; }
-    80% { color: #b91c1c; background-color: #d11e1eff; }
-  }
-`}</style>
-
 }

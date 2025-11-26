@@ -54,19 +54,19 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-8">
         {/* ==== Left: Logo + Title ==== */}
         <Link href="/" className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center bg-white p-1 rounded-full shadow-md">
+          <div className="relative flex items-center justify-center bg-white border-1 rounded-full shadow-md">
             <Image
-              src="/images/123.jpeg" // public folderలో logo ఉంచండి
+              src="/images/profile.jpg" // public folderలో logo ఉంచండి
               alt="OSRA Logo"
-              width={45}
-              height={45}
+              width={60}
+              height={60}
               className="rounded-full drop-shadow-md"
               priority
             />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-bold tracking-wide">OSRA</span>
-            <span className="text-[10px] text-gray-200 font-bold">Digital Platform for Modern Education</span>
+            <span className="text-sm font-bold tracking-wide">Embeti Venkataiah</span>
+            <span className="text-[15px] text-gray-200 font-bold">Fullstack Developer</span>
           </div>
         </Link>
 

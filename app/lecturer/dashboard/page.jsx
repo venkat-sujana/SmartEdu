@@ -18,26 +18,9 @@ const fetcher = (...args) =>
     return res.json()
   })
 
-import {
-  Calendar,
-  Users,
-  FileText,
-  Edit,
-  BarChart,
-  ClipboardList,
-  UserCheck,
-  AlertCircle,
-  TrendingUp,
-  Home,
-  CheckCircle, XCircle, BarChart2, Percent
-} from 'lucide-react'
-
-
 import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
 import OverallStrengthCard from '@/app/components/overall-strength-card/OverallStrengthCard'
-
-
 
 export default function LecturerDashboard() {
   const { data: shortageApiData } = useSWR('/api/attendance/shortage-summary', fetcher)
@@ -325,6 +308,7 @@ export default function LecturerDashboard() {
         sessionWisePresent={sessionWisePresent}
         sessionWiseAbsentees={sessionWiseAbsentees}
       />
+
       <OverallAttendanceMatrixCard />
 
       <div className="mt-12">
@@ -336,72 +320,6 @@ export default function LecturerDashboard() {
       <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
         <AttendanceShortageTable data={shortageData} />
       </Card>
-
-
-      {/* <div className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
-        {groupNames.map((group, groupIdx) => (
-          <motion.div
-            key={group}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 + groupIdx * 0.1 }}
-          >
-            <Card className="rounded-2xl border-2 border-blue-200 bg-white shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-blue-100 to-blue-200">
-                <CardTitle className="flex items-center gap-2 text-xl font-bold text-blue-700">
-                  {group}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-7 pt-2">
-                {years.map(year => (
-                  <div key={year} className="rounded-xl bg-blue-50 p-4">
-                    <div className="mb-3 text-lg font-semibold text-blue-900">{year}</div>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      {sessions.map(session => {
-                        const s = stats(group, year, session);
-                        return (
-                          <div
-                            key={session}
-                            className="rounded-xl border border-blue-100 bg-white p-3 shadow"
-                          >
-                            <div className="mb-2 font-semibold text-blue-600">
-                              {sessionLabels[session]}
-                            </div>
-
-                            <div className="flex justify-between items-center gap-1">
-                              <CheckCircle className="text-green-600 w-5 h-5" />
-                              <span>Present:</span>
-                              <span className="font-bold text-green-700">{s.present}</span>
-                            </div>
-
-                            <div className="flex justify-between items-center gap-1">
-                              <XCircle className="text-red-600 w-5 h-5" />
-                              <span>Absent:</span>
-                              <span className="font-bold text-red-600">{s.absent}</span>
-                            </div>
-
-                            <div className="flex justify-between items-center gap-1">
-                              <BarChart2 className="text-gray-700 w-5 h-5" />
-                              <span>Total:</span>
-                              <span className="font-bold">{s.total}</span>
-                            </div>
-
-                            <div className="flex justify-between items-center gap-1">
-                              <Percent className="text-blue-700 w-5 h-5" />
-                              <span>%:</span>
-                              <span className="font-bold text-blue-700">{s.percent}%</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div> */}
 
 
       {/* Footer */}
