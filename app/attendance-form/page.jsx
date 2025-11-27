@@ -5,7 +5,7 @@ import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthsList = [
@@ -32,8 +32,8 @@ export default function AttendanceForm() {
   const [collegeName, setCollegeName] = useState("");
   const router = useRouter();
 
-  const params = useSearchParams();
-  const group = params.get("group") || ""; // use default if not present
+  
+  
   
 
   // Fullscreen overlay toast message
