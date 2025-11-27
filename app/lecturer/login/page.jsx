@@ -53,9 +53,9 @@ export default function LecturerLogin() {
           // Small delay for session propagation
           await new Promise(r => setTimeout(r, 100));
         }
-        const subject = session?.user?.subject;
-        const group = subjectGroupMap[subject] || "mpc";
-        setLoading(false);
+        // const subject = session?.user?.subject;
+        // const group = subjectGroupMap[subject] || "mpc";
+        // setLoading(false);
 
         // Redirect to correct dashboard
         router.push(`/dashboards/${group}`);

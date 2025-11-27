@@ -5,6 +5,7 @@ import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthsList = [
@@ -30,6 +31,10 @@ export default function AttendanceForm() {
   const [collegeId, setCollegeId] = useState("");
   const [collegeName, setCollegeName] = useState("");
   const router = useRouter();
+
+  const params = useSearchParams();
+  const group = params.get("group") || ""; // use default if not present
+  
 
   // Fullscreen overlay toast message
   const [fullscreenToastMessage, setFullscreenToastMessage] = useState(null);
@@ -78,6 +83,8 @@ export default function AttendanceForm() {
       ...prev, [studentId]: status
     }));
   };
+
+  
 
   const handleSubmit = async () => {
     if (!selectedDate || !selectedGroup || filteredStudents.length === 0 || !selectedLecturerId || !selectedSession) {
@@ -186,7 +193,7 @@ export default function AttendanceForm() {
 
         {/* Action */}
         <div className="mb-4 flex justify-end">
-          <Link href="/attendance-dashboard">
+          <Link href="/dashboards/mandat">
             <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer font-bold">
               Back to Dashboard
             </button>
