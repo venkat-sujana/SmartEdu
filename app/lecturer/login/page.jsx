@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
+import { useSession } from 'next-auth/react';
 // Subject to Group mapping
 const subjectGroupMap = {
   "MandAT": "mandat",
@@ -25,7 +25,15 @@ export default function LecturerLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+const { data: session, status } = useSession();
 
+// Check session, status === 'authenticated'
+if (status === 'authenticated' && session?.user?.subject) {
+  // subject available, group mapping and redirect logic
+  const subject = session.user.subject;
+  const group = subjectGroupMap[subject] || "mpc";
+  router.push(`/dashboards/${group}`);
+}
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -53,9 +61,9 @@ export default function LecturerLogin() {
           // Small delay for session propagation
           await new Promise(r => setTimeout(r, 100));
         }
-        // const subject = session?.user?.subject;
-        // const group = subjectGroupMap[subject] || "mpc";
-        // setLoading(false);
+        const subject = session?.user?.subject;
+        const group = subjectGroupMap[subject] || "mpc";
+        setLoading(false);
 
         // Redirect to correct dashboard
         router.push(`/dashboards/${group}`);
