@@ -58,8 +58,8 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto my-6">
-      <h2 className="text-3xl font-extrabold mb-7 text-center bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 text-white rounded-2xl py-4 shadow-xl tracking-wide flex items-center justify-center gap-3 drop-shadow-lg border border-blue-300">
+    <div className="max-w-5xl mx-auto my-2 p-6 bg-white rounded-3xl shadow-xl border border-blue-200">
+      <h2 className="text-xl font-extrabold mb-2 text-center bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 text-white rounded-xl py-2 shadow-xl tracking-wide flex items-center justify-center gap-2 drop-shadow-lg border border-blue-300">
         <span>📋</span>
         Today's Absentees{" "}
         <span className="text-lg font-light italic text-white/80">(Session-wise)</span>
@@ -69,7 +69,7 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
         {sessions.map((sessionKey) => (
           <div key={sessionKey} className="mb-3">
             <div className="flex items-center gap-2 mb-4">
-              <span className="inline-flex bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-6 py-2 rounded-xl text-xl font-bold shadow-lg border border-blue-300 drop-shadow">
+              <span className="inline-flex bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-6 py-1 rounded-xl text-xl font-bold shadow-lg border border-blue-300 drop-shadow">
                 {sessionLabels[sessionKey] || sessionKey}
               </span>
             </div>

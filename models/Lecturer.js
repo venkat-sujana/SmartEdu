@@ -49,9 +49,10 @@ const lecturerSchema = new mongoose.Schema(
           'History',
           'Commerce',
           'MandAT',
+          'GFC',
         ],
         message:
-          'Subject must be one of: Maths, Physics, English, Telugu, Hindi, Civics, Zoology, Botany, Chemistry, CET, MLT, Economics, History, Commerce, MandAT',
+          'Subject must be one of: Maths, Physics, English, Telugu, Hindi, Civics, Zoology, Botany, Chemistry, CET, MLT, Economics, History, Commerce, MandAT,GFC',
       },
       required: [true, 'Subject is required'],
     },

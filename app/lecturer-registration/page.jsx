@@ -145,6 +145,8 @@ export default function LecturerRegister() {
             <option value="History">History</option>
             <option value="Commerce">Commerce</option>
             <option value="MandAT">M&AT</option>
+            <option value="CET">CET</option>
+            <option value="GFC">GFC</option>
           </select>
         </div>
 
