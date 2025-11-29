@@ -1,19 +1,23 @@
 // app/dashboards/gfc/page.jsx
 "use client"
+import { useSession } from 'next-auth/react'
 import TodayAbsenteesTable from "@/app/absentees-table/page";
 import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
-import Link from 'next/link'
-export default function GFCDashboard() {
-return (
-    <div className="flex flex-col items-center gap-8 min-h-screen bg-gradient-to-b from-blue-50 to-blue-200">
+import LecturerInfoCard from "@/app/components/LecturerInfoCard";
+import MainLinks from '@/app/components/MainLinks';
 
-      <h2 className="text-2xl font-bold mt-24  text-blue-800">GFC Dashboard</h2>
-      <Link
-      href="/attendance-form"
-      className=" px-4 py-1 bg-blue-600 text-white rounded-full text-lg font-semibold shadow-md hover:bg-blue-800 transition tracking-wide"
-    >
-      Take Attendance
-    </Link>
+export default function GFCDashboard() {
+  const { data: session, status } = useSession()
+  const user = session?.user
+return (
+    <div className=" flex flex-col items-center gap-8 min-h-screen bg-gradient-to-b from-blue-50 to-blue-200">
+             {/* Lecturer Info Card */}
+             <LecturerInfoCard  user={user}/>
+
+      <h2 className="text-2xl font-bold mt-4  text-blue-800">GFC Dashboard</h2>
+
+      <MainLinks/>
+      
       <GroupAttendanceCard groupName="M&AT" />
       <TodayAbsenteesTable groupFilter="M&AT" header={false} />
 

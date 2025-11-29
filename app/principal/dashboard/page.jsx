@@ -17,10 +17,10 @@ import TodayAbsenteesTable from '@/app/absentees-table/page'
 import AttendanceStatsTable from '@/app/components/attendance-stats-table/AttendanceStatsTable'
 import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import OverallStrengthCard from '@/app/components/overall-strength-card/OverallStrengthCard'
-
+import MainLinks from '@/app/components/MainLinks';
 import MetricsCards from "./MetricsCards";
 import PromotionCard from "./PromotionCard";
-
+import ExternalLinks from "@/app/components/ExternalLinks";
 
 
 const fetcher = url => fetch(url).then(res => res.json())
@@ -218,74 +218,10 @@ export default function PrincipalDashboard() {
 
 
 
-        <div className="my-6 flex flex-wrap justify-center gap-3">
-          <Link href="/attendance-dashboard">
-            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              Attendance-Dashboard
-            </button>
-          </Link>
-          <Link href="/attendance-records/individual">
-            <button className="w-full cursor-pointer rounded-full border-2 border-green-500 bg-orange-200 px-6 py-2 font-bold text-green-700 shadow transition hover:scale-105 hover:bg-green-50 sm:w-auto">
-              Edit Records
-            </button>
-          </Link>
-          <Link href="/attendance-records/monthly-summary">
-            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              Central Attendance Register
-            </button>
-          </Link>
+        <MainLinks />
 
-          <Link href="/attendance-form">
-            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              Take attendance
-            </button>
-          </Link>
-
-          <Link href="/attendance-records/attendance-calendar">
-            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              Calendar-View
-            </button>
-          </Link>
-
-          <Link href="/exam-report">
-            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              Central Marks Register
-            </button>
-          </Link>
-
-          <Link href="/student-table">
-            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              View Students
-            </button>
-          </Link>
-          <Link href="/register">
-            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              Add Student
-            </button>
-          </Link>
-          <Link href="/exams-form">
-            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-              Add Exam
-            </button>
-          </Link>
-          <Link href="/students/bulk-upload">
-            <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-                      Bulk Upload Students
-            </button>
-          </Link>
-
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-          <a href="https://skr-learn-portal.netlify.app/" target="_blank" rel="noopener noreferrer">
-            Vocational Question Paper
-          </a>
-        </button>
-
-        <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-          <a href="https://advanced-question-paper-tailwindcss.netlify.app/" target="_blank" rel="noopener noreferrer">
-            M&AT Question Paper
-          </a>
-        </button>
-        </div>
+        <ExternalLinks />
+        
 
         
 

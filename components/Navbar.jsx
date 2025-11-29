@@ -81,12 +81,12 @@ export default function Navbar() {
 
           {status === 'authenticated' ? (
             <>
-              <Link
+              {/* <Link
                 href={getDashboardLink()}
                 className="font-semibold hover:text-yellow-300 transition"
               >
                 Dashboard
-              </Link>
+              </Link> */}
 
               <Link href="/components/about" className="font-semibold hover:text-yellow-300 transition">
                 About

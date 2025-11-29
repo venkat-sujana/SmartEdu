@@ -12,6 +12,9 @@ import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-tabl
 import AttendanceShortageTable from '@/app/components/attendance-shortage-summary/page'
 import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import LecturerInfoCard from "@/app/components/LecturerInfoCard";
+import ExternalLinks from "@/app/components/ExternalLinks";
+
 const fetcher = (...args) =>
   fetch(...args).then(res => {
     if (!res.ok) throw new Error('Network response was not ok')
@@ -21,6 +24,7 @@ const fetcher = (...args) =>
 import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
 import OverallStrengthCard from '@/app/components/overall-strength-card/OverallStrengthCard'
+import MainLinks from '@/app/components/MainLinks';
 
 export default function LecturerDashboard() {
   const { data: shortageApiData } = useSWR('/api/attendance/shortage-summary', fetcher)
@@ -199,92 +203,16 @@ export default function LecturerDashboard() {
         />
       </div>
 
-      <div className="my-6 flex flex-wrap justify-center gap-3">
-        <Link href="/attendance-dashboard">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            Attendance-Dashboard
-          </button>
-        </Link>
-        <Link href="/attendance-records/individual">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 border-2 border-green-500 bg-white px-6 py-2 font-bold text-white shadow transition hover:scale-105 hover:bg-green-50 sm:w-auto">
-            Edit Records
-          </button>
-        </Link>
-        <Link href="/attendance-records/monthly-summary">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            Cetral Attendance Register
-          </button>
-        </Link>
+      <MainLinks />
 
-        <Link href="/attendance-form">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            Take attendance
-          </button>
-        </Link>
-
-        <Link href="/attendance-records/attendance-calendar">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            Calendar-View
-          </button>
-        </Link>
-
-        <Link href="/exam-report">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            Cetral Marks Register
-          </button>
-        </Link>
-
-        <Link href="/student-table">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            View Students
-          </button>
-        </Link>
-        <Link href="/register">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            Add Student
-          </button>
-        </Link>
-        <Link href="/exams-form">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            Add Exam
-          </button>
-        </Link>
-        <Link href="/students/bulk-upload">
-          <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-            Bulk Upload Students
-          </button>
-        </Link>
-
-        <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-          <a href="https://skr-learn-portal.netlify.app/" target="_blank" rel="noopener noreferrer">
-            Vocational Question Paper
-          </a>
-        </button>
-
-        <button className="w-full cursor-pointer rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105 sm:w-auto">
-          <a href="https://advanced-question-paper-tailwindcss.netlify.app/" target="_blank" rel="noopener noreferrer">
-            M&AT Question Paper
-          </a>
-        </button>
+        <ExternalLinks />
 
 
-      </div>
+      
 
-      {/* Lecturer Info Card */}
-      <div className="mx-auto mb-10 flex max-w-3xl items-center gap-6 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-6 shadow-md">
-        <div className="mx-auto max-w-md flex-1 space-y-1">
-          <p className="text-md flex items-center gap-3 font-bold tracking-tight break-words text-blue-900">
-            <span>👤</span> {user?.name || 'Lecturer Name'}
-          </p>
-          <p className="text-md flex items-center gap-3 font-medium tracking-tight break-words text-blue-800">
-            <span>📧</span> {user?.email || 'Lecturer Email'}
-          </p>
-          <p className="text-md text-black-800 flex items-center gap-3 tracking-tight break-words">
-            <span>📚</span> Junior Lecturer in {user?.subject || 'Subject'}
-          </p>
-        </div>
-      </div>
+      <LecturerInfoCard  user={user}/>
 
+      {/* Active Lecturers Card */}
       <ActiveLecturersCard
         className="mx-auto mb-10 w-full max-w-md"
         lecturers={activeLecturersData?.data || []}
