@@ -92,41 +92,53 @@ export async function POST(req) {
 
 export async function GET(req) {
   try {
-    await connectMongoDB()
-    const session = await getServerSession(authOptions)
+    await connectMongoDB();
+    const session = await getServerSession(authOptions);
 
-    if (!session) {
-      return Response.json({ status: 'error', message: 'Unauthorized' }, { status: 401 })
+    if (!session?.user?.collegeId) {
+      return Response.json({ status: 'error', message: 'College ID లేదు' }, { status: 401 });
     }
 
-    let filter = {}
+    const { searchParams } = new URL(req.url);
+    const groupParam = searchParams.get('group'); // Group from URL
 
-    if (session.user.collegeId) {
-      filter.collegeId = new mongoose.Types.ObjectId(session.user.collegeId)
+    console.log('🔍 Params:', { groupParam, sessionCollegeId: session.user.collegeId });
+
+    // Base filter
+    let filter = {
+      collegeId: new mongoose.Types.ObjectId(session.user.collegeId),
+      status: "Active"
+    };
+
+    // ✅ GROUP PARAM has HIGHEST PRIORITY
+    if (groupParam) {
+      filter.group = groupParam;
+      console.log(`🎯 GROUP FILTER Applied: ${groupParam}`);
+    } 
+    // Fallback: session-based filtering
+    else if (session.user.stream === 'Vocational' && session.user.group) {
+      filter.group = session.user.group;
+    }
+    else if (session.user.stream === 'General' && session.user.subject) {
+      filter.subjects = { $in: [session.user.subject] };
     }
 
-    // ✔ Only Active Students
-    filter.status = "Active"
-
-    // Vocational
-    if (session.user.stream === 'Vocational' && session.user.group) {
-      filter.group = session.user.group
-    }
-
-    // General
-    if (session.user.stream === 'General' && session.user.subject) {
-      filter.subjects = session.user.subject
-    }
+    console.log('📊 Final MongoDB Filter:', JSON.stringify(filter));
 
     const students = await Student.find(filter)
-    const totalStudents = await Student.countDocuments(filter)
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    console.log(`✅ Total Students Found: ${students.length}`);
 
     return Response.json({
       status: 'success',
-      totalStudents,
-      data: students,
-    })
+      totalStudents: students.length,
+      data: students
+    });
+
   } catch (error) {
-    return Response.json({ status: 'error', message: 'Server error' }, { status: 500 })
+    console.error('❌ API Error:', error);
+    return Response.json({ status: 'error', message: error.message }, { status: 500 });
   }
 }

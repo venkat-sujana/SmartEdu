@@ -6,6 +6,9 @@ import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/Gr
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
 import MainLinks from '@/app/components/MainLinks';
 import ExternalLinks from "@/app/components/ExternalLinks";
+import GroupStudentTable from "../../components/GroupStudentTable";
+
+
 export default function MandATDashboard() {
 const { data: session, status } = useSession()
 const user = session?.user
@@ -15,15 +18,12 @@ const user = session?.user
     <div className="flex flex-col items-center gap-8 min-h-screen bg-gradient-to-b from-blue-50 to-blue-200">
        {/* Lecturer Info Card */}
        <LecturerInfoCard  user={user}/>
-      
       <h2 className="text-2xl font-extrabold tracking-tight mt-2 text-blue-800">MandAT Group Dashboard</h2>
-      
       <MainLinks/>
-      
       <ExternalLinks />
-
       <GroupAttendanceCard groupName="M&AT" />
       <TodayAbsenteesTable groupFilter="M&AT" header={false} />
+      <GroupStudentTable groupName="M&AT" />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import TodayAbsenteesTable from "@/app/absentees-table/page";
 import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
 import MainLinks from '@/app/components/MainLinks';
+import GroupStudentTable from "../../components/GroupStudentTable";
 
 export default function CECDashboard() {
   const { data: session, status } = useSession()
@@ -23,6 +24,9 @@ return (
       
       <GroupAttendanceCard groupName="HEC" />
       <TodayAbsenteesTable groupFilter="HEC" header={false} />
+
+      <GroupStudentTable groupName="CEC" />
+      <GroupStudentTable groupName="HEC" />
       </div>
   )
 }

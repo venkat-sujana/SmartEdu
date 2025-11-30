@@ -56,17 +56,17 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-3">
           <div className="relative flex items-center justify-center bg-white border-1 rounded-full shadow-md">
             <Image
-              src="/images/profile.jpg" // public folderలో logo ఉంచండి
+              src="/images/download.jpg" // public folderలో logo ఉంచండి
               alt="OSRA Logo"
-              width={60}
-              height={60}
+              width={50}
+              height={50}
               className="rounded-full drop-shadow-md"
               priority
             />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-bold tracking-wide">Embeti Venkataiah</span>
-            <span className="text-[15px] text-gray-200 font-bold">Fullstack Developer</span>
+            <span className="text-sm font-bold tracking-wide">SKR-GJC</span>
+            <span className="text-[15px] text-gray-200 font-bold">Digital Platform for Modern Education</span>
           </div>
         </Link>
 

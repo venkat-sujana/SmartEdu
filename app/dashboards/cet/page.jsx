@@ -6,6 +6,8 @@ import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/Gr
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
 import MainLinks from '@/app/components/MainLinks';
 import ExternalLinks from "@/app/components/ExternalLinks";
+import GroupStudentTable from "../../components/GroupStudentTable";
+
 export default function CETDashboard() {
   const { data: session, status } = useSession()
   const user = session?.user
@@ -21,8 +23,7 @@ return (
       
       <GroupAttendanceCard groupName="CET" />
       <TodayAbsenteesTable groupFilter="CET" header={false} />
-           
-
+      <GroupStudentTable groupName="CET" />
     </div>
   )
 }
