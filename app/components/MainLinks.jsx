@@ -81,6 +81,48 @@ const defaultLinks = [
     icon: ChartBarIcon,
     color: "from-violet-500 to-fuchsia-400",
   },
+  {
+    label: "M&AT Dashboard",
+    href: "/dashboards/mandat",
+    icon: ChartBarIcon,
+    color: "from-orange-500 to-amber-400",
+  },
+  {
+    label: "CET Dashboard",
+    href: "/dashboards/cet",
+    icon: ChartBarIcon,
+    color: "from-indigo-500 to-sky-400",
+  },
+  {
+    label: "MLT Dashboard",
+    href: "/dashboards/mlt",
+    icon: ChartBarIcon,
+    color: "from-violet-500 to-fuchsia-400",
+  },
+  {
+    label: "HEC Dashboard",
+    href: "/dashboards/hec",
+    icon: ChartBarIcon,
+    color: "from-blue-500 to-cyan-400",
+  },
+  {
+    label: "CEC Dashboard",
+    href: "/dashboards/cec",
+    icon: ChartBarIcon,
+    color: "from-pink-500 to-purple-400",
+  },
+  {
+    label: "BiPC Dashboard",
+    href: "/dashboards/bipc",
+    icon: ChartBarIcon,
+    color: "from-emerald-500 to-teal-400",
+  },
+  {
+    label: "MPC Dashboard",
+    href: "/dashboards/mpc",
+    icon: ChartBarIcon,
+    color: "from-blue-500 to-cyan-400",
+  },
 ];
 
 export default function MainLinks({ links = defaultLinks }) {

@@ -1,3 +1,5 @@
+//app/attendance-form/page.jsx
+
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -31,7 +33,7 @@ export default function AttendanceForm() {
   const router = useRouter();
   
   // Fixed return URL - always goes to mandat dashboard
-  const returnUrl = '/dashboards/mandat';
+  const returnUrl = '/lecturer/dashboard';
 
   const [fullscreenToastMessage, setFullscreenToastMessage] = useState(null);
 

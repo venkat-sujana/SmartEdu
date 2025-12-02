@@ -66,7 +66,7 @@ export default function Navbar() {
           </div>
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-bold tracking-wide">SKR-GJC</span>
-            <span className="text-[15px] text-gray-200 font-bold">Digital Platform for Modern Education</span>
+            <span className="text-[10px] text-gray-200 font-bold">Digital Platform for Modern Education</span>
           </div>
         </Link>
 
@@ -81,12 +81,12 @@ export default function Navbar() {
 
           {status === 'authenticated' ? (
             <>
-              {/* <Link
+              <Link
                 href={getDashboardLink()}
                 className="font-semibold hover:text-yellow-300 transition"
               >
                 Dashboard
-              </Link> */}
+              </Link>
 
               <Link href="/components/about" className="font-semibold hover:text-yellow-300 transition">
                 About

@@ -1,3 +1,4 @@
+//app/components/GroupStudentTable.jsx
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import jsPDF from "jspdf";
@@ -240,7 +241,7 @@ export default function GroupStudentTable({ groupName, collegeId }) {
         <th className="px-2 py-2">Name</th>
         <th className="px-2 py-2">Father</th>
         <th className="px-2 py-2">Mobile</th>
-        <th className="px-2 py-2">Caste</th>
+        <th className="px-2 py-2">Caste</th> 
         <th className="px-2 py-2">Gen</th>
         <th className="px-2 py-2">Year</th>
         <th className="px-2 py-2">Adm.No</th>
