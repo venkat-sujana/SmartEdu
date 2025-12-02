@@ -7,7 +7,7 @@ import Link from "next/link";
 import AttendanceEditForm from "@/app/attendance-edit-form/page";
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import { useSearchParams, useRouter } from "next/navigation";
+
 
 export default function IndividualReport() {
   const [fnRecords, setFnRecords] = useState([]);
@@ -27,9 +27,8 @@ export default function IndividualReport() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Get returnTo param or default value
-  const returnUrl = searchParams.get("returnTo") || "/dashboards/mandat";
-
+  
+  
   useEffect(() => {
     if (session?.user?.collegeName) setCollegeName(session.user.collegeName);
   }, [session]);
@@ -192,15 +191,7 @@ export default function IndividualReport() {
         </button>
       </div>
 
-      {/* Return to Dashboard Button with dynamic URL */}
-      <div className="flex justify-center mb-8">
-        <button
-          onClick={() => router.push(returnUrl)}
-          className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold"
-        >
-          ← Back to Dashboard
-        </button>
-      </div>
+      
 
       {/* FN Session */}
       <h3 className="text-lg font-semibold mb-2">

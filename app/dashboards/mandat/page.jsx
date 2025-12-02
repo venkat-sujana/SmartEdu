@@ -46,10 +46,6 @@ export default function MandATDashboard() {
           />
         ))}
       </div>
-
-
-
-
     </div>
   )
 }
