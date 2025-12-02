@@ -1,5 +1,5 @@
 //app/attendance-form/page.jsx - Updated with dynamic navigation after attendance mark
-
+export const dynamic = 'force-dynamic';
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -31,8 +31,8 @@ export default function AttendanceForm() {
   const [collegeId, setCollegeId] = useState("");
   const [collegeName, setCollegeName] = useState("");
   const router = useRouter();
-  const searchParams = useSearchParams();
 
+  const searchParams = useSearchParams();
   // Get return URL from query params or default to mandat dashboard
   const returnUrl = searchParams.get('returnTo') || '/dashboards/mandat';
 
