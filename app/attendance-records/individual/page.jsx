@@ -24,7 +24,7 @@ export default function IndividualReport() {
 
   const { data: session } = useSession();
   const [collegeName, setCollegeName] = useState("");
-  const searchParams = useSearchParams();
+  
   const router = useRouter();
 
   
