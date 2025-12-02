@@ -1,10 +1,9 @@
-//app/api/attendance/monthly-summary/route.js
+// app/api/attendance/monthly-summary/route.js
 import { NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Student from '@/models/Student'
 import Attendance from '@/models/Attendance'
 import mongoose from 'mongoose'
-
 
 // 🎯 Public Holidays list (calendar లో వాడినట్లే)
 const publicHolidays = [
@@ -22,11 +21,12 @@ const publicHolidays = [
   { month: 9, day: 2, name: 'Gandhi Jayanthi' },
   { month: 9, day: 3, name: 'Dussara Holidays' },
   { month: 9, day: 4, name: 'Dussara Holidays' },
-  
 ]
 
 function isHoliday(dateObj) {
-  return publicHolidays.some(h => h.month === dateObj.getMonth() && h.day === dateObj.getDate())
+  return publicHolidays.some(
+    h => h.month === dateObj.getMonth() && h.day === dateObj.getDate()
+  )
 }
 
 export async function GET(req) {
@@ -36,17 +36,39 @@ export async function GET(req) {
     console.log('Connected to database')
 
     const { searchParams } = new URL(req.url)
-    const group = searchParams.get('group')
-    const yearOfStudy = searchParams.get('yearOfStudy')
+    const group = searchParams.get('group')          // e.g. "BiPC"
+    const yearOfStudy = searchParams.get('yearOfStudy') // "First Year" / "Second Year"
     const collegeId = searchParams.get('collegeId')
 
     console.log('Query params:', { group, yearOfStudy, collegeId })
 
-    // Students filter
-    const studentQuery = {}
-    if (group) studentQuery.group = group
-    if (collegeId) studentQuery.collegeId = new mongoose.Types.ObjectId(collegeId)
-    if (yearOfStudy) studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i')
+    if (!collegeId) {
+      return NextResponse.json(
+        { data: [], message: 'collegeId is required' },
+        { status: 400 }
+      )
+    }
+
+    // 🎓 Students filter
+    const studentQuery = {
+      collegeId: new mongoose.Types.ObjectId(collegeId),
+    }
+
+    // group case-insensitive exact
+    if (group) {
+      studentQuery.group = new RegExp(`^${group}$`, 'i')
+    }
+
+    // yearOfStudy: "First Year" / "Second Year" etc.
+    if (yearOfStudy) {
+      if (yearOfStudy === '1' || /first/i.test(yearOfStudy)) {
+        studentQuery.yearOfStudy = /first/i
+      } else if (yearOfStudy === '2' || /second/i.test(yearOfStudy)) {
+        studentQuery.yearOfStudy = /second/i
+      } else {
+        studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i')
+      }
+    }
 
     console.log('Student filter:', studentQuery)
 
@@ -57,11 +79,13 @@ export async function GET(req) {
       return NextResponse.json({ data: [] }, { status: 200 })
     }
 
-    // Attendance filter
-    const attendanceQuery = {}
-    if (group) attendanceQuery.group = group
-    if (collegeId) attendanceQuery.collegeId = new mongoose.Types.ObjectId(collegeId)
-    if (yearOfStudy) attendanceQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i')
+    // 📅 Attendance filter – yearOfStudy filter అవసరం లేదు
+    const attendanceQuery = {
+      collegeId: new mongoose.Types.ObjectId(collegeId),
+    }
+    if (group) {
+      attendanceQuery.group = new RegExp(`^${group}$`, 'i')
+    }
 
     console.log('Attendance filter:', attendanceQuery)
 
@@ -72,7 +96,6 @@ export async function GET(req) {
       return NextResponse.json({ data: [] }, { status: 200 })
     }
 
-    // Month short codes
     const monthMap = {
       January: 'JAN',
       February: 'FEB',
@@ -98,65 +121,48 @@ export async function GET(req) {
       const doj = student.dateOfJoining ? new Date(student.dateOfJoining) : null
 
       attendance.forEach(r => {
-        console.log("🎯 Attendance Record =>", {
-            studentId: r.studentId.toString(),
-            month: r.month,
-            year: r.year,
-            date: r.date,
-            status: r.status,
- })
-        
- 
- if (r.studentId.toString() === student._id.toString()) {
-          const monthKey = `${monthMap[r.month]}-${r.year}`
-          const recordDate = new Date(r.date)
-          console.log("🗓 MonthKey =>", monthKey, "RecordDate =>", recordDate)
+        if (r.studentId.toString() !== student._id.toString()) return
 
-          // Only First Year Students DOJ skip
-          if (student.yearOfStudy?.toLowerCase().includes('first') && doj && recordDate < doj) {
-            console.log("Skipping record as it's before DOJ (First Year)")
-            return
-          }
+        const monthKey = `${monthMap[r.month]}-${r.year}`
+        const recordDate = new Date(r.date)
 
-          // Holiday skip
-          if (isHoliday(recordDate)) {
-            console.log("Skipping record as it's a holiday")
-            return
-          }
+        // Only First Year Students DOJ skip
+        if (
+          student.yearOfStudy?.toLowerCase().includes('first') &&
+          doj &&
+          recordDate < doj
+        ) {
+          return
+        }
 
-          // Working days count
-          
-          if (!workingDays[monthKey]) workingDays[monthKey] = new Set()
-          workingDays[monthKey].add(recordDate.toDateString()) // Use only date as string, ignores different sessions on same 
-        
-      console.log(present[monthKey]); // Inspect datatype
+        // Holiday skip
+        if (isHoliday(recordDate)) return
 
+        // Working days count (unique dates)
+        if (!workingDays[monthKey]) workingDays[monthKey] = new Set()
+        workingDays[monthKey].add(recordDate.toDateString())
 
-          // For every present attendance record/date
-          if (r.status === 'Present') {
-            if (!present[monthKey]) present[monthKey] = new Set();
-            present[monthKey].add(recordDate.toDateString()); // each date only once
-          }
+        // Present days
+        if (r.status === 'Present') {
+          if (!present[monthKey]) present[monthKey] = new Set()
+          present[monthKey].add(recordDate.toDateString())
         }
       })
 
       // Calculate percentage + alerts
       Object.keys(workingDays).forEach(monthKey => {
-       present[monthKey] = present[monthKey] ? present[monthKey].size : 0;
-        const p = present[monthKey] || 0
-        const w = workingDays[monthKey] ? workingDays[monthKey].size : 0 // <-- Only unique days now
-        const perc = w > 0 ? ((p / w) * 100).toFixed(2) + '%' : '0.00%'
-        percentage[monthKey] = perc
-        alerts[monthKey] = parseFloat(perc) < 75 ? 'RED ALERT' : 'OK'
-        // Optionally, for frontend convenience:
-        workingDays[monthKey] = w
-      })
-     
-      console.log('Present:', present)
-      console.log('Working Days:', workingDays)
-      console.log('Percentage:', percentage)
-      console.log('Alerts:', alerts)
+        const w = workingDays[monthKey] ? workingDays[monthKey].size : 0
+        const pSet = present[monthKey]
+        const p = pSet instanceof Set ? pSet.size : 0
 
+        const percNum = w > 0 ? (p / w) * 100 : 0
+        const perc = percNum.toFixed(2) + '%'
+
+        workingDays[monthKey] = w
+        present[monthKey] = p
+        percentage[monthKey] = perc
+        alerts[monthKey] = percNum < 75 ? 'RED ALERT' : 'OK'
+      })
 
       return {
         name: student.name,
@@ -174,6 +180,9 @@ export async function GET(req) {
     return NextResponse.json({ data: summary }, { status: 200 })
   } catch (err) {
     console.error('Error generating monthly summary:', err)
-    return NextResponse.json({ error: 'Failed to generate monthly summary' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to generate monthly summary' },
+      { status: 500 }
+    )
   }
 }

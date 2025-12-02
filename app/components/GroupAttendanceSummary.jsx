@@ -1,8 +1,7 @@
-//app/attendance-records/monthly-summary(CAR)/page.jsx
+//app/components/GroupAttendanceSummary.jsx
+
 'use client'
-import { useEffect, useState } from 'react'
-import React from 'react'
-import Link from 'next/link'
+import React, { useEffect, useState } from 'react'
 import { Printer } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
@@ -19,65 +18,31 @@ const months = [
   { label: 'MAR', year: '2026' },
 ]
 
-const groups = ['MPC', 'BiPC', 'CEC', 'HEC', 'CET', 'M&AT', 'MLT']
-const years = ['First Year', 'Second Year']
-
-export default function MonthlySummary() {
+export default function GroupAttendanceSummary({ group, yearOfStudy, collegeName }) {
   const [summaryData, setSummaryData] = useState([])
-  const [selectedGroup, setSelectedGroup] = useState('')
-  const [selectedYear, setSelectedYear] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const { data: session } = useSession()
-
-  const collegeName = session?.user?.collegeName || 'College'
 
   const filteredData = summaryData.filter(student =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const shortageFilteredData = filteredData.filter(student => {
-    const totalPresent = months.reduce((sum, { label, year }) => {
-      const key = `${label}-${year}`
-      return sum + (student.present?.[key] || 0)
-    }, 0)
-    const totalWorking = months.reduce((sum, { label, year }) => {
-      const key = `${label}-${year}`
-      return sum + (student.workingDays?.[key] || 0)
-    }, 0)
-    const overallPercent = totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0
-    return overallPercent < 75
-  })
-
   useEffect(() => {
-    if (!selectedGroup || !selectedYear) return
+    if (!group || !yearOfStudy || !session?.user?.collegeId) return
 
     const fetchData = async () => {
-      console.log('Fetching data with:', {
-        group: selectedGroup,
-        yearOfStudy: selectedYear,
-      })
-
       try {
-        console.log(
-          'Requesting:',
-          `/api/attendance/monthly-summary?group=${encodeURIComponent(selectedGroup)}
-        &yearOfStudy=${encodeURIComponent(selectedYear)}&collegeId=${session.user.collegeId}`
-        )
-
+        console.log('Fetching data with:', {
+          group: encodeURIComponent(group),
+          yearOfStudy: encodeURIComponent(yearOfStudy),
+          collegeId: session.user.collegeId,
+        })
         const res = await fetch(
-          `/api/attendance/monthly-summary?group=${encodeURIComponent(
-            selectedGroup
-          )}&yearOfStudy=${encodeURIComponent(selectedYear)}&collegeId=${session.user.collegeId}`
+          `/api/attendance/monthly-summary?group=${encodeURIComponent(group)}&yearOfStudy=${encodeURIComponent(yearOfStudy)}&collegeId=${session.user.collegeId}`
         )
-
-        console.log('Response:', res)
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch data: ${res.status}`)
-        }
-
+        if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`)
         const data = await res.json()
-        console.log('Data:', data)
+        console.log('Received data:', data)
         setSummaryData(data.data || [])
       } catch (error) {
         console.error('Fetch error:', error)
@@ -85,17 +50,15 @@ export default function MonthlySummary() {
     }
 
     fetchData()
-  }, [selectedGroup, selectedYear])
+  }, [group, yearOfStudy, session?.user?.collegeId])
 
   const handlePrint = () => {
-    console.log('Printing...')
-    const printContent = document.getElementById('print-area').innerHTML
+    const printContent = document.getElementById(`print-area-${group}`).innerHTML
     const printWindow = window.open('', '', 'width=1000,height=700')
-    console.log('Print window:', printWindow)
     printWindow.document.write(`
       <html>
         <head>
-          <title>Monthly Attendance</title>
+          <title>${collegeName} - ${group} Attendance</title>
           <style>
             body { font-family: Arial, sans-serif; }
             table { border-collapse: collapse; width: 100%; }
@@ -106,90 +69,62 @@ export default function MonthlySummary() {
         <body>${printContent}</body>
       </html>
     `)
-    console.log('Print window document:', printWindow.document)
     printWindow.document.close()
     printWindow.print()
-    console.log('Printed')
   }
 
+  if (!group || !yearOfStudy) return <div>గ్రూప్ మరియు ఇయర్ select చేయండి</div>
+
   return (
-    <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6">
-      {/* Filters */}
-      <div className="mb-6 flex flex-wrap items-center gap-4 rounded-lg bg-white p-5 shadow-md">
-        <select
-          value={selectedGroup}
-          onChange={e => setSelectedGroup(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-white px-4 py-2 transition outline-none focus:ring-2 focus:ring-green-500"
-        >
-          <option value="">Select Group</option>
-          {groups.map(g => (
-            <option key={g} value={g}>
-              {g}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={selectedYear}
-          onChange={e => setSelectedYear(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-white px-4 py-2 transition outline-none focus:ring-2 focus:ring-green-500"
-        >
-          <option value="">Select Year</option>
-          {years.map(y => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-
-        <input
-          type="text"
-          placeholder="🔍 Search Student"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          className="min-w-[200px] flex-grow rounded-lg border border-gray-300 px-4 py-2 transition outline-none focus:ring-2 focus:ring-green-500"
-        />
-
-        <button
-          onClick={handlePrint}
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700 cursor-pointer"
-        >
-          {/* Assuming Printer is a valid React icon component */}
-          <Printer size={18} />
-          Print
-        </button>
+    <div className="mb-8">
+      {/* Group Header */}
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {group} - {yearOfStudy} Attendance
+        </h2>
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            placeholder="🔍 Search student by name"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-64 rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-green-500"
+          />
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            <Printer size={18} />
+            Print
+          </button>
+        </div>
       </div>
 
-      
-
       {/* Attendance Table */}
-      <div id="print-area" className="overflow-x-auto rounded-lg bg-white shadow-lg">
-        <div className="mb-4 text-center text-xl font-bold text-gray-800 md:text-2xl items-center flex justify-center pt-6">
-           {collegeName} <br/>
-          Central Attendance Register – {selectedYear} ({selectedGroup})
-     </div>
+      <div id={`print-area-${group}`} className="overflow-x-auto rounded-lg bg-white shadow-lg">
+        <div className="mb-4 text-center text-xl font-bold text-gray-800 pt-6">
+          {collegeName} <br />
+          Central Attendance Register – {yearOfStudy} ({group})
+        </div>
 
         {filteredData.length === 0 ? (
-          <p className="mt-4 py-6 text-center text-gray-500">No data available.</p>
-          
+          <p className="py-12 text-center text-gray-500">No Data found</p>
         ) : (
-          
           <table className="w-full table-auto border border-gray-400 font-sans text-sm">
             <thead className="bg-green-700 text-sm tracking-wide text-white uppercase">
               <tr>
                 <th className="w-14 border border-gray-400 p-2 text-center">S.No</th>
-                <th className="border border-gray-400 p-2 text-left">Name of Student</th>
+                <th className="border border-gray-400 p-2 text-left">student name</th>
                 {months.map(({ label }) => (
                   <th key={label} className="border border-gray-400 p-2 text-center">
                     {label}
                   </th>
                 ))}
                 <th className="border border-gray-400 p-2 text-center">Total</th>
-                <th className="border border-gray-400 p-2 text-center">Shortage (Days)</th>
-                <th className="border border-gray-400 p-2 text-center">Status</th>
+                <th className="border border-gray-400 p-2 text-center">Shortage</th>
+                <th className="border border-gray-400 p-2 text-center">sattus</th>
               </tr>
             </thead>
-
             <tbody>
               {filteredData.map((student, idx) => {
                 const totalPresent = months.reduce((sum, { label, year }) => {
@@ -207,10 +142,10 @@ export default function MonthlySummary() {
 
                 return (
                   <React.Fragment key={idx}>
-                    {/* 1️⃣ Working Days */}
+                    {/* Working Days */}
                     <tr className="bg-gray-100 font-semibold text-gray-800">
                       <td className="border border-gray-400 text-center"></td>
-                      <td className="border border-gray-400 px-2 py-1">Working Days</td>
+                      <td className="border border-gray-400 px-2 py-1">Working days</td>
                       {months.map(({ label, year }) => {
                         const key = `${label}-${year}`
                         return (
@@ -219,18 +154,14 @@ export default function MonthlySummary() {
                           </td>
                         )
                       })}
-                      <td className="border border-gray-400 text-center font-bold">
-                        {totalWorking}
-                      </td>
+                      <td className="border border-gray-400 text-center font-bold">{totalWorking}</td>
                       <td className="border border-gray-400"></td>
                       <td className="border border-gray-400"></td>
                     </tr>
 
-                    {/* 2️⃣ Present Days */}
+                    {/* Present Days */}
                     <tr>
-                      <td className="border border-gray-400 text-center font-semibold">
-                        {idx + 1}
-                      </td>
+                      <td className="border border-gray-400 text-center font-semibold">{idx + 1}</td>
                       <td className="border border-gray-400 px-2 py-1">{student.name}</td>
                       {months.map(({ label, year }) => {
                         const key = `${label}-${year}`
@@ -240,30 +171,25 @@ export default function MonthlySummary() {
                           </td>
                         )
                       })}
-                      <td className="border border-gray-400 text-center font-bold">
-                        {totalPresent}
-                      </td>
+                      <td className="border border-gray-400 text-center font-bold">{totalPresent}</td>
                       <td className="border border-gray-400"></td>
                       <td className="border border-gray-400"></td>
                     </tr>
 
-                    {/* 3️⃣ Percent + Shortage + Status */}
+                    {/* Percent + Shortage + Status */}
                     <tr className="bg-green-50 font-semibold text-gray-800">
                       <td className="border border-gray-400 text-center"></td>
-                      <td className="border border-gray-400 px-2 py-1">Percent</td>
+                      <td className="border border-gray-400 px-2 py-1">Percentage</td>
                       {months.map(({ label, year }) => {
                         const key = `${label}-${year}`
                         const present = student.present?.[key] || 0
                         const total = student.workingDays?.[key] || 0
                         const percent = total > 0 ? ((present / total) * 100).toFixed(0) : '-'
                         const isLow = total > 0 && percent < 75
-
                         return (
                           <td
                             key={key}
-                            className={`border border-gray-400 text-center ${
-                              isLow ? 'font-bold text-red-600' : ''
-                            }`}
+                            className={`border border-gray-400 text-center ${isLow ? 'font-bold text-red-600' : ''}`}
                           >
                             {percent}%
                           </td>
@@ -276,7 +202,7 @@ export default function MonthlySummary() {
                         {isEligible ? (
                           <span className="text-green-600">No shortage</span>
                         ) : (
-                          <span className="font-bold text-red-600">{shortage} days</span>
+                          <span className="font-bold text-red-600">{shortage}Days</span>
                         )}
                       </td>
                       <td className="border border-gray-400 text-center">
@@ -288,7 +214,7 @@ export default function MonthlySummary() {
                       </td>
                     </tr>
 
-                    {/* Spacer Row */}
+                    {/* Spacer */}
                     <tr>
                       <td colSpan={months.length + 6} className="h-3"></td>
                     </tr>

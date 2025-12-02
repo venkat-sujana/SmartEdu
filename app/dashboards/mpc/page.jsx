@@ -6,10 +6,15 @@ import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/Gr
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
 import MainLinks from '@/app/components/MainLinks';
 import GroupStudentTable from "../../components/GroupStudentTable";
+import GroupAttendanceSummary from '@/app/components/GroupAttendanceSummary';
 
-export default function MPCDashboard({collegeName}) {
+export default function MPCDashboard() {
   const { data: session, status } = useSession()
   const user = session?.user
+
+  const collegeName = user?.collegeName || 'College'
+  const years = ['First Year', 'Second Year']
+
 return (
     <div className="flex flex-col items-center gap-8 min-h-screen bg-gradient-to-b from-blue-50 to-blue-200">
              {/* Lecturer Info Card */}
@@ -27,6 +32,37 @@ return (
 
       <GroupStudentTable groupName="MPC" />
       <GroupStudentTable groupName="BiPC" />
+
+      <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
+            <h1 className="text-2xl font-bold text-center mb-4">
+              {collegeName} - MPC Attendance
+            </h1>
+      
+            {years.map(year => (
+                    <GroupAttendanceSummary
+                      key={year}
+                      group="MPC"
+                      yearOfStudy={year}
+                      collegeName={collegeName}
+                    />
+                  ))}
+          </div>
+
+
+          <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
+                <h1 className="text-2xl font-bold text-center mb-4">
+                  {collegeName} - BiPC Attendance
+                </h1>
+          
+                {years.map(year => (
+                  <GroupAttendanceSummary
+                    key={year}
+                    group="BiPC"
+                    yearOfStudy={year}
+                    collegeName={collegeName}
+                  />
+                ))}
+              </div>
 
     </div>
   )

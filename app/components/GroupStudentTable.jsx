@@ -164,29 +164,58 @@ export default function GroupStudentTable({ groupName, collegeId }) {
       </div>
 
       {/* Compact Filters */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-white/60 backdrop-blur-sm rounded-lg">
-        <input 
-          placeholder="🔍 Search Name" 
-          value={search} 
-          onChange={handleSearchChange}
-          className="p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-300"
-        />
-        <select name="caste" value={filters.caste} onChange={handleFilterChange} className="p-2 border rounded-lg text-sm">
-          <option value="">Caste</option>
-          <option value="OC">OC</option><option value="BC-A">BC-A</option><option value="BC-B">BC-B</option>
-          <option value="SC">SC</option><option value="ST">ST</option>
-        </select>
-        <select name="gender" value={filters.gender} onChange={handleFilterChange} className="p-2 border rounded-lg text-sm">
-          <option value="">Gender</option><option value="Male">Male</option><option value="Female">Female</option>
-        </select>
-        <select name="yearOfStudy" value={filters.yearOfStudy} onChange={handleFilterChange} className="p-2 border rounded-lg text-sm">
-          <option value="">Year</option><option value="First Year">1st Year</option><option value="Second Year">2nd Year</option>
-        </select>
-        <button onClick={() => {setSearch(''); setFilters({caste:'',gender:'',yearOfStudy:''});}} 
-                className="col-span-2 md:col-span-1 bg-red-500 text-white p-2 rounded-lg text-sm font-bold hover:bg-red-600">
-          Clear Filters
-        </button>
-      </div>
+      {/* Filters */}
+<div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 p-3 bg-white/60 rounded-lg">
+  <input 
+    placeholder="🔍 Search Name" 
+    value={search} 
+    onChange={handleSearchChange}
+    className="p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-300"
+  />
+  <select
+    name="caste"
+    value={filters.caste}
+    onChange={handleFilterChange}
+    className="p-2 border rounded-lg text-sm"
+  >
+    <option value="">Caste</option>
+    <option value="OC">OC</option>
+    <option value="BC-A">BC-A</option>
+    <option value="BC-B">BC-B</option>
+    <option value="SC">SC</option>
+    <option value="ST">ST</option>
+  </select>
+  <select
+    name="gender"
+    value={filters.gender}
+    onChange={handleFilterChange}
+    className="p-2 border rounded-lg text-sm"
+  >
+    <option value="">Gender</option>
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+  </select>
+  <select
+    name="yearOfStudy"
+    value={filters.yearOfStudy}
+    onChange={handleFilterChange}
+    className="p-2 border rounded-lg text-sm"
+  >
+    <option value="">Year</option>
+    <option value="First Year">1st Year</option>
+    <option value="Second Year">2nd Year</option>
+  </select>
+  <button
+    onClick={() => {
+      setSearch("");
+      setFilters({ caste: "", gender: "", yearOfStudy: "" });
+    }}
+    className="md:col-span-4 bg-red-500 text-white p-2 rounded-lg text-xs font-bold hover:bg-red-600"
+  >
+    Clear Filters
+  </button>
+</div>
+
 
       {/* Compact Export Buttons */}
       <div className="flex flex-wrap gap-2 p-2 bg-white/70 rounded-lg">
@@ -202,55 +231,73 @@ export default function GroupStudentTable({ groupName, collegeId }) {
       </div>
 
       {/* ✅ COMPACT RESPONSIVE TABLE */}
-      <div className="overflow-x-auto bg-white rounded-xl shadow-lg border" ref={tableRef}>
-        <table className="min-w-full table-auto text-xs">
-          <thead className="bg-gradient-to-r from-gray-800 to-gray-900 text-white">
-            <tr>
-              <th className="px-2 py-2 text-center w-8">No</th>
-              <th className="px-2 py-2 w-28">Name</th>
-              <th className="px-2 py-2 w-24">Father</th>
-              <th className="px-2 py-2 w-24">Mobile</th>
-              <th className="px-2 py-2 w-16">Caste</th>
-              <th className="px-2 py-2 w-12">Gender</th>
-              <th className="px-2 py-2 w-20">Year</th>
-              <th className="px-2 py-2 w-20">Adm.No</th>
-              <th className="px-1 py-2 w-16 text-center">Photo</th>
-              <th className="px-1 py-2 w-20 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {paginatedStudents.map((s, idx) => (
-              <tr key={s._id} className="hover:bg-gray-50">
-                <td className="px-1 py-2 text-center font-bold text-gray-800">{offset + idx + 1}</td>
-                <td className="px-2 py-2 font-semibold text-sm truncate max-w-[120px]">{s.name}</td>
-                <td className="px-2 py-2 text-xs truncate">{s.fatherName}</td>
-                <td className="px-2 py-2 text-xs">{s.mobile}</td>
-                <td className="px-2 py-2 text-xs">{s.caste}</td>
-                <td className="px-2 py-2 text-xs">{s.gender?.[0]}</td>
-                <td className="px-2 py-2 text-xs font-bold">{s.yearOfStudy?.split(' ')[0]}</td>
-                <td className="px-2 py-2 text-xs">{s.admissionNo}</td>
-                <td className="px-1 py-2 text-center">
-                  {s.photo ? (
-                    <Image src={s.photo} alt="Photo" width={32} height={32} className="rounded object-cover" />
-                  ) : '–'}
-                </td>
-                <td className="px-1 py-2 text-center">
-                  <div className="flex gap-1 justify-center">
-                    <button onClick={() => handleEdit(s)} 
-                            className="p-1 text-yellow-600 hover:bg-yellow-100 rounded">
-                      <Pencil className="w-3 h-3" />
-                    </button>
-                    <button onClick={() => handleDelete(s._id)} 
-                            className="p-1 text-red-600 hover:bg-red-100 rounded">
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Students Table - mobile-friendly horizontal scroll */}
+<div className="w-full overflow-x-auto bg-white rounded-xl shadow-lg border" ref={tableRef}>
+  <table className="min-w-max table-auto text-xs">
+    <thead className="bg-gray-900 text-white">
+      <tr>
+        <th className="px-2 py-2 text-center">No</th>
+        <th className="px-2 py-2">Name</th>
+        <th className="px-2 py-2">Father</th>
+        <th className="px-2 py-2">Mobile</th>
+        <th className="px-2 py-2">Caste</th>
+        <th className="px-2 py-2">Gen</th>
+        <th className="px-2 py-2">Year</th>
+        <th className="px-2 py-2">Adm.No</th>
+        <th className="px-2 py-2 text-center">Photo</th>
+        <th className="px-2 py-2 text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody className="divide-y divide-gray-100">
+      {paginatedStudents.map((s, idx) => (
+        <tr key={s._id} className="hover:bg-gray-50">
+          <td className="px-2 py-2 text-center font-semibold">{offset + idx + 1}</td>
+          <td className="px-2 py-2 max-w-[140px] truncate text-xs font-semibold">
+            {s.name}
+          </td>
+          <td className="px-2 py-2 max-w-[120px] truncate text-xs">
+            {s.fatherName}
+          </td>
+          <td className="px-2 py-2 text-xs">{s.mobile}</td>
+          <td className="px-2 py-2 text-xs">{s.caste}</td>
+          <td className="px-2 py-2 text-xs">{s.gender?.[0]}</td>
+          <td className="px-2 py-2 text-xs">{s.yearOfStudy?.split(" ")[0]}</td>
+          <td className="px-2 py-2 text-xs">{s.admissionNo}</td>
+          <td className="px-2 py-2 text-center">
+            {s.photo ? (
+              <Image
+                src={s.photo}
+                alt="Photo"
+                width={28}
+                height={28}
+                className="rounded object-cover mx-auto"
+              />
+            ) : (
+              <span className="text-[10px] text-gray-400">-</span>
+            )}
+          </td>
+          <td className="px-2 py-2">
+            <div className="flex gap-1 justify-center">
+              <button
+                onClick={() => handleEdit(s)}
+                className="p-1 text-yellow-600 hover:bg-yellow-100 rounded"
+              >
+                <Pencil className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => handleDelete(s._id)}
+                className="p-1 text-red-600 hover:bg-red-100 rounded"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
 
       {/* Compact Pagination */}
       <div className="flex items-center justify-center gap-2 p-3 bg-white rounded-lg shadow">

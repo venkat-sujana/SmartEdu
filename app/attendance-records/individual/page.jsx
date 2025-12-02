@@ -7,11 +7,12 @@ import Link from "next/link";
 import AttendanceEditForm from "@/app/attendance-edit-form/page";
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function IndividualReport() {
   const [fnRecords, setFnRecords] = useState([]);
   const [anRecords, setAnRecords] = useState([]);
-  const [records, setRecords] = useState([]); // optional combined used for excel export if needed
+  const [records, setRecords] = useState([]);
   const [group, setGroup] = useState("");
   const [year, setYear] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -23,6 +24,11 @@ export default function IndividualReport() {
 
   const { data: session } = useSession();
   const [collegeName, setCollegeName] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Get returnTo param or default value
+  const returnUrl = searchParams.get("returnTo") || "/dashboards/mandat";
 
   useEffect(() => {
     if (session?.user?.collegeName) setCollegeName(session.user.collegeName);
@@ -42,7 +48,9 @@ export default function IndividualReport() {
 
     const base = `/api/attendance/individual?group=${encodeURIComponent(
       group
-    )}&year=${encodeURIComponent(year)}${startDate && endDate ? `&start=${startDate}&end=${endDate}` : ""}`;
+    )}&year=${encodeURIComponent(year)}${
+      startDate && endDate ? `&start=${startDate}&end=${endDate}` : ""
+    }`;
 
     try {
       // FN
@@ -59,7 +67,6 @@ export default function IndividualReport() {
       const anData = anJson.data || [];
       setAnRecords(anData);
 
-      // optional combined for export
       setRecords([...fnData, ...anData]);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -70,9 +77,11 @@ export default function IndividualReport() {
     }
   };
 
-  // Delete by id and refresh only by refetching both (safe)
-  const handleDelete = async (id, sessionType) => {
-    const confirmed = window.confirm("Are you sure you want to delete this attendance record?");
+  // Delete by id and refresh
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this attendance record?"
+    );
     if (!confirmed) return;
 
     const toastId = toast.loading("Deleting...");
@@ -81,9 +90,6 @@ export default function IndividualReport() {
       if (!res.ok) throw new Error("Delete failed");
 
       toast.success("Deleted successfully", { id: toastId });
-
-      // After deletion, fetch the lists again (or selectively fetch only the affected session)
-      // We'll refetch both to keep UI consistent
       await fetchData();
     } catch (err) {
       console.error("Delete error:", err);
@@ -186,12 +192,14 @@ export default function IndividualReport() {
         </button>
       </div>
 
+      {/* Return to Dashboard Button with dynamic URL */}
       <div className="flex justify-center mb-8">
-        <Link href="/attendance-form">
-          <button className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold">
-            📝 Attendance Form
-          </button>
-        </Link>
+        <button
+          onClick={() => router.push(returnUrl)}
+          className="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 font-bold"
+        >
+          ← Back to Dashboard
+        </button>
       </div>
 
       {/* FN Session */}
@@ -235,7 +243,7 @@ export default function IndividualReport() {
                       <Pencil size={16} />
                     </button>
                     <button
-                      onClick={() => handleDelete(r._id, r.session)}
+                      onClick={() => handleDelete(r._id)}
                       className="text-red-600 hover:text-red-800"
                     >
                       <Trash2 size={16} />
@@ -293,7 +301,7 @@ export default function IndividualReport() {
                       <Pencil size={16} />
                     </button>
                     <button
-                      onClick={() => handleDelete(r._id, r.session)}
+                      onClick={() => handleDelete(r._id)}
                       className="text-red-600 hover:text-red-800"
                     >
                       <Trash2 size={16} />

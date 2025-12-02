@@ -1,3 +1,5 @@
+// app/attendance-records/page.jsx
+
 'use client'
 import { useEffect, useState } from 'react'
 import { Users2, CalendarDays, Printer } from 'lucide-react'
