@@ -1,11 +1,9 @@
-//app/attendance-form/page.jsx - Updated with dynamic navigation after attendance mark
-export const dynamic = 'force-dynamic';
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthsList = [
@@ -31,10 +29,9 @@ export default function AttendanceForm() {
   const [collegeId, setCollegeId] = useState("");
   const [collegeName, setCollegeName] = useState("");
   const router = useRouter();
-
-  const searchParams = useSearchParams();
-  // Get return URL from query params or default to mandat dashboard
-  const returnUrl = searchParams.get('returnTo') || '/dashboards/mandat';
+  
+  // Fixed return URL - always goes to mandat dashboard
+  const returnUrl = '/dashboards/mandat';
 
   const [fullscreenToastMessage, setFullscreenToastMessage] = useState(null);
 
@@ -134,7 +131,7 @@ export default function AttendanceForm() {
         setAttendanceData({});
         setStudents([]);
         
-        // Navigate to respective dashboard after 2 seconds (after toast is seen)
+        // Navigate to mandat dashboard after 2 seconds
         setTimeout(() => {
           router.push(returnUrl);
         }, 2000);
@@ -190,7 +187,7 @@ export default function AttendanceForm() {
           <p className="text-gray-500">Select date, group, session and ensure students are visible.</p>
         </div>
 
-        {/* Dynamic Back Button */}
+        {/* Fixed Back Button */}
         <div className="mb-4 flex justify-end">
           <Link href={returnUrl}>
             <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer font-bold">
@@ -202,7 +199,7 @@ export default function AttendanceForm() {
         {/* Form Fields */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6">
           <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700">Date (Date)</label>
+            <label className="block text-sm font-semibold mb-1 text-gray-700">Date</label>
             <input
               type="date"
               value={selectedDate}
@@ -212,7 +209,7 @@ export default function AttendanceForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700">Year (Year)</label>
+            <label className="block text-sm font-semibold mb-1 text-gray-700">Year</label>
             <select
               value={selectedYearOfStudy}
               onChange={(e) => setSelectedYearOfStudy(e.target.value)}
@@ -225,7 +222,7 @@ export default function AttendanceForm() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700">Group (Group)</label>
+            <label className="block text-sm font-semibold mb-1 text-gray-700">Group</label>
             <select
               value={selectedGroup}
               onChange={(e) => setSelectedGroup(e.target.value)}
@@ -238,21 +235,21 @@ export default function AttendanceForm() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700"> Session (Session)</label>
+            <label className="block text-sm font-semibold mb-1 text-gray-700">Session</label>
             <select
               value={selectedSession}
               onChange={(e) => setSelectedSession(e.target.value)}
               className="block w-full border-2 border-blue-400 rounded-xl px-3 py-2 text-base bg-white focus:ring-2 focus:ring-indigo-400"
               required
             >
-              <option value="">select Session</option>
+              <option value="">Select Session</option>
               {sessionList.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700">Lecturer (Lecturer)</label>
+            <label className="block text-sm font-semibold mb-1 text-gray-700">Lecturer</label>
             <select
               value={selectedLecturerId}
               onChange={(e) => setSelectedLecturerId(e.target.value)}
@@ -272,7 +269,7 @@ export default function AttendanceForm() {
         {/* Students Grid */}
         {filteredStudents.length > 0 && (
           <div className="mt-6">
-            <h3 className="font-bold mb-4 text-blue-700">విద్యార్థుల జాబితా (Students List)</h3>
+            <h3 className="font-bold mb-4 text-blue-700">Students List</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {filteredStudents.map((student) => (
                 <div
@@ -294,7 +291,7 @@ export default function AttendanceForm() {
                           : "bg-gray-400 hover:bg-green-500"
                       }`}
                     >
-                     Present
+                      Present
                     </button>
                     <button
                       onClick={() => handleToggleChange(student._id, "Absent")}
@@ -304,7 +301,7 @@ export default function AttendanceForm() {
                           : "bg-gray-400 hover:bg-red-500"
                       }`}
                     >
-                       Absent
+                      Absent
                     </button>
                   </div>
                 </div>
