@@ -1,17 +1,22 @@
 // app/dashboards/bipc/page.jsx
 "use client"
+import { useState } from 'react';  // Import useState
 import { useSession } from 'next-auth/react'
 import TodayAbsenteesTable from "@/app/absentees-table/page";
 import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-import MainLinks from '@/app/components/MainLinks';
+
 import GroupStudentTable from "../../components/GroupStudentTable";
 import GroupAttendanceSummary from '@/app/components/GroupAttendanceSummary';
+import AttendanceForm from '@/app/components/AttendanceForm';
 
 
 export default function BiPCDashboard() {
   const { data: session, status } = useSession()
   const user = session?.user
+
+  const [showDetails, setShowDetails] = useState(false);  // State to toggle view
+
 
   console.log('BiPCDashboard - useSession: ', session)
   console.log('BiPCDashboard - user: ', user)
@@ -30,52 +35,69 @@ export default function BiPCDashboard() {
 
       <h2 className="text-xl font-extrabold tracking-tight  mt-4 text-blue-800">Science Group Dashboard</h2>
 
-      <MainLinks />
+      
 
       <GroupAttendanceCard groupName="BiPC" />
-      <TodayAbsenteesTable groupFilter="BiPC" header={false} />
-
       <GroupAttendanceCard groupName="MPC" />
-      <TodayAbsenteesTable groupFilter="MPC" header={false} />
-      
-      <GroupStudentTable groupName="BiPC" />
-      <GroupStudentTable groupName="MPC" />
 
-      <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
-        <h1 className="text-2xl font-bold text-center mb-4">
-          {collegeName} - BiPC Attendance
-        </h1>
-
-        {years.map(year => (
-          <GroupAttendanceSummary
-            key={year}
-            group="BiPC"          // exactగా ఇలా ఉండాలి
-            yearOfStudy={year}    // "First Year" / "Second Year"
-            collegeName={collegeName}
-          />
-        ))}
-      </div>
-
-      <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
-        <h1 className="text-2xl font-bold text-center mb-4">
-          {collegeName} - MPC Attendance
-        </h1>
-
-        {years.map(year => (
-          <GroupAttendanceSummary
-            key={year}
-            group="MPC"
-            yearOfStudy={year}
-            collegeName={collegeName}
-          />
-        ))}
-      </div>
+      {/* 👉 Attendance form ఇక్కడే embed అవుతుంది */}
+                              <AttendanceForm defaultGroup="BiPC" returnUrl="/dashboards/bipc" />
 
 
-      
-
-
-    </div>
+      {/* View toggle button */}
+                 <button 
+                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer mb-4"
+                   onClick={() => setShowDetails(!showDetails)}
+                 >
+                   {showDetails ? 'Hide' : 'View'} Details
+                 </button>
+           
+                 {/* Conditionally render these when showDetails is true */}
+                 {showDetails && (
+                   <>
+                     <TodayAbsenteesTable groupFilter="MPC" header={false} />
+                     <GroupStudentTable groupName="MPC" />
+     
+                     <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
+                 <h1 className="text-2xl font-bold text-center mb-4">
+                   {collegeName} - MPC Attendance
+                 </h1>
+           
+                 {years.map(year => (
+                         <GroupAttendanceSummary
+                           key={year}
+                           group="MPC"
+                           yearOfStudy={year}
+                           collegeName={collegeName}
+                         />
+                       ))}
+               </div>
+     
+     
+                     <TodayAbsenteesTable groupFilter="BiPC" header={false} />
+                     <GroupStudentTable groupName="BiPC" />
+     
+           
+     
+     
+               <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
+                     <h1 className="text-2xl font-bold text-center mb-4">
+                       {collegeName} - BiPC Attendance
+                     </h1>
+               
+                     {years.map(year => (
+                       <GroupAttendanceSummary
+                         key={year}
+                         group="BiPC"
+                         yearOfStudy={year}
+                         collegeName={collegeName}
+                       />
+                     ))}
+                   </div>
+     
+                   </>
+                 )}
+</div>
   )
 }
 

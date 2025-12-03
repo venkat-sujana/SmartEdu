@@ -5,10 +5,10 @@ import { useSession } from 'next-auth/react'
 import TodayAbsenteesTable from "@/app/absentees-table/page";
 import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-import MainLinks from '@/app/components/MainLinks';
+
 import GroupStudentTable from "../../components/GroupStudentTable";
 import GroupAttendanceSummary from '@/app/components/GroupAttendanceSummary';
-
+import AttendanceForm from '@/app/components/AttendanceForm';
 export default function MPCDashboard() {
   const { data: session, status } = useSession()
   const user = session?.user
@@ -25,10 +25,12 @@ return (
              
       <h2 className="text-2xl font-bold mt-4 text-blue-800">Science Group Dashboard</h2>
 
-      <MainLinks/>
+      
       
       <GroupAttendanceCard groupName="MPC" />
       <GroupAttendanceCard groupName="BiPC" />
+      {/* 👉 Attendance form ఇక్కడే embed అవుతుంది */}
+            <AttendanceForm defaultGroup="MPC" returnUrl="/dashboards/mpc" />
 
 
 
@@ -47,7 +49,7 @@ return (
                 <TodayAbsenteesTable groupFilter="MPC" header={false} />
                 <GroupStudentTable groupName="MPC" />
 
-                <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
+            <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
             <h1 className="text-2xl font-bold text-center mb-4">
               {collegeName} - MPC Attendance
             </h1>
@@ -63,11 +65,8 @@ return (
           </div>
 
 
-                <TodayAbsenteesTable groupFilter="BiPC" header={false} />
-                <GroupStudentTable groupName="BiPC" />
-
-      
-
+          <TodayAbsenteesTable groupFilter="BiPC" header={false} />
+          <GroupStudentTable groupName="BiPC" />
 
           <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
                 <h1 className="text-2xl font-bold text-center mb-4">
@@ -82,14 +81,11 @@ return (
                     collegeName={collegeName}
                   />
                 ))}
-              </div>
+          </div>
 
               </>
             )}
-
-
-      
-    </div>
+</div>
   )
 }
 

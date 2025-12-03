@@ -5,11 +5,11 @@ import { useSession } from 'next-auth/react'
 import TodayAbsenteesTable from "@/app/absentees-table/page";
 import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-import MainLinks from '@/app/components/MainLinks';
+
 import ExternalLinks from "@/app/components/ExternalLinks";
 import GroupStudentTable from "../../components/GroupStudentTable";
 import GroupAttendanceSummary from '@/app/components/GroupAttendanceSummary';
-
+import AttendanceForm from '@/app/components/AttendanceForm';
 export default function MLTDashboard() {
   const { data: session, status } = useSession()
   const user = session?.user
@@ -25,9 +25,12 @@ return (
              <LecturerInfoCard  user={user}/>
 <h2 className="text-2xl font-bold mt-4 text-blue-800">MLT Group Dashboard</h2>
 
-      <MainLinks/>
+      
       <ExternalLinks />
       <GroupAttendanceCard groupName="MLT" />
+
+      {/* 👉 Attendance form ఇక్కడే embed అవుతుంది */}
+      <AttendanceForm defaultGroup="MLT" returnUrl="/dashboards/mlt" />
 
       {/* View toggle button */}
       <button 
