@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter} from "next/navigation";
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -27,12 +27,12 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
   
   const { data: session } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
   
+
   const [fullscreenToastMessage, setFullscreenToastMessage] = useState(null);
 
   // Auto-set return URL from query param
-  const dynamicReturnUrl = searchParams.get('from') || returnUrl;
+  const dynamicReturnUrl =  returnUrl;
 
   useEffect(() => {
     if (session?.user?.collegeId) setCollegeId(session.user.collegeId);
