@@ -1,11 +1,6 @@
-//app/components/attendance-shortage-summary/page.jsx
-
 "use client";
 import { useEffect, useState } from "react";
-import React from "react";
-import Link from "next/link";
 import { Printer } from "lucide-react";
-import { useSession } from "next-auth/react";
 
 const months = [
   { label: "JUN", year: "2025" },
@@ -20,32 +15,25 @@ const months = [
   { label: "MAR", year: "2026" },
 ];
 
-const groups = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
-const years = ["First Year", "Second Year"];
-
-export default function MonthlySummary() {
+export default function GroupShortageSummary({ 
+  group, 
+  year, 
+  collegeId, 
+  collegeName = "College",
+  className = "" 
+}) {
   const [summaryData, setSummaryData] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: session } = useSession();
-
-  const collegeName = session?.user?.collegeName || "College";
 
   useEffect(() => {
-    if (!selectedGroup || !selectedYear) return;
+    if (!group || !year || !collegeId) return;
+    
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `/api/attendance/monthly-summary?group=${encodeURIComponent(
-            selectedGroup
-          )}&yearOfStudy=${encodeURIComponent(
-            selectedYear
-          )}&collegeId=${session.user.collegeId}`
+          `/api/attendance/monthly-summary?group=${encodeURIComponent(group)}&yearOfStudy=${encodeURIComponent(year)}&collegeId=${collegeId}`
         );
-        if (!res.ok) {
-          throw new Error(`Failed to fetch data: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`);
         const data = await res.json();
         setSummaryData(data.data || []);
       } catch (error) {
@@ -53,14 +41,14 @@ export default function MonthlySummary() {
       }
     };
     fetchData();
-  }, [selectedGroup, selectedYear, session?.user?.collegeId]);
+  }, [group, year, collegeId]);
 
   // Search filter
   const filteredData = summaryData.filter((student) =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // 👉 Shortage filter: Only <75% overall attendance
+  // Shortage filter: Only <75% overall attendance
   const shortageFilteredData = filteredData.filter((student) => {
     const totalPresent = months.reduce((sum, { label, year }) => {
       const key = `${label}-${year}`;
@@ -70,8 +58,7 @@ export default function MonthlySummary() {
       const key = `${label}-${year}`;
       return sum + (student.workingDays?.[key] || 0);
     }, 0);
-    const overallPercent =
-      totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0;
+    const overallPercent = totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0;
     return overallPercent < 75;
   });
 
@@ -81,7 +68,7 @@ export default function MonthlySummary() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Shortage Students</title>
+          <title>${group} ${year} - Shortage Students</title>
           <style>
             body { font-family: Arial, sans-serif; }
             table { border-collapse: collapse; width: 100%; }
@@ -96,34 +83,26 @@ export default function MonthlySummary() {
     printWindow.print();
   };
 
+  if (!group || !year) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        Select Group & Year to view shortage summary
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-3xl mx-auto p-5 mt-20 bg-gray-100 border border-2 rounded-lg shadow-lg">
-      {/* Filters */}
+    <div className={`max-w-3xl mx-auto p-5 bg-gray-100 border border-2 rounded-lg shadow-lg ${className}`}>
+      {/* Header with Group & Year */}
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          {group} - {year}
+        </h2>
+        <p className="text-lg text-gray-600">{collegeName}</p>
+      </div>
+
+      {/* Filters & Print */}
       <div className="mb-6 flex flex-wrap gap-4 items-center bg-white p-5 rounded-lg shadow-md">
-        <select
-          value={selectedGroup}
-          onChange={(e) => setSelectedGroup(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none transition"
-        >
-          <option value="">Select Group</option>
-          {groups.map((g) => (
-            <option key={g} value={g}>
-              {g}
-            </option>
-          ))}
-        </select>
-        <select
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded-lg bg-white focus:ring-2 focus:ring-green-500 outline-none transition"
-        >
-          <option value="">Select Year</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
         <input
           type="text"
           placeholder="🔍 Search Student"
@@ -138,21 +117,17 @@ export default function MonthlySummary() {
           <Printer size={18} />
           Print
         </button>
-        
       </div>
 
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-         🧾 Attendance Shortage (&lt;75% Only)
-      </h2>
+      <h3 className="text-xl font-bold mb-4 text-center text-red-600">
+        🧾 Attendance Shortage (&lt;75% Only)
+      </h3>
 
       {/* Shortage Students Table */}
-      <div
-        id="print-area"
-        className="overflow-x-auto bg-white rounded-lg shadow-lg"
-      >
+      <div id="print-area" className="overflow-x-auto bg-white rounded-lg shadow-lg">
         {shortageFilteredData.length === 0 ? (
           <p className="text-gray-500 mt-4 text-center py-6">
-            All students below 75% attendance.
+            No students with attendance below 75%
           </p>
         ) : (
           <table className="table-auto w-full border border-gray-300 text-sm font-sans shadow-lg rounded-lg overflow-hidden">
@@ -160,11 +135,11 @@ export default function MonthlySummary() {
               <tr>
                 <th className="p-3 border-r border-green-600 w-14 text-center">S.No</th>
                 <th className="p-3 border-r border-green-600 text-left">🧑‍🎓 Students</th>
-                <th className="p-3 border-r border-green-600 text-center">Total Working Days</th>
-                <th className="p-3 border-r border-green-600 text-center">Total Present Days</th>
+                <th className="p-3 border-r border-green-600 text-center">Working Days</th>
+                <th className="p-3 border-r border-green-600 text-center">Present Days</th>
                 <th className="p-3 border-r border-green-600 text-center">% Attendance</th>
-                <th className="p-3 border-r border-green-600 text-center">Shortage (days)</th>
-                <th className="p-3 text-center w-28">Status ✅</th>
+                <th className="p-3 border-r border-green-600 text-center">Shortage</th>
+                <th className="p-3 text-center w-28">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -177,10 +152,7 @@ export default function MonthlySummary() {
                   const key = `${label}-${year}`;
                   return sum + (student.workingDays?.[key] || 0);
                 }, 0);
-                const percent =
-                  totalWorking > 0
-                    ? ((totalPresent / totalWorking) * 100).toFixed(2)
-                    : "0.00";
+                const percent = totalWorking > 0 ? ((totalPresent / totalWorking) * 100).toFixed(2) : "0.00";
                 const requiredDays = Math.ceil(totalWorking * 0.75);
                 const shortage = requiredDays - totalPresent;
 
@@ -205,6 +177,5 @@ export default function MonthlySummary() {
         )}
       </div>
     </div>
-    
   );
 }

@@ -4,27 +4,25 @@ export default function DashboardTogglePanel({
   onToggleAttendance,
   onToggleStudentTable,
   onToggleTodayAbsentees,
-  onToggleGroupAttendance,
+  onToggleMonthlyAttendance,
+  
   showAttendance,
   studentTable,
   showTodayAbsentees,
-  showDetails,
+  monthlyAttendance,
+  
   attendanceContent,
   studentTableContent,
   todayAbsenteesContent,
-  groupAttendanceContent,
+  groupMonthlyAttendanceContent,
+  
 }) {
   return (
     <div className="w-full flex flex-col items-center gap-4">
       {/* Buttons row */}
       <div className="flex flex-wrap justify-center gap-4 mb-2">
 
-        <button
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
-          onClick={() => window.print()}
-        >
-          Print
-        </button>
+        
 
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
@@ -49,9 +47,9 @@ export default function DashboardTogglePanel({
 
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
-          onClick={onToggleGroupAttendance}
+          onClick={onToggleMonthlyAttendance}
         >
-          {showDetails ? 'Hide Group Attendance' : 'Show Group Attendance'}
+          {monthlyAttendance ? 'Hide Monthly Attendance' : 'Show Monthly Attendance'}
         </button>
       </div>
 
@@ -74,14 +72,19 @@ export default function DashboardTogglePanel({
         </div>
       )}
 
-      {showDetails && (
+      {monthlyAttendance && (
         <div className="w-full">
-          {groupAttendanceContent}
+          {groupMonthlyAttendanceContent}
         </div>
       )}
 
+      <button
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
+          onClick={() => window.print()}
+        >
+          Print
+        </button>
 
-
-    </div>
+      </div>
   );
 }
