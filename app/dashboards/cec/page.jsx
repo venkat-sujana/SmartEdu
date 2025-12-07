@@ -5,88 +5,110 @@ import { useSession } from 'next-auth/react'
 import TodayAbsenteesTable from "@/app/absentees-table/page";
 import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-
 import GroupStudentTable from "../../components/GroupStudentTable";
 import GroupAttendanceSummary from '@/app/components/GroupAttendanceSummary';
 import AttendanceForm from '@/app/components/AttendanceForm';
+import DashboardTogglePanel from '@/app/components/DashboardTogglePanel';
+import GroupShortageSummary from '@/app/components/GroupShortageSummary';
+import DashboardFooter from "@/app/components/Footer";
+
 export default function CECDashboard() {
-  const { data: session, status } = useSession()
-  const user = session?.user
+  const { data: session } = useSession();
+  const user = session?.user;
+  const [showAttendance, setShowAttendance] = useState(false);
+  const [studentTable, setStudentTable] = useState(false);
+  const [showTodayAbsentees, setShowTodayAbsentees] = useState(false);
+  const [monthlyAttendance, setMonthlyAttendance] = useState(false);
 
-  const [showDetails, setShowDetails] = useState(false);  // State to toggle view
-  
+  const collegeName = user?.collegeName || 'College';
+  const years = ['First Year', 'Second Year'];
 
-  const collegeName = user?.collegeName || 'College'
-
-const years = ['First Year', 'Second Year']
 
 return (
     <div className="flex flex-col items-center gap-8 min-h-screen bg-gradient-to-b from-blue-50 to-blue-200">
-             {/* Lecturer Info Card */}
-             <LecturerInfoCard  user={user}/>
+              <LecturerInfoCard user={user} />
+        
+              <h2 className="text-3xl font-extrabold tracking-tight mt-2 text-blue-800">
+                ARTS Group Dashboard
+              </h2>
+        
+              <GroupAttendanceCard groupName="CEC" />
+              
+              <DashboardTogglePanel
+                // state flags
+                showAttendance={showAttendance}
+                studentTable={studentTable}
+                showTodayAbsentees={showTodayAbsentees}
+                monthlyAttendance={monthlyAttendance}
+        
+                // handlers
+                onToggleAttendance={() => setShowAttendance((v) => !v)}
+                onToggleStudentTable={() => setStudentTable((v) => !v)}
+                onToggleTodayAbsentees={() => setShowTodayAbsentees((v) => !v)}
+                onToggleMonthlyAttendance={() => setMonthlyAttendance((v) => !v)}
+        
+                // content (JSX)
+                attendanceContent={
+                  <AttendanceForm defaultGroup="CEC" returnUrl="/dashboards/cec" />
+                }
+        
+                studentTableContent={
+                  <GroupStudentTable groupName="CEC" />
+                }
+        
+                todayAbsenteesContent={
+                  <TodayAbsenteesTable groupFilter="CEC" header={false} />
+                }
+        
+        
+        
+                groupMonthlyAttendanceContent={
+                  <div className="mx-auto mt-10 max-w-7xl p-4 md:p-6 space-y-8">
+                    <h1 className="text-2xl font-bold text-center mb-4">
+                      {collegeName} - CEC Attendance
+                    </h1>
+                    {years.map((year) => (
+                      <GroupAttendanceSummary
+                        key={year}
+                        group="CEC"
+                        yearOfStudy={year}
+                        collegeName={collegeName}
+                      />
+                    ))}
+        
+        
+                    <div className="p-6 space-y-8">
+                      {/* First Year Shortage */}
+                      <GroupShortageSummary
+                        group="CEC"
+                        year="First Year"
+                        collegeId={session?.user?.collegeId}
+                        collegeName={session?.user?.collegeName}
+                      />
+        
+                      {/* Second Year Shortage */}
+                      <GroupShortageSummary
+                        group="CEC"
+                        year="Second Year"
+                        collegeId={session?.user?.collegeId}
+                        collegeName={session?.user?.collegeName}
+                      />
+                    </div>
+                  </div>
+                }
+              />
 
-      <h2 className="text-xl font-bold mt-4  text-blue-800">Arts Group Dashboard</h2>
-
-    
-    
-      <GroupAttendanceCard groupName="CEC" />
-      <GroupAttendanceCard groupName="HEC" />
-
-      {/* 👉 Attendance form ఇక్కడే embed అవుతుంది */}
-                        <AttendanceForm defaultGroup="CEC" returnUrl="/dashboards/cec" />
-
-
-      {/* View toggle button */}
-                  <button 
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer mb-4"
-                    onClick={() => setShowDetails(!showDetails)}
-                  >
-                    {showDetails ? 'Hide' : 'View'} Details
-                  </button>
-            
-                  {/* Conditionally render these when showDetails is true */}
-                  {showDetails && (
-                    <>
-                      <TodayAbsenteesTable groupFilter="CEC" header={false} />
-                      <GroupStudentTable groupName="CEC" />
-      
-                  <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
-                  <h1 className="text-2xl font-bold text-center mb-4">
-                    {collegeName} - CEC Attendance
-                  </h1>
-            
-                  {years.map(year => (
-                          <GroupAttendanceSummary
-                            key={year}
-                            group="CEC"
-                            yearOfStudy={year}
-                            collegeName={collegeName}
-                          />
-                        ))}
-                </div>
-      
-      
-                <TodayAbsenteesTable groupFilter="HEC" header={false} />
-                <GroupStudentTable groupName="HEC" />
-      
-                <div className="mx-auto mt-20 max-w-7xl p-4 md:p-6 space-y-8">
-                      <h1 className="text-2xl font-bold text-center mb-4">
-                        {collegeName} - HEC Attendance
-                      </h1>
-                
-                      {years.map(year => (
-                        <GroupAttendanceSummary
-                          key={year}
-                          group="HEC"
-                          yearOfStudy={year}
-                          collegeName={collegeName}
-                        />
-                      ))}
-                </div>
-      
-                    </>
-                  )}
-
+              {/* footer  */}
+                  <DashboardFooter
+                      collegeName={collegeName}
+                      // address={address}
+                      // phone={phone}
+                      // email={email}
+                      facebookUrl="https://facebook.com/yourcollege"
+                      instagramUrl="https://instagram.com/yourcollege"
+                      twitterUrl="https://x.com/yourcollege"
+                      youtubeUrl="https://youtube.com/@yourcollege"
+                    />
 </div>
   )
 }

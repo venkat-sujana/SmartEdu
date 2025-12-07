@@ -1,6 +1,9 @@
+//app/components/DashboardTogglePanel.jsx
+
 'use client';
 
 export default function DashboardTogglePanel({
+
   onToggleAttendance,
   onToggleStudentTable,
   onToggleTodayAbsentees,
@@ -31,12 +34,14 @@ export default function DashboardTogglePanel({
           {showAttendance ? 'Hide Attendance' : 'Take Attendance'}
         </button>
 
+
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
           onClick={onToggleStudentTable}
         >
           {studentTable ? 'Hide StudentTable' : 'Show StudentTable'}
         </button>
+
 
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
@@ -45,12 +50,15 @@ export default function DashboardTogglePanel({
           {showTodayAbsentees ? 'Hide Today Absentees' : 'Show Today Absentees'}
         </button>
 
+
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
           onClick={onToggleMonthlyAttendance}
         >
           {monthlyAttendance ? 'Hide Monthly Attendance' : 'Show Monthly Attendance'}
         </button>
+
+
       </div>
 
       {/* Panels - same order, each button కింద కంటెంట్ */}
@@ -78,12 +86,7 @@ export default function DashboardTogglePanel({
         </div>
       )}
 
-      <button
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
-          onClick={() => window.print()}
-        >
-          Print
-        </button>
+      
 
       </div>
   );

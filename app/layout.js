@@ -1,3 +1,4 @@
+// app/layout.js
 "use client";
 
 import { Geist, Geist_Mono } from "next/font/google";
