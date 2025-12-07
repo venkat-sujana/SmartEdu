@@ -28,7 +28,9 @@ export async function GET() {
   try {
     await connectMongoDB();
 
+    console.log("GET Colleges: Connecting to MongoDB...");
     const colleges = await College.find({}, "_id name").sort({ name: 1 });
+    console.log("GET Colleges: Fetched colleges:", colleges);
     return NextResponse.json(colleges, { status: 200 });
   } catch (error) {
     console.error("GET Colleges Error:", error);

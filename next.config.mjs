@@ -1,4 +1,5 @@
-//next.config.js (ESM style)
+// next.config.js (ESM style)
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     formats: ["image/webp"],
@@ -9,7 +10,7 @@ const nextConfig = {
       },
     ],
   },
+  
 };
 
 export default nextConfig;
-
