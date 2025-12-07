@@ -1,27 +1,29 @@
+// app/api/colleges/[id]/route.js
 import { NextResponse } from "next/server";
 import College from "@/models/College";
 import connectMongoDB from "@/lib/mongodb";
 import mongoose from "mongoose";
 
-export async function GET(req, context) {
+export async function GET(_req, context) {
   try {
     await connectMongoDB();
 
-    // ✅ Next 16: params is a Promise
-    const { params } = await context;
-    const { id } = params;
+    // ✅ params promise ను direct await చేయండి (Next 15/16)
+    const { id } = await context.params;
 
     console.log("Received college id:", id);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      console.error("Invalid ObjectId format:", id);
+    // ✅ Stringify చేసి validate చేయడం safe
+    const strId = String(id);
+    if (!mongoose.Types.ObjectId.isValid(strId)) {
+      console.error("Invalid ObjectId format:", strId);
       return NextResponse.json(
         { error: "Invalid college ID format" },
         { status: 400 }
       );
     }
 
-    const college = await College.findById(id).select("name");
+    const college = await College.findById(strId).select("name");
     console.log("College found:", college);
 
     if (!college) {
@@ -35,7 +37,7 @@ export async function GET(req, context) {
       {
         success: true,
         name: college.name,
-        id: college._id,
+        id: college._id.toString(),
       },
       { status: 200 }
     );

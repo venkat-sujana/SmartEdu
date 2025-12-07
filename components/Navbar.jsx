@@ -25,7 +25,7 @@ export default function Navbar() {
           setCollegeName(data.name);
           console.log('Updated college name to:', data.name);
         } else {
-          // console.error('College fetch failed:', data?.error ?? data);
+          console.error('College fetch failed:', data?.error ?? data);
         }
       } catch (error) {
         console.error('Error fetching college name:', error);
