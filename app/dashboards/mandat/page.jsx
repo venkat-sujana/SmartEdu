@@ -12,6 +12,8 @@ import AttendanceForm from '@/app/components/AttendanceForm';
 import DashboardTogglePanel from '@/app/components/DashboardTogglePanel';
 import GroupShortageSummary from '@/app/components/GroupShortageSummary';
 import DashboardFooter from "@/app/components/Footer";
+import IndividualReport from "@/app/components/Attendance/IndividualReport";
+
 
 export default function MandATDashboard() {
   const { data: session } = useSession();
@@ -20,6 +22,7 @@ export default function MandATDashboard() {
   const [studentTable, setStudentTable] = useState(false);
   const [showTodayAbsentees, setShowTodayAbsentees] = useState(false);
   const [monthlyAttendance, setMonthlyAttendance] = useState(false);
+  const [editAttendance, setEditAttendance] = useState(false);
 
 
   const collegeName = user?.collegeName || 'College';
@@ -42,12 +45,14 @@ export default function MandATDashboard() {
         studentTable={studentTable}
         showTodayAbsentees={showTodayAbsentees}
         monthlyAttendance={monthlyAttendance}
+        editAttendance={editAttendance}
 
         // handlers
         onToggleAttendance={() => setShowAttendance((v) => !v)}
         onToggleStudentTable={() => setStudentTable((v) => !v)}
         onToggleTodayAbsentees={() => setShowTodayAbsentees((v) => !v)}
         onToggleMonthlyAttendance={() => setMonthlyAttendance((v) => !v)}
+        onToggleEditAttendance={() => setEditAttendance((v) => !v)}
 
         // content (JSX)
         attendanceContent={
@@ -62,7 +67,10 @@ export default function MandATDashboard() {
           <TodayAbsenteesTable groupFilter="M&AT" header={false} />
         }
 
-
+        editAttendanceContent={
+          <IndividualReport groupName="M&AT" header={false}/>
+          
+        }
 
         groupMonthlyAttendanceContent={
           <div className="mx-auto mt-10 max-w-7xl p-4 md:p-6 space-y-8">
@@ -96,6 +104,9 @@ export default function MandATDashboard() {
                 collegeName={session?.user?.collegeName}
               />
             </div>
+
+           
+
           </div>
         }
       />

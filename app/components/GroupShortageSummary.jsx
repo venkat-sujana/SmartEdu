@@ -92,7 +92,7 @@ export default function GroupShortageSummary({
   }
 
   return (
-    <div className={`max-w-3xl mx-auto p-5 bg-gray-100 border border-2 rounded-lg shadow-lg ${className}`}>
+    <div className={`max-w-6xl mx-auto p-5 bg-gray-100 border border-2 rounded-lg shadow-lg ${className}`}>
       {/* Header with Group & Year */}
       <div className="mb-6 text-center">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">

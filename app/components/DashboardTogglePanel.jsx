@@ -8,16 +8,19 @@ export default function DashboardTogglePanel({
   onToggleStudentTable,
   onToggleTodayAbsentees,
   onToggleMonthlyAttendance,
+  onToggleEditAttendance,
   
   showAttendance,
   studentTable,
   showTodayAbsentees,
   monthlyAttendance,
+  editAttendance,
   
   attendanceContent,
   studentTableContent,
   todayAbsenteesContent,
   groupMonthlyAttendanceContent,
+  editAttendanceContent,
   
 }) {
   return (
@@ -59,6 +62,14 @@ export default function DashboardTogglePanel({
         </button>
 
 
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer"
+          onClick={onToggleEditAttendance}
+        >
+          {editAttendance ? 'Hide Edit Attendance' : 'Show Edit Attendance'}
+        </button>
+
+
       </div>
 
       {/* Panels - same order, each button కింద కంటెంట్ */}
@@ -83,6 +94,12 @@ export default function DashboardTogglePanel({
       {monthlyAttendance && (
         <div className="w-full">
           {groupMonthlyAttendanceContent}
+        </div>
+      )}
+
+      {editAttendance && (
+        <div className="w-full flex justify-center">
+          {editAttendanceContent}
         </div>
       )}
 

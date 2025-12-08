@@ -1,4 +1,4 @@
-//app/api/attendance/[id]/route.js
+// app/api/attendance/[id]/route.js
 import { NextResponse } from "next/server";
 import Attendance from "@/models/Attendance";
 import connectMongoDB from "@/lib/mongodb";
@@ -7,9 +7,14 @@ import connectMongoDB from "@/lib/mongodb";
 export async function PUT(req, context) {
   await connectMongoDB();
 
-  const { id } = context.params;
+  // ✅ unwrap params safely (Promise లేదా direct object రెండింటికీ work అవుతుంది)
+  const { id } = await context.params;
+
   if (!id) {
-    return NextResponse.json({ message: "Missing ID", status: "error" }, { status: 400 });
+    return NextResponse.json(
+      { message: "Missing ID", status: "error" },
+      { status: 400 }
+    );
   }
 
   const updateData = await req.json();
@@ -20,7 +25,6 @@ export async function PUT(req, context) {
     const year = dateObj.getFullYear();
 
     const updated = await Attendance.findByIdAndUpdate(
-      
       id,
       {
         ...updateData,
@@ -28,8 +32,7 @@ export async function PUT(req, context) {
         month,
         year,
       },
-      { new: true } // return the updated doc
-      
+      { new: true }
     );
 
     if (!updated) {
@@ -38,9 +41,9 @@ export async function PUT(req, context) {
         { status: 404 }
       );
     }
+
     console.log("Updating ID:", id);
     console.log("Update Data:", updateData);
-    console.log("Updated Attendance:", updated);
 
     return NextResponse.json({
       message: "Attendance updated",
@@ -60,9 +63,13 @@ export async function PUT(req, context) {
 export async function DELETE(req, context) {
   await connectMongoDB();
 
-  const { id } = context.params;
+  const { id } = await context.params;
+
   if (!id) {
-    return NextResponse.json({ message: "Missing ID", status: "error" }, { status: 400 });
+    return NextResponse.json(
+      { message: "Missing ID", status: "error" },
+      { status: 400 }
+    );
   }
 
   try {
