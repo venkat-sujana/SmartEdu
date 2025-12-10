@@ -17,22 +17,15 @@ export default function HomePage() {
           <h1 className="text-4xl md:text-5xl font-bold text-blue-800">
             Welcome to SmartCollege Portal
           </h1>
-          <p className="mt-4 text-gray-600 text-lg">
+          <p className="mt-2 text-gray-600 text-lg">
             Manage Students, Lecturers, and Principals in one connected platform.
           </p>
         </motion.div>
       </section>
 
-      <section id="login" className="py-16 bg-white">
+      <section id="login" className="py-8 bg-white">
         <h3 className="text-3xl font-bold text-blue-700 mb-10">Login as</h3>
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto px-6">
-          <LoginCard
-            icon={<Users className="w-10 h-10 text-blue-600 mx-auto" />}
-            title="Student"
-            desc="Access courses, attendance, and results."
-            link="/student/login"
-            color="blue"
-          />
           <LoginCard
             icon={<ClipboardList className="w-10 h-10 text-green-600 mx-auto" />}
             title="Lecturer"
@@ -47,6 +40,15 @@ export default function HomePage() {
             link="/principal/login"
             color="purple"
           />
+          <LoginCard
+            icon={<Users className="w-10 h-10 text-blue-600 mx-auto" />}
+            title="Student"
+            desc="Access courses, attendance, and results."
+            link="/student/login"
+            color="blue"
+          />
+          
+          
         </div>
       </section>
     </div>

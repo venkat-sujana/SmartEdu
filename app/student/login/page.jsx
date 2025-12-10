@@ -13,24 +13,38 @@ export default function StudentLoginPage() {
   const router = useRouter();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  e.preventDefault()
+  setError('')
+  setLoading(true)
 
-    const res = await signIn("student-login", {
-      redirect: false,
-      admissionNo: admissionNo.trim(),
-      password: password,
-      callbackUrl: "/student/dashboard",
-    });
+  const res = await signIn('student-login', {
+    redirect: false,
+    admissionNo: admissionNo.trim(),
+    password,
+    callbackUrl: '/student/dashboard',
+  })
 
-    if (res?.error) {
-      setError("Invalid credentials");
-      setLoading(false);
-    } else if (res?.url) {
-      router.push(res.url);
-    }
-  };
+  console.log('SIGNIN RESPONSE =>', res) // debug కోసం ఒకసారి చూసేయి
+
+  setLoading(false) // ✅ ఇక్కడ once పెట్టు
+
+  if (!res) {
+    setError('Something went wrong, please try again.')
+    return
+  }
+
+  if (res.error) {
+    setError('Invalid credentials')
+    return
+  }
+
+  if (res.url) {
+    // ఇక్కడ నేరుగా dashboard కి పంపేస్కోవచ్చు
+    // router.push(res.url) లేదా direct path
+    router.push('/student/dashboard')
+  }
+}
+
 
   return (
     <div className="relative">

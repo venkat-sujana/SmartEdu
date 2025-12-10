@@ -106,6 +106,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Monthly Attendance Summary Section */}
+      
       <StudentMonthlyAttendanceSummary studentId={user.id} />
       {/* Individual Exam Results Section */}
       <StudentIndividualExams studentId={user.id} />
