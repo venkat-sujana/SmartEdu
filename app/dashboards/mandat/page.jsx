@@ -1,5 +1,6 @@
 // app/dashboards/mandat/page.jsx
 'use client';
+import Link from 'next/link'
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import TodayAbsenteesTable from "@/app/absentees-table/page";
@@ -110,6 +111,22 @@ export default function MandATDashboard() {
           </div>
         }
       />
+
+      <div className="flex flex-col sm:flex-row gap-4 mb-12">
+           <Link href="/exams-form">
+              <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                Exams-Form
+              </button>
+            </Link>
+
+            <Link href="/exam-report">
+              <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+                Exams-Report
+              </button>
+            </Link>
+      </div>
+
+      
       
 {/* footer  */}
     <DashboardFooter

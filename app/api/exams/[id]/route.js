@@ -91,6 +91,35 @@ export async function PUT(req, { params }) {
   }
 }
 
+export async function GET(req, context) {
+  try {
+    await connectMongoDB();
+
+    const { params } = await context;
+    const { id: studentId } = params;
+
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.collegeId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const collegeId = session.user.collegeId;
+
+    const exams = await Exam.find({ studentId, collegeId }).sort({
+      examDate: -1,
+    });
+
+    return NextResponse.json(exams, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching student exams:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch exam results" },
+      { status: 500 }
+    );
+  }
+}
+
+
 
 
 

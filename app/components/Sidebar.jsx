@@ -1,136 +1,62 @@
-'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+//app/components/Sidebar.jsx
+"use client"
+import { useState } from "react"
+import Link from "next/link"
+import { Home, Users, Calendar, BarChart, Menu } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 
-export default function Sidebar({ title = 'Dashboard', navItems = [] }) {
-  const [open, setOpen] = useState(false);
-  const pathname = usePathname();
+export default function Sidebar({ onClose }) {
+  const pathname = usePathname()
+  const { data: session } = useSession()
+  const user = session?.user || {}
+
+  const links = [
+    { href: "/", label: "Home", icon: <Home className="w-5 h-5" /> },
+    { href: "/lecturer/dashboard", label: "Lecturer Dashboard", icon: <Users className="w-5 h-5" /> },
+    { href: "/principal/dashboard", label: "Principal Dashboard", icon: <BarChart className="w-5 h-5" /> },
+    { href: "/attendance", label: "Attendance", icon: <Calendar className="w-5 h-5" /> },
+  ]
 
   return (
-    <>
-      {/* Mobile top bar */}
-      <header className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-blue-800 text-white">
-        <h1 className="font-semibold text-lg truncate">{title}</h1>
-        <button
-          onClick={() => setOpen(true)}
-          className="p-2 rounded-md border border-blue-300"
-          aria-label="Open sidebar"
-        >
-          <span className="block w-5 h-0.5 bg-white mb-1" />
-          <span className="block w-5 h-0.5 bg-white mb-1" />
-          <span className="block w-5 h-0.5 bg-white" />
-        </button>
-      </header>
-
-      {/* Drawer for mobile */}
-      <div
-        className={`fixed inset-0 z-50 md:hidden transition-opacity duration-200 ${
-          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        <div
-          className="absolute inset-0 bg-black/40"
-          onClick={() => setOpen(false)}
-        />
-
-        <aside
-          className={`
-            absolute inset-y-0 left-0 w-72 max-w-full bg-white shadow-xl
-            transform transition-transform duration-200
-            ${open ? 'translate-x-0' : '-translate-x-full'}
-            flex flex-col
-          `}
-        >
-          <div className="flex items-center justify-between px-4 py-3 bg-blue-800 text-white">
-            <span className="font-semibold">{title}</span>
-            <button
-              onClick={() => setOpen(false)}
-              className="p-2 rounded-md border border-blue-300"
-              aria-label="Close sidebar"
-            >
-              ✕
-            </button>
-          </div>
-
-          <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-            {navItems.map((item) =>
-              item.href.startsWith('#') ? (
-                <button
-                  key={item.label}
-                  onClick={() => {
-                    const el = document.querySelector(item.href);
-                    if (el) {
-                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                    setOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700"
-                >
-                  {item.label}
-                </button>
-              ) : (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`
-                    block px-3 py-2 rounded-md text-sm font-medium
-                    ${
-                      pathname === item.href
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-                    }
-                  `}
-                  onClick={() => setOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              )
-            )}
-          </nav>
-        </aside>
+    <aside className="h-full w-64 shrink-0 bg-white/90 dark:bg-slate-800/95 border-r border-gray-200 dark:border-slate-700 p-4">
+      <div className="flex items-center gap-3 px-2 py-2">
+        <div className="rounded-lg bg-blue-600 p-2 text-white">
+          <Menu className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">OSRA</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-300">{user.collegeName || "Your College"}</p>
+        </div>
       </div>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:border-r md:border-gray-200 md:bg-white md:h-screen md:sticky md:top-0">
-        <div className="h-16 flex items-center px-4 bg-blue-800 text-white">
-          <h1 className="font-semibold text-xl truncate">{title}</h1>
+      <nav className="mt-6 flex flex-col gap-1">
+        {links.map((l) => {
+          const active = pathname === l.href
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition ${
+                active ? "bg-blue-50 text-blue-700 font-semibold" : "text-slate-700 hover:bg-slate-100 dark:text-slate-200"
+              }`}
+              onClick={onClose}
+            >
+              {l.icon}
+              <span>{l.label}</span>
+            </Link>
+          )
+        })}
+      </nav>
+
+      <div className="mt-auto px-2 py-4">
+        <div className="rounded-md border border-gray-100 bg-gradient-to-r from-indigo-50 to-white p-3">
+          <p className="text-xs text-gray-600">Signed in as</p>
+          <p className="text-sm font-medium text-gray-800">{user.name || "Guest"}</p>
+          <p className="text-xs text-gray-500">{user.email || ""}</p>
         </div>
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          {navItems.map((item) =>
-            item.href.startsWith('#') ? (
-              <button
-                key={item.label}
-                onClick={() => {
-                  const el = document.querySelector(item.href);
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                }}
-                className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700"
-              >
-                {item.label}
-              </button>
-            ) : (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`
-                  block px-3 py-2 rounded-md text-sm font-medium
-                  ${
-                    pathname === item.href
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-                  }
-                `}
-              >
-                {item.label}
-              </Link>
-            )
-          )}
-        </nav>
-      </aside>
-    </>
-  );
+      </div>
+    </aside>
+  )
 }
