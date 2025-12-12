@@ -1,108 +1,68 @@
-'use client';
+"use client";
 
-import { useSession, signOut } from 'next-auth/react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useState } from "react";
+import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { Menu, LogOut, User } from "lucide-react";
 
-export default function Navbar() {
+export default function Navbar({ onOpenDrawer }) {
   const { data: session, status } = useSession();
-  const [collegeName, setCollegeName] = useState('');
-
-  useEffect(() => {
-    const fetchCollegeName = async () => {
-      console.log('Fetching college name with collegeId:', session?.user?.collegeId);
-      if (!session?.user?.collegeId) return;
-
-      try {
-        const res = await fetch(`/api/colleges/${session.user.collegeId}`);
-        console.log('Fetched response:', res);
-
-        const data = await res.json();
-        console.log('Fetched college data:', data);
-
-        if (res.ok && data?.name) {
-          setCollegeName(data.name);
-          console.log('Updated college name to:', data.name);
-        } else {
-          console.error('College fetch failed:', data?.error ?? data);
-        }
-      } catch (error) {
-        console.error('Error fetching college name:', error);
-      }
-    };
-
-    fetchCollegeName();
-  }, [session?.user?.collegeId]);
-
-  const handleLogout = () => {
-    let redirectPath = '/';
-    if (session?.user?.role === 'lecturer') redirectPath = '/lecturer/login';
-    else if (session?.user?.role === 'student') redirectPath = '/student/login';
-    else if (session?.user?.role === 'principal') redirectPath = '/principal/login';
-    signOut({ callbackUrl: redirectPath });
-  };
-
-  const getDashboardLink = () => {
-    if (session?.user?.role === 'lecturer') return '/lecturer/dashboard';
-    if (session?.user?.role === 'student') return '/student/dashboard';
-    if (session?.user?.role === 'principal') return '/principal/dashboard';
-    return '/';
-  };
+  const user = session?.user;
 
   return (
-    <nav className="fixed top-0 w-full backdrop-blur-md bg-gradient-to-r from-blue-600/90 via-indigo-600/90 to-blue-800/90 text-white shadow-lg z-50">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center bg-white border-1 rounded-full shadow-md">
-            <Image
-              src="/images/download.jpg"
-              alt="OSRA Logo"
-              width={50}
-              height={50}
-              className="rounded-full drop-shadow-md"
-              priority
-            />
+    <header className="fixed inset-x-0 top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200 dark:bg-slate-900/80 dark:border-slate-700">
+      <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4 px-3 py-3">
+        {/* left: hamburger on mobile + brand */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onOpenDrawer}
+            aria-label="Open menu"
+            className="md:hidden rounded-md p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <Link href="/" className="flex items-center gap-3">
+            <div className="h-8 w-8 flex items-center justify-center rounded-md bg-blue-600 text-white font-bold">O</div>
+            <div className="hidden sm:block">
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">OSRA Portal</div>
+              <div className="text-xs text-slate-500 dark:text-slate-300">{user?.collegeName || "Your College"}</div>
+            </div>
+          </Link>
+        </div>
+
+        {/* center (optional) */}
+        <div className="hidden md:flex items-center gap-4">
+          <nav className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <Link href="/" className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800">Home</Link>
+            <Link href="/attendance" className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800">Attendance</Link>
+            <Link href="/exams" className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800">Exams</Link>
+          </nav>
+        </div>
+
+        {/* right: user + logout */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex flex-col text-right">
+            <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{user?.name || "Guest"}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-300">{user?.email || ""}</span>
           </div>
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm font-bold tracking-wide">SKR-GJC</span>
-            <span className="text-[10px] text-gray-200 font-bold">Digital Platform for Modern Education</span>
+
+          <div className="flex items-center gap-2">
+            <Link href="/profile" className="hidden sm:inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
+              <User className="w-4 h-4" />
+              Profile
+            </Link>
+
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="flex items-center gap-2 rounded-md bg-red-50 text-red-600 px-3 py-1 text-sm hover:bg-red-100 dark:bg-transparent dark:hover:bg-slate-800"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
           </div>
-        </Link>
-
-        <div className="flex items-center gap-4">
-          {collegeName && (
-            <span className="hidden text-sm font-semibold text-blue-100 md:inline">
-              {collegeName}
-            </span>
-          )}
-
-          {status === 'authenticated' ? (
-            <>
-              {/* <Link href={getDashboardLink()} className="font-semibold hover:text-yellow-300 transition">
-                Dashboard
-              </Link> */}
-
-              <Link href="/components/about" className="font-semibold hover:text-yellow-300 transition">
-                About
-              </Link>
-
-              <span className="hidden text-sm font-semibold md:inline">
-                {session?.user?.name}
-              </span>
-
-              <button
-                onClick={handleLogout}
-                className="rounded-md bg-red-500 px-3 py-1 text-sm font-semibold hover:bg-red-600 transition cursor-pointer"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <div className="flex gap-2" />
-          )}
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

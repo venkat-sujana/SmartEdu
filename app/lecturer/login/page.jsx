@@ -71,7 +71,7 @@ export default function LecturerLogin() {
         </div>
       )}
 
-      <div className="flex items-start mt-20 justify-center min-h-screen bg-gray-200 bg-[url('/images/bg-6.jpg')] bg-cover bg-center">
+      <div className="flex items-start mt-1 justify-center min-h-screen bg-gray-200 bg-[url('/images/bg-6.jpg')] bg-cover bg-center">
         <form
           onSubmit={handleSubmit}
           className="bg-white shadow-lg rounded-lg p-6 w-72 mt-10"

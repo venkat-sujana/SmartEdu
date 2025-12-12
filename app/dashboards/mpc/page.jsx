@@ -1,5 +1,6 @@
 // app/dashboards/mpc/page.jsx
 "use client"
+import Link from 'next/link'
 import { useState } from 'react';  // Import useState
 import { useSession } from 'next-auth/react'
 import TodayAbsenteesTable from "@/app/absentees-table/page";
