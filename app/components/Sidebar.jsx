@@ -6,17 +6,25 @@ import Link from "next/link"
 import { Home, Users, Calendar, BarChart, Menu } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
-
+import { AcademicCapIcon, EnvelopeIcon, UserCircleIcon,HomeIcon, BuildingOffice2Icon, UserGroupIcon,PencilSquareIcon, CalendarDaysIcon,XCircleIcon } from "@heroicons/react/24/solid";
 export default function Sidebar({ onClose }) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const user = session?.user || {}
 
   const links = [
-    { href: "/", label: "Home", icon: <Home className="w-5 h-5" /> },
-    { href: "/lecturer/dashboard", label: "Lecturer Dashboard", icon: <Users className="w-5 h-5" /> },
-    { href: "/principal/dashboard", label: "Principal Dashboard", icon: <BarChart className="w-5 h-5" /> },
-    { href: "/attendance", label: "Attendance", icon: <Calendar className="w-5 h-5" /> },
+    { href: "/", label: "Home", icon: <HomeIcon className="w-5 h-5" /> },
+    { href: "/lecturer/dashboard", label: "Lecturer Dashboard", icon: <AcademicCapIcon className="w-5 h-5 text-red-500" /> },
+    { href: "/principal/dashboard", label: "Principal Dashboard", icon: <BuildingOffice2Icon className="w-5 h-5 text-amber-500" /> },
+    { href: "/attendance-dashboard", label: "Attendance", icon: <UserCircleIcon className="w-5 h-5 text-yellow-500" /> },
+    { href: "/exams-form", label: "Add Exam", icon: <EnvelopeIcon className="w-5 h-5 text-indigo-500" /> },
+    { href: "/exam-report", label: "CMR", icon: <PencilSquareIcon className="w-5 h-5 text-violet-500" /> },
+    { href: "/attendance-records/monthly-summary", label: "CAR", icon: <UserGroupIcon className="w-5 h-5 text-purple-500" /> },
+    { href: "/student-table", label: "Students", icon: <UserGroupIcon className="w-5 h-5 text-green-500 text-rose-500" /> },
+    { href: "/attendance-records/attendance-calendar", label: "Calendar View ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
+    { href: "/attendance-records/individual", label: "Update Attendance ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
+    { href: "/absentees-table", label: "Today's Absentees ", icon: <XCircleIcon className="w-5 h-5 text-red-500" /> },
+    { href: "/components/attendance-shortage-summary", label: "Attendance Shortage ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
   ]
 
   return (
@@ -26,7 +34,7 @@ export default function Sidebar({ onClose }) {
           <Menu className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">OSRA</h3>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100"></h3>
           <p className="text-sm text-slate-500 dark:text-slate-300">{user.collegeName || "Your College"}</p>
         </div>
       </div>

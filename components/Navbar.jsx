@@ -1,10 +1,12 @@
+
+//app/components/Navbar.jsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Menu, LogOut, User } from "lucide-react";
-
+import { AcademicCapIcon, EnvelopeIcon, UserCircleIcon,HomeIcon, BuildingOffice2Icon } from "@heroicons/react/24/solid";
 export default function Navbar({ onOpenDrawer }) {
   const { data: session, status } = useSession();
   const user = session?.user;
@@ -23,9 +25,9 @@ export default function Navbar({ onOpenDrawer }) {
           </button>
 
           <Link href="/" className="flex items-center gap-3">
-            <div className="h-8 w-8 flex items-center justify-center rounded-md bg-blue-600 text-white font-bold">O</div>
+            <div className="h-8 w-8 flex items-center justify-center rounded-md bg-blue-100 text-white font-bold"><AcademicCapIcon className="w-5 h-5 text-emerald-500" /></div>
             <div className="hidden sm:block">
-              <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">OSRA Portal</div>
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-100"></div>
               <div className="text-xs text-slate-500 dark:text-slate-300">{user?.collegeName || "Your College"}</div>
             </div>
           </Link>
@@ -34,9 +36,9 @@ export default function Navbar({ onOpenDrawer }) {
         {/* center (optional) */}
         <div className="hidden md:flex items-center gap-4">
           <nav className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-            <Link href="/" className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800">Home</Link>
-            <Link href="/attendance" className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800">Attendance</Link>
-            <Link href="/exams" className="px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800">Exams</Link>
+            <Link href="/" className=" flex px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><HomeIcon className="w-5 h-5 text-emerald-500" />Home</Link>
+            <Link href="/attendance-dashboard" className="flex px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><UserCircleIcon className="w-5 h-5 text-blue-500" />Attendance</Link>
+            <Link href="/exam-report" className="flex px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><AcademicCapIcon className="w-5 h-5 text-cyan-500" />Exams</Link>
           </nav>
         </div>
 
@@ -49,13 +51,13 @@ export default function Navbar({ onOpenDrawer }) {
 
           <div className="flex items-center gap-2">
             <Link href="/profile" className="hidden sm:inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
-              <User className="w-4 h-4" />
+              <UserCircleIcon className="w-5 h-5" />
               Profile
             </Link>
 
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="flex items-center gap-2 rounded-md bg-red-50 text-red-600 px-3 py-1 text-sm hover:bg-red-100 dark:bg-transparent dark:hover:bg-slate-800"
+              className="flex items-center gap-2 rounded-md bg-red-50 text-red-600 px-3 py-1 text-sm hover:bg-red-100 dark:bg-transparent dark:hover:bg-slate-800 cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               Logout

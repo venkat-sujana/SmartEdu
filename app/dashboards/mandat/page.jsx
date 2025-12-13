@@ -37,6 +37,12 @@ export default function MandATDashboard() {
         MandAT Group Dashboard
       </h2>
 
+
+
+
+
+
+
       <GroupAttendanceCard groupName="M&AT" />
       <ExternalLinks />
 
@@ -69,8 +75,8 @@ export default function MandATDashboard() {
         }
 
         editAttendanceContent={
-          <IndividualReport groupName="M&AT" header={false}/>
-          
+          <IndividualReport groupName="M&AT" header={false} />
+
         }
 
         groupMonthlyAttendanceContent={
@@ -106,30 +112,30 @@ export default function MandATDashboard() {
               />
             </div>
 
-           
+
 
           </div>
         }
       />
 
       <div className="flex flex-col sm:flex-row gap-4 mb-12">
-           <Link href="/exams-form">
-              <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                Exams-Form
-              </button>
-            </Link>
+        <Link href="/exams-form">
+          <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+            Exams-Form
+          </button>
+        </Link>
 
-            <Link href="/exam-report">
-              <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
-                Exams-Report
-              </button>
-            </Link>
+        <Link href="/exam-report">
+          <button className="w-full sm:w-auto cursor-pointer rounded-full bg-gradient-to-r from-pink-500 to-purple-400 px-6 py-2 font-bold text-white shadow transition hover:scale-105">
+            Exams-Report
+          </button>
+        </Link>
       </div>
 
-      
-      
-{/* footer  */}
-    <DashboardFooter
+
+
+      {/* footer  */}
+      <DashboardFooter
         collegeName={collegeName}
         // address={address}
         // phone={phone}

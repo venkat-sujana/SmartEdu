@@ -158,7 +158,7 @@ export default function PrincipalDashboard() {
   }
 
   return (
-    <div className="mt-24 flex min-h-screen bg-gradient-to-br bg-[url('/images/')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
+    <div className="mt-2 flex min-h-screen bg-gradient-to-br bg-[url('/images/')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
       {/* Sidebar */}
       <aside className="hidden w-56 bg-black p-6 shadow-md md:block">
         <h2 className="mb-8 text-2xl font-bold text-white">OSRA</h2>

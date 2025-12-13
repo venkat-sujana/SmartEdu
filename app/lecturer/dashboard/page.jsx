@@ -185,7 +185,7 @@ export default function LecturerDashboard() {
   }
 
   return (
-    <div className="mx-auto mt-24 max-w-7xl rounded-3xl border border-gray-200 bg-[url('/images/')] bg-cover bg-center p-6 bg-blend-normal shadow-lg">
+    <div className="mx-auto mt-2 max-w-7xl rounded-3xl border border-gray-200 bg-[url('/images/')] bg-cover bg-center p-6 bg-blend-normal shadow-lg">
       {/* College Name Title */}
       <div className="border-black-600 mb-8 flex items-center gap-4 rounded-lg border-2 bg-blue-50 px-6 py-4">
         <GraduationCap className="h-9 w-9 text-blue-700" />

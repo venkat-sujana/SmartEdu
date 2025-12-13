@@ -6,7 +6,7 @@ import { Users, ClipboardList, School } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white text-gray-800 text-center mt-10">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white text-gray-800 text-center mt-2">
       <section className="pt-20 md:pt-28 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
