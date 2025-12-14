@@ -17,10 +17,10 @@ import TodayAbsenteesTable from '@/app/absentees-table/page'
 import AttendanceStatsTable from '@/app/components/attendance-stats-table/AttendanceStatsTable'
 import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import OverallStrengthCard from '@/app/components/overall-strength-card/OverallStrengthCard'
-import MainLinks from '@/app/components/MainLinks';
+// import MainLinks from '@/app/components/MainLinks';
 import MetricsCards from "./MetricsCards";
 import PromotionCard from "./PromotionCard";
-import ExternalLinks from "@/app/components/ExternalLinks";
+// import ExternalLinks from "@/app/components/ExternalLinks";
 
 
 const fetcher = url => fetch(url).then(res => res.json())
@@ -159,31 +159,7 @@ export default function PrincipalDashboard() {
 
   return (
     <div className="mt-2 flex min-h-screen bg-gradient-to-br bg-[url('/images/')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
-      {/* Sidebar */}
-      <aside className="hidden w-56 bg-black p-6 shadow-md md:block">
-        <h2 className="mb-8 text-2xl font-bold text-white">OSRA</h2>
-        <nav className="space-y-4">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 text-white hover:text-blue-600"
-          >
-            <Users className="h-5 w-5" /> Students
-          </Link>
-          <Link
-            href="/exam-report"
-            className="flex items-center gap-2 text-white hover:text-blue-600"
-          >
-            <Users className="h-5 w-5" /> exams
-          </Link>
-          <Link href="#" className="flex items-center gap-2 text-white hover:text-blue-600">
-            <Calendar className="h-5 w-5" /> Attendance
-          </Link>
-          <Link href="#" className="flex items-center gap-2 text-white hover:text-blue-600">
-            <BarChart className="h-5 w-5" /> Reports
-          </Link>
-        </nav>
-      </aside>
-
+      
       <main className="w-full flex-1 space-y-6 p-2 sm:p-4 md:p-6">
         {/* Header, Info, Lecturers etc... (same as before) */}
 
@@ -218,9 +194,9 @@ export default function PrincipalDashboard() {
 
 
 
-        <MainLinks />
+        {/* <MainLinks />
 
-        <ExternalLinks />
+        <ExternalLinks /> */}
         
 
         

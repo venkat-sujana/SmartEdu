@@ -37,9 +37,7 @@ export default function Navbar({ onOpenDrawer }) {
         <div className="hidden md:flex items-center gap-4">
           <nav className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
             <Link href="/" className=" flex px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><HomeIcon className="w-5 h-5 text-emerald-500" />Home</Link>
-            <Link href="/attendance-dashboard" className="flex px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><UserCircleIcon className="w-5 h-5 text-blue-500" />Attendance</Link>
-            <Link href="/exam-report" className="flex px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"><AcademicCapIcon className="w-5 h-5 text-cyan-500" />Exams</Link>
-          </nav>
+            </nav>
         </div>
 
         {/* right: user + logout */}

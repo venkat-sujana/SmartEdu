@@ -78,7 +78,7 @@ export default function ProfilePage() {
         <div className="mb-4">
           <h3 className="font-medium text-slate-700 mb-2">Backend</h3>
           <div className="flex flex-wrap gap-2">
-            {["Node.js", "Express.js", "Next.js"].map((skill) => (
+            {["Node.js", "Express.js", "Next.js","Python(Django)"].map((skill) => (
               <span
                 key={skill}
                 className="px-3 py-1 text-sm rounded-full bg-green-50 text-green-700"

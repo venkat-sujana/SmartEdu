@@ -27,7 +27,7 @@ export default function PrincipalLogin() {
       setError("Invalid credentials");
       setLoading(false);
     } else {
-      router.push(res.url || "/principal/dashboard");
+      router.push("/principal/dashboard");
     }
   };
 

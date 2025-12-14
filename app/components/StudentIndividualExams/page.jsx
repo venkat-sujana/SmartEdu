@@ -1,3 +1,5 @@
+//app/components/StudentIndividualExams/page.jsx
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -13,6 +15,7 @@ export default function StudentIndividualExams({ studentId }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    console.log("StudentIndividualExams studentId =>", studentId)
     if (!studentId) {
       setExamResults([]);
       setLoading(false);

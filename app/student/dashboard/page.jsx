@@ -6,7 +6,13 @@ import { useSession } from 'next-auth/react'
 // import { FaUserGraduate, FaPhoneAlt, FaUsers, FaBirthdayCake, FaVenusMars, FaHome, FaUniversity, FaBook, FaUserTie } from "react-icons/fa" // If needed
 
 export default function StudentDashboard() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
+  console.log("session.user =", session?.user)
+
+  // ఇక్కడ _id ని use చేయాలి
+  const studentId = session?.user?.id
+
+  console.log("Dashboard studentId =", studentId)
 
   if (status === 'loading') {
     return (
@@ -25,9 +31,12 @@ export default function StudentDashboard() {
   }
 
   const user = session.user
+  // student dashboard pageలో
+console.log("session.user.studentId =", session?.user?.studentId)
+
 
   return (
-    <div className="mx-auto max-w-5xl mt-24 space-y-10 rounded p-3 px-4 py-12 font-bold shadow bg-gradient-to-br from-indigo-100 via-white to-blue-50">
+    <div className="mx-auto max-w-5xl mt-2 space-y-10 rounded p-3 px-4 py-12 font-bold shadow bg-gradient-to-br from-indigo-100 via-white to-blue-50">
       {/* Header */}
       <h1 className="flex justify-center items-center gap-2 text-xl font-extrabold tracking-tight text-blue-700">
         <span>🎓</span> Student Dashboard
@@ -109,7 +118,7 @@ export default function StudentDashboard() {
       
       <StudentMonthlyAttendanceSummary studentId={user.id} />
       {/* Individual Exam Results Section */}
-      <StudentIndividualExams studentId={user.id} />
+      <StudentIndividualExams studentId={session?.user?.id} />
     </div>
   )
 }
