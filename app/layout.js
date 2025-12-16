@@ -1,6 +1,5 @@
 // app/layout.js
 "use client"
-
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "react-hot-toast"
@@ -26,7 +25,6 @@ function AppShell({ children }) {
   const pathname = usePathname()
   const { data: session, status } = useSession()
 
-  // login / public routes – no layout
   const isAuthPage = useMemo(() => {
     return (
       pathname === "/" ||
@@ -40,12 +38,10 @@ function AppShell({ children }) {
   const role = session?.user?.role
   const isStudent = role === "student"
 
-  // Auth pages → no navbar/sidebar
   if (isAuthPage) {
     return <div className="min-h-screen">{children}</div>
   }
 
-  // Optional: while session loading
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -54,23 +50,17 @@ function AppShell({ children }) {
     )
   }
 
-  // COMMON NAVBAR FOR ALL AUTH USERS (logout etc.)
   return (
     <>
       <Navbar onOpenDrawer={() => setDrawerOpen(true)} />
 
       <div className="min-h-screen md:flex pt-16">
-        {/* Sidebar:
-            - Student → HIDE
-            - Lecturer/Principal → SHOW
-        */}
         {!isStudent && (
           <div className="hidden md:block">
             <Sidebar />
           </div>
         )}
 
-        {/* Mobile drawer / overlay → studentకి కూడా దాచాలి */}
         {!isStudent && drawerOpen && (
           <div className="fixed inset-0 z-50 flex">
             <div
@@ -91,7 +81,6 @@ function AppShell({ children }) {
           </div>
         )}
 
-        {/* Main content */}
         <main className="flex-1 p-4 md:p-6">
           {children}
         </main>
@@ -103,6 +92,12 @@ function AppShell({ children }) {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Google Search Console verification */}
+        
+          <meta name="google-site-verification" content="ONxgq2ymz7PH4gN4ZUuCRCTU3DgcS-Wc7xpVOck8_9Y" />
+      
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50`}
       >

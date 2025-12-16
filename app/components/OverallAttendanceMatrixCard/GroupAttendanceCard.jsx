@@ -1,3 +1,5 @@
+
+//app/components/OverallAttendanceMatrixCard/GroupAttendanceCard.jsx
 'use client'
 
 import React from 'react'
@@ -97,7 +99,7 @@ export default function GroupAttendanceCard({ groupName }) {
               <UsersIcon className="h-7 w-7 text-white" />
             </div>
             <CardTitle className="text-lg font-extrabold tracking-wide md:text-xl">
-              {groupName} Group
+              {groupName}
             </CardTitle>
           </div>
           <div className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-wide shadow-sm">

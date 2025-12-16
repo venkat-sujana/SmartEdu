@@ -13,11 +13,11 @@ export default function Sidebar({ onClose }) {
   const user = session?.user || {}
 
   const links = [
-    { href: "/", label: "Home", icon: <HomeIcon className="w-5 h-5 "  /> },
-    { href: "/lecturer/dashboard", label: "Lecturer Dashboard", icon: <AcademicCapIcon className="w-5 h-5 text-red-500" /> },
-    { href: "/principal/dashboard", label: "Principal Dashboard", icon: <BuildingOffice2Icon className="w-5 h-5 text-amber-500" /> },
+    { href: "/", label: "Home", icon: <HomeIcon className="w-5 h-5 font-bold "  /> },
+    // { href: "/lecturer/dashboard", label: "Lecturer Dashboard", icon: <AcademicCapIcon className="w-5 h-5 text-red-500 font-bold" /> },
+    // { href: "/principal/dashboard", label: "Principal Dashboard", icon: <BuildingOffice2Icon className="w-5 h-5 text-amber-500" /> },
     { href: "/attendance-dashboard", label: "Attendance", icon: <UserCircleIcon className="w-5 h-5 text-yellow-500" /> },
-    { href: "/exams-form", label: "Add Exam", icon: <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-500" /> },
+    { href: "/exams-form", label: "Marks Posting ", icon: <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-500" /> },
     { href: "/exam-report", label: "CMR", icon: <PencilSquareIcon className="w-5 h-5 text-violet-500" /> },
     { href: "/attendance-records/monthly-summary", label: "CAR", icon: <UserGroupIcon className="w-5 h-5 text-purple-500" /> },
     { href: "/student-table", label: "Students", icon: <UserGroupIcon className="w-5 h-5 text-green-500 text-rose-500" /> },
@@ -25,7 +25,7 @@ export default function Sidebar({ onClose }) {
     { href: "/attendance-records/individual", label: "Update Attendance ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
     { href: "/absentees-table", label: "Today's Absentees ", icon: <XCircleIcon className="w-5 h-5 text-red-500" /> },
     { href: "/components/attendance-shortage-summary", label: "Attendance Shortage ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
-    { href: "/attendance-form", label: "Mark Attendance ", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
+    { href: "/attendance-form", label: "Take Attendance ", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
   ]
 
   return (
@@ -35,8 +35,8 @@ export default function Sidebar({ onClose }) {
           <Menu className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100"></h3>
-          <p className="text-sm text-slate-500 dark:text-slate-300">{user.collegeName || "Your College"}</p>
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100"></h3>
+          <p className="text-sm font-bold text-slate-500 dark:text-blue-300">{user.collegeName || "Your College"}</p>
         </div>
       </div>
 
@@ -62,8 +62,8 @@ export default function Sidebar({ onClose }) {
       <div className="mt-auto px-2 py-4">
         <div className="rounded-md border border-gray-100 bg-gradient-to-r from-indigo-50 to-white p-3">
           <p className="text-xs text-gray-600">Signed in as</p>
-          <p className="text-sm font-medium text-gray-800">{user.name || "Guest"}</p>
-          <p className="text-xs text-gray-500">{user.email || ""}</p>
+          <p className="text-sm font-bold text-blue-800">{user.name || "Guest"}</p>
+          <p className="text-xs font-bold text-blue-500">{user.email || ""}</p>
         </div>
       </div>
     </aside>

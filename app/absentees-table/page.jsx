@@ -1,3 +1,5 @@
+//app/absentees-table/page.jsx
+
 "use client";
 import { useEffect, useState } from "react";
 import {

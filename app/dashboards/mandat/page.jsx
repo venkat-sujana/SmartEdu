@@ -1,4 +1,3 @@
-// app/dashboards/mandat/page.jsx
 'use client';
 import Link from 'next/link'
 import { useState } from 'react';
@@ -15,7 +14,6 @@ import GroupShortageSummary from '@/app/components/GroupShortageSummary';
 import DashboardFooter from "@/app/components/Footer";
 import IndividualReport from "@/app/components/Attendance/IndividualReport";
 
-
 export default function MandATDashboard() {
   const { data: session } = useSession();
   const user = session?.user;
@@ -25,26 +23,39 @@ export default function MandATDashboard() {
   const [monthlyAttendance, setMonthlyAttendance] = useState(false);
   const [editAttendance, setEditAttendance] = useState(false);
 
-
   const collegeName = user?.collegeName || 'College';
   const years = ['First Year', 'Second Year'];
 
   return (
     <div className="flex flex-col items-center gap-8 min-h-screen bg-gradient-to-b from-blue-50 to-blue-200">
-      <LecturerInfoCard user={user} />
-
-      <h2 className="text-3xl font-extrabold tracking-tight mt-2 text-blue-800">
-        MandAT Group Dashboard
-      </h2>
-
-
-
-
-
-
-
-      <GroupAttendanceCard groupName="M&AT" />
-      <ExternalLinks />
+      
+      {/* Combined Responsive Header Section */}
+      <section className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-blue-100">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+          
+          {/* Lecturer Info - Full width on mobile, left column on desktop */}
+          <div className="lg:col-span-1">
+            <LecturerInfoCard user={user} />
+          </div>
+          
+          {/* Group Attendance Card - Full width on mobile, center column on desktop */}
+          <div className="lg:col-span-1 flex justify-center">
+            <GroupAttendanceCard groupName="M&AT" />
+          </div>
+          
+          {/* External Links - Full width on mobile, right column on desktop */}
+          <div className="lg:col-span-1">
+            <ExternalLinks />
+          </div>
+        </div>
+        
+        {/* Dashboard Title - Centered below cards */}
+        <div className="text-center mt-8 pt-8 border-t border-blue-100">
+          <h2 className="text-3xl font-extrabold tracking-tight text-blue-800">
+            MandAT Group Dashboard
+          </h2>
+        </div>
+      </section>
 
       <DashboardTogglePanel
         // state flags
@@ -76,7 +87,6 @@ export default function MandATDashboard() {
 
         editAttendanceContent={
           <IndividualReport groupName="M&AT" header={false} />
-
         }
 
         groupMonthlyAttendanceContent={
@@ -92,7 +102,6 @@ export default function MandATDashboard() {
                 collegeName={collegeName}
               />
             ))}
-
 
             <div className="p-6 space-y-8">
               {/* First Year Shortage */}
@@ -111,25 +120,18 @@ export default function MandATDashboard() {
                 collegeName={session?.user?.collegeName}
               />
             </div>
-
-
-
           </div>
         }
       />
-      {/* footer  */}
+      
+      {/* footer */}
       <DashboardFooter
         collegeName={collegeName}
-        // address={address}
-        // phone={phone}
-        // email={email}
         facebookUrl="https://facebook.com/yourcollege"
         instagramUrl="https://instagram.com/yourcollege"
         twitterUrl="https://x.com/yourcollege"
         youtubeUrl="https://youtube.com/@yourcollege"
       />
-
-
     </div>
   );
 }
