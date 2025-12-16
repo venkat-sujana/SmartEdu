@@ -93,9 +93,18 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        <title>OSRA -Online Student record and attendance management system</title>
+
+
+
+
+        <meta name="description" content="OSRA is a smart student management system 
+        designed for colleges to track attendance, 
+        student records, and academic performance efficiently." />
+
+
         {/* Google Search Console verification */}
-        
-          <meta name="google-site-verification" content="ONxgq2ymz7PH4gN4ZUuCRCTU3DgcS-Wc7xpVOck8_9Y" />
+        <meta name="google-site-verification" content="ONxgq2ymz7PH4gN4ZUuCRCTU3DgcS-Wc7xpVOck8_9Y" />
       
       </head>
       <body
