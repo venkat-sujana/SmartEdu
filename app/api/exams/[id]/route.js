@@ -4,12 +4,13 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Exam from "@/models/Exam";
 
-// 🔹 GET - single exam by ID
-export async function GET(req, { params }) {
+// GET
+export async function GET(req, context) {
   try {
     await connectMongoDB();
 
-    const { id } = params;
+    const { id } = await context.params;   // ✅ ముఖ్యమైన line
+    console.log("GET examId =>", id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
@@ -19,7 +20,6 @@ export async function GET(req, { params }) {
     }
 
     const exam = await Exam.findById(id);
-
     if (!exam) {
       return NextResponse.json(
         { success: false, message: "Exam not found" },
@@ -37,15 +37,15 @@ export async function GET(req, { params }) {
   }
 }
 
-// 🔹 PUT - update exam
-export async function PUT(req, { params }) {
+// PUT
+export async function PUT(req, context) {
   try {
     await connectMongoDB();
 
-    const { id } = params;
+    const { id } = await context.params;   // ✅ ఇదే pattern
     const body = await req.json();
-
-    console.log("PUT /api/exams/[id] =>", id);
+console.log("RAW params =>", await context.params);
+    console.log("PUT examId =>", id);
     console.log("PUT body =>", body);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -114,13 +114,13 @@ export async function PUT(req, { params }) {
   }
 }
 
-// 🔹 DELETE - delete exam
-export async function DELETE(req, { params }) {
+// DELETE
+export async function DELETE(req, context) {
   try {
     await connectMongoDB();
 
-    const { id } = params;
-    console.log("DELETE /api/exams/[id] =>", id);
+    const { id } = await context.params;   // ✅ ఇక్కడ కూడా
+    console.log("DELETE examId =>", id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
@@ -130,7 +130,6 @@ export async function DELETE(req, { params }) {
     }
 
     const deleted = await Exam.findByIdAndDelete(id);
-
     if (!deleted) {
       return NextResponse.json(
         { success: false, message: "Exam not found" },
