@@ -1,3 +1,4 @@
+//app/exams-form/page.jsx
 "use client";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -26,30 +27,27 @@ export default function ExamsFormPage() {
   const collegeName = session?.user?.collegeName || "";
 
   // Fetch students based on selected stream
-  useEffect(() => {
-    const fetchStudents = async () => {
-      if (!session?.user?.collegeId || !formData.stream) {
-        setStudents([]);
-        return;
-      }
-      try {
-        const res = await fetch(
-          `/api/students?collegeId=${session.user.collegeId}&group=${formData.stream}`
-        );
-        const json = await res.json();
-        setStudents(Array.isArray(json.data) ? json.data : []);
-      } catch (err) {
-        setStudents([]);
-      }
-    };
-    fetchStudents();
-  }, [formData.stream, session?.user?.collegeId]);
-
-  useEffect(() => {
-    if (collegeName) {
-      document.title = `${collegeName} - Exam Entry Form`;
+useEffect(() => {
+  const fetchStudents = async () => {
+    if (!session?.user?.collegeId || !formData.stream) {
+      setStudents([]);
+      return;
     }
-  }, [collegeName]);
+    try {
+      const res = await fetch(`/api/students?group=${encodeURIComponent(formData.stream)}`
+);
+
+      const json = await res.json();
+      setStudents(Array.isArray(json.data) ? json.data : []);
+    } catch (err) {
+      setStudents([]);
+    }
+  };
+  fetchStudents();
+}, [formData.stream, session?.user?.collegeId]);
+
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

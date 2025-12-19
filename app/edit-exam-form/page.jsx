@@ -1,3 +1,5 @@
+
+//app/edit-exam-form/page.jsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -23,11 +25,15 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
   const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
   const vocationalStreams = ["M&AT", "CET", "MLT"];
 
-  const subjectKeys = useMemo(() => {
+const examId = examData?._id;
+console.log("PUT examId =>", examId);
+
+
+const subjectKeys = useMemo(() => {
     if (!formData.stream) return [];
     return generalStreams.includes(formData.stream)
       ? [
-          "Telugu/Sanskrit",
+          "Telugu/Sanskrit/Hindi",
           "English",
           "Maths/Botany/Civics",
           "Maths/Zoology/History",
@@ -37,32 +43,31 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
       : ["GFC", "English", "V1/V4", "V2/V5", "V3/V6"];
   }, [formData.stream]);
 
-  useEffect(() => {
-    // students లిస్ట్ తీసుకొండి
-    const fetchStudents = async () => {
-      if (!session?.user?.collegeId) return;
-      const res = await fetch(`/api/students?collegeId=${session.user.collegeId}`);
-      const json = await res.json();
-      setStudents(json.data || []);
-    };
-    fetchStudents();
+useEffect(() => {
+  const fetchStudents = async () => {
+    if (!session?.user?.collegeId) return;
+    const res = await fetch(`/api/students`);
+    const json = await res.json();
+    setStudents(json.data || []);
+  };
+  fetchStudents();
 
-    // formData ప్రిపేర్
-    if (examData) {
-      setFormData({
-        _id: examData._id,
-        stream: examData.stream,
-        studentId: examData.student?._id || "",
-        yearOfStudy: examData.yearOfStudy,
-        academicYear: examData.academicYear,
-        examType: examData.examType,
-        examDate: examData.examDate?.substring(0, 10),
-        subjects: examData.generalSubjects || examData.vocationalSubjects || {},
-        total: examData.total || 0,
-        percentage: examData.percentage || 0,
-      });
-    }
-  }, [examData, session]);
+  if (examData) {
+    setFormData({
+      _id: examData._id,
+      stream: examData.stream,
+      studentId: examData.studentId || examData.student?._id || "",
+      yearOfStudy: examData.yearOfStudy,
+      academicYear: examData.academicYear,
+      examType: examData.examType,
+      examDate: examData.examDate?.substring(0, 10),
+      subjects: examData.generalSubjects || examData.vocationalSubjects || {},
+      total: examData.total || 0,
+      percentage: examData.percentage || 0,
+    });
+  }
+}, [examData, session]);
+;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -101,50 +106,63 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
       }));
     }
   };
+  
 
   const handleUpdate = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    if (!formData.studentId || formData.studentId.length !== 24) {
-      toast.error("❌ Please select a valid student");
-      setLoading(false);
-      return;
-    }
-
-    const payload = {
-      studentId: formData.studentId,
-      stream: formData.stream,
-      examType: formData.examType,
-      examDate: formData.examDate,
-      academicYear: formData.academicYear,
-      yearOfStudy: formData.yearOfStudy,
-      total: formData.total,
-      percentage: formData.percentage,
-      [generalStreams.includes(formData.stream)
-        ? "generalSubjects"
-        : "vocationalSubjects"]: formData.subjects,
-    };
-
-    try {
-      const res = await fetch(`/api/exams/${formData._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-      if (res.ok && result.success !== false) {
-        toast.success("✅ Exam updated successfully!");
-        onUpdated();
-        onClose();
-      } else {
-        throw new Error(result.message || "❌ Failed to update exam");
-      }
-    } catch (error) {
-      toast.error(error.message);
-    }
+  if (!examId) {
+    toast.error("❌ Exam ID missing");
     setLoading(false);
+    return;
+  }
+
+  if (!formData.studentId || formData.studentId.length !== 24) {
+    toast.error("❌ Please select a valid student");
+    setLoading(false);
+    return;
+  }
+
+  const payload = {
+    studentId: formData.studentId,
+    stream: formData.stream,
+    examType: formData.examType,
+    examDate: formData.examDate,
+    academicYear: formData.academicYear,
+    yearOfStudy: formData.yearOfStudy,
+    total: formData.total,
+    percentage: formData.percentage,
+    ...(generalStreams.includes(formData.stream)
+      ? { generalSubjects: formData.subjects }
+      : { vocationalSubjects: formData.subjects }),
   };
+
+  try {
+    const res = await fetch(`/api/exams/${examId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok || result.success === false) {
+      throw new Error(result.message || "❌ Failed to update exam");
+    }
+
+    toast.success("✅ Exam updated successfully!");
+    onUpdated();
+    onClose();
+  } catch (error) {
+    toast.error(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="bg-white border rounded-xl p-4 shadow-lg max-w-xl mx-auto relative">

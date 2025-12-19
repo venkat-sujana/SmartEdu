@@ -1,4 +1,5 @@
 // app/api/students/route.js
+export const dynamic = "force-dynamic";
 
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
@@ -13,6 +14,7 @@ export async function POST(req) {
     await connectMongoDB()
 
     const session = await getServerSession(authOptions)
+
     const lecturer = session?.user
 
     if (!lecturer?.collegeId || (!lecturer?.subject && !lecturer?.group)) {
@@ -93,7 +95,9 @@ export async function POST(req) {
 export async function GET(req) {
   try {
     await connectMongoDB();
+
     const session = await getServerSession(authOptions);
+    console.log('SESSION IN /api/students:', session);
 
     if (!session?.user?.collegeId) {
       return Response.json({ status: 'error', message: 'College ID లేదు' }, { status: 401 });
