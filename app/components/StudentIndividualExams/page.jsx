@@ -1,5 +1,3 @@
-//app/components/StudentIndividualExams/page.jsx
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -58,6 +56,10 @@ export default function StudentIndividualExams({ studentId }) {
 
           const subjectCount = Object.keys(subjects).length;
 
+          // Vocational combined exam detection
+          const isVocationalHalfYearly = !isGeneralStream && exam.examType === "HALF-YEARLY";
+          const isVocationalPrePublic1 = !isGeneralStream && exam.examType === "PRE-PUBLIC-1";
+
           let maxMarksPerSub = 0;
           if (["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(exam.examType)) {
             maxMarksPerSub = 25;
@@ -68,7 +70,6 @@ export default function StudentIndividualExams({ studentId }) {
           }
 
           const baseTotal = subjectCount * maxMarksPerSub;
-
           let obtained = 0;
           let result = "Pass";
 
@@ -96,6 +97,9 @@ export default function StudentIndividualExams({ studentId }) {
             total: obtained,
             percentage,
             result,
+            maxMarks: baseTotal,
+            isVocationalHalfYearly,
+            isVocationalPrePublic1,
           };
         });
 
@@ -136,7 +140,28 @@ export default function StudentIndividualExams({ studentId }) {
 
       {examResults.map((exam) => {
         const isGeneralStream = ["MPC", "BIPC", "CEC", "HEC"].includes(exam.stream);
-        const totalMax =
+        
+        // Find paired exam for vocational combined display
+        let pairedExam = null;
+        if (exam.isVocationalHalfYearly) {
+          pairedExam = examResults.find(e => 
+            e.isVocationalPrePublic1 && 
+            e.stream === exam.stream && 
+            e.yearOfStudy === exam.yearOfStudy &&
+            e.academicYear === exam.academicYear
+          );
+        } else if (exam.isVocationalPrePublic1) {
+          pairedExam = examResults.find(e => 
+            e.isVocationalHalfYearly && 
+            e.stream === exam.stream && 
+            e.yearOfStudy === exam.yearOfStudy &&
+            e.academicYear === exam.academicYear
+          );
+        }
+
+        const isVocationalCombinedDisplay = pairedExam && (exam.isVocationalHalfYearly || exam.isVocationalPrePublic1);
+
+        const totalMax = exam.maxMarks || 
           (exam.stream
             ? (isGeneralStream ? 6 : 5) *
               (["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(exam.examType)
@@ -154,8 +179,23 @@ export default function StudentIndividualExams({ studentId }) {
             className="mb-8 border border-gray-300 rounded p-6 shadow-sm"
           >
             <h3 className="text-xl font-semibold mb-1 flex items-center gap-2">
-              <span>📝</span> {exam.examType}
+              <span>📝</span> 
+              {isVocationalCombinedDisplay ? "HALF-YEARLY + PRE-PUBLIC-1" : exam.examType}
             </h3>
+            
+            {isVocationalCombinedDisplay && (
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4">
+                <p className="text-sm text-blue-800 mb-2">
+                  <span>🎯</span> Half Yearly: {exam.isVocationalHalfYearly ? exam.total : pairedExam.total} / {exam.isVocationalHalfYearly ? exam.maxMarks : pairedExam.maxMarks} 
+                  ({exam.isVocationalHalfYearly ? exam.percentage.toFixed(1) : pairedExam.percentage.toFixed(1)}%)
+                </p>
+                <p className="text-sm text-blue-800">
+                  <span>🎯</span> Pre-Public-1: {exam.isVocationalPrePublic1 ? exam.total : pairedExam.total} / {exam.isVocationalPrePublic1 ? exam.maxMarks : pairedExam.maxMarks} 
+                  ({exam.isVocationalPrePublic1 ? exam.percentage.toFixed(1) : pairedExam.percentage.toFixed(1)}%)
+                </p>
+              </div>
+            )}
+
             <p className="text-gray-700 mb-3 flex flex-wrap gap-x-4 gap-y-1">
               <span>📅 Date: {formatDate(exam.examDate)}</span>
               <span>📚 Stream: {exam.stream}</span>
@@ -201,24 +241,49 @@ export default function StudentIndividualExams({ studentId }) {
             </table>
 
             <div className="mt-4 font-semibold text-gray-800 flex flex-wrap gap-4">
-              <p>
-                <span>🧮 Total Marks:</span> {exam.total} / {totalMax}
-              </p>
-              <p>
-                <span>📊 Percentage:</span> {exam.percentage.toFixed(2)}%
-              </p>
-              <p>
-                <span>🏁 Result:</span>{" "}
-                <span
-                  className={
-                    exam.result === "Pass"
-                      ? "text-green-600 font-bold"
-                      : "text-red-600 font-bold"
-                  }
-                >
-                  {exam.result === "Pass" ? "✅ Pass" : "❌ Fail"}
-                </span>
-              </p>
+              {!isVocationalCombinedDisplay ? (
+                <>
+                  <p>
+                    <span>🧮 Total Marks:</span> {exam.total} / {totalMax}
+                  </p>
+                  <p>
+                    <span>📊 Percentage:</span> {exam.percentage.toFixed(2)}%
+                  </p>
+                  <p>
+                    <span>🏁 Result:</span>{" "}
+                    <span
+                      className={
+                        exam.result === "Pass"
+                          ? "text-green-600 font-bold"
+                          : "text-red-600 font-bold"
+                      }
+                    >
+                      {exam.result === "Pass" ? "✅ Pass" : "❌ Fail"}
+                    </span>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    <span>🧮 Combined Total:</span> {exam.total + pairedExam.total} / {exam.maxMarks + pairedExam.maxMarks}
+                  </p>
+                  <p>
+                    <span>📊 Combined %:</span> {((exam.total + pairedExam.total) / (exam.maxMarks + pairedExam.maxMarks) * 100).toFixed(2)}%
+                  </p>
+                  <p>
+                    <span>🏁 Combined Result:</span>{" "}
+                    <span
+                      className={
+                        (exam.result === "Pass" && pairedExam.result === "Pass")
+                          ? "text-green-600 font-bold"
+                          : "text-red-600 font-bold"
+                      }
+                    >
+                      {(exam.result === "Pass" && pairedExam.result === "Pass") ? "✅ Pass" : "❌ Fail"}
+                    </span>
+                  </p>
+                </>
+              )}
             </div>
           </div>
         );

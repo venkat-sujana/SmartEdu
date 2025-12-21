@@ -34,7 +34,7 @@ export default function ExamReportPage() {
   const [collegeName, setCollegeName] = useState('')
 
   const [generalColumns, setGeneralColumns] = useState([
-    'Telugu/Sanskrit',
+    'Telugu/Sanskrit/Hindi',
     'English',
     'Maths/Botany/Civics',
     'Maths/Zoology/History',
@@ -192,7 +192,7 @@ export default function ExamReportPage() {
       </div>
 
       {/* Main Title */}
-      <h1 className="mb-6 text-center text-xl font-extrabold tracking-tight text-blue-900 sm:text-2xl md:text-4xl">
+      <h1 className="mb-6 text-center text-xl font-extrabold tracking-tight text-blue-900 sm:text-xl md:text-2xl">
         📊 Central Marks Register
       </h1>
 

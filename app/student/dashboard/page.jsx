@@ -36,7 +36,7 @@ console.log("session.user.studentId =", session?.user?.studentId)
 
 
   return (
-    <div className="mx-auto max-w-5xl mt-2 space-y-10 rounded p-3 px-4 py-12 font-bold shadow bg-gradient-to-br from-indigo-100 via-white to-blue-50">
+    <div className="mx-auto max-w-5xl mt-2 space-y-10 rounded p-3 px-4 py-12 font-bold shadow bg-linear-to-br from-indigo-100 via-white to-blue-50">
       {/* Header */}
       <h1 className="flex justify-center items-center gap-2 text-xl font-extrabold tracking-tight text-blue-700">
         <span>🎓</span> Student Dashboard

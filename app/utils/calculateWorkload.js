@@ -1,34 +1,35 @@
 //app/utils/calculateWorkload.js
-import { SUBJECT_LECTURERS } from "@/lib/lecturers";
+import { SUBJECT_LECTURERS } from "@/app/lib/lecturers"
 
-export function calculateWorkload(timetableData) {
-  const report = {};
+function calculateLecturerWorkload(table) {
+  const workload = {}
 
-  timetableData.forEach(day =>
-    day.forEach(subject => {
-      if (!subject) return;
+  table.forEach(dayRow => {
+    dayRow.forEach(subject => {
+      if (!subject) return
 
-      const lecturer = SUBJECT_LECTURERS[subject];
-      if (!lecturer) return;
+      const lecturer = SUBJECT_LECTURERS[subject]
+      if (!lecturer) return
 
-      if (!report[lecturer]) {
-        report[lecturer] = {
+      if (!workload[lecturer]) {
+        workload[lecturer] = {
           lecturer,
           theory: 0,
           practical: 0,
           total: 0,
-        };
+        }
       }
 
-      if (subject.toLowerCase().includes("practical")) {
-        report[lecturer].practical += 1;
+      // ✅ FIXED PRACTICAL CHECK
+      if (subject.toLowerCase().includes('practic')) {
+        workload[lecturer].practical += 1
       } else {
-        report[lecturer].theory += 1;
+        workload[lecturer].theory += 1
       }
 
-      report[lecturer].total += 1;
+      workload[lecturer].total += 1
     })
-  );
+  })
 
-  return Object.values(report);
+  return Object.values(workload)
 }
