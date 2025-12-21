@@ -117,6 +117,34 @@ export default function ProfilePage() {
           Node.js, and MongoDB. Actively working on OSRA (Online Student Record
           Automation) platform.
         </p>
+
+        <p className="text-slate-700 leading-relaxed">
+          OSRA (Online Student Record & Attendance System) is a smart college management
+solution designed to simplify academic administration. It helps institutions
+efficiently manage student records, attendance, examinations, and performance
+tracking in one secure digital platform.
+
+        </p>
+
+        <p className="text-slate-700 leading-relaxed">
+          OSRA empowers colleges to streamline their academic processes and
+          enhance student engagement. It provides a user-friendly interface for
+          instructors, administrators, and students, allowing them to access
+          essential information in real-time. With OSRA, colleges can optimize
+          resource allocation, improve student engagement, and enhance
+          <em> overall academic performance.
+          </em>
+        </p>
+        <p>
+          • Student Registration & Records Management  <br/>
+• Daily & Monthly Attendance Tracking <br/> 
+• Examination & Marks Management <br/> 
+• Role-Based Access (Lecturer / Principal)  <br/>
+• College-wise Secure Data Filtering  <br/>
+• Reports & Performance Analysis  <br/>
+• Mobile & Desktop Friendly Interface<br/>
+
+        </p>
       </section>
     </div>
   );

@@ -22,6 +22,7 @@ const SUBJECTS = {
     "Telugu",
     "Sanskrit",
     "Hindi",
+    "Study Hour"
   ],
   vocational: [
     "",
@@ -33,6 +34,14 @@ const SUBJECTS = {
     "V4",
     "V5",
     "V6",
+    "V1 Practicals",
+    "V2 Practicals",
+    "V3 Practicals",
+    "V4 Practicals",
+    "V5 Practicals",
+    "V6 Practicals",
+    "Study Hour",
+    "Bridge Course"
   ],
 };
 

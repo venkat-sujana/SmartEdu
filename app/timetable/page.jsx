@@ -2,9 +2,6 @@
 
 import EditableTimeTable from "../components/EditableTimeTable";
 
-
-
-
 export default function TimeTablePage() {
   return (
     <div className="p-4 md:p-8">

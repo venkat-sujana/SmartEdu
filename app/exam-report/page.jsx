@@ -182,11 +182,11 @@ export default function ExamReportPage() {
 
 
   return (
-    <div className="mt-24 mx-auto min-h-screen w-full max-w-7xl bg-gradient-to-br from-blue-50 via-white to-green-50 p-1 font-sans sm:p-4">
+    <div className="mt-24 mx-auto min-h-screen w-full max-w-7xl bg-linear-to-br from-blue-50 via-white to-green-50 p-1 font-sans sm:p-4">
       <Toaster />
 
       {/* College Header */}
-      <div className="mb-6 flex items-center justify-center rounded-2xl border-2 border-blue-200 bg-gradient-to-r from-blue-100 to-green-100 px-6 py-4 text-xl font-bold text-blue-800 shadow-lg">
+      <div className="mb-6 flex items-center justify-center rounded-2xl border-2 border-blue-200 bg-linear-to-r from-blue-100 to-green-100 px-6 py-4 text-xl font-bold text-blue-800 shadow-lg">
         <span className="mr-3 text-2xl">🏫</span>
         <span>{collegeName || 'Loading...'}</span>
       </div>
@@ -198,17 +198,17 @@ export default function ExamReportPage() {
 
       {/* Summary Stats Cards */}
       <div className="mb-6 flex flex-wrap justify-center gap-2 sm:gap-4">
-        <div className="min-w-[80px] rounded-xl border-2 border-green-200 bg-green-50 px-3 py-2 text-center shadow-lg sm:min-w-[120px] sm:px-8 sm:py-5">
+        <div className="min-w-20 rounded-xl border-2 border-green-200 bg-green-50 px-3 py-2 text-center shadow-lg sm:min-w-[120px] sm:px-8 sm:py-5">
           <div className="mb-1 text-lg sm:text-3xl">✅</div>
           <div className="text-lg font-bold text-green-700 sm:text-2xl">{passCount}</div>
           <div className="text-xs font-semibold text-green-800 sm:text-sm">Passed</div>
         </div>
-        <div className="min-w-[80px] rounded-xl border-2 border-red-200 bg-red-50 px-3 py-2 text-center shadow-lg sm:min-w-[120px] sm:px-8 sm:py-5">
+        <div className="min-w-20 rounded-xl border-2 border-red-200 bg-red-50 px-3 py-2 text-center shadow-lg sm:min-w-[120px] sm:px-8 sm:py-5">
           <div className="mb-1 text-lg sm:text-3xl">❌</div>
           <div className="text-lg font-bold text-red-700 sm:text-2xl">{failCount}</div>
           <div className="text-xs font-semibold text-red-800 sm:text-sm">Failed</div>
         </div>
-        <div className="min-w-[80px] rounded-xl border-2 border-blue-200 bg-blue-50 px-3 py-2 text-center shadow-lg sm:min-w-[120px] sm:px-8 sm:py-5">
+        <div className="min-w-20 rounded-xl border-2 border-blue-200 bg-blue-50 px-3 py-2 text-center shadow-lg sm:min-w-[120px] sm:px-8 sm:py-5">
           <div className="mb-1 text-lg sm:text-3xl">📈</div>
           <div className="text-lg font-bold text-blue-700 sm:text-2xl">{passPercentage}%</div>
           <div className="text-xs font-semibold text-blue-800 sm:text-sm">Pass Rate</div>
@@ -291,7 +291,7 @@ export default function ExamReportPage() {
             <section key={exam} className="mb-12">
               {/* Exam Type Header */}
               <div className="mb-6 flex flex-col items-center gap-3 text-2xl font-bold text-indigo-700 sm:flex-row sm:justify-center">
-                <span className="inline-block rounded-2xl bg-gradient-to-r from-indigo-100 to-blue-100 px-4 py-2 text-center text-indigo-700 shadow-lg sm:px-6 sm:py-3">
+                <span className="inline-block rounded-2xl bg-linear-to-r from-indigo-100 to-blue-100 px-4 py-2 text-center text-indigo-700 shadow-lg sm:px-6 sm:py-3">
                   📚 {exam}
                 </span>
               </div>
@@ -303,14 +303,14 @@ export default function ExamReportPage() {
                     key={year}
                     className="rounded-3xl border-2 border-blue-100 bg-white p-4 shadow-xl sm:p-6"
                   >
-                    <h4 className="mb-4 rounded-xl bg-gradient-to-r from-blue-50 to-green-50 py-2 text-center text-lg font-bold text-blue-800 sm:text-xl">
+                    <h4 className="mb-4 rounded-xl bg-linear-to-r from-blue-50 to-green-50 py-2 text-center text-lg font-bold text-blue-800 sm:text-xl">
                       🎓 {year}
                     </h4>
                     {/* Place overflow-x-auto DIV here */}
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-[360px] border-collapse text-xs sm:min-w-[400px] sm:text-sm">
                         <thead>
-                          <tr className="bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200 text-blue-900">
+                          <tr className="bg-linear-to-r from-blue-200 via-indigo-200 to-purple-200 text-blue-900">
                             <th className="border px-2 py-2 sm:py-3">S.No</th>
                             <th className="border px-3 py-2 text-left sm:py-3">Name</th>
                             {(rows[0]?.stream && ['M&AT', 'CET', 'MLT'].includes(rows[0].stream)
@@ -373,7 +373,7 @@ export default function ExamReportPage() {
                                   }
                                   if (
                                     ['PRE-PUBLIC-1', 'PRE-PUBLIC-2'].includes(report.examType) &&
-                                    numericMark < 35
+                                    numericMark < 18
                                   ) {
                                     isFail = true
                                     break
@@ -392,7 +392,7 @@ export default function ExamReportPage() {
                                 ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4'].includes(report.examType)
                               ) {
                                 maxMarksPerSubject = 25
-                              } else if (['QUARTERLY', 'HALFYEARLY'].includes(report.examType)) {
+                              } else if (['QUARTERLY', 'HALFYEARLY','PRE-PUBLIC-1', 'PRE-PUBLIC-2'].includes(report.examType)) {
                                 maxMarksPerSubject = 50
                               }
 

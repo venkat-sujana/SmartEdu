@@ -6,7 +6,7 @@ export default function AboutPage() {
   const imageSrc = '/images/profile.jpg'
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-indigo-100 via-white to-indigo-50 flex items-center justify-center p-6 mt-20">
+    <main className="min-h-screen bg-linear-to-b from-indigo-100 via-white to-indigo-50 flex items-center justify-center p-6 mt-20">
       <section className="max-w-5xl w-full bg-white shadow-xl rounded-3xl p-10 grid md:grid-cols-3 gap-10 items-center border border-indigo-100">
         {/* Profile */}
         <div className="col-span-1 flex flex-col items-center text-center">
