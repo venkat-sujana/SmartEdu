@@ -6,7 +6,7 @@ import { Users, ClipboardList, School } from "lucide-react"
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white text-gray-800 text-center mt-2">
+    <div className="min-h-screen bg-linear-to-b from-blue-50 to-white text-gray-800 text-center mt-2">
       <section className="pt-20 md:pt-28 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -22,6 +22,46 @@ export default function LoginPage() {
           </p>
         </motion.div>
       </section>
+      {/* ===== CTA : M&AT Question Paper Generator ===== */}
+<div className="mt-8">
+  <div className="rounded-2xl border border-indigo-200 bg-liner-to-br from-indigo-50 to-blue-50 p-6 shadow-sm hover:shadow-md transition">
+    <div className="flex items-start gap-4">
+      {/* Icon */}
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white">
+        <ClipboardList className="h-6 w-6" />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1">
+        <h3 className="text-xl font-bold text-indigo-900">
+          Generate M&AT Question Papers Instantly
+        </h3>
+
+        <p className="mt-2 text-gray-700">
+          Create professional <strong>Mechanical & Automobile Technician (M&AT)</strong>
+          question papers for Intermediate Vocational exams in just a few clicks.
+        </p>
+
+        {/* CTA Button */}
+        <div className="mt-4">
+          <Link
+            href="https://advanced-question-paper-tailwindcss.netlify.app/"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition mr-3 mb-2"
+          >
+            Go to M&AT Generator →
+          </Link>
+          <Link
+            href="https://skr-learn-portal.netlify.app/"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition"
+          >
+            Go to Vocational Question Paper Generator →
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
       <section id="login" className="py-8 bg-white">
         <h3 className="text-3xl font-bold text-blue-700 mb-10">Login as</h3>

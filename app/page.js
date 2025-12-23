@@ -9,6 +9,7 @@ import { Users, ClipboardList, School } from "lucide-react"
 import Sidebar from "./components/Sidebar"
 import Navbar from "@/components/Navbar" // Fixed import path
 
+
 export default function HomePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -55,13 +56,12 @@ export default function HomePage() {
 
   // Protected dashboard
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden">
         <Navbar />
-        {/* Rest of dashboard content - unchanged */}
-        <main className="flex-1 p-6 overflow-y-auto mt-16">
-          {/* Your existing dashboard content */}
+         {/* Rest of dashboard content - unchanged */}
+        <main className="mt-16 flex-1 overflow-y-auto p-6">
         </main>
       </div>
     </div>

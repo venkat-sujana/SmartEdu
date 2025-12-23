@@ -83,7 +83,7 @@ export default function GroupDashboard() {
   return (
 <div className="
   min-h-screen w-full
-  bg-gradient-to-tr from-[#c7d2fe] via-[#f1f5f9] to-[#a5b4fc]
+  bg-linear-to-tr from-[#c7d2fe] via-[#f1f5f9] to-[#a5b4fc]
   flex items-center justify-center
 ">
   <div className="mx-auto max-w-6xl p-6 bg-white/80 rounded-3xl shadow-2xl">

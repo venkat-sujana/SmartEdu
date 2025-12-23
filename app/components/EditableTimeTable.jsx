@@ -170,7 +170,7 @@ export default function EditableTimeTable({ title, stream = 'general' }) {
       <div className="no-print mb-2 flex justify-end">
         <button
           onClick={handlePrint}
-          className="rounded-md bg-blue-700 px-4 py-2 text-sm text-white hover:bg-blue-800"
+          className="rounded-md bg-blue-700 px-4 py-2 text-sm text-white hover:bg-blue-800 cursor-pointer"
         >
           🖨 Print / PDF
         </button>

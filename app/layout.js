@@ -1,3 +1,5 @@
+
+//app/layout.js
 "use client"
 
 import { Geist, Geist_Mono } from "next/font/google"
@@ -92,42 +94,68 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* ✅ SEO TITLE */}
+        {/* ===== BASIC SEO ===== */}
         <title>OSRA | Online Student Record & Attendance Management System</title>
 
-        {/* ✅ META DESCRIPTION */}
         <meta
           name="description"
           content="OSRA is a smart online student record and attendance management system for colleges to manage attendance, exams, and academic performance efficiently."
         />
 
-        {/* ✅ KEYWORDS */}
         <meta
           name="keywords"
-          content="OSRA, student management system, online attendance system, college ERP, student record management"
+          content="OSRA, student management system, online attendance system, college ERP, exam management system"
         />
 
-        {/* ✅ OPEN GRAPH (WhatsApp / FB Preview) */}
+        <meta name="robots" content="index, follow" />
+
+        {/* ===== OPEN GRAPH ===== */}
         <meta property="og:title" content="OSRA | Smart College Management System" />
         <meta
           property="og:description"
-          content="Manage student records, attendance, exams, and performance with OSRA – a smart digital solution for colleges."
+          content="Manage student records, attendance, exams, and academic performance with OSRA – a smart digital solution for colleges."
         />
-        <meta property="og:url" content="https://smart-edu-lyart.vercel.app" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="OSRA" />
+        <meta property="og:url" content="https://smart-edu-lyart.vercel.app" />
+        <meta property="og:image" content="/og-osra.png" />
 
-        {/* Optional image */}
-        {/* <meta property="og:image" content="/og-image.png" /> */}
-
-        {/* ✅ GOOGLE VERIFICATION */}
+        {/* ===== GOOGLE VERIFICATION ===== */}
         <meta
           name="google-site-verification"
           content="ONxgq2ymz7PH4gN4ZUuCRCTU3DgcS-Wc7xpVOck8_9Y"
         />
 
-        {/* ✅ ROBOTS */}
-        <meta name="robots" content="index, follow" />
+        {/* ===== JSON-LD : SOFTWARE APPLICATION ===== */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "@id": "https://smart-edu-lyart.vercel.app/#software",
+              "name": "OSRA – Online Student Record & Attendance System",
+              "applicationCategory": "EducationalApplication",
+              "operatingSystem": "Web",
+              "description":
+                "OSRA is an online student record and attendance management system designed for colleges to manage attendance, exams, and academic performance efficiently.",
+              "url": "https://smart-edu-lyart.vercel.app",
+              "creator": {
+                "@type": "Organization",
+                "name": "OSRA"
+              },
+              "audience": {
+                "@type": "EducationalAudience",
+                "educationalRole": "administrator"
+              },
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "INR"
+              }
+            }),
+          }}
+        />
       </head>
 
       <body
