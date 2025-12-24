@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import TodayAbsenteesTable from "@/app/absentees-table/page";
 import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-import ExternalLinks from "@/app/components/ExternalLinks";
+// import ExternalLinks from "@/app/components/ExternalLinks";
 import GroupStudentTable from "../../components/GroupStudentTable";
 import GroupAttendanceSummary from '@/app/components/GroupAttendanceSummary';
 import AttendanceForm from '@/app/components/AttendanceForm';
@@ -27,7 +27,7 @@ export default function MandATDashboard() {
   const years = ['First Year', 'Second Year'];
 
   return (
-    <div className="flex flex-col items-center gap-8 min-h-screen bg-gradient-to-b from-blue-50 to-blue-200">
+    <div className="flex flex-col items-center gap-8 min-h-screen bg-linear-to-b from-blue-50 to-blue-200">
       
       {/* Combined Responsive Header Section */}
       <section className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-blue-100">
@@ -44,9 +44,9 @@ export default function MandATDashboard() {
           </div>
           
           {/* External Links - Full width on mobile, right column on desktop */}
-          <div className="lg:col-span-1">
+          {/* <div className="lg:col-span-1">
             <ExternalLinks />
-          </div>
+          </div> */}
         </div>
         
         {/* Dashboard Title - Centered below cards */}

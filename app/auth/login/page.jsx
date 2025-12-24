@@ -7,7 +7,7 @@ import { Users, ClipboardList, School } from "lucide-react"
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-linear-to-b from-blue-50 to-white text-gray-800 text-center mt-2">
-      <section className="pt-20 md:pt-28 pb-16">
+      <section className="pt-5 md:pt-28 pb-5">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -34,27 +34,27 @@ export default function LoginPage() {
       {/* Content */}
       <div className="flex-1">
         <h3 className="text-xl font-bold text-indigo-900">
-          Generate M&AT Question Papers Instantly
+          Generate Vocational Question Papers Instantly
         </h3>
 
         <p className="mt-2 text-gray-700">
-          Create professional <strong>Mechanical & Automobile Technician (M&AT)</strong>
-          question papers for Intermediate Vocational exams in just a few clicks.
+          Create professional <strong>Vocational question papers</strong>
+           for Intermediate Vocational exams in just a few clicks.
         </p>
 
         {/* CTA Button */}
         <div className="mt-4">
           <Link
             href="https://advanced-question-paper-tailwindcss.netlify.app/"
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition mr-3 mb-2"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-2 py-2 text-white font-semibold hover:bg-indigo-700 transition mr-3 mb-2"
           >
-            Go to M&AT Generator →
+            Go to  M&AT Qp Generator →
           </Link>
           <Link
             href="https://skr-learn-portal.netlify.app/"
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-2 py-2 text-white font-semibold hover:bg-indigo-700 transition"
           >
-            Go to Vocational Question Paper Generator →
+            Go to Voc Qp Generator →
           </Link>
         </div>
       </div>
