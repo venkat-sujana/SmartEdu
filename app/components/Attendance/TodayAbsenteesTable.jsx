@@ -61,7 +61,7 @@ export default function TodayAbsenteesTable({ collegeId, header = true, groupFil
   return (
     <div className="max-w-5xl mx-auto my-6">
       {header && (
-        <h2 className="text-2xl font-extrabold mb-4 text-center bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 text-white rounded-2xl py-2 shadow-xl tracking-wide flex items-center justify-center gap-3 drop-shadow-lg border border-blue-300">
+        <h2 className="text-2xl font-extrabold mb-4 text-center bg-linear-to-r from-blue-600 via-cyan-400 to-emerald-400 text-white rounded-2xl py-2 shadow-xl tracking-wide flex items-center justify-center gap-3 drop-shadow-lg border border-blue-300">
           <span>📋</span>
           Today's Absentees{" "}
           <span className="text-lg font-light italic text-white/80">(Session-wise)</span>
@@ -72,13 +72,13 @@ export default function TodayAbsenteesTable({ collegeId, header = true, groupFil
         {sessions.map((sessionKey) => (
           <div key={sessionKey} className="mb-3">
             <div className="flex items-center gap-2 mb-4">
-              <span className="inline-flex bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-6 py-2 rounded-xl text-xl font-bold shadow-lg border border-blue-300 drop-shadow">
+              <span className="inline-flex bg-linear-to-r from-cyan-400 to-blue-500 text-white px-6 py-2 rounded-xl text-xl font-bold shadow-lg border border-blue-300 drop-shadow">
                 {sessionLabels[sessionKey] || sessionKey}
               </span>
             </div>
 
-            <div className="bg-gradient-to-br from-white via-cyan-100 to-blue-50 rounded-3xl border-2 border-cyan-200 shadow-lg pb-2 mb-2">
-              <h3 className="font-semibold text-lg bg-gradient-to-r from-cyan-300 to-emerald-100 px-7 py-4 mb-2 rounded-t-3xl text-blue-900 tracking-wide border-b border-blue-200">
+            <div className="bg-linear-to-br from-white via-cyan-100 to-blue-50 rounded-3xl border-2 border-cyan-200 shadow-lg pb-2 mb-2">
+              <h3 className="font-semibold text-lg bg-linear-to-r from-cyan-300 to-emerald-100 px-7 py-4 mb-2 rounded-t-3xl text-blue-900 tracking-wide border-b border-blue-200">
                 Absentees List
               </h3>
 
@@ -101,7 +101,7 @@ export default function TodayAbsenteesTable({ collegeId, header = true, groupFil
                 );
 
                 return (
-                  <div key={yearKey} className="mb-7 px-7 py-5 bg-gradient-to-br from-cyan-50 via-white to-emerald-50 rounded-2xl border border-cyan-200 shadow-sm">
+                  <div key={yearKey} className="mb-7 px-7 py-5 bg-linear-to-br from-cyan-50 via-white to-emerald-50 rounded-2xl border border-cyan-200 shadow-sm">
                     <div className="font-semibold text-blue-800 text-xl mb-3 flex items-center gap-2">
                       <span>🎓</span> {yearKey}
                     </div>
@@ -118,7 +118,7 @@ export default function TodayAbsenteesTable({ collegeId, header = true, groupFil
                             key={grp}
                             className="mb-6 border-2 border-cyan-400 rounded-2xl bg-white shadow-md hover:shadow-2xl transition-shadow duration-300"
                           >
-                            <div className="px-4 py-3 bg-gradient-to-r from-cyan-200 to-blue-100 rounded-t-2xl flex justify-between items-center border-b border-cyan-300">
+                            <div className="px-4 py-3 bg-linear-to-r from-cyan-200 to-blue-100 rounded-t-2xl flex justify-between items-center border-b border-cyan-300">
                               <span className="font-bold text-blue-900 flex items-center gap-2 text-lg">
                                 Group:
                                 <UserGroupIcon className="h-6 w-6 text-indigo-600" /> {grp}

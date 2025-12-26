@@ -39,7 +39,7 @@ export default function GroupWiseAttendanceTable({ collegeId, collegeName, initi
     <div className="p-1 md:p-4 print:bg-white print:p-0">
       {/* Responsive Header & Filter */}
       <div className="mb-6 flex w-full flex-col items-center justify-between gap-4 md:flex-row">
-        <div className="flex w-full flex-col items-center gap-2 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-green-100 px-3 py-2 text-lg font-bold text-blue-900 shadow sm:flex-row md:w-auto md:text-xl">
+        <div className="flex w-full flex-col items-center gap-2 rounded-2xl border border-blue-100 bg-linear-to-r from-blue-50 to-green-100 px-3 py-2 text-lg font-bold text-blue-900 shadow sm:flex-row md:w-auto md:text-xl">
           <Users2 className="h-6 w-6 text-cyan-700" />
           <span className="max-w-[120px] truncate sm:max-w-xs">{collegeName}</span>
           <div className="flex w-full items-center gap-2 md:w-auto">
@@ -64,7 +64,7 @@ export default function GroupWiseAttendanceTable({ collegeId, collegeName, initi
 
       {/* Group-wise attendance tables */}
       {Object.entries(data).map(([group, yearData]) => (
-        <div key={group} className="mb-6 w-full rounded-2xl border-2 border-blue-100 bg-gradient-to-r from-blue-50 to-emerald-50 shadow p-1 md:p-3">
+        <div key={group} className="mb-6 w-full rounded-2xl border-2 border-blue-100 bg-linear-to-r from-blue-50 to-emerald-50 shadow p-1 md:p-3">
           {/* Group Title */}
           <h2 className="mb-2 flex items-center gap-2 px-2 text-lg font-extrabold text-indigo-800 md:text-xl">
             {groupIcons[group] || <span className="text-xl text-blue-500">📘</span>} {group}
@@ -72,7 +72,7 @@ export default function GroupWiseAttendanceTable({ collegeId, collegeName, initi
           <div className="overflow-x-auto">
             <table className="w-full min-w-[340px] border-collapse rounded-lg bg-white text-sm">
               <thead>
-                <tr className="bg-gradient-to-r from-blue-200 via-green-200 to-purple-100 text-gray-900">
+                <tr className="bg-linear-to-r from-blue-200 via-green-200 to-purple-100 text-gray-900">
                   <th className="border px-2 py-2 text-left">Year</th>
                   <th className="border px-2 py-2 text-center">Session</th>
                   <th className="border px-2 py-2 text-center">Lecturer</th>

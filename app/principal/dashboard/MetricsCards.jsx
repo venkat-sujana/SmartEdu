@@ -63,7 +63,7 @@ export default function MetricsCards({ onPromoteClick }) {
       </div>
 
       {/* Terminated Students */}
-      <div className="bg-white p-5 rounded-xl shadow-xl border flex border-gray-100 flex  justify-between">
+      <div className="bg-white p-5 rounded-xl shadow-xl border  border-gray-100   justify-between">
         
           <h3 className="text-gray-500 text-sm"><Users className="mr-2" color="red" />Terminated Students</h3>
           <p className="text-3xl font-bold text-red-600">
