@@ -1,16 +1,20 @@
+//app/auth/login/page.jsx
 "use client"
-
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { Users, ClipboardList, School } from "lucide-react"
+import DashboardFooter from "@/app/components/Footer"
+
+
+const collegeName = 'College';
 
 export default function LoginPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-indigo-50 to-blue-100 text-slate-900">
+    <div className="relative min-h-screen overflow-hidden bg-linear-to-br from-sky-50 via-indigo-50 to-blue-100 text-slate-900">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
   {/* DEBUG BLOB 1 – top-left */}
   <motion.div
-    className="absolute -top-20 -left-20 h-80 w-80 rounded-full bg-indigo-400/70 border-2 border-indigo-600"
+    className=" hidden md:block absolute top-80 left-80 h-20 w-20 rounded-full bg-indigo-400/70 border-2 border-indigo-600"
     animate={{
       x: [0, 40, -20, 0],
       y: [0, -20, 30, 0],
@@ -20,7 +24,7 @@ export default function LoginPage() {
 
   {/* DEBUG BLOB 2 – bottom-right */}
   <motion.div
-    className="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-cyan-400/70 border-2 border-cyan-600"
+    className="hidden md:block absolute top-[200px] left-[50%] -translate-x-1/2 h-20 w-20 rounded-full bg-cyan-400/70 border-2 border-cyan-600"
     animate={{
       x: [0, -30, 20, 0],
       y: [0, 25, -20, 0],
@@ -30,7 +34,7 @@ export default function LoginPage() {
 
   {/* DEBUG BLOB 3 – center-ish */}
   <motion.div
-    className="absolute top-1/2 left-1/3 h-72 w-72 -translate-y-1/2 rounded-full bg-violet-400/70 border-2 border-violet-600"
+    className="hidden md:block absolute bottom-80 right-80 h-20 w-20 -translate-y-1/2 rounded-full bg-violet-400/70 border-2 border-violet-600"
     animate={{
       x: [0, 25, -25, 0],
       y: [0, -30, 15, 0],
@@ -80,19 +84,19 @@ export default function LoginPage() {
                 href="https://advanced-question-paper-tailwindcss.netlify.app/"
                 className="rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-700 transition shadow-md hover:shadow-lg"
               >
-                Go to M&AT QP Generator →
+                M&AT QP Generator →
               </Link>
               <Link
                 href="https://skr-learn-portal.netlify.app/"
                 className="rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-700 transition shadow-md hover:shadow-lg"
               >
-                Go to Voc QP Generator →
+                Voc QP Generator →
               </Link>
               <Link
                 href="https://portfolio-app-mu.vercel.app/"
-                className="rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-700 transition shadow-md hover:shadow-lg"
+                className="rounded-xl bg-indigo-600 px-8 py-2 text-white font-semibold hover:bg-indigo-700 transition shadow-md hover:shadow-lg"
               >
-                Go to Portfolio-App →
+                My Portfolio-App →
               </Link>
             </div>
           </motion.div>
@@ -128,7 +132,17 @@ export default function LoginPage() {
             />
           </div>
         </section>
+
+        <DashboardFooter
+          collegeName={collegeName}
+          facebookUrl="https://facebook.com/yourcollege"
+          instagramUrl="https://instagram.com/yourcollege"
+          twitterUrl="https://x.com/yourcollege"
+          youtubeUrl="https://youtube.com/@yourcollege" 
+        />
       </div>
+      
+       
     </div>
   )
 }
@@ -152,7 +166,7 @@ function LoginCard({ icon, title, desc, link, color }) {
     <motion.div
       whileHover={{ scale: 1.05, y: -6 }}
       transition={{ type: "spring", stiffness: 260, damping: 18 }}
-      className={`p-8 rounded-2xl bg-gradient-to-br ${bg} border border-white/60 shadow-xl backdrop-blur-md`}
+      className={`p-8 rounded-2xl bg-linear-to-br ${bg} border border-white/60 shadow-xl backdrop-blur-md`}
     >
       {icon}
       <h4 className="text-xl font-semibold mt-4 mb-2 text-gray-900 text-center">
@@ -169,5 +183,9 @@ function LoginCard({ icon, title, desc, link, color }) {
         </Link>
       </div>
     </motion.div>
+    
   )
+  
 }
+
+

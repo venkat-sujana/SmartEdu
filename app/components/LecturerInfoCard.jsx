@@ -1,12 +1,15 @@
 //app/components/LecturerInfoCard.jsx
-
 "use client";
+import{motion} from "framer-motion";
 
 import { AcademicCapIcon, EnvelopeIcon, UserCircleIcon, BuildingOffice2Icon } from "@heroicons/react/24/solid";
-
 export default function LecturerInfoCard({ user }) {
   return (
-    <div className="mx-auto mt-24 mb-6 flex max-w-3xl items-center gap-5 rounded-3xl border border-blue-200 bg-linear-to-r from-blue-50 via-sky-50 to-blue-100 p-5 shadow-lg">
+    <motion.div 
+      whileHover={{ y: -6, scale: 1.03 }}
+      transition={{ type: "spring", stiffness: 300 }}
+
+    className="mx-auto mt-24 mb-6 flex max-w-3xl items-center gap-5 rounded-3xl border border-blue-200 bg-linear-to-r from-blue-50 via-sky-50 to-blue-100 p-5 shadow-lg">
       {/* Avatar / Icon circle */}
       <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 shadow-md">
         <UserCircleIcon className="h-14 w-14 text-white" />
@@ -53,6 +56,6 @@ export default function LecturerInfoCard({ user }) {
           </span>
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }

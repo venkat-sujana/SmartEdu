@@ -137,7 +137,7 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
 
   // Rest of your JSX remains SAME (fullscreen toast, loading, form fields, students grid)
   return (
-    <div className="mt-24 relative min-h-screen bg-gradient-to-br from-blue-200 via-white to-green-50 py-5 px-2">
+    <div className="mt-24 relative min-h-screen bg-linear-to-br from-blue-200 via-white to-green-50 py-5 px-2">
       {/* Fullscreen Toast, Loading Spinner - SAME as your code */}
       {fullscreenToastMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -163,7 +163,7 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
       <div className="max-w-4xl mx-auto p-6 bg-white shadow-xl rounded-2xl border-2 border-blue-100">
         {/* College Header - SAME */}
         <div className="flex flex-col items-center mb-5">
-          <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 via-green-50 to-indigo-50 border px-4 py-2 rounded-2xl text-blue-700 font-bold shadow">
+          <div className="flex items-center gap-3 bg-linear-to-r from-blue-50 via-green-50 to-indigo-50 border px-4 py-2 rounded-2xl text-blue-700 font-bold shadow">
             <span className="text-2xl">🏫</span>
             <span className="tracking-wide">{collegeName || "Loading..."}</span>
           </div>
@@ -258,7 +258,7 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
               {filteredStudents.map((student) => (
                 <div
                   key={student._id}
-                  className="bg-gradient-to-br from-blue-50 to-green-50 border border-blue-200 rounded-2xl shadow p-4 flex flex-col items-center space-y-2 transition hover:shadow-2xl"
+                  className="bg-linear-to-br from-blue-50 to-green-50 border border-blue-200 rounded-2xl shadow p-4 flex flex-col items-center space-y-2 transition hover:shadow-2xl"
                 >
                   <img
                     src={student.photo || "/default-avatar.png"}

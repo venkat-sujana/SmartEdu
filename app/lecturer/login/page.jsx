@@ -1,5 +1,6 @@
 //app/lecturer/login/page.jsx
 "use client";
+import{motion} from "framer-motion";
 import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -71,7 +72,14 @@ export default function LecturerLogin() {
         </div>
       )}
 
-      <div className="flex items-start mt-1 justify-center min-h-screen bg-gray-200 bg-[url('/images/bg-6.jpg')] bg-cover bg-center">
+      <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex items-start mt-1 justify-center min-h-screen bg-gray-200 bg-[url('/images/bg-6.jpg')] bg-cover bg-center"
+      >
+        
+     
         <form
           onSubmit={handleSubmit}
           className="bg-white shadow-lg rounded-lg p-6 w-72 mt-10"
@@ -97,13 +105,13 @@ export default function LecturerLogin() {
             required
           />
 
-          <button
+          <motion.button
             type="submit"
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-blue-400 cursor-pointer"
           >
             {loading ? "Logging in…" : "Login"}
-          </button>
+          </motion.button>
 
           <p className="mt-3 text-center text-sm">
             Don’t have an account?{" "}
@@ -115,7 +123,9 @@ export default function LecturerLogin() {
             </a>
           </p>
         </form>
-      </div>
+
+      </motion.div>
+
     </div>
   );
 }

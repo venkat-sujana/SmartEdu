@@ -1,7 +1,6 @@
-
 //app/components/OverallAttendanceMatrixCard/GroupAttendanceCard.jsx
 'use client'
-
+import {motion} from "framer-motion";
 import React from 'react'
 import useSWR from 'swr'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -90,27 +89,59 @@ export default function GroupAttendanceCard({ groupName }) {
 
   // --- JSX ---
   return (
-    <Card className="mx-auto mb-8 max-w-3xl overflow-x-auto rounded-3xl border border-blue-200 bg-linear-to-br from-sky-50 via-white to-indigo-50 shadow-xl">
+    <Card
+     
+     className="mx-auto mb-8 max-w-3xl overflow-x-auto rounded-3xl border border-blue-200 bg-linear-to-br from-sky-50 via-white to-indigo-50 shadow-xl">
       {/* Header with icons and strength */}
-      <CardHeader className="mb-1 rounded-t-3xl border-b border-blue-200 bg-linear-to-r from-blue-600 via-indigo-600 to-sky-500 py-4 text-white">
-        <div className="flex items-center justify-between gap-4 px-2">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 shadow">
-              <UsersIcon className="h-7 w-7 text-white" />
-            </div>
-            <CardTitle className="text-lg font-extrabold tracking-wide md:text-xl">
-              {groupName}
-            </CardTitle>
-          </div>
-          <div className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-wide shadow-sm">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-              <CheckCircleIcon className="h-4 w-4" />
-            </span>
-            <span>Total Strength:</span>
-            <span className="text-yellow-300 text-sm font-extrabold">{groupStrength}</span>
-          </div>
+
+      <CardHeader className="mb-1 rounded-t-3xl border-b border-blue-200 bg-linear-to-r from-blue-600 via-indigo-600 to-sky-500 py-3 text-white">
+  <div className="flex flex-col gap-2 px-2">
+    {/* Top line: title + strength */}
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 shadow">
+          <UsersIcon className="h-7 w-7 text-white" />
         </div>
-      </CardHeader>
+        <CardTitle className="text-lg font-extrabold tracking-wide md:text-xl">
+          {groupName}
+        </CardTitle>
+      </div>
+
+      <div className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-wide shadow-sm">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+          <CheckCircleIcon className="h-4 w-4" />
+        </span>
+        <span>Group Strength:</span>
+        <span className="text-yellow-300 text-sm font-extrabold">
+          {groupStrength}
+        </span>
+      </div>
+    </div>
+
+    {/* Bottom line: FN / AN / EN % */}
+    <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide">
+      <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1">
+        <ClockIcon className="h-3 w-3 text-emerald-200" />
+        <span>FN</span>
+        <span className="text-emerald-200 font-extrabold">{fnPercent}%</span>
+      </div>
+
+      <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1">
+        <ClockIcon className="h-3 w-3 text-yellow-200" />
+        <span>AN</span>
+        <span className="text-yellow-200 font-extrabold">{anPercent}%</span>
+      </div>
+
+      <div className="flex items-center gap-1 rounded-full bg-white/15 px-3 py-1">
+        <ClockIcon className="h-3 w-3 text-sky-200" />
+        <span>EN</span>
+        <span className="text-sky-200 font-extrabold">{enPercent}%</span>
+      </div>
+    </div>
+  </div>
+</CardHeader>
+
+
 
       <CardContent className="space-y-4 p-4 md:p-5">
         {/* Small session summary badges */}

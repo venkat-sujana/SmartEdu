@@ -7,14 +7,18 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Menu, LogOut, User } from "lucide-react";
 import { AcademicCapIcon, EnvelopeIcon, UserCircleIcon,HomeIcon, BuildingOffice2Icon } from "@heroicons/react/24/solid";
-
+import { motion } from "framer-motion";
 export default function Navbar({ onOpenDrawer }) {
   const { data: session, status } = useSession();
 
   const user = session?.user;
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200 dark:bg-slate-900/80 dark:border-slate-700">
+    <motion.header
+    initial={{ y: -60, opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
+    transition={{ duration: 0.4 }}
+     className="fixed inset-x-0 top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200 dark:bg-slate-900/80 dark:border-slate-700">
       <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4 px-3 py-3">
 
         {/* left: hamburger on mobile + brand */}
@@ -75,6 +79,6 @@ export default function Navbar({ onOpenDrawer }) {
           </div>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }

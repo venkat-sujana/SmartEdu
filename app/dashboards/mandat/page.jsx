@@ -1,11 +1,10 @@
 'use client';
-import Link from 'next/link'
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import TodayAbsenteesTable from "@/app/absentees-table/page";
 import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
 import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-// import ExternalLinks from "@/app/components/ExternalLinks";
+
 import GroupStudentTable from "../../components/GroupStudentTable";
 import GroupAttendanceSummary from '@/app/components/GroupAttendanceSummary';
 import AttendanceForm from '@/app/components/AttendanceForm';
@@ -43,10 +42,7 @@ export default function MandATDashboard() {
             <GroupAttendanceCard groupName="M&AT" />
           </div>
           
-          {/* External Links - Full width on mobile, right column on desktop */}
-          {/* <div className="lg:col-span-1">
-            <ExternalLinks />
-          </div> */}
+         
         </div>
         
         {/* Dashboard Title - Centered below cards */}
