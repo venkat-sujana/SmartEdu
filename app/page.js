@@ -25,7 +25,7 @@ export default function Page() {
               transition={{ duration: 0.6 }}
               className="text-4xl font-extrabold text-indigo-700 md:text-6xl"
             >
-              OSRA – Smart Academic Management
+              OSRA – Online Syudent Record & Analysis
             </motion.h1>
 
             <p className="mt-6 text-lg">

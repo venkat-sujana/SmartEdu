@@ -27,7 +27,7 @@ export default function ProfilePage() {
         {/* Basic Info */}
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
-            {user?.name || "Your Name"}
+            { "Venkataiah Embeti"}
           </h1>
           <p className="text-slate-600">{user?.email}</p>
           <p className="text-sm text-slate-500 mt-1">
