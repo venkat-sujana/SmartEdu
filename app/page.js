@@ -1,6 +1,7 @@
 //app/page.js
 "use client"
 
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import Navbar from "@/components/Navbar"
@@ -10,6 +11,16 @@ import { Users, ClipboardList, CalendarCheck } from "lucide-react"
 import DashboardFooter from "./components/Footer"
 
 export default function Page() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <main className="min-h-screen bg-linear-to-br from-sky-50 via-indigo-50 to-blue-100" />
+  }
+
   return (
     <main className="min-h-screen bg-linear-to-br from-sky-50 via-indigo-50 to-blue-100">
       <Navbar />
@@ -25,7 +36,7 @@ export default function Page() {
               transition={{ duration: 0.6 }}
               className="text-4xl font-extrabold text-indigo-700 md:text-6xl"
             >
-              OSRA – Online Syudent Record & Analysis
+              OSRA – Online Student Record & Analysis
             </motion.h1>
 
             <p className="mt-6 text-lg">

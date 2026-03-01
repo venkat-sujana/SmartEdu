@@ -14,7 +14,8 @@ export default function Sidebar({ onClose }) {
 
   const links = [
     { href: "/", label: "Home", icon: <HomeIcon className="w-5 h-5 font-bold "  /> },
-    { href: "/timetable", label: "Time Table ", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
+    { href: "/timetable-management/login", label: "Time Table Mgmt", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
+    { href: "/timetable", label: "Academic Time Table", icon: <CalendarDaysIcon className="w-5 h-5 text-cyan-500" /> },
     // { href: "/lecturer/dashboard", label: "Lecturer Dashboard", icon: <AcademicCapIcon className="w-5 h-5 text-red-500 font-bold" /> },
     // { href: "/principal/dashboard", label: "Principal Dashboard", icon: <BuildingOffice2Icon className="w-5 h-5 text-amber-500" /> },
     { href: "/attendance-dashboard", label: "Attendance", icon: <UserCircleIcon className="w-5 h-5 text-yellow-500" /> },

@@ -28,19 +28,28 @@ function AppShell({ children }) {
   const { data: session, status } = useSession()
 
   const isAuthPage = useMemo(() => {
+    const isModuleAuthPage =
+      pathname === "/invigilation" ||
+      pathname === "/invigilation/login" ||
+      pathname === "/timetable-management" ||
+      pathname === "/timetable-management/login"
+
     return (
       pathname === "/" ||
       pathname === "/auth/login" ||
       pathname === "/lecturer/login" ||
       pathname === "/principal/login" ||
-      pathname === "/student/login"
+      pathname === "/student/login" ||
+      isModuleAuthPage
     )
   }, [pathname])
+  const isStandaloneModulePage =
+    pathname.startsWith("/invigilation") || pathname.startsWith("/timetable-management")
 
   const role = session?.user?.role
   const isStudent = role === "student"
 
-  if (isAuthPage) {
+  if (isAuthPage || isStandaloneModulePage) {
     return <div className="min-h-screen">{children}</div>
   }
 

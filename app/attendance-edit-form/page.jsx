@@ -5,16 +5,19 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
-  if (!record) return null;
-
-  const [status, setStatus] = useState(record?.status || "Absent");
+  const [status, setStatus] = useState("Absent");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    console.log("Edit record:", record);
+    if (record?.status) {
+      setStatus(record.status);
+    } else {
+      setStatus("Absent");
+    }
   }, [record]);
 
   const handleUpdate = async () => {
+    if (!record) return;
     setIsSubmitting(true);
     const toastId = toast.loading("Updating attendance...");
 
@@ -60,8 +63,7 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
     }
   };
 
-  console.log("AttendanceEditForm props:", { record, onClose, onUpdate }); // Debug log
-
+  if (!record) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
