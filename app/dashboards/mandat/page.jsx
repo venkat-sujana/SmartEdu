@@ -26,108 +26,132 @@ export default function MandATDashboard() {
   const years = ['First Year', 'Second Year'];
 
   return (
-    <div className="flex flex-col items-center gap-8 min-h-screen bg-linear-to-b from-blue-50 to-blue-200">
-      
-      {/* Combined Responsive Header Section */}
-      <section className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-blue-100">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
-          
-          {/* Lecturer Info - Full width on mobile, left column on desktop */}
-          <div className="lg:col-span-1">
-            <LecturerInfoCard user={user} />
-          </div>
-          
-          {/* Group Attendance Card - Full width on mobile, center column on desktop */}
-          <div className="lg:col-span-1 flex justify-center">
-            <GroupAttendanceCard groupName="M&AT" />
-          </div>
-          
-         
-        </div>
-        
-        {/* Dashboard Title - Centered below cards */}
-        <div className="text-center mt-8 pt-8 border-t border-blue-100">
-          <h2 className="text-3xl font-extrabold tracking-tight text-blue-800">
-            MandAT Group Dashboard
-          </h2>
-        </div>
-      </section>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_10%_20%,#dbeafe_0%,#e0e7ff_30%,#f8fafc_60%,#f8fafc_100%)] pb-10">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pt-8 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <section className="relative overflow-hidden rounded-3xl border border-sky-100 bg-white/85 p-6 shadow-[0_20px_55px_-30px_rgba(37,99,235,0.55)] backdrop-blur-md sm:p-8">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-indigo-200/40 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-16 h-64 w-64 rounded-full bg-sky-200/40 blur-3xl" />
 
-      <DashboardTogglePanel
-        // state flags
-        showAttendance={showAttendance}
-        studentTable={studentTable}
-        showTodayAbsentees={showTodayAbsentees}
-        monthlyAttendance={monthlyAttendance}
-        editAttendance={editAttendance}
+          <div className="relative grid grid-cols-1 items-start gap-6 lg:grid-cols-3 lg:gap-8">
+            <div className="lg:col-span-1">
+              <div className="mb-3 inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">
+                Lecturer Panel
+              </div>
+              <LecturerInfoCard user={user} />
+            </div>
 
-        // handlers
-        onToggleAttendance={() => setShowAttendance((v) => !v)}
-        onToggleStudentTable={() => setStudentTable((v) => !v)}
-        onToggleTodayAbsentees={() => setShowTodayAbsentees((v) => !v)}
-        onToggleMonthlyAttendance={() => setMonthlyAttendance((v) => !v)}
-        onToggleEditAttendance={() => setEditAttendance((v) => !v)}
+            <div className="lg:col-span-1 flex items-center justify-center">
+              <GroupAttendanceCard groupName="M&AT" />
+            </div>
 
-        // content (JSX)
-        attendanceContent={
-          <AttendanceForm defaultGroup="M&AT" returnUrl="/dashboards/mandat" />
-        }
-
-        studentTableContent={
-          <GroupStudentTable groupName="M&AT" />
-        }
-
-        todayAbsenteesContent={
-          <TodayAbsenteesTable groupFilter="M&AT" header={false} />
-        }
-
-        editAttendanceContent={
-          <IndividualReport groupName="M&AT" header={false} />
-        }
-
-        groupMonthlyAttendanceContent={
-          <div className="mx-auto mt-10 max-w-7xl p-4 md:p-6 space-y-8">
-            <h1 className="text-2xl font-bold text-center mb-4">
-              {collegeName} - M&AT Attendance
-            </h1>
-            {years.map((year) => (
-              <GroupAttendanceSummary
-                key={year}
-                group="M&AT"
-                yearOfStudy={year}
-                collegeName={collegeName}
-              />
-            ))}
-
-            <div className="p-6 space-y-8">
-              {/* First Year Shortage */}
-              <GroupShortageSummary
-                group="M&AT"
-                year="First Year"
-                collegeId={session?.user?.collegeId}
-                collegeName={session?.user?.collegeName}
-              />
-
-              {/* Second Year Shortage */}
-              <GroupShortageSummary
-                group="M&AT"
-                year="Second Year"
-                collegeId={session?.user?.collegeId}
-                collegeName={session?.user?.collegeName}
-              />
+            <div className="lg:col-span-1">
+              <div className="rounded-2xl border border-indigo-100 bg-white/90 p-5 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+                  Dashboard Overview
+                </p>
+                <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">
+                  MandAT Group Dashboard
+                </h2>
+                <p className="mt-2 text-sm text-slate-600">
+                  Monitor attendance, update records, and review shortage summaries for both academic years.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                    College: {collegeName}
+                  </span>
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
+                    Group: M&AT
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-        }
-      />
-      
-      {/* footer */}
-      <DashboardFooter
-        collegeName={collegeName}
-        facebookUrl="https://facebook.com/yourcollege"
-        instagramUrl="https://instagram.com/yourcollege"
-        twitterUrl="https://x.com/yourcollege"
-        youtubeUrl="https://youtube.com/@yourcollege"
-      />
+
+          <div className="relative mt-8 border-t border-blue-100 pt-6 text-center">
+            <h3 className="text-3xl font-extrabold tracking-tight text-blue-900">
+              Attendance Operations Hub
+            </h3>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-200/70 bg-white/80 p-4 shadow-lg backdrop-blur-sm md:p-6">
+          <DashboardTogglePanel
+            // state flags
+            showAttendance={showAttendance}
+            studentTable={studentTable}
+            showTodayAbsentees={showTodayAbsentees}
+            monthlyAttendance={monthlyAttendance}
+            editAttendance={editAttendance}
+
+            // handlers
+            onToggleAttendance={() => setShowAttendance((v) => !v)}
+            onToggleStudentTable={() => setStudentTable((v) => !v)}
+            onToggleTodayAbsentees={() => setShowTodayAbsentees((v) => !v)}
+            onToggleMonthlyAttendance={() => setMonthlyAttendance((v) => !v)}
+            onToggleEditAttendance={() => setEditAttendance((v) => !v)}
+
+            // content (JSX)
+            attendanceContent={
+              <AttendanceForm defaultGroup="M&AT" returnUrl="/dashboards/mandat" />
+            }
+
+            studentTableContent={
+              <GroupStudentTable groupName="M&AT" />
+            }
+
+            todayAbsenteesContent={
+              <TodayAbsenteesTable groupFilter="M&AT" header={false} />
+            }
+
+            editAttendanceContent={
+              <IndividualReport groupName="M&AT" header={false} />
+            }
+
+            groupMonthlyAttendanceContent={
+              <div className="mx-auto mt-6 max-w-7xl space-y-8 rounded-2xl bg-white/95 p-4 shadow-sm md:p-6">
+                <h1 className="mb-2 text-center text-2xl font-bold text-slate-900">
+                  {collegeName} - M&AT Attendance
+                </h1>
+                {years.map((year) => (
+                  <GroupAttendanceSummary
+                    key={year}
+                    group="M&AT"
+                    yearOfStudy={year}
+                    collegeName={collegeName}
+                  />
+                ))}
+
+                <div className="space-y-8 rounded-xl border border-slate-100 bg-slate-50/70 p-4 md:p-6">
+                  <GroupShortageSummary
+                    group="M&AT"
+                    year="First Year"
+                    collegeId={session?.user?.collegeId}
+                    collegeName={session?.user?.collegeName}
+                  />
+
+                  <GroupShortageSummary
+                    group="M&AT"
+                    year="Second Year"
+                    collegeId={session?.user?.collegeId}
+                    collegeName={session?.user?.collegeName}
+                  />
+                </div>
+              </div>
+            }
+          />
+        </section>
+
+        <section className="rounded-3xl border border-slate-200/70 bg-white/80 shadow-sm backdrop-blur-sm">
+          <DashboardFooter
+            collegeName={collegeName}
+            facebookUrl="https://facebook.com/yourcollege"
+            instagramUrl="https://instagram.com/yourcollege"
+            twitterUrl="https://x.com/yourcollege"
+            youtubeUrl="https://youtube.com/@yourcollege"
+          />
+        </section>
+      </div>
     </div>
   );
 }
