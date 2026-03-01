@@ -1,12 +1,11 @@
-//app/lecturer/login/page.jsx
+// app/lecturer/login/page.jsx
 "use client";
-import{motion} from "framer-motion";
-import { useState, useEffect } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 
-// Subject to Group mapping
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
 const subjectGroupMap = {
   MandAT: "mandat",
   CET: "cet",
@@ -32,11 +31,9 @@ export default function LecturerLogin() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  // ✅ Session వచ్చిన వెంటనే subject ఆధారంగా redirect
   useEffect(() => {
     if (status === "authenticated" && session?.user?.subject) {
-      const subject = session.user.subject;
-      const group = subjectGroupMap[subject] || "mpc";
+      const group = subjectGroupMap[session.user.subject] || "mpc";
       router.push(`/dashboards/${group}`);
     }
   }, [status, session, router]);
@@ -54,45 +51,35 @@ export default function LecturerLogin() {
 
     if (res?.error) {
       setError("Invalid credentials");
-      setLoading(false);
-    } else {
-      // ఇక్కడ redirect చేయాల్సిన అవసరం లేదు
-      // useSession effect session update అయిన వెంటనే redirect చేస్తుంది
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   return (
     <div className="relative">
       {loading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <p className="text-white text-2xl font-semibold animate-pulse">
-            Please wait…
-          </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <p className="animate-pulse text-2xl font-semibold text-white">Please wait...</p>
         </div>
       )}
 
       <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="flex items-start mt-1 justify-center min-h-screen bg-gray-200 bg-[url('/images/bg-6.jpg')] bg-cover bg-center"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mt-1 flex min-h-screen items-start justify-center bg-gray-200 bg-[url('/images/bg-6.jpg')] bg-cover bg-center"
       >
-        
-     
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white shadow-lg rounded-lg p-6 w-72 mt-10"
-        >
-          <h2 className="text-2xl font-bold mb-4 text-center">Lecturer Login</h2>
-          {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+        <form onSubmit={handleSubmit} className="mt-10 w-72 rounded-lg bg-white p-6 shadow-lg">
+          <h2 className="mb-4 text-center text-2xl font-bold">Lecturer Login</h2>
+          {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
 
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border px-3 py-2 rounded mb-3"
+            className="mb-3 w-full rounded border px-3 py-2"
             required
           />
 
@@ -101,31 +88,26 @@ export default function LecturerLogin() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border px-3 py-2 rounded mb-4"
+            className="mb-4 w-full rounded border px-3 py-2"
             required
           />
 
           <motion.button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-blue-400 cursor-pointer"
+            className="w-full cursor-pointer rounded bg-blue-600 py-2 text-white hover:bg-blue-700 disabled:bg-blue-400"
           >
-            {loading ? "Logging in…" : "Login"}
+            {loading ? "Logging in..." : "Login"}
           </motion.button>
 
           <p className="mt-3 text-center text-sm">
-            Don’t have an account?{" "}
-            <a
-              href="/lecturer-registration"
-              className="text-blue-600 hover:underline"
-            >
+            Do not have an account?{" "}
+            <a href="/lecturer-registration" className="text-blue-600 hover:underline">
               Register
             </a>
           </p>
         </form>
-
       </motion.div>
-
     </div>
   );
 }

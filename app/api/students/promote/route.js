@@ -1,37 +1,23 @@
 //app/api/students/promote/route.js
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
-import Student from "@/models/Student";
+import { runYearPromotion } from "@/lib/yearPromotion";
+import PromotionRun from "@/models/PromotionRun";
 
 export async function POST() {
   try {
     await connectMongoDB();
-
-    console.log("Promoting students...");
-    // 1️⃣ First Year → Second Year Promotion
-    const promoteFirstYear = await Student.updateMany(
-      { yearOfStudy: "First Year", status: "Active" },
-      { $set: { yearOfStudy: "Second Year" } }
+    const result = await runYearPromotion();
+    const year = new Date().getFullYear();
+    await PromotionRun.findOneAndUpdate(
+      { year },
+      { $set: { ...result, mode: "MANUAL", ranAt: new Date(result.ranAt) } },
+      { upsert: true, new: true }
     );
-    console.log("Promoted", promoteFirstYear.modifiedCount, "First Year students");
-
-    console.log("Terminating Second Year students...");
-    // 2️⃣ Second Year → Terminate
-    const terminateSecondYear = await Student.updateMany(
-      { yearOfStudy: "Second Year", status: "Active" },
-      { $set: { status: "Terminated" } }
-    );
-    console.log("Terminated", terminateSecondYear.modifiedCount, "Second Year students");
-
-    console.log("Sending promotion time...");
-    // 3️⃣ Send Promotion Time (for UI display)
-    const ranAt = new Date().toISOString();
 
     return NextResponse.json({
       message: "Promotion & termination completed successfully",
-      promoted: promoteFirstYear.modifiedCount,
-      terminated: terminateSecondYear.modifiedCount,
-      ranAt,
+      ...result,
     });
   } catch (error) {
     console.error("Promotion Error:", error);

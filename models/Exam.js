@@ -22,7 +22,7 @@ const examSchema = new Schema({
   academicYear: {
     type: String,
     required: true,
-    enum: ['2025-1', '2025-2'],
+    match: [/^\d{4}-(1|2)$/, "Invalid academic year format"],
   },
   examType: {
     type: String,

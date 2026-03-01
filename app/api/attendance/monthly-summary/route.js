@@ -52,6 +52,7 @@ export async function GET(req) {
     // 🎓 Students filter
     const studentQuery = {
       collegeId: new mongoose.Types.ObjectId(collegeId),
+      status: "Active",
     }
 
     // group case-insensitive exact

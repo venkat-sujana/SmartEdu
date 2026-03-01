@@ -17,7 +17,7 @@ export async function GET(req) {
       );
     }
 
-    const students = await Student.find({ collegeId }).sort({ name: 1 });
+    const students = await Student.find({ collegeId, status: "Active" }).sort({ name: 1 });
 
     return NextResponse.json({ success: true, data: students });
   } catch (error) {

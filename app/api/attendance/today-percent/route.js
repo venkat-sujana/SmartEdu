@@ -41,7 +41,7 @@ export async function GET(req) {
 
     console.log("✅ Present Count:", presentCount);
 
-    const totalStudents = await Student.countDocuments({ collegeId });
+    const totalStudents = await Student.countDocuments({ collegeId, status: "Active" });
 
     console.log("👥 Total Students:", totalStudents);
 

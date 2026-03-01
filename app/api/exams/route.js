@@ -83,22 +83,43 @@ export async function POST(req) {
 }
 
 // GET - All Exams
-export async function GET() {
+export async function GET(req) {
   try {
     await connectMongoDB();
 
     const session = await getServerSession(authOptions);
     const collegeId = session?.user?.collegeId;
+    if (!collegeId) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+    const { searchParams } = new URL(req.url);
+    const includeTerminated = searchParams.get("includeTerminated") === "true";
 
-    const exams = await Exam.find({ collegeId }).populate("studentId", "name");
+    const exams = await Exam.find({ collegeId }).populate(
+      "studentId",
+      "name yearOfStudy status"
+    );
 
     const examsWithNames = exams.map((exam) => ({
       ...exam._doc,
+      yearOfStudy:
+        exam.studentId?.status === "Active" && exam.studentId?.yearOfStudy
+          ? exam.studentId.yearOfStudy
+          : exam.yearOfStudy,
+      isStudentActive: exam.studentId?.status === "Active",
       student: {
         name: exam.studentId?.name || "Unknown",
       },
     }));
-    return NextResponse.json({ success: true, data: examsWithNames });
+
+    const filtered = includeTerminated
+      ? examsWithNames
+      : examsWithNames.filter((e) => e.isStudentActive);
+
+    return NextResponse.json({ success: true, data: filtered });
   } catch (error) {
     console.error("Error fetching exams:", error);
     return NextResponse.json(

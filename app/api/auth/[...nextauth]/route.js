@@ -1,22 +1,21 @@
-//app/api/auth/[...nextauth]/route.js
-import "@/models/College";          // <<-- compulsory
+// app/api/auth/[...nextauth]/route.js
+import "@/models/College";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";
-import Student from "@/models/Student";
 import Principal from "@/models/Principal";
-import bcrypt from "bcryptjs";
+import Student from "@/models/Student";
 
-
-
-// ---------- AUTH FUNCTIONS ----------
 async function authenticateLecturer(email, password) {
   await connectMongoDB();
   const lecturer = await Lecturer.findOne({ email: email.trim().toLowerCase() });
   if (!lecturer) return null;
+
   const isValid = await bcrypt.compare(password.trim(), lecturer.password);
   if (!isValid) return null;
+
   return {
     id: lecturer._id.toString(),
     name: lecturer.name,
@@ -30,10 +29,15 @@ async function authenticateLecturer(email, password) {
 
 async function authenticateStudent(admissionNo, password) {
   await connectMongoDB();
-  const student = await Student.findOne({ admissionNo: admissionNo.trim() }).populate("collegeId", "name");
+  const student = await Student.findOne({ admissionNo: admissionNo.trim() }).populate(
+    "collegeId",
+    "name"
+  );
   if (!student) return null;
+
   const isValid = await bcrypt.compare(password.trim(), student.password);
   if (!isValid) return null;
+
   return {
     id: student._id.toString(),
     name: student.name,
@@ -44,21 +48,26 @@ async function authenticateStudent(admissionNo, password) {
     yearOfStudy: student.yearOfStudy,
     photo: student.photo,
     group: student.group,
-      fatherName: student.fatherName,
-  mobile: student.mobile,
-  caste: student.caste,
-  dob: student.dob,
-  gender: student.gender,
-  address: student.address
+    fatherName: student.fatherName,
+    mobile: student.mobile,
+    caste: student.caste,
+    dob: student.dob,
+    gender: student.gender,
+    address: student.address,
   };
 }
 
 async function authenticatePrincipal(email, password) {
   await connectMongoDB();
-  const principal = await Principal.findOne({ email: email.trim().toLowerCase() }).populate("collegeId", "name");
+  const principal = await Principal.findOne({ email: email.trim().toLowerCase() }).populate(
+    "collegeId",
+    "name"
+  );
   if (!principal) return null;
+
   const isValid = await bcrypt.compare(password.trim(), principal.password);
   if (!isValid) return null;
+
   return {
     id: principal._id.toString(),
     name: principal.name,
@@ -70,10 +79,8 @@ async function authenticatePrincipal(email, password) {
   };
 }
 
-// ---------- NEXTAUTH CONFIG ----------
 const authOptions = {
   providers: [
-    // 🎓 Student Login
     CredentialsProvider({
       id: "student-login",
       name: "Student Login",
@@ -81,21 +88,13 @@ const authOptions = {
         admissionNo: { label: "Admission No", type: "text" },
         password: { label: "Password", type: "password" },
       },
-async authorize(credentials) {
-  console.log("Received credentials", credentials);
-  if (!credentials || !credentials.admissionNo || !credentials.password) {
-    console.log("Missing credentials");
-    return null;
-  }
-  const user = await authenticateStudent(credentials.admissionNo, credentials.password);
-  if (!user) {
-    console.log("Student authentication failed");
-  }
-  return user;
-}
-
+      async authorize(credentials) {
+        if (!credentials?.admissionNo || !credentials?.password) {
+          return null;
+        }
+        return authenticateStudent(credentials.admissionNo, credentials.password);
+      },
     }),
-    // 👨‍🏫 Lecturer Login
     CredentialsProvider({
       id: "lecturer-login",
       name: "Lecturer Login",
@@ -104,18 +103,12 @@ async authorize(credentials) {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (
-          !credentials ||
-          !credentials.email ||
-          !credentials.password
-        ) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
-        const user = await authenticateLecturer(credentials.email, credentials.password);
-        return user;
+        return authenticateLecturer(credentials.email, credentials.password);
       },
     }),
-    // 🧑‍💼 Principal Login
     CredentialsProvider({
       id: "principal-login",
       name: "Principal Login",
@@ -124,19 +117,13 @@ async authorize(credentials) {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (
-          !credentials ||
-          !credentials.email ||
-          !credentials.password
-        ) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
-        const user = await authenticatePrincipal(credentials.email, credentials.password);
-        return user;
+        return authenticatePrincipal(credentials.email, credentials.password);
       },
     }),
   ],
-
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -144,49 +131,54 @@ async authorize(credentials) {
         token.role = user.role;
         token.collegeId = user.collegeId;
         token.collegeName = user.collegeName;
+
         if (user.role === "student") {
           token.admissionNo = user.admissionNo;
           token.yearOfStudy = user.yearOfStudy;
           token.photo = user.photo;
           token.group = user.group;
-              token.fatherName = user.fatherName;
-    token.mobile = user.mobile;
-    token.caste = user.caste;
-    token.dob = user.dob;
-    token.gender = user.gender;
-    token.address = user.address;
+          token.fatherName = user.fatherName;
+          token.mobile = user.mobile;
+          token.caste = user.caste;
+          token.dob = user.dob;
+          token.gender = user.gender;
+          token.address = user.address;
         }
+
         if (user.role === "lecturer") token.subject = user.subject;
         if (user.role === "principal") token.photo = user.photo;
       }
+
       return token;
     },
-
     async session({ session, token }) {
       session.user.id = token.id;
       session.user.role = token.role;
       session.user.collegeId = token.collegeId;
       session.user.collegeName = token.collegeName;
+
       if (token.role === "student") {
         session.user.admissionNo = token.admissionNo;
         session.user.yearOfStudy = token.yearOfStudy;
         session.user.photo = token.photo;
         session.user.group = token.group;
         session.user.fatherName = token.fatherName;
-  session.user.mobile = token.mobile;
-  session.user.caste = token.caste;
-  session.user.dob = token.dob;
-  session.user.gender = token.gender;
-  session.user.address = token.address;
+        session.user.mobile = token.mobile;
+        session.user.caste = token.caste;
+        session.user.dob = token.dob;
+        session.user.gender = token.gender;
+        session.user.address = token.address;
       }
+
       if (token.role === "lecturer") session.user.subject = token.subject;
       if (token.role === "principal") session.user.photo = token.photo;
+
       return session;
     },
   },
-
   secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST, authOptions };
+
+export { authOptions, handler as GET, handler as POST };

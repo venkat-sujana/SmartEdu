@@ -43,6 +43,7 @@ export async function GET(req) {
     studentQuery.collegeId = mongoose.Types.ObjectId.isValid(collegeId)
       ? new mongoose.Types.ObjectId(collegeId)
       : collegeId;
+    studentQuery.status = "Active";
     if (group) studentQuery.group = group;
     if (yearOfStudy)
       studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, "i");

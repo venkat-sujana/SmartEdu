@@ -92,7 +92,7 @@ function AppShell({ children }) {
 // ---------------- ROOT LAYOUT ----------------
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* ===== BASIC SEO ===== */}
         <title>OSRA | Online Student Record & Attendance Management System</title>
@@ -159,6 +159,7 @@ export default function RootLayout({ children }) {
       </head>
 
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50`}
       >
         <SessionProvider>

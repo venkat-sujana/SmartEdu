@@ -59,7 +59,7 @@ export default function ExamReportPage() {
 
   const fetchReports = async () => {
     try {
-      const res = await fetch('/api/exams')
+      const res = await fetch('/api/exams', { cache: 'no-store' })
       let data = {}
       try {
         const text = await res.text()
@@ -78,7 +78,7 @@ export default function ExamReportPage() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const res = await fetch('/api/students')
+        const res = await fetch('/api/students', { cache: 'no-store' })
         await res.json()
       } catch (err) {
         console.error('Error loading students:', err)
@@ -86,6 +86,18 @@ export default function ExamReportPage() {
     }
     fetchReports()
     fetchStudents()
+
+    const intervalId = setInterval(() => {
+      fetchReports()
+    }, 30000)
+
+    const onFocus = () => fetchReports()
+    window.addEventListener('focus', onFocus)
+
+    return () => {
+      clearInterval(intervalId)
+      window.removeEventListener('focus', onFocus)
+    }
   }, [])
 
   const handleDelete = async id => {
@@ -114,6 +126,23 @@ export default function ExamReportPage() {
     const yearOfStudyMatch = filters.yearOfStudy ? report.yearOfStudy === filters.yearOfStudy : true
     return studentNameMatch && streamMatch && yearMatch && examMatch && yearOfStudyMatch
   })
+
+  const currentYear = new Date().getFullYear()
+  const academicYearOptions = Array.from(
+    new Set([
+      `${currentYear}-1`,
+      `${currentYear}-2`,
+      ...reports.map(r => r.academicYear).filter(Boolean),
+    ])
+  ).sort((a, b) => b.localeCompare(a))
+
+  const getAcademicYearLabel = value => {
+    if (!value || !value.includes('-')) return value
+    const [year, part] = value.split('-')
+    if (part === '1') return `First Year (${year})`
+    if (part === '2') return `Second Year (${year})`
+    return value
+  }
 
   // Group by Exam Type then by Year
   function groupByExamAndYear(reports) {
@@ -245,8 +274,11 @@ export default function ExamReportPage() {
           className="rounded-xl border-2 border-blue-400 px-2 py-2 text-sm transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 sm:px-4 sm:py-3 sm:text-base"
         >
           <option value="">All Academic Years</option>
-          <option value="2025-1">First Year</option>
-          <option value="2025-2">Second Year</option>
+          {academicYearOptions.map(ay => (
+            <option key={ay} value={ay}>
+              {getAcademicYearLabel(ay)}
+            </option>
+          ))}
         </select>
         <select
           value={filters.examType}

@@ -24,6 +24,12 @@ export default function ExamsForm({
   isSubmitting,
   onSubmit,
 }) {
+const currentYear = new Date().getFullYear();
+const academicYearOptions = [
+  { value: `${currentYear}-1`, label: `First Year (${currentYear})` },
+  { value: `${currentYear}-2`, label: `Second Year (${currentYear})` },
+];
+
 const filteredStudents = formData.stream
   ? students.filter((s) => {
       const sameGroup =
@@ -184,8 +190,11 @@ const filteredStudents = formData.stream
               className="w-full border p-2 rounded"
             >
               <option value="">-- Select Year --</option>
-              <option value="2025-1">First Year</option>
-              <option value="2025-2">Second Year</option>
+              {academicYearOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </div>
 

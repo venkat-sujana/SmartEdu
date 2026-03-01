@@ -156,7 +156,7 @@ export default function PrincipalDashboard() {
   }
 
   return (
-    <div className="mt-2 flex min-h-screen bg-linear-to-br bg-[url('/images/')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
+    <div className="mt-2 flex min-h-screen bg-linear-to-br bg-[url('/images/college.jpg')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
       <main className="w-full flex-1 space-y-6 p-2 sm:p-4 md:p-6">
         {/* Header, Info, Lecturers etc... (same as before) */}
 

@@ -31,7 +31,7 @@ export async function GET(req) {
     const totalPresent = firstYear + secondYear;
 
     // Step 2: Fetch total students in the college
-    const totalStudents = await Student.countDocuments({ collegeId });
+    const totalStudents = await Student.countDocuments({ collegeId, status: "Active" });
 
     // Step 3: Calculate college-level attendance percent
     const collegePercent = totalStudents > 0
