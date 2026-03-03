@@ -17,18 +17,29 @@ export async function GET(req) {
 
   const subjects = await TimetableSubject.find({ lecturerId: lecturer._id }).lean();
   const slots = await TimeSlot.find({ lecturerId: lecturer._id })
-    .populate("subjectId", "subjectName subjectCode year semester")
+    .populate("subjectId", "subjectName year semester")
     .sort({ day: 1, period: 1 })
     .lean();
 
   return NextResponse.json({
     data: {
-      lecturer,
-      subjects,
+      lecturer: {
+        _id: lecturer._id,
+        userId: lecturer.userId,
+        name: lecturer.name,
+        maxHoursPerWeek: lecturer.maxHoursPerWeek,
+      },
+      subjects: subjects.map((s) => ({
+        _id: s._id,
+        subjectName: s.subjectName,
+        year: s.year,
+        semester: s.semester,
+        hoursPerWeek: s.hoursPerWeek,
+        lecturerId: s.lecturerId,
+      })),
       slots,
       weeklyAllocatedHours: slots.length,
       remainingCapacity: Math.max(0, Number(lecturer.maxHoursPerWeek || 0) - slots.length),
     },
   });
 }
-

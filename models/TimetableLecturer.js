@@ -11,7 +11,7 @@ const timetableLecturerSchema = new mongoose.Schema(
     },
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true, unique: true },
-    department: { type: String, required: true, trim: true },
+    department: { type: String, trim: true, default: "N/A" },
     maxHoursPerWeek: { type: Number, required: true, min: 1, max: 60, default: 24 },
   },
   { timestamps: true }
@@ -19,4 +19,3 @@ const timetableLecturerSchema = new mongoose.Schema(
 
 export default mongoose.models.TimetableLecturer ||
   mongoose.model("TimetableLecturer", timetableLecturerSchema);
-

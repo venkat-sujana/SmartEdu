@@ -1,25 +1,38 @@
 // app/api/exams/[id]/route.js
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectMongoDB from "@/lib/mongodb";
 import Exam from "@/models/Exam";
+
+function unauthorized() {
+  return NextResponse.json(
+    { success: false, message: "Unauthorized" },
+    { status: 401 }
+  );
+}
+
+function invalidId(message = "Invalid exam ID") {
+  return NextResponse.json({ success: false, message }, { status: 400 });
+}
+
+async function getCollegeIdFromSession() {
+  const session = await getServerSession(authOptions);
+  return session?.user?.collegeId || null;
+}
 
 // GET
 export async function GET(req, context) {
   try {
     await connectMongoDB();
+    const collegeId = await getCollegeIdFromSession();
+    if (!collegeId) return unauthorized();
 
-    const { id } = await context.params;   // ✅ ముఖ్యమైన line
-    console.log("GET examId =>", id);
+    const { id } = context.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) return invalidId();
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid exam ID" },
-        { status: 400 }
-      );
-    }
-
-    const exam = await Exam.findById(id);
+    const exam = await Exam.findOne({ _id: id, collegeId });
     if (!exam) {
       return NextResponse.json(
         { success: false, message: "Exam not found" },
@@ -29,7 +42,6 @@ export async function GET(req, context) {
 
     return NextResponse.json({ success: true, data: exam }, { status: 200 });
   } catch (error) {
-    console.error("GET /api/exams/[id] error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to fetch exam" },
       { status: 500 }
@@ -41,27 +53,15 @@ export async function GET(req, context) {
 export async function PUT(req, context) {
   try {
     await connectMongoDB();
+    const collegeId = await getCollegeIdFromSession();
+    if (!collegeId) return unauthorized();
 
-    const { id } = await context.params;   // ✅ ఇదే pattern
+    const { id } = context.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) return invalidId();
+
     const body = await req.json();
-console.log("RAW params =>", await context.params);
-    console.log("PUT examId =>", id);
-    console.log("PUT body =>", body);
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      console.error("PUT error: invalid exam ID =>", id);
-      return NextResponse.json(
-        { success: false, message: "❌ Invalid exam ID" },
-        { status: 400 }
-      );
-    }
-
     if (!mongoose.Types.ObjectId.isValid(body.studentId)) {
-      console.error("PUT error: invalid student ID =>", body.studentId);
-      return NextResponse.json(
-        { success: false, message: "❌ Invalid student ID" },
-        { status: 400 }
-      );
+      return invalidId("Invalid student ID");
     }
 
     const updateData = {
@@ -84,29 +84,25 @@ console.log("RAW params =>", await context.params);
       updateData.generalSubjects = undefined;
     }
 
-    console.log("PUT updateData =>", updateData);
-
-    const updated = await Exam.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
+    const updated = await Exam.findOneAndUpdate(
+      { _id: id, collegeId },
+      updateData,
+      { new: true }
+    );
 
     if (!updated) {
-      console.error("PUT error: exam not found =>", id);
       return NextResponse.json(
-        { success: false, message: "❌ Exam not found" },
+        { success: false, message: "Exam not found" },
         { status: 404 }
       );
     }
 
-    console.log("PUT success: updated exam =>", updated);
-
     return NextResponse.json({ success: true, data: updated });
   } catch (err) {
-    console.error("PUT error:", err);
     return NextResponse.json(
       {
         success: false,
-        message: "❌ Error updating exam",
+        message: "Error updating exam",
         error: err.message,
       },
       { status: 500 }
@@ -118,18 +114,13 @@ console.log("RAW params =>", await context.params);
 export async function DELETE(req, context) {
   try {
     await connectMongoDB();
+    const collegeId = await getCollegeIdFromSession();
+    if (!collegeId) return unauthorized();
 
-    const { id } = await context.params;   // ✅ ఇక్కడ కూడా
-    console.log("DELETE examId =>", id);
+    const { id } = context.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) return invalidId();
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid exam ID" },
-        { status: 400 }
-      );
-    }
-
-    const deleted = await Exam.findByIdAndDelete(id);
+    const deleted = await Exam.findOneAndDelete({ _id: id, collegeId });
     if (!deleted) {
       return NextResponse.json(
         { success: false, message: "Exam not found" },
@@ -142,7 +133,6 @@ export async function DELETE(req, context) {
       message: "Exam deleted successfully",
     });
   } catch (error) {
-    console.error("DELETE error:", error);
     return NextResponse.json(
       {
         success: false,

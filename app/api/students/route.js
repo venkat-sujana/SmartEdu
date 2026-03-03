@@ -68,7 +68,9 @@ export async function POST(req) {
 
     // Check password field; if not present, assign default password
     const plainPassword =
-      fields.password && fields.password.trim() !== '' ? fields.password.trim() : 'Welcome@2025'
+      fields.password && fields.password.trim() !== ''
+        ? fields.password.trim()
+        : process.env.DEFAULT_STUDENT_PASSWORD || 'Welcome@2025'
 
     // Hash the password using bcrypt
     const saltRounds = 10

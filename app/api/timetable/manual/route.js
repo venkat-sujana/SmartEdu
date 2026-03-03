@@ -24,8 +24,8 @@ export async function GET(req) {
   if (!timetable) return NextResponse.json({ data: { timetable: null, slots: [] } });
 
   const slots = await TimeSlot.find({ timetableId: timetable._id })
-    .populate("subjectId", "subjectName subjectCode")
-    .populate("lecturerId", "name department")
+    .populate("subjectId", "subjectName")
+    .populate("lecturerId", "name")
     .sort({ day: 1, period: 1 })
     .lean();
 
@@ -110,4 +110,3 @@ export async function DELETE(req) {
     return NextResponse.json({ message: err.message || "Delete failed" }, { status: 500 });
   }
 }
-

@@ -28,7 +28,6 @@ export default function TimetableGrid({ slots = [], onDeleteSlot }) {
                     {slot ? (
                       <div className="space-y-1">
                         <p className="font-medium text-slate-900">{slot.subjectId?.subjectName || "-"}</p>
-                        <p className="text-xs text-slate-600">{slot.subjectId?.subjectCode || ""}</p>
                         <p className="text-xs text-indigo-700">{slot.lecturerId?.name || "-"}</p>
                         <p className="text-[11px] text-slate-500">{slot.classroom}</p>
                         {onDeleteSlot && (
@@ -53,4 +52,3 @@ export default function TimetableGrid({ slots = [], onDeleteSlot }) {
     </div>
   );
 }
-

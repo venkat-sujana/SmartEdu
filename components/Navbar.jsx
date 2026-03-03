@@ -1,9 +1,18 @@
+
 "use client";
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { Menu, LogOut } from "lucide-react";
-import { AcademicCapIcon, HomeIcon, UserCircleIcon } from "@heroicons/react/24/solid";
+import {
+  Menu,
+  LogOut,
+  GraduationCap,
+  House,
+  ShieldCheck,
+  Table2,
+  CircleHelp,
+  CircleUserRound,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Navbar({ onOpenDrawer }) {
@@ -15,7 +24,7 @@ export default function Navbar({ onOpenDrawer }) {
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="fixed inset-x-0 top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/80"
+      className="fixed inset-x-0 top-0 z-40 border-b border-cyan-200 bg-linear-to-r from-cyan-50 via-sky-50 to-blue-100/95 backdrop-blur-sm"
     >
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-3 py-3">
         <div className="flex items-center gap-3">
@@ -29,7 +38,7 @@ export default function Navbar({ onOpenDrawer }) {
 
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-100 text-white font-bold">
-              <AcademicCapIcon className="h-5 w-5 text-emerald-500" />
+              <GraduationCap className="h-5 w-5 text-emerald-600" />
             </div>
             <div className="hidden sm:block">
               <div className="text-xs font-bold text-slate-500 dark:text-slate-300">
@@ -45,27 +54,30 @@ export default function Navbar({ onOpenDrawer }) {
               <nav className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                 <Link
                   href="/"
-                  className="flex rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="flex items-center gap-1 rounded px-2 py-1 hover:bg-slate-100"
                 >
-                  <HomeIcon className="h-5 w-5 font-bold text-emerald-500" />
+                  <House className="h-4 w-4 text-emerald-500" />
                   Home
                 </Link>
                 <Link
                   href="/invigilation/login"
-                  className="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="flex items-center gap-1 rounded px-2 py-1 hover:bg-slate-100"
                 >
+                  <ShieldCheck className="h-4 w-4 text-cyan-600" />
                   Invigilation
                 </Link>
                 <Link
                   href="/timetable-management/login"
-                  className="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="flex items-center gap-1 rounded px-2 py-1 hover:bg-slate-100"
                 >
+                  <Table2 className="h-4 w-4 text-indigo-600" />
                   Time Table
                 </Link>
                 <Link
                   href="/components/about"
-                  className="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="flex items-center gap-1 rounded px-2 py-1 hover:bg-slate-100"
                 >
+                  <CircleHelp className="h-4 w-4 text-violet-600" />
                   About
                 </Link>
               </nav>
@@ -92,7 +104,7 @@ export default function Navbar({ onOpenDrawer }) {
                 href="/profile"
                 className="hidden items-center gap-2 rounded-md px-2 py-1 text-sm font-bold hover:bg-slate-100 dark:hover:bg-slate-800 sm:inline-flex"
               >
-                <UserCircleIcon className="h-5 w-5" />
+                <CircleUserRound className="h-5 w-5" />
                 Profile
               </Link>
 

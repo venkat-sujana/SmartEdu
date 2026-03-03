@@ -17,7 +17,6 @@ export async function PATCH(req, { params }) {
     }
 
     if (body.subjectName) subject.subjectName = body.subjectName.trim();
-    if (body.subjectCode) subject.subjectCode = body.subjectCode.trim().toUpperCase();
     if (body.year) subject.year = Number(body.year);
     if (body.semester) subject.semester = Number(body.semester);
     if (body.hoursPerWeek) subject.hoursPerWeek = Number(body.hoursPerWeek);
@@ -26,9 +25,6 @@ export async function PATCH(req, { params }) {
 
     return NextResponse.json({ message: "Subject updated", data: subject });
   } catch (err) {
-    if (String(err.message || "").includes("duplicate key")) {
-      return NextResponse.json({ message: "Duplicate subject code is not allowed" }, { status: 409 });
-    }
     return NextResponse.json({ message: err.message || "Update failed" }, { status: 500 });
   }
 }
@@ -45,4 +41,3 @@ export async function DELETE(req, { params }) {
     return NextResponse.json({ message: err.message || "Delete failed" }, { status: 500 });
   }
 }
-

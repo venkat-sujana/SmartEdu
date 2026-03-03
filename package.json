@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint app components lib models --ext .js,.jsx,.mjs",
-    "seed:invigilation-admin": "node scripts/seed-invigilation-admin.mjs"
+    "seed:invigilation-admin": "node scripts/seed-invigilation-admin.mjs",
+    "migrate:group-bipc": "node scripts/normalize-bipc-group.mjs --apply"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

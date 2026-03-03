@@ -10,14 +10,13 @@ export async function PATCH(req, { params }) {
   try {
     await connectInvigilationDB();
     const { id } = await params;
-    const { name, department, maxHoursPerWeek } = await req.json();
+    const { name, maxHoursPerWeek } = await req.json();
     const lecturer = await TimetableLecturer.findById(id);
     if (!lecturer) {
       return NextResponse.json({ message: "Lecturer not found" }, { status: 404 });
     }
 
     if (name) lecturer.name = name.trim();
-    if (department) lecturer.department = department.trim();
     if (maxHoursPerWeek) lecturer.maxHoursPerWeek = Number(maxHoursPerWeek);
     await lecturer.save();
 
@@ -50,4 +49,3 @@ export async function DELETE(req, { params }) {
     return NextResponse.json({ message: err.message || "Delete failed" }, { status: 500 });
   }
 }
-

@@ -72,8 +72,8 @@ export async function POST(req) {
     }
 
     const slots = await TimeSlot.find({ timetableId: timetable._id })
-      .populate("subjectId", "subjectName subjectCode")
-      .populate("lecturerId", "name department")
+      .populate("subjectId", "subjectName")
+      .populate("lecturerId", "name")
       .sort({ day: 1, period: 1 })
       .lean();
 
@@ -89,4 +89,3 @@ export async function POST(req) {
     return NextResponse.json({ message: err.message || "Auto generation failed" }, { status: 500 });
   }
 }
-

@@ -19,7 +19,7 @@ const studentSchema = new mongoose.Schema(
     group: {
       type: String,
       required: true,
-      enum: ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"],
+      enum: ["MPC", "BiPC", "BIPC", "CEC", "HEC", "CET", "M&AT", "MLT"],
     },
 
     caste: {
