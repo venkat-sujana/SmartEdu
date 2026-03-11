@@ -105,10 +105,8 @@ export async function GET(req) {
 
     const examsWithNames = exams.map((exam) => ({
       ...exam._doc,
-      yearOfStudy:
-        exam.studentId?.status === "Active" && exam.studentId?.yearOfStudy
-          ? exam.studentId.yearOfStudy
-          : exam.yearOfStudy,
+      yearOfStudy: exam.yearOfStudy,
+      currentYearOfStudy: exam.studentId?.yearOfStudy || null,
       isStudentActive: exam.studentId?.status === "Active",
       student: {
         name: exam.studentId?.name || "Unknown",

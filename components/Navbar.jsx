@@ -12,6 +12,7 @@ import {
   Table2,
   CircleHelp,
   CircleUserRound,
+  ShieldEllipsis,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -80,6 +81,15 @@ export default function Navbar({ onOpenDrawer }) {
                   <CircleHelp className="h-4 w-4 text-violet-600" />
                   About
                 </Link>
+                {user?.role === "principal" && (
+                  <Link
+                    href="/admin-panel"
+                    className="flex items-center gap-1 rounded px-2 py-1 hover:bg-slate-100"
+                  >
+                    <ShieldEllipsis className="h-4 w-4 text-rose-600" />
+                    Admin Panel
+                  </Link>
+                )}
               </nav>
             </div>
           </>

@@ -4,28 +4,26 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import { getServerSession } from "next-auth";
-import Student from "@/models/Student";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
 
 export async function GET(req) {
   await connectMongoDB();
 
   const session = await getServerSession(authOptions);
-
-
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const collegeId = session.user.collegeId; // 👈 session నుంచి తీసుకుంటున్నాం
-console.log("🎓 Session collegeId:", session?.user?.collegeId);
+  const collegeId = session.user.collegeId;
+  const collegeObjectId = mongoose.Types.ObjectId.isValid(collegeId)
+    ? new mongoose.Types.ObjectId(collegeId)
+    : collegeId;
 
   const { searchParams } = new URL(req.url);
   const start = searchParams.get("start");
   const end = searchParams.get("end");
   const group = searchParams.get("group");
-  const filterYear = searchParams.get("year"); // frontend నుంచి yearOfStudy as 'year' వస్తుంది
+  const filterYear = searchParams.get("year");
 
   const yearOptions = ["First Year", "Second Year"];
   const results = {};
@@ -34,8 +32,10 @@ console.log("🎓 Session collegeId:", session?.user?.collegeId);
     for (const yearOfStudy of yearOptions) {
       if (filterYear && filterYear !== yearOfStudy) continue;
 
-      const matchStage = {};
-
+      const matchStage = {
+        collegeId: collegeObjectId,
+        yearOfStudy,
+      };
 
       if (start && end) {
         matchStage.date = {
@@ -52,36 +52,9 @@ console.log("🎓 Session collegeId:", session?.user?.collegeId);
 
       if (group) matchStage.group = group;
 
-
-
-      // Student match conditions
-      const studentMatchConditions = {
-        "studentInfo.yearOfStudy": yearOfStudy,
-        "studentInfo.collegeId": collegeId, // 👈 ఇక్కడే filter
-      };
-
-if (collegeId) {
-  studentMatchConditions["studentInfo.collegeId"] = new mongoose.Types.ObjectId(collegeId);
-}
-console.log("🧾 Student match conditions:", studentMatchConditions);
-
-
       const pipeline = [
         { $match: matchStage },
-        
         {
-          $lookup: {
-            from: "students",
-            localField: "studentId",
-            foreignField: "_id",
-            as: "studentInfo",
-          },
-        },
-        { $unwind: "$studentInfo" },
-        { $match: studentMatchConditions },
-        
-        {
-          
           $group: {
             _id: {
               date: { $substr: ["$date", 0, 10] },

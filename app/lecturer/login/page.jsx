@@ -6,22 +6,6 @@ import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-const subjectGroupMap = {
-  MandAT: "mandat",
-  CET: "cet",
-  MLT: "mlt",
-  Maths: "mpc",
-  Physics: "mpc",
-  Chemistry: "mpc",
-  Botany: "bipc",
-  Zoology: "bipc",
-  Civics: "cec",
-  Economics: "cec",
-  History: "hec",
-  Commerce: "cec",
-  GFC: "gfc",
-};
-
 export default function LecturerLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,14 +13,13 @@ export default function LecturerLogin() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.subject) {
-      const group = subjectGroupMap[session.user.subject] || "mpc";
-      router.push(`/dashboards/${group}`);
+    if (status === "authenticated") {
+      router.push("/dashboards");
     }
-  }, [status, session, router]);
+  }, [status, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

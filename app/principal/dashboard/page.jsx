@@ -1,21 +1,15 @@
 //app/principal/dashboard/page.jsx
 'use client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Users, Calendar, BarChart } from 'lucide-react'
 import useSWR from 'swr'
-import AbsenteesTable from '@/app/absentees-table/page'
 import { useSession } from 'next-auth/react'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import React, { useEffect, useState } from 'react'
-import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
+import { useEffect, useMemo, useState } from 'react'
 import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
 import AttendanceShortageSummary from '@/app/components/attendance-shortage-summary/page'
 import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
 import AttendanceStatsTable from '@/app/components/attendance-stats-table/AttendanceStatsTable'
-import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import { UserGroupIcon } from '@heroicons/react/24/solid'
 import OverallStrengthCard from '@/app/components/overall-strength-card/OverallStrengthCard'
 
 import MetricsCards from './MetricsCards'
@@ -36,7 +30,6 @@ export default function PrincipalDashboard() {
       .then(data => setShortageData(data.data || []))
   }, [])
 
-  // Students, lecturers count
   const { data: studentData } = useSWR('/api/students', fetcher)
   const totalStudents = studentData?.data?.length || 0
 
@@ -47,9 +40,9 @@ export default function PrincipalDashboard() {
     '/api/lecturers/active',
     fetcher
   )
-  const { data, error, isLoading } = useSWR('/api/attendance/today-absentees', fetcher)
+  const { data } = useSWR('/api/attendance/today-absentees', fetcher)
   const absentees = data?.absentees || []
-  const todaysPresent = data?.presentStudents || []
+  const todaysPresent = data?.presentStudents?.length || 0
 
   useEffect(() => {
     if (!session?.user) return
@@ -67,81 +60,19 @@ export default function PrincipalDashboard() {
       })
   }, [session])
 
-  // ---- Session-wise Accurate Calculation ----
-  const presentAbsentByYear = {
-    firstYear: { fnPresent: 0, fnAbsent: 0, anPresent: 0, anAbsent: 0 },
-    secondYear: { fnPresent: 0, fnAbsent: 0, anPresent: 0, anAbsent: 0 },
-  }
   const sessionWisePresent = data?.sessionWisePresent || {}
   const sessionWiseAbsentees = data?.sessionWiseAbsentees || {}
 
-  // FN
-  if (Array.isArray(sessionWisePresent.FN)) {
-    sessionWisePresent.FN.forEach(student => {
-      if (student.yearOfStudy?.toLowerCase().includes('first'))
-        presentAbsentByYear.firstYear.fnPresent++
-      else if (student.yearOfStudy?.toLowerCase().includes('second'))
-        presentAbsentByYear.secondYear.fnPresent++
-    })
-  }
-  if (Array.isArray(sessionWiseAbsentees.FN)) {
-    sessionWiseAbsentees.FN.forEach(student => {
-      if (student.yearOfStudy?.toLowerCase().includes('first'))
-        presentAbsentByYear.firstYear.fnAbsent++
-      else if (student.yearOfStudy?.toLowerCase().includes('second'))
-        presentAbsentByYear.secondYear.fnAbsent++
-    })
-  }
-  // AN
-  if (Array.isArray(sessionWisePresent.AN)) {
-    sessionWisePresent.AN.forEach(student => {
-      if (student.yearOfStudy?.toLowerCase().includes('first'))
-        presentAbsentByYear.firstYear.anPresent++
-      else if (student.yearOfStudy?.toLowerCase().includes('second'))
-        presentAbsentByYear.secondYear.anPresent++
-    })
-  }
-  if (Array.isArray(sessionWiseAbsentees.AN)) {
-    sessionWiseAbsentees.AN.forEach(student => {
-      if (student.yearOfStudy?.toLowerCase().includes('first'))
-        presentAbsentByYear.firstYear.anAbsent++
-      else if (student.yearOfStudy?.toLowerCase().includes('second'))
-        presentAbsentByYear.secondYear.anAbsent++
-    })
-  }
-
-  // Horizontal Sums
-  const fnPresentTotal =
-    presentAbsentByYear.firstYear.fnPresent + presentAbsentByYear.secondYear.fnPresent
-  const fnAbsentTotal =
-    presentAbsentByYear.firstYear.fnAbsent + presentAbsentByYear.secondYear.fnAbsent
-  const anPresentTotal =
-    presentAbsentByYear.firstYear.anPresent + presentAbsentByYear.secondYear.anPresent
-  const anAbsentTotal =
-    presentAbsentByYear.firstYear.anAbsent + presentAbsentByYear.secondYear.anAbsent
-
-  const overallPresent = fnPresentTotal + anPresentTotal
-  const overallAbsent = fnAbsentTotal + anAbsentTotal
-  const overallTotal = overallPresent + overallAbsent
-  const overallPercent = overallTotal > 0 ? Math.round((overallPresent / overallTotal) * 100) : 0
-
-  // First Year
-  const firstYearPresent =
-    presentAbsentByYear.firstYear.fnPresent + presentAbsentByYear.firstYear.anPresent
-  const firstYearAbsent =
-    presentAbsentByYear.firstYear.fnAbsent + presentAbsentByYear.firstYear.anAbsent
-  const firstYearTotal = firstYearPresent + firstYearAbsent
-  const firstYearPercent =
-    firstYearTotal > 0 ? Math.round((firstYearPresent / firstYearTotal) * 100) : 0
-
-  // Second Year
-  const secondYearPresent =
-    presentAbsentByYear.secondYear.fnPresent + presentAbsentByYear.secondYear.anPresent
-  const secondYearAbsent =
-    presentAbsentByYear.secondYear.fnAbsent + presentAbsentByYear.secondYear.anAbsent
-  const secondYearTotal = secondYearPresent + secondYearAbsent
-  const secondYearPercent =
-    secondYearTotal > 0 ? Math.round((secondYearPresent / secondYearTotal) * 100) : 0
+  const todayDateLabel = useMemo(
+    () =>
+      new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+    []
+  )
 
   function stats(group, year, session) {
     const present =
@@ -156,85 +87,125 @@ export default function PrincipalDashboard() {
   }
 
   return (
-    <div className="mt-2 flex min-h-screen bg-linear-to-br bg-[url('/images/college.jpg')] from-indigo-100 via-white to-blue-100 bg-cover bg-center">
-      <main className="w-full flex-1 space-y-6 p-2 sm:p-4 md:p-6">
-        {/* Header, Info, Lecturers etc... (same as before) */}
-
-        <div className="justify-content flex items-center">
-          <h1 className="text-2xl font-bold">Principal Dashboard</h1>
-        </div>
-
-        <Card className="mx-auto mb-6 w-full max-w-xs rounded-2xl border border-blue-200 bg-blue-100 p-4 shadow-xl">
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
-            {principal?.photo ? (
-              <img
-                src={principal.photo}
-                alt="Principal"
-                className="h-20 w-20 rounded-full border object-cover shadow md:h-28 md:w-28"
-              />
-            ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-gray-500 md:h-28 md:w-28">
-                No Photo
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(29,78,216,0.14),rgba(248,250,252,0.92)_40%,rgba(226,232,240,0.9)_100%)] px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl space-y-6">
+        <section className="rounded-3xl border border-white/70 bg-white/80 p-4 shadow-lg backdrop-blur-sm sm:p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+                Principal Dashboard
+              </p>
+              <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+                {collegeName}
+              </h1>
+              <p className="mt-2 text-sm text-slate-600">{todayDateLabel}</p>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-blue-700">Students</p>
+                <p className="text-2xl font-bold text-blue-950">{totalStudents}</p>
               </div>
-            )}
-            <div className="text-center sm:text-left">
-              <p className="text-xl font-semibold">{principal?.name || 'Principal'}</p>
-              <p className="text-gray-600">{principal?.email}</p>
-              <p className="text-sm text-gray-500">{principal?.collegeName}</p>
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-emerald-700">Lecturers</p>
+                <p className="text-2xl font-bold text-emerald-950">{totalLecturers}</p>
+              </div>
             </div>
           </div>
-        </Card>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <Card className="rounded-3xl border-blue-100 bg-white/85 p-4 shadow-md sm:p-5">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+              {principal?.photo ? (
+                <img
+                  src={principal.photo}
+                  alt="Principal"
+                  className="h-20 w-20 rounded-full border-4 border-white object-cover shadow-sm sm:h-24 sm:w-24"
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-slate-200 text-slate-600 shadow-sm sm:h-24 sm:w-24">
+                  No Photo
+                </div>
+              )}
+              <div className="text-center sm:text-left">
+                <p className="text-xl font-bold text-slate-900">{principal?.name || 'Principal'}</p>
+                <p className="text-sm text-slate-600">{principal?.email || 'No email available'}</p>
+                <p className="text-sm text-slate-500">{collegeName}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="rounded-3xl border-indigo-100 bg-linear-to-br from-indigo-50 via-white to-blue-50 shadow-md">
+            <CardContent className="flex h-full items-center justify-between gap-4 p-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                  Total Strength
+                </p>
+                <p className="mt-1 text-3xl font-black text-indigo-950">{studentCount}</p>
+                <p className="text-xs text-slate-500">{todaysPresent} present today</p>
+              </div>
+              <div className="rounded-2xl bg-indigo-100 p-3 text-indigo-700">
+                <UserGroupIcon className="h-8 w-8" />
+              </div>
+            </CardContent>
+          </Card>
+        </section>
 
         <MetricsCards />
-
         <PromotionCard />
 
-        <ActiveLecturersCard
-          className="mx-auto mb-6 w-full max-w-md shadow-xl"
-          lecturers={activeLecturersData?.data || []}
-          loading={!activeLecturersData && !activeLecturersError}
-          error={activeLecturersError}
-          title="Currently Active Lecturers"
-        />
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="space-y-4">
+            <Card className="rounded-3xl border-slate-200 bg-white/85 p-3 shadow-md sm:p-4">
+              <OverallStrengthCard
+                sessionWisePresent={sessionWisePresent}
+                sessionWiseAbsentees={sessionWiseAbsentees}
+              />
+            </Card>
 
-        {/* Students Count Quick Card */}
-        <div className="mb-6 flex items-center justify-center gap-4">
-          <div className="flex items-center justify-center rounded-2xl bg-linear-to-br from-indigo-100 to-blue-100 px-6 py-4 text-center shadow-lg">
-            <p className="text-lg font-bold text-blue-800">Total Strength</p>&nbsp;
-            <UserGroupIcon className="mr-2 h-7 w-7" />
-            <p className="text-2xl font-extrabold text-indigo-900">{studentCount}</p>
+            <Card className="rounded-3xl border-slate-200 bg-white/85 p-3 shadow-md sm:p-4">
+              <OverallAttendanceMatrixCard />
+            </Card>
+
+            <Card className="rounded-3xl border-slate-200 bg-white/85 p-3 shadow-md sm:p-4">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl font-extrabold tracking-tight text-slate-900">
+                  Attendance At a Glance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AttendanceStatsTable stats={stats} />
+              </CardContent>
+            </Card>
           </div>
-        </div>
 
-        {/* Overall Strength Card */}
-        <OverallStrengthCard
-          sessionWisePresent={sessionWisePresent}
-          sessionWiseAbsentees={sessionWiseAbsentees}
-        />
+          <div className="space-y-4">
+            <ActiveLecturersCard
+              className="w-full rounded-3xl shadow-md"
+              lecturers={activeLecturersData?.data || []}
+              loading={!activeLecturersData && !activeLecturersError}
+              error={activeLecturersError}
+              title="Currently Active Lecturers"
+            />
 
-        <OverallAttendanceMatrixCard />
+            <Card className="rounded-3xl border-slate-200 bg-white/85 p-3 shadow-md">
+              <AttendanceShortageSummary data={shortageData} />
+            </Card>
+          </div>
+        </section>
 
-        <div className="mt-12">
-          <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
-          <TodayAbsenteesTable absetees={absentees} />
-        </div>
-
-        <Card className="mt-6 rounded-2xl bg-white p-2 shadow-lg">
-          <AttendanceShortageSummary data={shortageData} />
+        <Card className="rounded-3xl border-slate-200 bg-white/90 p-3 shadow-md sm:p-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl font-bold text-slate-900">Today's Absentees</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TodayAbsenteesTable absetees={absentees} />
+          </CardContent>
         </Card>
 
-        <div className="p-6">
-          <h1 className="mb-4 text-2xl font-extrabold tracking-tight text-blue-900">
-            Attendance At a Glance
-          </h1>
-          <AttendanceStatsTable stats={stats} />
-        </div>
-
-        {/* Footer */}
-        <footer className="flex w-full flex-col items-center gap-3 pt-10 pb-6 text-gray-600">
-          <div className="flex gap-6 text-xl">
-            {/* Heroicons (Tailwind official) */}
-            <a href="#" className="transition hover:text-blue-600">
+        <footer className="rounded-3xl border border-slate-200 bg-white/80 px-4 py-6 text-slate-600 shadow-sm">
+          <div className="mb-3 flex justify-center gap-6 text-xl">
+            <a href="#" className="transition hover:text-blue-600" aria-label="Facebook">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
@@ -244,7 +215,7 @@ export default function PrincipalDashboard() {
                 <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987H7.898v-2.89h2.54V9.845c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.874h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12z" />
               </svg>
             </a>
-            <a href="#" className="transition hover:text-blue-600">
+            <a href="#" className="transition hover:text-sky-600" aria-label="Twitter">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -260,7 +231,7 @@ export default function PrincipalDashboard() {
                 />
               </svg>
             </a>
-            <a href="#" className="transition hover:text-pink-600">
+            <a href="#" className="transition hover:text-pink-600" aria-label="Instagram">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
@@ -270,7 +241,7 @@ export default function PrincipalDashboard() {
                 <path d="M7.75 2A5.75 5.75 0 002 7.75v8.5A5.75 5.75 0 007.75 22h8.5A5.75 5.75 0 0022 16.25v-8.5A5.75 5.75 0 0016.25 2h-8.5zm8.72 6.03a.75.75 0 011.06 1.06l-5.25 5.25a.75.75 0 01-1.06 0L6.47 11.53a.75.75 0 011.06-1.06l3.47 3.47 4.47-4.47z" />
               </svg>
             </a>
-            <a href="#" className="transition hover:text-blue-700">
+            <a href="#" className="transition hover:text-blue-700" aria-label="LinkedIn">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
@@ -281,7 +252,7 @@ export default function PrincipalDashboard() {
               </svg>
             </a>
           </div>
-          <p className="text-sm">© {new Date().getFullYear()} OSRA System • All Rights Reserved</p>
+          <p className="text-center text-sm">&copy; {new Date().getFullYear()} OSRA System  -  All Rights Reserved</p>
         </footer>
       </main>
     </div>

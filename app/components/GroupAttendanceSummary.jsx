@@ -32,13 +32,15 @@ export default function GroupAttendanceSummary({ group, yearOfStudy, collegeName
 
     const fetchData = async () => {
       try {
+        setSummaryData([])
         console.log('Fetching data with:', {
           group: encodeURIComponent(group),
           yearOfStudy: encodeURIComponent(yearOfStudy),
           collegeId: session.user.collegeId,
         })
         const res = await fetch(
-          `/api/attendance/monthly-summary?group=${encodeURIComponent(group)}&yearOfStudy=${encodeURIComponent(yearOfStudy)}&collegeId=${session.user.collegeId}`
+          `/api/attendance/monthly-summary?group=${encodeURIComponent(group)}&yearOfStudy=${encodeURIComponent(yearOfStudy)}&collegeId=${session.user.collegeId}`,
+          { cache: 'no-store' }
         )
         if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`)
         const data = await res.json()

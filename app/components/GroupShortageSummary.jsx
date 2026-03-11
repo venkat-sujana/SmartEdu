@@ -15,23 +15,26 @@ const months = [
   { label: "MAR", year: "2026" },
 ];
 
-export default function GroupShortageSummary({ 
-  group, 
-  year, 
-  collegeId, 
+export default function GroupShortageSummary({
+  group,
+  year,
+  collegeId,
   collegeName = "College",
-  className = "" 
+  className = "",
 }) {
   const [summaryData, setSummaryData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const printAreaId = `print-area-${String(group || "group").replace(/\W+/g, "-")}-${String(year || "year").replace(/\W+/g, "-")}`;
 
   useEffect(() => {
     if (!group || !year || !collegeId) return;
-    
+
     const fetchData = async () => {
       try {
+        setSummaryData([]);
         const res = await fetch(
-          `/api/attendance/monthly-summary?group=${encodeURIComponent(group)}&yearOfStudy=${encodeURIComponent(year)}&collegeId=${collegeId}`
+          `/api/attendance/monthly-summary?group=${encodeURIComponent(group)}&yearOfStudy=${encodeURIComponent(year)}&collegeId=${collegeId}`,
+          { cache: "no-store" }
         );
         if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`);
         const data = await res.json();
@@ -40,22 +43,21 @@ export default function GroupShortageSummary({
         console.error("Fetch error:", error);
       }
     };
+
     fetchData();
   }, [group, year, collegeId]);
 
-  // Search filter
-  const filteredData = summaryData.filter((student) =>
+  const filteredData = summaryData.filter(student =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Shortage filter: Only <75% overall attendance
-  const shortageFilteredData = filteredData.filter((student) => {
-    const totalPresent = months.reduce((sum, { label, year }) => {
-      const key = `${label}-${year}`;
+  const shortageFilteredData = filteredData.filter(student => {
+    const totalPresent = months.reduce((sum, { label, year: monthYear }) => {
+      const key = `${label}-${monthYear}`;
       return sum + (student.present?.[key] || 0);
     }, 0);
-    const totalWorking = months.reduce((sum, { label, year }) => {
-      const key = `${label}-${year}`;
+    const totalWorking = months.reduce((sum, { label, year: monthYear }) => {
+      const key = `${label}-${monthYear}`;
       return sum + (student.workingDays?.[key] || 0);
     }, 0);
     const overallPercent = totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0;
@@ -63,7 +65,7 @@ export default function GroupShortageSummary({
   });
 
   const handlePrint = () => {
-    const printContent = document.getElementById("print-area").innerHTML;
+    const printContent = document.getElementById(printAreaId)?.innerHTML || "";
     const printWindow = window.open("", "", "width=1000,height=700");
     printWindow.document.write(`
       <html>
@@ -73,7 +75,7 @@ export default function GroupShortageSummary({
             body { font-family: Arial, sans-serif; }
             table { border-collapse: collapse; width: 100%; }
             th, td { border: 1px solid black; padding: 6px; text-align: center; font-size: 13px; }
-            th { background-color: #16a34a; color: white; }
+            th { background-color: #0f172a; color: white; }
           </style>
         </head>
         <body>${printContent}</body>
@@ -85,71 +87,71 @@ export default function GroupShortageSummary({
 
   if (!group || !year) {
     return (
-      <div className="p-8 text-center text-gray-500">
-        Select Group & Year to view shortage summary
+      <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+        Select group and year to view shortage summary.
       </div>
     );
   }
 
   return (
-    <div className={`max-w-6xl mx-auto p-5 bg-gray-100 border border-2 rounded-lg shadow-lg ${className}`}>
-      {/* Header with Group & Year */}
-      <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          {group} - {year}
-        </h2>
-        <p className="text-lg text-gray-600">{collegeName}</p>
+    <div className={`mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5 ${className}`}>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">{group} - {year}</h2>
+          <p className="text-sm text-slate-600">{collegeName}</p>
+        </div>
+        <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+          Attendance below 75%
+        </span>
       </div>
 
-      {/* Filters & Print */}
-      <div className="mb-6 flex flex-wrap gap-4 items-center bg-white p-5 rounded-lg shadow-md">
+      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
         <input
           type="text"
-          placeholder="🔍 Search Student"
+          placeholder="Search student"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition flex-grow min-w-[200px]"
+          onChange={e => setSearchTerm(e.target.value)}
+          className="min-w-[180px] flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500"
         />
         <button
           onClick={handlePrint}
-          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
         >
           <Printer size={18} />
           Print
         </button>
       </div>
 
-      <h3 className="text-xl font-bold mb-4 text-center text-red-600">
-        🧾 Attendance Shortage (&lt;75% Only)
+      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+        Shortage Students
       </h3>
 
-      {/* Shortage Students Table */}
-      <div id="print-area" className="overflow-x-auto bg-white rounded-lg shadow-lg">
+      <div id={printAreaId} className="overflow-x-auto rounded-xl border border-slate-200">
         {shortageFilteredData.length === 0 ? (
-          <p className="text-gray-500 mt-4 text-center py-6">
+          <p className="py-6 text-center text-sm text-slate-500">
             No students with attendance below 75%
           </p>
         ) : (
-          <table className="table-auto w-full border border-gray-300 text-sm font-sans shadow-lg rounded-lg overflow-hidden">
-            <thead className="bg-green-700 text-white text-sm uppercase tracking-wide">
+          <table className="w-full table-auto text-sm">
+            <thead className="bg-slate-800 text-xs uppercase tracking-wide text-white">
               <tr>
-                <th className="p-3 border-r border-green-600 w-14 text-center">S.No</th>
-                <th className="p-3 border-r border-green-600 text-left">🧑‍🎓 Students</th>
-                <th className="p-3 border-r border-green-600 text-center">Working Days</th>
-                <th className="p-3 border-r border-green-600 text-center">Present Days</th>
-                <th className="p-3 border-r border-green-600 text-center">% Attendance</th>
-                <th className="p-3 border-r border-green-600 text-center">Shortage</th>
-                <th className="p-3 text-center w-28">Status</th>
+                <th className="w-14 border border-slate-700 p-2 text-center">S.No</th>
+                <th className="border border-slate-700 p-2 text-left">Student</th>
+                <th className="border border-slate-700 p-2 text-center">Working Days</th>
+                <th className="border border-slate-700 p-2 text-center">Present Days</th>
+                <th className="border border-slate-700 p-2 text-center">% Attendance</th>
+                <th className="border border-slate-700 p-2 text-center">Shortage</th>
+                <th className="w-28 border border-slate-700 p-2 text-center">Status</th>
               </tr>
             </thead>
             <tbody>
               {shortageFilteredData.map((student, idx) => {
-                const totalPresent = months.reduce((sum, { label, year }) => {
-                  const key = `${label}-${year}`;
+                const totalPresent = months.reduce((sum, { label, year: monthYear }) => {
+                  const key = `${label}-${monthYear}`;
                   return sum + (student.present?.[key] || 0);
                 }, 0);
-                const totalWorking = months.reduce((sum, { label, year }) => {
-                  const key = `${label}-${year}`;
+                const totalWorking = months.reduce((sum, { label, year: monthYear }) => {
+                  const key = `${label}-${monthYear}`;
                   return sum + (student.workingDays?.[key] || 0);
                 }, 0);
                 const percent = totalWorking > 0 ? ((totalPresent / totalWorking) * 100).toFixed(2) : "0.00";
@@ -157,17 +159,19 @@ export default function GroupShortageSummary({
                 const shortage = requiredDays - totalPresent;
 
                 return (
-                  <tr key={idx} className="odd:bg-white even:bg-gray-50 hover:bg-green-100 transition">
-                    <td className="p-3 border border-green-200 text-center">{idx + 1}</td>
-                    <td className="p-3 border border-green-200 font-semibold text-gray-900">{student.name}</td>
-                    <td className="p-3 border border-green-200 text-center">{totalWorking}</td>
-                    <td className="p-3 border border-green-200 text-center">{totalPresent}</td>
-                    <td className="p-3 border border-green-200 text-center">{percent}%</td>
-                    <td className="p-3 border border-green-200 text-center">
-                      <span className="text-red-600 font-bold">{shortage}</span>
+                  <tr key={idx} className="transition odd:bg-white even:bg-slate-50 hover:bg-blue-50">
+                    <td className="border border-slate-200 p-2 text-center">{idx + 1}</td>
+                    <td className="border border-slate-200 p-2 font-medium text-slate-900">{student.name}</td>
+                    <td className="border border-slate-200 p-2 text-center">{totalWorking}</td>
+                    <td className="border border-slate-200 p-2 text-center">{totalPresent}</td>
+                    <td className="border border-slate-200 p-2 text-center">{percent}%</td>
+                    <td className="border border-slate-200 p-2 text-center">
+                      <span className="font-semibold text-rose-700">{shortage}</span>
                     </td>
-                    <td className="p-3 border border-green-200 text-center">
-                      <span className="text-red-600 font-bold">Not Eligible ❌</span>
+                    <td className="border border-slate-200 p-2 text-center">
+                      <span className="rounded-full bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-700">
+                        Below 75%
+                      </span>
                     </td>
                   </tr>
                 );

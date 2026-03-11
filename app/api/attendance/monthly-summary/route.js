@@ -29,6 +29,14 @@ function isHoliday(dateObj) {
   )
 }
 
+function normalizeYear(value) {
+  if (!value) return ''
+  const v = String(value).toLowerCase().replace(/\s+/g, ' ').trim()
+  if (v.includes('first') || v === '1') return 'first year'
+  if (v.includes('second') || v === '2') return 'second year'
+  return v
+}
+
 export async function GET(req) {
   try {
     console.log('GET /api/attendance/monthly-summary route called!')
@@ -80,12 +88,17 @@ export async function GET(req) {
       return NextResponse.json({ data: [] }, { status: 200 })
     }
 
-    // 📅 Attendance filter – yearOfStudy filter అవసరం లేదు
+    const normalizedRequestedYear = normalizeYear(yearOfStudy)
+
+    // 📅 Attendance filter
     const attendanceQuery = {
       collegeId: new mongoose.Types.ObjectId(collegeId),
     }
     if (group) {
       attendanceQuery.group = new RegExp(`^${group}$`, 'i')
+    }
+    if (normalizedRequestedYear) {
+      attendanceQuery.yearOfStudy = new RegExp(`^${normalizedRequestedYear}$`, 'i')
     }
 
     console.log('Attendance filter:', attendanceQuery)
@@ -123,6 +136,7 @@ export async function GET(req) {
 
       attendance.forEach(r => {
         if (r.studentId.toString() !== student._id.toString()) return
+        if (normalizedRequestedYear && normalizeYear(r.yearOfStudy) !== normalizedRequestedYear) return
 
         const monthKey = `${monthMap[r.month]}-${r.year}`
         const recordDate = new Date(r.date)

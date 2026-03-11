@@ -74,10 +74,10 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto my-4 p-5 rounded-3xl bg-gradient-to-br from-sky-50 via-white to-emerald-50 shadow-xl border border-blue-200">
+    <div className="max-w-5xl mx-auto my-4 p-5 rounded-3xl bg-linear-to-br from-sky-50 via-white to-emerald-50 shadow-xl border border-blue-200">
       {/* Header with icon + summary */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-500 px-4 py-2 text-sm md:text-base font-extrabold text-white shadow-md tracking-wide">
+        <h2 className="flex items-center gap-2 rounded-2xl bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 px-4 py-2 text-sm md:text-base font-extrabold text-white shadow-md tracking-wide">
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/15">
             <UserIcon className="h-5 w-5" />
           </span>
@@ -108,14 +108,14 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
           <div key={sessionKey} className="mb-2">
             {/* Session pill */}
             <div className="mb-3 flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-5 py-1.5 rounded-2xl text-sm font-bold shadow border border-blue-300">
+              <span className="inline-flex items-center gap-2 bg-linear-to-r from-cyan-400 to-blue-500 text-white px-5 py-1.5 rounded-2xl text-sm font-bold shadow border border-blue-300">
                 <ClockIcon className="h-5 w-5 text-white" />
                 {sessionLabels[sessionKey] || sessionKey}
               </span>
             </div>
 
-            <div className="rounded-3xl border border-cyan-200 bg-gradient-to-br from-white via-cyan-50 to-blue-50 shadow-lg pb-3">
-              <h3 className="font-semibold text-base md:text-lg bg-gradient-to-r from-cyan-200 to-emerald-100 px-5 md:px-7 py-3 mb-1 rounded-t-3xl text-blue-900 tracking-wide border-b border-blue-200 flex items-center gap-2">
+            <div className="rounded-3xl border border-cyan-200 bg-linear-to-br from-white via-cyan-50 to-blue-50 shadow-lg pb-3">
+              <h3 className="font-semibold text-base md:text-lg bg-linear-to-r from-cyan-200 to-emerald-100 px-5 md:px-7 py-3 mb-1 rounded-t-3xl text-blue-900 tracking-wide border-b border-blue-200 flex items-center gap-2">
                 <UserIcon className="h-5 w-5 text-blue-700" />
                 Absentees List
               </h3>
@@ -141,7 +141,7 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
                 return (
                   <div
                     key={yearKey}
-                    className="mb-5 px-5 md:px-7 py-4 bg-gradient-to-br from-cyan-50 via-white to-emerald-50 rounded-2xl border border-cyan-200 shadow-sm"
+                    className="mb-5 px-5 md:px-7 py-4 bg-linear-to-br from-cyan-50 via-white to-emerald-50 rounded-2xl border border-cyan-200 shadow-sm"
                   >
                     <div className="font-semibold text-blue-800 text-base md:text-lg mb-3 flex items-center gap-2">
                       <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-blue-700">
@@ -162,7 +162,7 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
                             className="mb-5 border-2 border-cyan-400 rounded-2xl bg-white shadow-md hover:shadow-2xl transition-shadow duration-300"
                           >
                             {/* Group header */}
-                            <div className="px-4 py-3 bg-gradient-to-r from-cyan-200 to-blue-100 rounded-t-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-cyan-300">
+                            <div className="px-4 py-3 bg-linear-to-r from-cyan-200 to-blue-100 rounded-t-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-cyan-300">
                               <span className="font-bold text-blue-900 flex items-center gap-2 text-sm md:text-base">
                                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100">
                                   <UserGroupIcon className="h-5 w-5 text-indigo-600" />

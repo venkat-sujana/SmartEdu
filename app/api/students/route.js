@@ -96,55 +96,70 @@ export async function POST(req) {
 
 export async function GET(req) {
   try {
-    await connectMongoDB();
+    await connectMongoDB()
 
-    const session = await getServerSession(authOptions);
-    console.log('SESSION IN /api/students:', session);
+    const session = await getServerSession(authOptions)
 
     if (!session?.user?.collegeId) {
-      return Response.json({ status: 'error', message: 'College ID లేదు' }, { status: 401 });
+      return Response.json({ status: 'error', message: 'College ID లేదు' }, { status: 401 })
+    }
+    if (!mongoose.Types.ObjectId.isValid(session.user.collegeId)) {
+      return Response.json({ status: 'error', message: 'Invalid college ID' }, { status: 400 })
     }
 
-    const { searchParams } = new URL(req.url);
-    const groupParam = searchParams.get('group'); // Group from URL
+    const { searchParams } = new URL(req.url)
+    const groupParam = searchParams.get('group')
+    const yearParam = searchParams.get('year') || searchParams.get('yearOfStudy')
+    const searchParam = (searchParams.get('search') || '').trim().slice(0, 100)
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1)
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20', 10), 1), 100)
+    const skip = (page - 1) * limit
+    const collegeObjectId = new mongoose.Types.ObjectId(session.user.collegeId)
 
-    console.log('🔍 Params:', { groupParam, sessionCollegeId: session.user.collegeId });
-
-    // Base filter
     let filter = {
-      collegeId: new mongoose.Types.ObjectId(session.user.collegeId),
-      status: "Active"
-    };
+      collegeId: collegeObjectId,
+      status: 'Active',
+    }
 
-    // ✅ GROUP PARAM has HIGHEST PRIORITY
+    if (searchParam) {
+      const escapedSearch = searchParam.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      filter.name = { $regex: escapedSearch, $options: 'i' }
+    }
+
+    if (yearParam) {
+      filter.yearOfStudy = yearParam
+    }
+
     if (groupParam) {
-      filter.group = groupParam;
-      console.log(`🎯 GROUP FILTER Applied: ${groupParam}`);
-    } 
-    // Fallback: session-based filtering
-    else if (session.user.stream === 'Vocational' && session.user.group) {
-      filter.group = session.user.group;
-    }
-    else if (session.user.stream === 'General' && session.user.subject) {
-      filter.subjects = { $in: [session.user.subject] };
+      filter.group = groupParam
+    } else if (session.user.stream === 'Vocational' && session.user.group) {
+      filter.group = session.user.group
+    } else if (session.user.stream === 'General' && session.user.subject) {
+      filter.subjects = { $in: [session.user.subject] }
     }
 
-    console.log('📊 Final MongoDB Filter:', JSON.stringify(filter));
-
-    const students = await Student.find(filter)
-      .sort({ createdAt: -1 })
-      .lean();
-    
-    console.log(`✅ Total Students Found: ${students.length}`);
+    const [students, totalStudents] = await Promise.all([
+      Student.find(filter)
+        .select(
+          'name fatherName mobile group caste dob gender admissionNo yearOfStudy admissionYear dateOfJoining address photo subjects role status collegeId createdAt updatedAt'
+        )
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Student.countDocuments(filter),
+    ])
 
     return Response.json({
       status: 'success',
-      totalStudents: students.length,
-      data: students
-    });
-
+      totalStudents,
+      page,
+      limit,
+      totalPages: Math.ceil(totalStudents / limit),
+      data: students,
+    })
   } catch (error) {
-    console.error('❌ API Error:', error);
-    return Response.json({ status: 'error', message: error.message }, { status: 500 });
+    return Response.json({ status: 'error', message: error.message }, { status: 500 })
   }
 }
+

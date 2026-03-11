@@ -3,7 +3,6 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
-import Student from "@/models/Student";
 
 export async function GET(req) {
   try {
@@ -25,7 +24,9 @@ export async function GET(req) {
     const grouped = {};
 
     for (const record of attendanceList) {
-      const { name, yearOfStudy, group } = record.studentId;
+      const name = record.studentId?.name || "Unknown";
+      const group = record.group || record.studentId?.group || "Unknown";
+      const yearOfStudy = record.yearOfStudy || record.studentId?.yearOfStudy;
       const status = record.status;
 
       if (!grouped[group]) {

@@ -19,7 +19,7 @@ const monthNameMap = {
   "09": "September",
   "10": "October",
   "11": "November",
-  "12": "December"
+  "12": "December",
 };
 
 export async function GET(req) {
@@ -27,39 +27,30 @@ export async function GET(req) {
 
   const session = await getServerSession(authOptions);
   if (!session || !session.user || !session.user.collegeId) {
-    console.log("❌ Unauthorized request:", req);
-    console.log("Session:", session);
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const collegeId = session.user.collegeId;
+  const collegeObjectId = mongoose.Types.ObjectId.isValid(collegeId)
+    ? new mongoose.Types.ObjectId(collegeId)
+    : collegeId;
+
   const { searchParams } = new URL(req.url);
   const yearOfStudy = searchParams.get("yearOfStudy");
-
-  console.log("📊 Fetching summary for College ID:", collegeId, "Year:", yearOfStudy);
 
   try {
     const summary = await Attendance.aggregate([
       {
-        $lookup: {
-          from: "students",
-          localField: "studentId",
-          foreignField: "_id",
-          as: "studentInfo"
-        }
-      },
-      { $unwind: "$studentInfo" },
-      {
         $match: {
-          "studentInfo.collegeId": new mongoose.Types.ObjectId(collegeId),
-          ...(yearOfStudy && { "studentInfo.yearOfStudy": yearOfStudy })
-        }
+          collegeId: collegeObjectId,
+          ...(yearOfStudy && { yearOfStudy }),
+        },
       },
       {
         $addFields: {
           month: { $dateToString: { format: "%m", date: "$date" } },
-          year: { $dateToString: { format: "%Y", date: "$date" } }
-        }
+          year: { $dateToString: { format: "%Y", date: "$date" } },
+        },
       },
       {
         $group: {
@@ -67,14 +58,12 @@ export async function GET(req) {
           total: { $sum: 1 },
           present: {
             $sum: {
-              $cond: [{ $eq: ["$status", "Present"] }, 1, 0]
-            }
-          }
-        }
-      }
+              $cond: [{ $eq: ["$status", "Present"] }, 1, 0],
+            },
+          },
+        },
+      },
     ]);
-
-    console.log("📊 Summary:", summary);
 
     const formatted = {};
     summary.forEach(item => {
@@ -82,16 +71,13 @@ export async function GET(req) {
       const key = `${monthName}-${item._id.year}`;
       formatted[key] = {
         total: item.total,
-        present: item.present
+        present: item.present,
       };
     });
 
-    console.log("📊 Formatted summary:", formatted);
-
     return NextResponse.json(formatted);
   } catch (error) {
-    console.error("❌ Aggregation error:", error);
-    console.log("Error stack:", error.stack);
+    console.error("Aggregation error:", error);
     return NextResponse.json({ error: "Failed to fetch attendance" }, { status: 500 });
   }
 }

@@ -5,6 +5,25 @@ import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 import College from "@/models/College";
 
+export async function GET(req) {
+  await connectMongoDB();
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const admissionNo = (searchParams.get("admissionNo") || "").trim();
+
+    if (!admissionNo) {
+      return NextResponse.json({ exists: false }, { status: 200 });
+    }
+
+    const existingStudent = await Student.findOne({ admissionNo }).select("_id").lean();
+    return NextResponse.json({ exists: Boolean(existingStudent) }, { status: 200 });
+  } catch (error) {
+    console.error("Student duplicate check error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
 export async function POST(req) {
   await connectMongoDB();
 

@@ -1,6 +1,6 @@
 //app/student-table/page.js
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
@@ -26,14 +26,15 @@ import Link from "next/link";
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
-  const [filteredStudents, setFilteredStudents] = useState([]);
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const [filters, setFilters] = useState({
     group: "",
     caste: "",
     gender: "",
     yearOfStudy: "",
   });
+  const [isLoading, setIsLoading] = useState(true);
   const { data: session, status } = useSession();
   const collegeName =
     status === "loading"
@@ -49,22 +50,24 @@ export default function StudentsPage() {
     const fetchStudents = async () => {
       try {
         if (!session?.user?.collegeId) return;
+        setIsLoading(true);
         const res = await fetch(`/api/students?collegeId=${session.user.collegeId}`);
         const result = await res.json();
         setStudents(Array.isArray(result.data) ? result.data : []);
-        setFilteredStudents(Array.isArray(result.data) ? result.data : []);
       } catch (err) {
         console.error("Error fetching students:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchStudents();
-  }, [session]);
+    if (status !== "loading") fetchStudents();
+  }, [session?.user?.collegeId, status]);
 
-  useEffect(() => {
-    let filtered = [...students];
-    if (search) {
+  const filteredStudents = useMemo(() => {
+    let filtered = students;
+    if (deferredSearch) {
       filtered = filtered.filter((s) =>
-        s.name.toLowerCase().includes(search.toLowerCase())
+        s.name.toLowerCase().includes(deferredSearch.toLowerCase())
       );
     }
     if (filters.group) filtered = filtered.filter((s) => s.group === filters.group);
@@ -73,13 +76,17 @@ export default function StudentsPage() {
     if (filters.yearOfStudy) filtered = filtered.filter(
       (s) => String(s.yearOfStudy) === String(filters.yearOfStudy)
     );
-    setFilteredStudents(filtered);
-    setCurrentPage(0);
-  }, [search, filters, students]);
+    return filtered;
+  }, [students, deferredSearch, filters]);
 
-  const handleFilterChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [deferredSearch, filters, students]);
+
+  const handleFilterChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
   const handleExportPDF = () => {
     const doc = new jsPDF();
@@ -165,11 +172,11 @@ export default function StudentsPage() {
     printWindow.print();
   };
 
-  const handlePageChange = ({ selected }) => {
+  const handlePageChange = useCallback(({ selected }) => {
     setCurrentPage(selected);
-  };
+  }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this student?");
     if (!confirmDelete) return;
     try {
@@ -185,29 +192,32 @@ export default function StudentsPage() {
       console.error("Delete Error:", err);
       toast.error("Something went wrong while deleting.");
     }
-  };
+  }, []);
 
-  const handleEdit = (student) => setEditingStudent(student);
-  const handleUpdate = (updatedStudent) => {
+  const handleEdit = useCallback((student) => setEditingStudent(student), []);
+  const handleUpdate = useCallback((updatedStudent) => {
     setStudents((prev) =>
       prev.map((s) => (s._id === updatedStudent._id ? updatedStudent : s))
     );
     setEditingStudent(null);
     toast.success("Student updated successfully");
-  };
+  }, []);
 
   const offset = currentPage * studentsPerPage;
-  const paginatedStudents = (filteredStudents || []).slice(
-    offset,
-    offset + studentsPerPage
+  const paginatedStudents = useMemo(
+    () => filteredStudents.slice(offset, offset + studentsPerPage),
+    [filteredStudents, offset, studentsPerPage]
   );
-  const pageCount = Math.ceil((filteredStudents ? filteredStudents.length : 0) / studentsPerPage);
+  const pageCount = useMemo(
+    () => Math.ceil(filteredStudents.length / studentsPerPage),
+    [filteredStudents.length, studentsPerPage]
+  );
 
   return (
     <div className="p-6 max-w-8xl mx-auto mt-24">
       {/* College Header with Icon */}
       <div className="flex flex-col items-center justify-center mb-6">
-        <div className="flex items-center gap-3 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 via-white to-green-50 px-6 py-3 font-extrabold text-blue-900 text-xl shadow-xl">
+        <div className="flex items-center gap-3 rounded-xl border-2 border-blue-200 bg-linear-to-r from-blue-50 via-white to-green-50 px-6 py-3 font-extrabold text-blue-900 text-xl shadow-xl">
           <School className="w-8 h-8 text-indigo-700" />
           <span className="tracking-wider">{collegeName}</span>
         </div>
@@ -315,7 +325,22 @@ export default function StudentsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {paginatedStudents.map((s, idx) => (
+            {isLoading ? (
+              Array.from({ length: studentsPerPage }).map((_, idx) => (
+                <tr key={`loading-${idx}`} className="animate-pulse">
+                  <td colSpan={18} className="px-4 py-3">
+                    <div className="h-5 w-full rounded bg-gray-200" />
+                  </td>
+                </tr>
+              ))
+            ) : paginatedStudents.length === 0 ? (
+              <tr>
+                <td colSpan={18} className="px-4 py-6 text-center text-gray-500">
+                  No students found.
+                </td>
+              </tr>
+            ) : (
+              paginatedStudents.map((s, idx) => (
               <tr key={s._id} className="hover:bg-green-50 transition-colors">
                 <td className="px-4 py-2 border-r border-gray-300 text-center">{offset + idx + 1}</td>
                 <td className="px-4 py-2 border-r border-gray-300 font-medium text-gray-900">{s.name}</td>
@@ -384,7 +409,8 @@ export default function StudentsPage() {
                   </button>
                 </td>
               </tr>
-            ))}
+              ))
+            )}
           </tbody>
         </table>
 
@@ -407,7 +433,7 @@ export default function StudentsPage() {
           previousLabel={<span className="font-bold">&larr; Previous</span>}
           nextLabel={<span className="font-bold">Next &rarr;</span>}
           breakLabel={"..."}
-          pageCount={pageCount}
+          pageCount={Math.max(pageCount, 1)}
           marginPagesDisplayed={2}
           pageRangeDisplayed={5}
           onPageChange={handlePageChange}
@@ -421,7 +447,7 @@ export default function StudentsPage() {
         />
       </div>
       <div className="mt-4 text-center text-gray-600 font-bold">
-        Page {currentPage + 1} of {pageCount} | Showing {filteredStudents.length} Students
+        Page {currentPage + 1} of {Math.max(pageCount, 1)} | Showing {filteredStudents.length} Students
       </div>
     </div>
   );

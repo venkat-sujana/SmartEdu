@@ -2,7 +2,6 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
-import Student from "@/models/Student";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
@@ -48,18 +47,18 @@ export async function GET(req) {
 
 
   sessionWiseAbsentees[session] = absentees.map((r) => ({
-  name: r.studentId.name,
-  yearOfStudy: r.studentId.yearOfStudy,
-  group: r.studentId.group,
+  name: r.studentId?.name || "Unknown",
+  yearOfStudy: r.yearOfStudy || r.studentId?.yearOfStudy,
+  group: r.group || r.studentId?.group,
   session: r.session,
   lecturerName: r.lecturerName || "—",
    markedAt: r.markedAt || r.updatedAt || null   // ⭐ VERY IMPORTANT
 }));
 
 sessionWisePresent[session] = presentStudents.map((r) => ({
-  name: r.studentId.name,
-  yearOfStudy: r.studentId.yearOfStudy,
-  group: r.studentId.group,
+  name: r.studentId?.name || "Unknown",
+  yearOfStudy: r.yearOfStudy || r.studentId?.yearOfStudy,
+  group: r.group || r.studentId?.group,
   session: r.session,
   lecturerName: r.lecturerName || "—",
    markedAt: r.markedAt || r.updatedAt || null   // ⭐ VERY IMPORTANT
