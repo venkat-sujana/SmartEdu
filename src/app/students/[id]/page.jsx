@@ -20,7 +20,7 @@ import {
   ClipboardList
 } from "lucide-react";
 
-import AttendanceSummaryTable from "@/app/components/StudentMonthlyAttendanceSummary/page";
+import AttendanceSummaryTable from "@/components/StudentMonthlyAttendanceSummary";
 
 export default function StudentProfilePage() {
   const params = useParams();

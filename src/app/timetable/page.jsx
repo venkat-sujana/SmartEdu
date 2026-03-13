@@ -1,6 +1,6 @@
 //app/timetable/page.jsx
 
-import EditableTimeTable from '../components/EditableTimeTable'
+import EditableTimeTable from '@/components/EditableTimeTable'
 
 export default function TimeTablePage() {
   return (

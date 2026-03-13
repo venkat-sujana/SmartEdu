@@ -1,7 +1,7 @@
 //app/student/dashboard/page.jsx
 'use client'
-import StudentIndividualExams from '@/app/components/StudentIndividualExams/page'
-import StudentMonthlyAttendanceSummary from '@/app/components/StudentMonthlyAttendanceSummary/page'
+import StudentIndividualExams from '@/components/StudentIndividualExams'
+import StudentMonthlyAttendanceSummary from '@/components/StudentMonthlyAttendanceSummary'
 import { useSession } from 'next-auth/react'
 // import { FaUserGraduate, FaPhoneAlt, FaUsers, FaBirthdayCake, FaVenusMars, FaHome, FaUniversity, FaBook, FaUserTie } from "react-icons/fa" // If needed
 

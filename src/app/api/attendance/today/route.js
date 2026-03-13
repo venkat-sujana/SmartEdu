@@ -10,19 +10,6 @@ import {
   getTodayAbsentees,
 } from "@/services/attendanceService";
 
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
-
-import connectMongoDB from "@/lib/mongodb";
-
-import {
-  getTodayAttendanceStats,
-  getTodayAttendanceBreakdown,
-  getTodayAttendanceList,
-  getTodayAbsentees,
-} from "@/services/attendanceService";
-
 export async function GET(req) {
 
   try {

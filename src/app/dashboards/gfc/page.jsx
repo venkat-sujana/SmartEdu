@@ -2,11 +2,11 @@
 "use client"
 import { useSession } from 'next-auth/react'
 import TodayAbsenteesTable from "@/app/absentees-table/page";
-import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
-import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-import MainLinks from '@/app/components/MainLinks';
-import GroupStudentTable from "../../components/GroupStudentTable";
-import GroupAttendanceSummary from '@/app/components/GroupAttendanceSummary';
+import GroupAttendanceCard from "@/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
+import LecturerInfoCard from "@/components/LecturerInfoCard";
+import MainLinks from '@/components/MainLinks';
+import GroupStudentTable from "@/components/GroupStudentTable";
+import GroupAttendanceSummary from '@/components/GroupAttendanceSummary';
 
 export default function GFCDashboard() {
   const { data: session, status } = useSession()

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Toast from "../../components/Toast";
+import Toast from "@/components/Toast";
 
 export default function BulkUploadStudents() {
   const [file, setFile] = useState(null);

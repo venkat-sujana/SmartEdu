@@ -1,7 +1,7 @@
 // app/components/EditableTimeTable.jsx
 'use client'
 import { useState, useRef, useMemo } from 'react'
-import { SUBJECT_LECTURERS } from '../../lib/lecturers'
+// import { SUBJECT_LECTURERS } from '../../lib/lecturers'
 
 
 

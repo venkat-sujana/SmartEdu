@@ -8,12 +8,12 @@ import { GraduationCap } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import useSWR from 'swr'
-import GroupWiseAttendanceTable from '@/app/components/groupwise-attendance-table/page'
-import AttendanceShortageTable from '@/app/components/attendance-shortage-summary/page'
-import ActiveLecturersCard from '@/app/components/active-lecturers-card/page'
+import GroupWiseAttendanceTable from '@/components/groupwise-attendance-table'
+import AttendanceShortageTable from '@/components/attendance-shortage-summary'
+import ActiveLecturersCard from '@/components/active-lecturers-card'
 import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
-import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-import ExternalLinks from "@/app/components/ExternalLinks";
+import LecturerInfoCard from "@/components/LecturerInfoCard";
+import ExternalLinks from "@/components/ExternalLinks";
 
 const fetcher = (...args) =>
   fetch(...args).then(res => {
@@ -21,10 +21,10 @@ const fetcher = (...args) =>
     return res.json()
   })
 
-import OverallAttendanceMatrixCard from '@/app/components/OverallAttendanceMatrixCard/page'
+import OverallAttendanceMatrixCard from '@/components/OverallAttendanceMatrixCard'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
-import OverallStrengthCard from '@/app/components/overall-strength-card/OverallStrengthCard'
-import MainLinks from '@/app/components/MainLinks';
+import OverallStrengthCard from '@/components/overall-strength-card/OverallStrengthCard'
+import MainLinks from '@/components/MainLinks';
 
 export default function LecturerDashboard() {
   const { data: shortageApiData } = useSWR('/api/attendance/shortage-summary', fetcher)

@@ -2,10 +2,11 @@
 "use client"
 import { useSession } from 'next-auth/react'
 import TodayAbsenteesTable from "@/app/absentees-table/page";
-import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
-import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-import MainLinks from '@/app/components/MainLinks';
-import ExternalLinks from "@/app/components/ExternalLinks";
+import GroupAttendanceCard from "@/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
+// import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
+import LecturerInfoCard from "@/components/LecturerInfoCard";
+import MainLinks from '@/components/MainLinks';
+import ExternalLinks from "@/components/ExternalLinks";
 
 export default function VocEnglishDashboard() {
   const { data: session, status } = useSession()
