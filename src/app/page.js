@@ -4,11 +4,11 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import Navbar from "@/components/Navbar"
+import Navbar from "@/components/layout/Navbar"
 
 import { motion } from "framer-motion"
 import { Users, ClipboardList, CalendarCheck } from "lucide-react"
-import DashboardFooter from "./components/Footer"
+import DashboardFooter from "@/components/layout/Footer"
 
 export default function Page() {
   const [mounted, setMounted] = useState(false)

@@ -3,17 +3,18 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { CalendarCheck2, LayoutDashboard, Users2 } from "lucide-react";
-import TodayAbsenteesTable from "@/app/absentees-table/page";
-import AttendanceForm from "@/app/components/AttendanceForm";
-import IndividualReport from "@/app/components/Attendance/IndividualReport";
-import DashboardTogglePanel from "@/app/components/DashboardTogglePanel";
-import ExternalLinks from "@/app/components/ExternalLinks";
-import DashboardFooter from "@/app/components/Footer";
-import GroupAttendanceSummary from "@/app/components/GroupAttendanceSummary";
-import GroupShortageSummary from "@/app/components/GroupShortageSummary";
-import LecturerInfoCard from "@/app/components/LecturerInfoCard";
-import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
-import GroupStudentTable from "@/app/components/GroupStudentTable";
+import TodayAbsenteesTable from "@/components/attendance/TodayAbsenteesTable";
+import AttendanceForm from "@/components/attendance/AttendanceForm";
+import IndividualReport from "@/components/Attendance/IndividualReport";
+import DashboardTogglePanel from "@/components/dashboard/DashboardTogglePanel";
+import ExternalLinks from "@/components/ExternalLinks";
+import DashboardFooter from "@/components/layout/Footer";
+import GroupAttendanceSummary from "@/components/attendance/GroupAttendanceSummary";
+import GroupShortageSummary from "@/components/attendance/GroupShortageSummary";
+import LecturerInfoCard from "@/components/dashboard/LecturerInfoCard";
+import GroupAttendanceCard from "@/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
+import GroupStudentTable from "@/components/tables/GroupStudentTable";
+import { getGroupTheme } from "@/components/dashboard/groupTheme";
 
 export default function GroupDashboardPage({
   groupName,
@@ -35,6 +36,7 @@ export default function GroupDashboardPage({
 
   const collegeName = user?.collegeName || "College";
   const years = ["First Year", "Second Year"];
+  const theme = getGroupTheme(groupName);
   const defaultOverview =
     overviewDescription ||
     `Monitor attendance, absentees, and shortage analytics for ${groupName} batches.`;
@@ -42,54 +44,54 @@ export default function GroupDashboardPage({
   const editProps = includeEditAttendance
     ? {
         editAttendance,
-        onToggleEditAttendance: () => setEditAttendance((v) => !v),
-        editAttendanceContent: <IndividualReport groupName={groupName} header={false} />,
+        onToggleEditAttendance: () => setEditAttendance(v => !v),
+        editAttendanceContent: <IndividualReport groupName={groupName} showTitle={false} />,
       }
     : {};
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-100 via-cyan-50 to-indigo-50 p-4 md:p-6">
+    <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-4 md:p-6`}>
       <div className="mx-auto max-w-7xl space-y-4">
-        <div className="flex items-center justify-between rounded-xl border border-cyan-100 bg-linear-to-r from-white via-cyan-50 to-blue-50 px-4 py-3 shadow-sm">
+        <div className={`flex items-center justify-between rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} px-4 py-3 shadow-sm`}>
           <div>
             <p className="text-xs uppercase tracking-wide text-slate-500">Lecturer Dashboard</p>
             <h1 className="text-lg font-semibold text-slate-900">{groupName} Group Operations</h1>
             <p className="text-sm text-slate-600">{collegeName}</p>
           </div>
-          <span className="rounded-md bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+          <span className={`rounded-md px-3 py-1 text-xs font-semibold ${theme.badge}`}>
             Group: {groupName}
           </span>
         </div>
 
         <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-xl border border-cyan-100 bg-linear-to-br from-white to-cyan-50 p-4 shadow-sm">
+          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
             <p className="text-xs uppercase tracking-wide text-slate-500">Campus</p>
             <p className="mt-1 truncate text-sm font-semibold text-slate-900">{collegeName}</p>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-md bg-cyan-50 px-2 py-1 text-xs text-cyan-700">
+            <div className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}>
               <LayoutDashboard className="h-3.5 w-3.5" />
               {deskLabel || `${groupName} Desk`}
             </div>
           </div>
 
-          <div className="rounded-xl border border-emerald-100 bg-linear-to-br from-white to-emerald-50 p-4 shadow-sm">
+          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
             <p className="text-xs uppercase tracking-wide text-slate-500">Group</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">{groupName}</p>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-md bg-emerald-50 px-2 py-1 text-xs text-emerald-700">
+            <div className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}>
               <Users2 className="h-3.5 w-3.5" />
               First + Second Year
             </div>
           </div>
 
-          <div className="rounded-xl border border-violet-100 bg-linear-to-br from-white to-violet-50 p-4 shadow-sm">
+          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
             <p className="text-xs uppercase tracking-wide text-slate-500">Workspaces</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">Attendance + Reports</p>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-md bg-violet-50 px-2 py-1 text-xs text-violet-700">
+            <div className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}>
               <CalendarCheck2 className="h-3.5 w-3.5" />
               Daily Operations
             </div>
           </div>
 
-          <div className="rounded-xl border border-amber-100 bg-linear-to-br from-white to-amber-50 p-4 shadow-sm">
+          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
             <p className="text-xs uppercase tracking-wide text-slate-500">Status</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">Ready for attendance cycle</p>
             <p className="mt-3 text-xs text-slate-600">{statusDescription}</p>
@@ -98,29 +100,29 @@ export default function GroupDashboardPage({
 
         <section className="grid grid-cols-1 gap-4 xl:grid-cols-[400px_1fr]">
           <div className="space-y-4">
-            <div className="rounded-xl border border-blue-100 bg-linear-to-br from-white to-blue-50 p-4 shadow-sm">
-              <div className="mb-3 inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">
+            <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
+              <div className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${theme.pill}`}>
                 Lecturer Panel
               </div>
-              <LecturerInfoCard user={user} />
+              <LecturerInfoCard user={user} groupName={groupName} />
             </div>
 
-            <div className="rounded-xl border border-sky-100 bg-linear-to-br from-white to-sky-50 p-4 shadow-sm">
+            <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
               <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Group Attendance Snapshot
               </p>
               <GroupAttendanceCard groupName={groupName} />
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-linear-to-br from-white to-slate-50 p-4 shadow-sm">
+            <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
               <p className="text-sm font-semibold text-slate-900">Dashboard Overview</p>
               <p className="mt-1 text-sm text-slate-600">{defaultOverview}</p>
             </div>
           </div>
 
-          <div className="rounded-xl border border-indigo-100 bg-linear-to-br from-white via-indigo-50/40 to-cyan-50/40 p-4 shadow-sm md:p-6">
+          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm md:p-6`}>
             {includeExternalLinks && (
-              <div className="mb-4 rounded-xl border border-indigo-100 bg-linear-to-r from-indigo-50 to-cyan-50 p-3">
+              <div className={`mb-4 rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-3`}>
                 <ExternalLinks />
               </div>
             )}
@@ -136,10 +138,10 @@ export default function GroupDashboardPage({
               studentTable={studentTable}
               showTodayAbsentees={showTodayAbsentees}
               monthlyAttendance={monthlyAttendance}
-              onToggleAttendance={() => setShowAttendance((v) => !v)}
-              onToggleStudentTable={() => setStudentTable((v) => !v)}
-              onToggleTodayAbsentees={() => setShowTodayAbsentees((v) => !v)}
-              onToggleMonthlyAttendance={() => setMonthlyAttendance((v) => !v)}
+              onToggleAttendance={() => setShowAttendance(v => !v)}
+              onToggleStudentTable={() => setStudentTable(v => !v)}
+              onToggleTodayAbsentees={() => setShowTodayAbsentees(v => !v)}
+              onToggleMonthlyAttendance={() => setMonthlyAttendance(v => !v)}
               attendanceContent={
                 <AttendanceForm
                   defaultGroup={groupName}
@@ -153,7 +155,7 @@ export default function GroupDashboardPage({
                   <h1 className="mb-2 text-center text-2xl font-bold text-slate-900">
                     {collegeName} - {groupName} Attendance
                   </h1>
-                  {years.map((year) => (
+                  {years.map(year => (
                     <GroupAttendanceSummary
                       key={year}
                       group={groupName}
@@ -221,9 +223,10 @@ export default function GroupDashboardPage({
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-linear-to-r from-white to-slate-50 shadow-sm">
+        <section className={`rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} shadow-sm`}>
           <DashboardFooter
             collegeName={collegeName}
+            groupName={groupName}
             facebookUrl="https://facebook.com/yourcollege"
             instagramUrl="https://instagram.com/yourcollege"
             twitterUrl="https://x.com/yourcollege"

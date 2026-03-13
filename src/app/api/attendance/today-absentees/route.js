@@ -1,91 +1,35 @@
-//app/api/attendance/today-absentees/route.js
 import { NextResponse } from "next/server";
-import connectMongoDB from "@/lib/mongodb";
-import Attendance from "@/models/Attendance";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import connectMongoDB from "@/lib/mongodb";
+import { getTodayAbsentees } from "@/services/attendanceService";
 
 export async function GET(req) {
-  await connectMongoDB();
-
   try {
+    await connectMongoDB();
+
     const session = await getServerSession(authOptions);
-    if (!session || !session.user?.collegeId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { searchParams } = new URL(req.url);
+
+    const queryCollegeId = searchParams.get("collegeId");
+    const effectiveCollegeId = session?.user?.collegeId || queryCollegeId;
+
+    if (!effectiveCollegeId) {
+      return NextResponse.json(
+        { status: "error", message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    const collegeId = session.user.collegeId;
+    const data = await getTodayAbsentees(effectiveCollegeId);
 
-    // Today date range
-    const today = new Date();
-    const start = new Date(today);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(today);
-    end.setHours(23, 59, 59, 999);
+    return NextResponse.json(data, { status: 200 });
+  } catch (error) {
+    console.error("Today absentees API error:", error);
 
-    // Fetch today attendance (all sessions)
-    const todayRecords = await Attendance.find({
-      collegeId,
-      date: { $gte: start, $lte: end },
-    }).populate("studentId", "name yearOfStudy group");
-
-    if (todayRecords.length === 0) {
-      return NextResponse.json({ status: "no-data", message: "No attendance recorded today" });
-    }
-
-    // Group absentees by session
-    const sessions = ["FN", "AN", "EN"];
-    const sessionWiseAbsentees = {};
-    const sessionWisePresent = {};
-    let grandTotal = 0, grandAbsent = 0, grandPresent = 0;
-
-    for (const session of sessions) {
-      const absentees = todayRecords.filter((r) => r.session === session && r.status === "Absent");
-      const presentStudents = todayRecords.filter((r) => r.session === session && r.status === "Present");
-      const total = todayRecords.filter(r => r.session === session).length;
-
-
-
-  sessionWiseAbsentees[session] = absentees.map((r) => ({
-  name: r.studentId?.name || "Unknown",
-  yearOfStudy: r.yearOfStudy || r.studentId?.yearOfStudy,
-  group: r.group || r.studentId?.group,
-  session: r.session,
-  lecturerName: r.lecturerName || "—",
-   markedAt: r.markedAt || r.updatedAt || null   // ⭐ VERY IMPORTANT
-}));
-
-sessionWisePresent[session] = presentStudents.map((r) => ({
-  name: r.studentId?.name || "Unknown",
-  yearOfStudy: r.yearOfStudy || r.studentId?.yearOfStudy,
-  group: r.group || r.studentId?.group,
-  session: r.session,
-  lecturerName: r.lecturerName || "—",
-   markedAt: r.markedAt || r.updatedAt || null   // ⭐ VERY IMPORTANT
-}));
-
-
-
-
-      grandTotal += total;
-      grandAbsent += absentees.length;
-      grandPresent += presentStudents.length;
-    }
-
-    return NextResponse.json({
-      status: "success",
-      sessions: sessions,
-      sessionWiseAbsentees,
-      sessionWisePresent,
-      summary: {
-        grandTotal,
-        grandAbsent,
-        grandPresent,
-        percentage: grandTotal > 0 ? ((grandPresent / grandTotal) * 100).toFixed(2) : "0.00"
-      }
-    });
-  } catch (err) {
-    console.error("Error fetching today absentees:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { status: "error", message: "Failed to fetch today's absentees" },
+      { status: 500 }
+    );
   }
 }

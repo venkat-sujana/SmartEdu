@@ -1,203 +1,212 @@
-// app/api/attendance/monthly-summary/route.js
-import { NextResponse } from 'next/server'
-import connectDB from '@/lib/mongodb'
-import Student from '@/models/Student'
-import Attendance from '@/models/Attendance'
-import mongoose from 'mongoose'
+import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import connectMongoDB from "@/lib/mongodb";
+import Attendance from "@/models/Attendance";
+import Student from "@/models/Student";
 
-// 🎯 Public Holidays list (calendar లో వాడినట్లే)
+const MONTHS = [
+  { label: "JUN", year: "2025" },
+  { label: "JUL", year: "2025" },
+  { label: "AUG", year: "2025" },
+  { label: "SEP", year: "2025" },
+  { label: "OCT", year: "2025" },
+  { label: "NOV", year: "2025" },
+  { label: "DEC", year: "2025" },
+  { label: "JAN", year: "2026" },
+  { label: "FEB", year: "2026" },
+  { label: "MAR", year: "2026" },
+];
+
 const publicHolidays = [
-  { month: 0, day: 26, name: 'Republic Day' },
-  { month: 5, day: 7, name: 'Bakrid' },
-  { month: 7, day: 15, name: 'Independence Day' },
-  { month: 7, day: 8, name: 'Varalakshmi Vratham' },
-  { month: 7, day: 16, name: 'Krishna Ashtami' },
-  { month: 7, day: 27, name: 'Vinayaka Chavithi' },
-  { month: 8, day: 5, name: 'Miladinabi' },
-  { month: 8, day: 28, name: 'Dussara Holidays' },
-  { month: 8, day: 29, name: 'Dussara Holidays' },
-  { month: 8, day: 30, name: 'Dussara Holidays' },
-  { month: 9, day: 1, name: 'Dussara Holidays' },
-  { month: 9, day: 2, name: 'Gandhi Jayanthi' },
-  { month: 9, day: 3, name: 'Dussara Holidays' },
-  { month: 9, day: 4, name: 'Dussara Holidays' },
-]
+  { month: 0, day: 26 },
+  { month: 5, day: 7 },
+  { month: 7, day: 8 },
+  { month: 7, day: 15 },
+];
 
 function isHoliday(dateObj) {
   return publicHolidays.some(
-    h => h.month === dateObj.getMonth() && h.day === dateObj.getDate()
-  )
+    holiday =>
+      holiday.month === dateObj.getMonth() && holiday.day === dateObj.getDate()
+  );
 }
 
 function normalizeYear(value) {
-  if (!value) return ''
-  const v = String(value).toLowerCase().replace(/\s+/g, ' ').trim()
-  if (v.includes('first') || v === '1') return 'first year'
-  if (v.includes('second') || v === '2') return 'second year'
-  return v
+  if (!value) return "";
+
+  const normalized = value.toLowerCase().replace(/\s+/g, " ").trim();
+  if (normalized.includes("1")) return "first year";
+  if (normalized.includes("2")) return "second year";
+
+  return normalized;
+}
+
+function buildEmptyMonthMap() {
+  return MONTHS.reduce((acc, { label, year }) => {
+    const key = `${label}-${year}`;
+    acc[key] = 0;
+    return acc;
+  }, {});
+}
+
+function buildStudentSummary(student) {
+  return {
+    _id: student._id,
+    name: student.name,
+    group: student.group,
+    yearOfStudy: student.yearOfStudy,
+    workingDays: buildEmptyMonthMap(),
+    present: buildEmptyMonthMap(),
+    percentage: buildEmptyMonthMap(),
+    alerts: buildEmptyMonthMap(),
+  };
+}
+
+function toMonthKey(dateObj) {
+  const label = dateObj
+    .toLocaleString("en-US", { month: "short", timeZone: "UTC" })
+    .toUpperCase();
+
+  return `${label}-${dateObj.getUTCFullYear()}`;
 }
 
 export async function GET(req) {
   try {
-    console.log('GET /api/attendance/monthly-summary route called!')
-    await connectDB()
-    console.log('Connected to database')
+    await connectMongoDB();
 
-    const { searchParams } = new URL(req.url)
-    const group = searchParams.get('group')          // e.g. "BiPC"
-    const yearOfStudy = searchParams.get('yearOfStudy') // "First Year" / "Second Year"
-    const collegeId = searchParams.get('collegeId')
+    const session = await getServerSession(authOptions);
+    const { searchParams } = new URL(req.url);
 
-    console.log('Query params:', { group, yearOfStudy, collegeId })
+    const queryCollegeId = searchParams.get("collegeId");
+    const group = searchParams.get("group");
+    const yearOfStudyRaw = searchParams.get("yearOfStudy");
+    const yearOfStudy = normalizeYear(yearOfStudyRaw);
 
-    if (!collegeId) {
+    const effectiveCollegeId = session?.user?.collegeId || queryCollegeId;
+
+    if (!effectiveCollegeId) {
       return NextResponse.json(
-        { data: [], message: 'collegeId is required' },
+        { error: "collegeId required" },
         { status: 400 }
-      )
+      );
     }
 
-    // 🎓 Students filter
+    const collegeObjectId = mongoose.Types.ObjectId.isValid(effectiveCollegeId)
+      ? new mongoose.Types.ObjectId(effectiveCollegeId)
+      : effectiveCollegeId;
+
     const studentQuery = {
-      collegeId: new mongoose.Types.ObjectId(collegeId),
+      collegeId: collegeObjectId,
       status: "Active",
-    }
+    };
 
-    // group case-insensitive exact
-    if (group) {
-      studentQuery.group = new RegExp(`^${group}$`, 'i')
-    }
-
-    // yearOfStudy: "First Year" / "Second Year" etc.
+    if (group) studentQuery.group = group;
     if (yearOfStudy) {
-      if (yearOfStudy === '1' || /first/i.test(yearOfStudy)) {
-        studentQuery.yearOfStudy = /first/i
-      } else if (yearOfStudy === '2' || /second/i.test(yearOfStudy)) {
-        studentQuery.yearOfStudy = /second/i
-      } else {
-        studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, 'i')
-      }
+      studentQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, "i");
     }
-
-    console.log('Student filter:', studentQuery)
 
     const students = await Student.find(studentQuery)
-    console.log('Fetched Students:', students.length)
+      .select("name group yearOfStudy dateOfJoining")
+      .sort({ name: 1 })
+      .lean();
 
     if (students.length === 0) {
-      return NextResponse.json({ data: [] }, { status: 200 })
+      return NextResponse.json({ status: "success", data: [] });
     }
 
-    const normalizedRequestedYear = normalizeYear(yearOfStudy)
-
-    // 📅 Attendance filter
+    const studentIds = students.map(student => student._id);
     const attendanceQuery = {
-      collegeId: new mongoose.Types.ObjectId(collegeId),
-    }
-    if (group) {
-      attendanceQuery.group = new RegExp(`^${group}$`, 'i')
-    }
-    if (normalizedRequestedYear) {
-      attendanceQuery.yearOfStudy = new RegExp(`^${normalizedRequestedYear}$`, 'i')
-    }
+      collegeId: collegeObjectId,
+      studentId: { $in: studentIds },
+    };
 
-    console.log('Attendance filter:', attendanceQuery)
-
-    const attendance = await Attendance.find(attendanceQuery)
-    console.log('Fetched Attendance Records:', attendance.length)
-
-    if (attendance.length === 0) {
-      return NextResponse.json({ data: [] }, { status: 200 })
+    if (group) attendanceQuery.group = group;
+    if (yearOfStudy) {
+      attendanceQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, "i");
     }
 
-    const monthMap = {
-      January: 'JAN',
-      February: 'FEB',
-      March: 'MAR',
-      April: 'APR',
-      May: 'MAY',
-      June: 'JUN',
-      July: 'JUL',
-      August: 'AUG',
-      September: 'SEP',
-      October: 'OCT',
-      November: 'NOV',
-      December: 'DEC',
-    }
+    const attendanceRecords = await Attendance.find(attendanceQuery)
+      .select("studentId date status")
+      .sort({ date: 1 })
+      .lean();
 
-    // Process each student
-    const summary = students.map(student => {
-      const present = {}
-      const workingDays = {}
-      const percentage = {}
-      const alerts = {}
+    const summaries = new Map();
+    const workingSets = new Map();
+    const presentSets = new Map();
+    const joiningDates = new Map();
 
-      const doj = student.dateOfJoining ? new Date(student.dateOfJoining) : null
+    students.forEach(student => {
+      const studentId = student._id.toString();
+      summaries.set(studentId, buildStudentSummary(student));
+      workingSets.set(studentId, {});
+      presentSets.set(studentId, {});
+      joiningDates.set(
+        studentId,
+        student.dateOfJoining ? new Date(student.dateOfJoining) : null
+      );
+    });
 
-      attendance.forEach(r => {
-        if (r.studentId.toString() !== student._id.toString()) return
-        if (normalizedRequestedYear && normalizeYear(r.yearOfStudy) !== normalizedRequestedYear) return
+    attendanceRecords.forEach(record => {
+      const studentId = record.studentId?.toString();
+      if (!studentId || !summaries.has(studentId)) return;
 
-        const monthKey = `${monthMap[r.month]}-${r.year}`
-        const recordDate = new Date(r.date)
-
-        // Only First Year Students DOJ skip
-        if (
-          student.yearOfStudy?.toLowerCase().includes('first') &&
-          doj &&
-          recordDate < doj
-        ) {
-          return
-        }
-
-        // Holiday skip
-        if (isHoliday(recordDate)) return
-
-        // Working days count (unique dates)
-        if (!workingDays[monthKey]) workingDays[monthKey] = new Set()
-        workingDays[monthKey].add(recordDate.toDateString())
-
-        // Present days
-        if (r.status === 'Present') {
-          if (!present[monthKey]) present[monthKey] = new Set()
-          present[monthKey].add(recordDate.toDateString())
-        }
-      })
-
-      // Calculate percentage + alerts
-      Object.keys(workingDays).forEach(monthKey => {
-        const w = workingDays[monthKey] ? workingDays[monthKey].size : 0
-        const pSet = present[monthKey]
-        const p = pSet instanceof Set ? pSet.size : 0
-
-        const percNum = w > 0 ? (p / w) * 100 : 0
-        const perc = percNum.toFixed(2) + '%'
-
-        workingDays[monthKey] = w
-        present[monthKey] = p
-        percentage[monthKey] = perc
-        alerts[monthKey] = percNum < 75 ? 'RED ALERT' : 'OK'
-      })
-
-      return {
-        name: student.name,
-        yearOfStudy: student.yearOfStudy,
-        doj: student.dateOfJoining,
-        present,
-        workingDays,
-        percentage,
-        alerts,
+      const recordDate = new Date(record.date);
+      if (Number.isNaN(recordDate.getTime()) || recordDate.getUTCDay() === 0) {
+        return;
       }
-    })
 
-    console.log('Monthly summary generated:', summary.length)
+      if (isHoliday(recordDate)) return;
 
-    return NextResponse.json({ data: summary }, { status: 200 })
-  } catch (err) {
-    console.error('Error generating monthly summary:', err)
+      const joiningDate = joiningDates.get(studentId);
+      if (joiningDate && recordDate < joiningDate) return;
+
+      const monthKey = toMonthKey(recordDate);
+      const workingByMonth = workingSets.get(studentId);
+      const presentByMonth = presentSets.get(studentId);
+
+      if (!(monthKey in summaries.get(studentId).workingDays)) return;
+
+      if (!workingByMonth[monthKey]) workingByMonth[monthKey] = new Set();
+      if (!presentByMonth[monthKey]) presentByMonth[monthKey] = new Set();
+
+      const dayKey = recordDate.toDateString();
+      workingByMonth[monthKey].add(dayKey);
+
+      if (record.status === "Present") {
+        presentByMonth[monthKey].add(dayKey);
+      }
+    });
+
+    summaries.forEach((summary, studentId) => {
+      const workingByMonth = workingSets.get(studentId);
+      const presentByMonth = presentSets.get(studentId);
+
+      Object.keys(summary.workingDays).forEach(monthKey => {
+        const workingCount = workingByMonth[monthKey]?.size || 0;
+        const presentCount = presentByMonth[monthKey]?.size || 0;
+        const percent =
+          workingCount > 0 ? ((presentCount / workingCount) * 100).toFixed(2) : "0.00";
+
+        summary.workingDays[monthKey] = workingCount;
+        summary.present[monthKey] = presentCount;
+        summary.percentage[monthKey] = percent;
+        summary.alerts[monthKey] =
+          workingCount > 0 && Number(percent) < 75 ? "RED ALERT" : "Eligible";
+      });
+    });
+
+    return NextResponse.json({
+      status: "success",
+      data: Array.from(summaries.values()),
+    });
+  } catch (error) {
+    console.error("Monthly summary API error:", error);
+
     return NextResponse.json(
-      { error: 'Failed to generate monthly summary' },
+      { status: "error", message: "Server error" },
       { status: 500 }
-    )
+    );
   }
 }

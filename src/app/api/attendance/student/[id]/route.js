@@ -3,59 +3,114 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Sample public holidays, edit as per your calendar
+// Example holidays
 const publicHolidays = [
-  { month: 0, day: 26 }, // Jan 26
-  // ...etc
+  { month: 0, day: 26 },
 ];
 
-function isHoliday(dt) {
-  return publicHolidays.some(h => h.month === dt.getMonth() && h.day === dt.getDate());
+function isHoliday(date) {
+  return publicHolidays.some(
+    h => h.month === date.getMonth() && h.day === date.getDate()
+  );
 }
 
 function calculateMonthlySummary(records) {
+
   const byMonth = {};
-  for (const a of records) {
-    const month = a.month;
-    const dt = new Date(a.date);
-    const dateStr = dt.toDateString();
+
+  for (const rec of records) {
+
+    const dt = new Date(rec.date);
+
+    const monthKey = `${dt.getFullYear()}-${dt.getMonth()+1}`;
+
     if (dt.getDay() === 0 || isHoliday(dt)) continue;
-    if (!byMonth[month]) byMonth[month] = { all: new Set(), present: new Set() };
-    byMonth[month].all.add(dateStr);
-    if (a.status === "Present") byMonth[month].present.add(dateStr);
+
+    if (!byMonth[monthKey]) {
+      byMonth[monthKey] = {
+        working: new Set(),
+        present: new Set()
+      };
+    }
+
+    const dateStr = dt.toDateString();
+
+    byMonth[monthKey].working.add(dateStr);
+
+    if (rec.status === "Present") {
+      byMonth[monthKey].present.add(dateStr);
+    }
   }
 
-  // Prepare clean summary
   const summary = {};
-  Object.keys(byMonth).forEach(month => {
-    const workingDays = byMonth[month].all.size;
+
+  for (const month in byMonth) {
+
+    const workingDays = byMonth[month].working.size;
     const presentDays = byMonth[month].present.size;
-    const percent = workingDays > 0 ? ((presentDays / workingDays) * 100).toFixed(2) : "0.00";
+
+    const percent =
+      workingDays > 0
+        ? ((presentDays / workingDays) * 100).toFixed(2)
+        : "0.00";
+
     const required = Math.ceil(workingDays * 0.75);
-    const shortage = required - presentDays;
-    const status = percent >= 75 ? "Eligible ✅" : "RED ALERT❌";
-    summary[month] = { workingDays, presentDays, percent, shortage, status };
-  });
+    const shortage = Math.max(0, required - presentDays);
+
+    summary[month] = {
+      workingDays,
+      presentDays,
+      percent,
+      shortage,
+      status: percent >= 75 ? "Eligible ✅" : "RED ALERT ❌"
+    };
+  }
+
   return summary;
 }
 
+
 export async function GET(req, { params }) {
-  await connectMongoDB();
-  const { id } = params;
+
   try {
-    // Attendance for one student
-    const records = await Attendance.find({ studentId: id })
-      .select("date month status")
-      .lean();
+
+    await connectMongoDB();
+
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user?.collegeId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const studentId = params.id;
+
+    const records = await Attendance.find({
+  studentId,
+  collegeId: session.user.collegeId
+})
+  .select("date status")
+  .sort({ date: 1 })
+  .lean();
 
     const summary = calculateMonthlySummary(records);
 
-    return NextResponse.json({ data: summary, status: "success" });
+    return NextResponse.json({
+      status: "success",
+      data: summary,
+    });
+
   } catch (err) {
-    console.error("Error fetching student attendance summary:", err);
+
+    console.error("Student attendance summary error:", err);
+
     return NextResponse.json(
-      { message: "Error fetching attendance summary", status: "error" },
+      { status: "error", message: "Server error" },
       { status: 500 }
     );
   }

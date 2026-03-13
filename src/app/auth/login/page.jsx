@@ -4,7 +4,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ClipboardList, School, Users } from "lucide-react";
-import DashboardFooter from "@/app/components/Footer";
+import DashboardFooter from "@/components/layout/Footer";
 
 const collegeName = "College";
 

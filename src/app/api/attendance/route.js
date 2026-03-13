@@ -55,46 +55,52 @@ export async function POST(req) {
       )
     }
 
-    let processedRecords = []
+    // collect all studentIds
+const studentIds = records.map(r => r.studentId)
 
-    // ✅ Step 2: Process valid student records
-    for (let record of records) {
-      const student = await mongoose
-        .model('Student')
-        .findOne({
-          _id: record.studentId,
-          collegeId,
-        })
-        .lean()
+// fetch students in one query
+const students = await mongoose
+  .model("Student")
+  .find({ _id: { $in: studentIds }, collegeId })
+  .select("name dateOfJoining")
+  .lean()
 
-      if (!student) continue
+const studentMap = new Map(
+  students.map(s => [String(s._id), s])
+)
 
-      const joinDate = student.dateOfJoining ? new Date(student.dateOfJoining) : null
-      const attendanceDate = new Date(record.date)
+let processedRecords = []
 
-      if (joinDate && attendanceDate < joinDate) continue
+for (const record of records) {
 
-      const month = attendanceDate.toLocaleString('default', { month: 'long' })
-      const year = attendanceDate.getFullYear()
-      // Add additional fields to each record
-      processedRecords.push({
-        ...record,
-        collegeId,
-        month,
-        year,
-        lecturerName,
-        lecturerId,
-        studentName: student.name,
-        studentId: record.studentId,
-        status: record.status || 'Absent', // Default to 'Absent' if status not provided
-        date: new Date(record.date),
-        yearOfStudy: record.yearOfStudy,
-        group: record.group,
-        session: record.session || 'FN', // Default to 'FN' if session not
+  const student = studentMap.get(String(record.studentId))
+  if (!student) continue
 
-        markedAt: new Date(), // ⭐ add this
-      })
-    }
+  const joinDate = student.dateOfJoining ? new Date(student.dateOfJoining) : null
+  const attendanceDate = new Date(record.date)
+
+  if (joinDate && attendanceDate < joinDate) continue
+
+  const month = attendanceDate.getMonth() + 1
+  const year = attendanceDate.getFullYear()
+
+  processedRecords.push({
+    ...record,
+    collegeId,
+    month,
+    year,
+    lecturerName,
+    lecturerId,
+    studentName: student.name,
+    studentId: record.studentId,
+    status: record.status || "Absent",
+    date: attendanceDate,
+    yearOfStudy: record.yearOfStudy,
+    group: record.group,
+    session: record.session || "FN",
+    markedAt: new Date()
+  })
+}
 
     console.log('SESSION USER:', session.user)
 
@@ -127,6 +133,10 @@ export async function POST(req) {
   }
 }
 
+
+
+
+
 // 🔽 GET Attendance Record + Summary
 export async function GET(req) {
   await connectMongoDB()
@@ -153,20 +163,40 @@ export async function GET(req) {
     const sessionQ = searchParams.get('session')
     if (sessionQ) filter.session = sessionQ
 
-    const records = await Attendance.find(filter)
+    const summary = await Attendance.aggregate([
+  { $match: filter },
 
-    // ✅ Summary calc
-    const total = records.length
-    const presents = records.filter(r => r.status === 'Present').length
-    const percentage = total > 0 ? ((presents / total) * 100).toFixed(2) : 0
+  {
+    $group: {
+      _id: null,
+      totalRecords: { $sum: 1 },
+      totalPresents: {
+        $sum: {
+          $cond: [{ $eq: ["$status", "Present"] }, 1, 0]
+        }
+      }
+    }
+  }
+])
 
-    return NextResponse.json({
-      status: 'success',
-      totalRecords: total,
-      totalPresents: presents,
-      attendancePercentage: percentage,
-      data: records, // optional: full data కూడా ఇస్తున్నాం
-    })
+const total = summary[0]?.totalRecords || 0
+const presents = summary[0]?.totalPresents || 0
+const percentage = total
+  ? ((presents / total) * 100).toFixed(2)
+  : 0
+
+// optional: fetch records separately with lean
+const records = await Attendance.find(filter)
+  .select("studentId status date session group yearOfStudy")
+  .lean()
+
+return NextResponse.json({
+  status: "success",
+  totalRecords: total,
+  totalPresents: presents,
+  attendancePercentage: percentage,
+  data: records
+})
   } catch (err) {
     console.error('💥 GET Error:', err)
     return NextResponse.json(

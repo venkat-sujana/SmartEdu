@@ -40,7 +40,7 @@ export default function PrincipalDashboard() {
     '/api/lecturers/active',
     fetcher
   )
-  const { data } = useSWR('/api/attendance/today-absentees', fetcher)
+  const { data } = useSWR('/api/attendance/today', fetcher)
   const absentees = data?.absentees || []
   const todaysPresent = data?.presentStudents?.length || 0
 

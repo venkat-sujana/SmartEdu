@@ -18,25 +18,25 @@ function getDashboardConfig(subject) {
           "Monitor attendance, update records, and review shortage summaries for both academic years.",
       };
     case "CET":
-      return { groupName: "CET", routeSegment: "cet", includeExternalLinks: true };
+      return { groupName: "CET", routeSegment: "cet", includeExternalLinks: true, includeEditAttendance: true };
     case "MLT":
-      return { groupName: "MLT", routeSegment: "mlt", includeExternalLinks: true };
+      return { groupName: "MLT", routeSegment: "mlt", includeExternalLinks: true, includeEditAttendance: true };
     case "Botany":
     case "Zoology":
-      return { groupName: "BiPC", routeSegment: "bipc" };
+      return { groupName: "BiPC", routeSegment: "bipc", includeEditAttendance: true };
     case "Civics":
     case "Economics":
     case "Commerce":
-      return { groupName: "CEC", routeSegment: "cec" };
+      return { groupName: "CEC", routeSegment: "cec", includeEditAttendance: true };
     case "History":
-      return { groupName: "HEC", routeSegment: "hec" };
+      return { groupName: "HEC", routeSegment: "hec", includeEditAttendance: true };
     case "GFC":
       return { groupName: "GFC", routeSegment: "gfc" };
     case "Maths":
     case "Physics":
     case "Chemistry":
     default:
-      return { groupName: "MPC", routeSegment: "mpc" };
+      return { groupName: "MPC", routeSegment: "mpc", includeEditAttendance: true };
   }
 }
 

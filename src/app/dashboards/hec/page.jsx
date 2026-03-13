@@ -1,5 +1,6 @@
 import GroupDashboardPage from "../components/GroupDashboardPage";
 
 export default function HECDashboard() {
-  return <GroupDashboardPage groupName="HEC" routeSegment="hec" />;
+  return <GroupDashboardPage groupName="HEC" routeSegment="hec"
+      includeEditAttendance />;
 }

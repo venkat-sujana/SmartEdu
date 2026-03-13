@@ -1,3 +1,5 @@
+// src/lib/rateLimiter.js
+
 import { RateLimiterMemory } from "rate-limiter-flexible";
 
 export const loginRateLimiter = new RateLimiterMemory({

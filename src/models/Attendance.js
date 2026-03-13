@@ -1,73 +1,121 @@
+// models/Attendance.js
 
-//models/Attendance.js
 import mongoose, { Schema } from "mongoose";
 
-const attendanceSchema = new Schema({
+const attendanceSchema = new Schema(
+{
   studentId: {
     type: Schema.Types.ObjectId,
     ref: "Student",
     required: true,
+    index: true
   },
+
+  collegeId: {
+    type: Schema.Types.ObjectId,
+    ref: "College",
+    required: true,
+    index: true
+  },
+
   date: {
     type: Date,
     required: true,
+    index: true
   },
-  session: { type: String, enum: ["FN", "AN", "EN"], default: "FN" },   // NEW!
+
+  session: {
+    type: String,
+    enum: ["FN", "AN", "EN"],
+    default: "FN"
+  },
+
   status: {
     type: String,
     enum: ["Present", "Absent"],
     default: "Absent",
+    index: true
   },
+
   group: {
     type: String,
     enum: ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"],
     required: true,
-  },
-    yearOfStudy: {
-    type: String,
-    enum: ['First Year', 'Second Year'],
-    required: true,
-  },
-    lecturerName: { // 🔥 New fields
-    type: String,
-    required: true,
+    index: true
   },
 
-   lecturerName: { type: String },
-   lecturerId: { type: mongoose.Schema.Types.ObjectId, 
-    ref: "Lecturer" 
+  yearOfStudy: {
+    type: String,
+    enum: ["First Year", "Second Year"],
+    required: true,
+    index: true
+  },
 
-   },
-    collegeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "College",
-      required: true,
-    },
-    
+  lecturerName: {
+    type: String,
+    trim: true
+  },
+
+  lecturerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Lecturer",
+    index: true
+  },
+
   month: {
-    type: String,
-    enum: [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ],
+    type: Number, // 1-12 (faster than string)
+    min: 1,
+    max: 12,
+    index: true
   },
 
-   year: {
-      type: Number,
-    },
+  year: {
+    type: Number,
+    index: true
+  },
 
-    // ⭐⭐ NEW FIELD — Attendance Marked Time
-    markedAt: {
-      type: Date,
-      default: Date.now,
-    },
-  }, 
+  markedAt: {
+    type: Date,
+    default: Date.now
+  }
 
+},
 {
-  timestamps: true,
+  timestamps: true
+}
+);
+
+
+// prevent duplicate attendance
+attendanceSchema.index(
+  { studentId: 1, date: 1, session: 1 },
+  { unique: true }
+);
+
+
+// dashboard queries
+attendanceSchema.index({
+  collegeId: 1,
+  group: 1,
+  yearOfStudy: 1,
+  date: -1
 });
 
-attendanceSchema.index({ studentId: 1, date: 1,session: 1 }, { unique: true }); // Ensure unique attendance per student per date per session 
-// so that multiple entries for different sessions can exist
 
-export default mongoose.models.Attendance || mongoose.model("Attendance", attendanceSchema);
+// monthly reports
+attendanceSchema.index({
+  collegeId: 1,
+  month: 1,
+  year: 1
+});
+
+
+// student attendance history
+attendanceSchema.index({
+  studentId: 1,
+  date: -1
+});
+
+
+export default mongoose.models.Attendance ||
+mongoose.model("Attendance", attendanceSchema);
