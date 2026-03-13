@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { CalendarCheck2, LayoutDashboard, Users2 } from "lucide-react";
 import TodayAbsenteesTable from "@/components/attendance/TodayAbsenteesTable";
 import AttendanceForm from "@/components/attendance/AttendanceForm";
-import IndividualReport from "@/components/Attendance/IndividualReport";
+import IndividualReport from "@/components/attendance/IndividualReport";
 import DashboardTogglePanel from "@/components/dashboard/DashboardTogglePanel";
 import ExternalLinks from "@/components/ExternalLinks";
 import DashboardFooter from "@/components/layout/Footer";
