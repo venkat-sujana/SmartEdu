@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import TodayAbsenteesTable from "@/app/absentees-table/page";
 import GroupAttendanceCard from "@/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
 // import GroupAttendanceCard from "@/app/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
-import LecturerInfoCard from "@/components/LecturerInfoCard";
+import LecturerInfoCard from "@/components/dashboard/LecturerInfoCard";
 import MainLinks from '@/components/MainLinks';
 import ExternalLinks from "@/components/ExternalLinks";
 
