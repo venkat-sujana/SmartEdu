@@ -69,14 +69,6 @@ const generateCaretakerCertificatePDF = async (student) => {
     y += gap;
     doc.text(`Caste                : ${student.caste}`, x, y);
     y += gap;
-    doc.text(
-      `Date of Birth        : ${new Date(student.dob).toLocaleDateString(
-        "en-GB"
-      )}`,
-      x,
-      y
-    );
-    y += gap;
     doc.text(`Address              : ${student.address}`, x, y);
     y += gap;
     doc.text(`Mobile No.           : ${student.mobile}`, x, y);

@@ -96,12 +96,6 @@ console.log("session.user.studentId =", session?.user?.studentId)
                 <span className="font-bold text-gray-600">{user.caste || '---'}</span>
               </p>
               <p>
-                <span className="font-bold text-gray-800">🎂 DOB:</span> &nbsp;
-                <span className="font-bold text-gray-600">
-                  {user.dob ? new Date(user.dob).toLocaleDateString() : '---'}
-                </span>
-              </p>
-              <p>
                 <span className="font-bold text-gray-800">🚻 Gender:</span> &nbsp;
                 <span className="font-bold text-gray-600">{user.gender || '---'}</span>
               </p>

@@ -105,7 +105,6 @@ export async function POST(req) {
     const mobile = toText(row.Mobile);
     const group = normalizeGroup(row.Group);
     const caste = toText(row.Caste).toUpperCase();
-    const dob = toDate(row.DOB);
     const gender = toText(row.Gender);
     const admissionNo = toText(row.AdmissionNo);
     const yearOfStudy = toYear(row.YearOfStudy);
@@ -120,8 +119,6 @@ export async function POST(req) {
     if (!/^[6-9]\d{9}$/.test(mobile)) rowIssues.push("Mobile must be a valid 10-digit Indian number");
     if (!ALLOWED_GROUPS.has(group)) rowIssues.push(`Invalid Group: ${group || "(empty)"}`);
     if (!ALLOWED_CASTES.has(caste)) rowIssues.push(`Invalid Caste: ${caste || "(empty)"}`);
-    if (!dob) rowIssues.push("DOB is invalid");
-    if (dob && dob > new Date()) rowIssues.push("DOB cannot be in the future");
     if (!ALLOWED_GENDERS.has(gender)) rowIssues.push(`Invalid Gender: ${gender || "(empty)"}`);
     if (!admissionNo) rowIssues.push("AdmissionNo is required");
     if (!ALLOWED_YEARS.has(yearOfStudy)) rowIssues.push(`Invalid YearOfStudy: ${yearOfStudy || "(empty)"}`);
@@ -149,7 +146,6 @@ export async function POST(req) {
       mobile,
       group,
       caste,
-      dob,
       gender,
       admissionNo,
       yearOfStudy,

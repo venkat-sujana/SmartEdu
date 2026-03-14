@@ -12,7 +12,6 @@ import {
 const sessionLabels = {
   FN: "Forenoon",
   AN: "Afternoon",
-  EN: "Evening",
 };
 
 const yearOptions = ["First Year", "Second Year"];

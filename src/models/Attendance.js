@@ -26,7 +26,7 @@ const attendanceSchema = new Schema(
 
   session: {
     type: String,
-    enum: ["FN", "AN", "EN"],
+    enum: ["FN", "AN"],
     default: "FN"
   },
 

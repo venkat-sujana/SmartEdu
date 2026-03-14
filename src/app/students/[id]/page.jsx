@@ -188,14 +188,11 @@ export default function StudentProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2 text-sm">
             <p><User className="inline mr-1" size={16} /> <strong>Name:</strong> {student.name}</p>
-            <p><Users className="inline mr-1" size={16} /> <strong>Father:</strong> {student.fatherName}</p>
             <p><GraduationCap className="inline mr-1" size={16} /> <strong>Group:</strong> {student.group}</p>
             <p><Landmark className="inline mr-1" size={16} /> <strong>Stream:</strong> {stream}</p>
-            <p><BadgeIndianRupee className="inline mr-1" size={16} /> <strong>Admission No:</strong> {student.admissionNo}</p>
             <p><Phone className="inline mr-1" size={16} /> <strong>Mobile:</strong> {student.mobile}</p>
             <p><strong>Year:</strong> {student.yearOfStudy}</p>
-            <p><strong>Caste:</strong> {student.caste}</p>
-            <p><strong>DOB:</strong> {student.dob ? new Date(student.dob).toLocaleDateString() : "-"}</p>
+<p><strong>Caste:</strong> {student.caste}</p>
             <p><strong>Admission Year:</strong> {student.admissionYear || "-"}</p>
             <p><MapPin className="inline mr-1" size={16} /> <strong>Address:</strong> {student.address}</p>
           </div>

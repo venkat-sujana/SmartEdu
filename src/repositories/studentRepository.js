@@ -3,7 +3,7 @@
 import Student from "@/models/Student"
 
 const projection =
-  "name fatherName mobile group caste gender admissionNo yearOfStudy admissionYear photo status createdAt"
+  "name mobile group caste gender yearOfStudy admissionYear photo status createdAt"
 
 export async function findStudents(filter, skip, limit) {
 

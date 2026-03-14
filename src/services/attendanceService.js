@@ -229,7 +229,7 @@ export async function getTodayAbsentees(collegeId) {
     };
   }
 
-  const sessions = ["FN", "AN", "EN"];
+  const sessions = ["FN", "AN"];
 
   const sessionWiseAbsentees = {};
   const sessionWisePresent = {};

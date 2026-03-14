@@ -106,12 +106,6 @@ const generateAdmissionCertificatePDF = async (student) => {
   y += 10;
   doc.text(`Father's Name    : ${student.fatherName}`, 30, y);
   y += 10;
-  doc.text(
-    `Date of Birth    : ${new Date(student.dob).toLocaleDateString("en-GB")}`,
-    30,
-    y
-  );
-  y += 10;
   doc.text(`Gender           : ${student.gender}`, 30, y);
   y += 10;
   doc.text(`Caste            : ${student.caste}`, 30, y);

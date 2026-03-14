@@ -37,23 +37,15 @@ const castes = [
 const inputClass =
   'w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100'
 
-const normalizeDate = value => {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toISOString().split('T')[0]
-}
+
 
 const createFormState = student => ({
   name: student?.name || '',
-  fatherName: student?.fatherName || '',
   mobile: student?.mobile || '',
   group: student?.group || '',
   caste: student?.caste || '',
-  dob: normalizeDate(student?.dob),
   gender: student?.gender || '',
   dateOfJoining: normalizeDate(student?.dateOfJoining),
-  admissionNo: student?.admissionNo || '',
   admissionYear: student?.admissionYear || '',
   address: student?.address || '',
   photo: student?.photo || '',
@@ -137,14 +129,11 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
 
       const updateData = {
         name: formData.name,
-        fatherName: formData.fatherName,
         mobile: formData.mobile,
         group: formData.group,
         caste: formData.caste,
-        dob: formData.dob,
         gender: formData.gender,
         dateOfJoining: formData.dateOfJoining,
-        admissionNo: formData.admissionNo,
         admissionYear: formData.admissionYear,
         address: formData.address,
         photo: photoUrl,
@@ -196,19 +185,7 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
           <input name="name" value={formData.name} onChange={handleChange} className={inputClass} required />
         </div>
 
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <Pencil className="h-4 w-4 text-emerald-700" />
-            Father Name
-          </label>
-          <input
-            name="fatherName"
-            value={formData.fatherName}
-            onChange={handleChange}
-            className={inputClass}
-            required
-          />
-        </div>
+        
 
         <div>
           <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
@@ -249,11 +226,6 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
         </div>
 
         <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <CalendarCheck2 className="h-4 w-4 text-violet-700" />
-            Date of Birth
-          </label>
-          <input type="date" name="dob" value={formData.dob} onChange={handleChange} className={inputClass} required />
         </div>
 
         <div>
@@ -284,19 +256,7 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
           />
         </div>
 
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <IdCard className="h-4 w-4 text-amber-700" />
-            Admission Number
-          </label>
-          <input
-            name="admissionNo"
-            value={formData.admissionNo}
-            onChange={handleChange}
-            className={inputClass}
-            required
-          />
-        </div>
+        
 
         <div>
           <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">

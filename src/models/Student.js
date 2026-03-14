@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 const studentSchema = new mongoose.Schema(
 {
   name: { type: String, required: true, trim: true },
-  fatherName: { type: String, required: true, trim: true },
 
   mobile: {
     type: String,
@@ -46,12 +45,6 @@ const studentSchema = new mongoose.Schema(
     trim: true,
     enum: ["Male","Female","Other"]
   },
-
-  admissionNo: { type: String, required: true, trim: true },
-
-  password: { type: String, required: true },
-
-  mustChangePassword: { type: Boolean, default: true },
 
   yearOfStudy: {
     type: String,
@@ -99,8 +92,8 @@ const studentSchema = new mongoose.Schema(
 );
 
 
-// UNIQUE admission number per college
-studentSchema.index({ collegeId: 1, admissionNo: 1 }, { unique: true });
+// Student indexes optimized
+
 
 
 // DASHBOARD FILTER INDEX

@@ -96,21 +96,17 @@ export default function StudentsPage() {
       startY: 25,
       head: [
         [
-          "S.No", "Name", "Father Name", "Mobile", "Group", "Caste", "Gender", "DOB",
-          "Year of Study", "Admission Number", "Admission Year", "Date Of Joining", "Address"
+          "S.No", "Name", "Mobile", "Group", "Caste", "Gender", "Year of Study", "Admission Year", "Date Of Joining", "Address"
         ],
       ],
       body: filteredStudents.map((s, idx) => [
         idx + 1,
         s.name,
-        s.fatherName,
         s.mobile,
         s.group,
         s.caste,
         s.gender,
-        s.dob,
         s.yearOfStudy === "First Year" ? "First Year" : "Second Year",
-        s.admissionNo,
         s.admissionYear,
         s.dateOfJoining,
         s.address
@@ -125,23 +121,20 @@ export default function StudentsPage() {
     const studentData = filteredStudents.map((s, idx) => ({
       SNo: idx + 1,
       Name: s.name,
-      FatherName: s.fatherName,
       Mobile: s.mobile,
       Group: s.group,
       Caste: s.caste,
       Gender: s.gender,
-      DOB: s.dob,
       YearOfStudy: s.yearOfStudy,
       AdmissionDate: new Date(s.createdAt).toLocaleString("en-IN", {
         timeZone: "Asia/Kolkata",
         day: "2-digit", month: "2-digit", year: "numeric",
         hour: "2-digit", minute: "2-digit", hour12: true,
       }),
-      AdmissionNo: s.admissionNo,
       AdmissionYear: s.admissionYear,
       dateOfJoining: s.dateOfJoining,
       Address: s.address,
-    }));
+    })); 
     const collegeHeaderRow = { SNo: "", Name: `College: ${collegeName}` };
     studentData.unshift(collegeHeaderRow);
     const worksheet = XLSX.utils.json_to_sheet(studentData, { skipHeader: false });
@@ -306,8 +299,7 @@ export default function StudentsPage() {
             <tr>
               <th className="px-4 py-2 border-r border-gray-300 w-12 text-center">S.No</th>
               <th className="px-4 py-2 border-r border-gray-300 w-36">Name</th>
-              <th className="px-4 py-2 border-r border-gray-300 w-36">Father Name</th>
-              <th className="px-4 py-2 border-r border-gray-300 w-28">Mobile</th>
+<th className="px-4 py-2 border-r border-gray-300 w-28">Mobile</th>
               <th className="px-4 py-2 border-r border-gray-300 w-24">Group</th>
               <th className="px-4 py-2 border-r border-gray-300 w-24">Caste</th>
               <th className="px-4 py-2 border-r border-gray-300 w-20">Gender</th>
@@ -315,8 +307,7 @@ export default function StudentsPage() {
               <th className="px-4 py-2 border-r border-gray-300 w-32">Year of Study</th>
               <th className="px-4 py-2 border-r border-gray-300 w-28">Admission Year</th>
               <th className="px-4 py-2 border-r border-gray-300 w-28">Date of Joining</th>
-              <th className="px-4 py-2 border-r border-gray-300 w-28">Admission No</th>
-              <th className="px-4 py-2 border-r border-gray-300">Address</th>
+<th className="px-4 py-2 border-r border-gray-300">Address</th>
               <th className="px-3 py-2 border border-gray-300 w-16 text-center">Photo</th>
               <th className="px-4 py-2 border border-gray-300 w-28 text-center">Admission Certificate</th>
               <th className="px-4 py-2 border border-gray-300 w-28 text-center">Study Certificate</th>
@@ -344,12 +335,10 @@ export default function StudentsPage() {
               <tr key={s._id} className="hover:bg-green-50 transition-colors">
                 <td className="px-4 py-2 border-r border-gray-300 text-center">{offset + idx + 1}</td>
                 <td className="px-4 py-2 border-r border-gray-300 font-medium text-gray-900">{s.name}</td>
-                <td className="px-4 py-2 border-r border-gray-300">{s.fatherName}</td>
-                <td className="px-4 py-2 border-r border-gray-300">{s.mobile}</td>
+<td className="px-4 py-2 border-r border-gray-300">{s.mobile}</td>
                 <td className="px-4 py-2 border-r border-gray-300">{s.group}</td>
                 <td className="px-4 py-2 border-r border-gray-300">{s.caste}</td>
                 <td className="px-4 py-2 border-r border-gray-300">{s.gender}</td>
-                <td className="px-4 py-2 border-r border-gray-300">{new Date(s.dob).toLocaleDateString()}</td>
                 <td className="px-4 py-2 border-r border-gray-300">{s.yearOfStudy === "First Year" ? "First Year" : "Second Year"}</td>
                 <td className="px-4 py-2 border-r border-gray-300">{s.admissionYear}</td>
                 <td className="px-4 py-2 border-r border-gray-300">{s.dateOfJoining}</td>
