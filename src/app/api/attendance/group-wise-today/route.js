@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
+import {
+  buildAttendanceSessionReadFilter,
+  normalizeAttendanceSession,
+} from "@/validations/attendanceValidation";
 
 export async function GET(req) {
   await connectMongoDB();
@@ -28,13 +32,15 @@ export async function GET(req) {
   const attendanceRecords = await Attendance.find({
     date: { $gte: startOfDay, $lte: endOfDay },
     collegeId,
+    ...buildAttendanceSessionReadFilter(),
   }).lean();
 
   // ==== Group by group → year → session ====
   const result = {};
 
   attendanceRecords.forEach((record) => {
-    const { group, yearOfStudy, status, lecturerName, session } = record;
+    const { group, yearOfStudy, status, lecturerName } = record;
+    const session = normalizeAttendanceSession(record.session);
 
     if (!result[group]) result[group] = {};
     if (!result[group][yearOfStudy]) result[group][yearOfStudy] = {};

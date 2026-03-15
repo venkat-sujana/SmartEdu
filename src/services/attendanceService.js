@@ -4,6 +4,10 @@ import Attendance from "@/models/Attendance";
 import Student from "@/models/Student";
 import { startOfDay, endOfDay } from "date-fns";
 import mongoose from "mongoose";
+import {
+  buildAttendanceSessionReadFilter,
+  normalizeAttendanceSession,
+} from "@/validations/attendanceValidation";
 
 export async function getTodayAttendancePercent(collegeId) {
   await connectMongoDB();
@@ -17,6 +21,7 @@ export async function getTodayAttendancePercent(collegeId) {
   const todayRecords = await Attendance.find({
     collegeId,
     date: { $gte: today, $lt: tomorrow },
+    ...buildAttendanceSessionReadFilter(),
   });
 
   const presentCount = todayRecords.filter(
@@ -54,7 +59,8 @@ export async function getTodayAttendanceStats(collegeId, date) {
     {
       $match: {
         collegeId: collegeObjectId,
-        date: { $gte: start, $lte: end }
+        date: { $gte: start, $lte: end },
+        ...buildAttendanceSessionReadFilter(),
       }
     },
     {
@@ -108,7 +114,8 @@ export async function getTodayAttendanceList(collegeId, date) {
     {
       $match: {
         collegeId: new mongoose.Types.ObjectId(collegeId),
-        date: { $gte: start, $lte: end }
+        date: { $gte: start, $lte: end },
+        ...buildAttendanceSessionReadFilter(),
       }
     },
     {
@@ -164,7 +171,8 @@ export async function getTodayAttendanceBreakdown(collegeId) {
     $match:{
       collegeId:new mongoose.Types.ObjectId(collegeId),
       status:"Present",
-      date:{ $gte:start, $lte:end }
+      date:{ $gte:todayStart, $lte:todayEnd },
+      ...buildAttendanceSessionReadFilter()
     }
   },
   {
@@ -220,6 +228,7 @@ export async function getTodayAbsentees(collegeId) {
   const todayRecords = await Attendance.find({
     collegeId,
     date: { $gte: start, $lte: end },
+    ...buildAttendanceSessionReadFilter(),
   }).populate("studentId", "name yearOfStudy group");
 
   if (todayRecords.length === 0) {
@@ -230,6 +239,10 @@ export async function getTodayAbsentees(collegeId) {
   }
 
   const sessions = ["FN", "AN"];
+  const normalizedRecords = todayRecords.map((record) => ({
+    ...record.toObject(),
+    session: normalizeAttendanceSession(record.session),
+  }));
 
   const sessionWiseAbsentees = {};
   const sessionWisePresent = {};
@@ -239,15 +252,15 @@ export async function getTodayAbsentees(collegeId) {
   let grandPresent = 0;
 
   for (const session of sessions) {
-    const absentees = todayRecords.filter(
+    const absentees = normalizedRecords.filter(
       (r) => r.session === session && r.status === "Absent"
     );
 
-    const presentStudents = todayRecords.filter(
+    const presentStudents = normalizedRecords.filter(
       (r) => r.session === session && r.status === "Present"
     );
 
-    const total = todayRecords.filter(
+    const total = normalizedRecords.filter(
       (r) => r.session === session
     ).length;
 
@@ -300,7 +313,8 @@ export async function getMonthlySummary({ collegeId, group, yearOfStudy }) {
   const collegeObjectId = new mongoose.Types.ObjectId(collegeId);
 
   const match = {
-    collegeId: collegeObjectId
+    collegeId: collegeObjectId,
+    ...buildAttendanceSessionReadFilter(),
   };
 
   if (group) {
@@ -417,6 +431,7 @@ export async function getStudentMonthlySummary(collegeId, yearOfStudy) {
     {
       $match: {
         collegeId: collegeObjectId,
+        ...buildAttendanceSessionReadFilter(),
         ...(yearOfStudy && { yearOfStudy })
       }
     },
@@ -502,7 +517,8 @@ export async function getStudentMonthlyCalendar({
   const records = await Attendance.find({
     studentId: studentObjectId,
     collegeId: collegeObjectId,
-    date: { $gte: start, $lte: end }
+    date: { $gte: start, $lte: end },
+    ...buildAttendanceSessionReadFilter(),
   })
     .select("date status")
   .lean();

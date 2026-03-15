@@ -13,7 +13,7 @@ import {
 import { getGroupTheme } from "@/components/dashboard/groupTheme";
 
 const years = ["First Year", "Second Year"];
-const sessions = ["FN", "AN", "EN"];
+const sessions = ["FN", "AN"];
 
 const fetcher = url => fetch(url).then(res => res.json());
 
@@ -68,29 +68,29 @@ export default function GroupAttendanceCard({ groupName }) {
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div className={`bg-linear-to-r ${theme.header} px-5 py-5 text-white`}>
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
               <Activity className="h-4 w-4" />
               Group Snapshot
             </div>
-            <h3 className="mt-3 text-2xl font-black tracking-tight">{groupName}</h3>
+            <h3 className="mt-3 text-xl font-black tracking-tight">{groupName}</h3>
             <p className="mt-1 text-sm text-white/80">
               Direct session matrix for both years.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <TopStat icon={<Users className="h-4 w-4" />} label="Strength" value={groupStrength} />
-            <TopStat icon={<CheckCircle2 className="h-4 w-4" />} label="Present" value={overallPresent} />
-            <TopStat icon={<XCircle className="h-4 w-4" />} label="Absent" value={overallAbsent} />
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-2 2xl:grid-cols-4">
+            <TopStat icon={<Users className="h-4 w-4" />} label="S" value={groupStrength} />
+            <TopStat icon={<CheckCircle2 className="h-4 w-4" />} label="P" value={overallPresent} />
+            <TopStat icon={<XCircle className="h-4 w-4" />} label="A" value={overallAbsent} />
             <TopStat icon={<Clock3 className="h-4 w-4" />} label="Average" value={`${overallPercent}%`} />
           </div>
         </div>
       </div>
 
       <div className={`space-y-5 bg-linear-to-br ${theme.soft} p-4 md:p-5`}>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
           {sessionSummary.map(item => (
             <div key={item.session} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
@@ -119,7 +119,7 @@ export default function GroupAttendanceCard({ groupName }) {
             <p className="text-sm text-slate-500">Present, absent, total and percentage in one view.</p>
           </div>
 
-          <div className="grid gap-4 p-4 lg:hidden">
+          <div className="grid gap-4 p-4 2xl:hidden">
             {years.map(year => (
               <article key={year} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <h5 className="text-base font-bold text-slate-900">{year}</h5>
@@ -135,9 +135,9 @@ export default function GroupAttendanceCard({ groupName }) {
                           </span>
                         </div>
                         <div className="mt-3 grid grid-cols-3 gap-2">
-                          <MiniBox label="Present" value={current.present} tone="emerald" />
-                          <MiniBox label="Absent" value={current.absent} tone="rose" />
-                          <MiniBox label="Total" value={current.total} tone="slate" />
+                          <MiniBox label="P" value={current.present} tone="emerald" />
+                          <MiniBox label="A" value={current.absent} tone="rose" />
+                          <MiniBox label="T" value={current.total} tone="slate" />
                         </div>
                       </div>
                     );
@@ -147,7 +147,7 @@ export default function GroupAttendanceCard({ groupName }) {
             ))}
           </div>
 
-          <div className="hidden overflow-x-auto lg:block">
+          <div className="hidden overflow-x-auto 2xl:block">
             <table className="min-w-full border-collapse text-sm">
               <thead className="bg-slate-900 text-white">
                 <tr>
@@ -168,7 +168,7 @@ export default function GroupAttendanceCard({ groupName }) {
                         {year}
                       </td>
                       <td className="border border-slate-200 px-4 py-3 font-medium text-emerald-700">
-                        Present
+                        P
                       </td>
                       {sessions.map(session => (
                         <td key={`${year}-${session}-present`} className="border border-slate-200 px-4 py-3 text-center font-semibold text-slate-900">
@@ -178,7 +178,7 @@ export default function GroupAttendanceCard({ groupName }) {
                     </tr>
                     <tr key={`${year}-absent`} className="bg-slate-50">
                       <td className="border border-slate-200 px-4 py-3 font-medium text-rose-700">
-                        Absent
+                        A
                       </td>
                       {sessions.map(session => (
                         <td key={`${year}-${session}-absent`} className="border border-slate-200 px-4 py-3 text-center font-semibold text-slate-900">
@@ -188,7 +188,7 @@ export default function GroupAttendanceCard({ groupName }) {
                     </tr>
                     <tr key={`${year}-total`} className="bg-white">
                       <td className="border border-slate-200 px-4 py-3 font-medium text-slate-700">
-                        Total
+                        T
                       </td>
                       {sessions.map(session => (
                         <td key={`${year}-${session}-total`} className="border border-slate-200 px-4 py-3 text-center font-semibold text-slate-900">
@@ -198,7 +198,7 @@ export default function GroupAttendanceCard({ groupName }) {
                     </tr>
                     <tr key={`${year}-percent`} className="bg-slate-50">
                       <td className="border border-slate-200 px-4 py-3 font-medium text-blue-700">
-                        Attendance %
+                         %
                       </td>
                       {sessions.map(session => (
                         <td key={`${year}-${session}-percent`} className="border border-slate-200 px-4 py-3 text-center">

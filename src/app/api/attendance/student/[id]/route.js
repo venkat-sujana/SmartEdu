@@ -5,6 +5,7 @@ import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
 
 // Example holidays
 const publicHolidays = [
@@ -92,7 +93,8 @@ export async function GET(req, { params }) {
 
     const records = await Attendance.find({
   studentId,
-  collegeId: session.user.collegeId
+  collegeId: session.user.collegeId,
+  ...buildAttendanceSessionReadFilter(),
 })
   .select("date status")
   .sort({ date: 1 })

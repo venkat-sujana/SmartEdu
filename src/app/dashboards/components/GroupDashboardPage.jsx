@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { CalendarCheck2, LayoutDashboard, Users2 } from "lucide-react";
+import { CalendarCheck2, LayoutDashboard, UserPlus, Users2 } from "lucide-react";
 import TodayAbsenteesTable from "@/components/attendance/TodayAbsenteesTable";
 import AttendanceForm from "@/components/attendance/AttendanceForm";
 import IndividualReport from "@/components/attendance/IndividualReport";
@@ -40,6 +41,7 @@ export default function GroupDashboardPage({
   const defaultOverview =
     overviewDescription ||
     `Monitor attendance, absentees, and shortage analytics for ${groupName} batches.`;
+  const addStudentHref = `/register?group=${encodeURIComponent(groupName)}`;
 
   const editProps = includeEditAttendance
     ? {
@@ -98,7 +100,7 @@ export default function GroupDashboardPage({
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[400px_1fr]">
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[480px_1fr] 2xl:grid-cols-[560px_1fr]">
           <div className="space-y-4">
             <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
               <div className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${theme.pill}`}>
@@ -127,10 +129,17 @@ export default function GroupDashboardPage({
               </div>
             )}
 
-            <div className="mb-4 border-b border-slate-200 pb-4 text-center">
-              <h3 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+            <div className="mb-4 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-left sm:text-3xl">
                 Attendance Operations Hub
               </h3>
+              <Link
+                href={addStudentHref}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+              >
+                <UserPlus className="h-4 w-4" />
+                Add Student
+              </Link>
             </div>
 
             <DashboardTogglePanel
@@ -237,3 +246,8 @@ export default function GroupDashboardPage({
     </div>
   );
 }
+
+
+
+
+

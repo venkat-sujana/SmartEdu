@@ -5,6 +5,8 @@ const studentSchema = new mongoose.Schema(
 {
   name: { type: String, required: true, trim: true },
 
+  fatherName: { type: String, required: true, trim: true },
+
   mobile: {
     type: String,
     required: true,
@@ -32,9 +34,8 @@ const studentSchema = new mongoose.Schema(
 
   dob: {
     type: Date,
-    required: true,
     validate: {
-      validator: (value) => value <= new Date(),
+      validator: (value) => !value || value <= new Date(),
       message: "DOB cannot be in the future"
     }
   },
@@ -71,6 +72,13 @@ const studentSchema = new mongoose.Schema(
 
   address: { type: String, required: true, trim: true },
 
+  admissionNo: {
+    type: String,
+    required: true,
+    trim: true,
+    uppercase: true
+  },
+
   photo: { type: String, default: "" },
 
   collegeId: {
@@ -84,6 +92,8 @@ const studentSchema = new mongoose.Schema(
     type: [String],
     index: true
   },
+
+  password: { type: String, trim: true },
 
   role: { type: String, default: "student", trim: true }
 
@@ -106,6 +116,18 @@ studentSchema.index({ collegeId: 1, group: 1, yearOfStudy: 1 });
 
 // SEARCH INDEX (important)
 studentSchema.index({ name: "text" });
+
+
+// ADMISSION UNIQUE INDEX
+studentSchema.index(
+  { admissionNo: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      admissionNo: { $type: "string", $gt: "" }
+    }
+  }
+);
 
 
 // SORT OPTIMIZATION

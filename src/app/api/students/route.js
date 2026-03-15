@@ -1,59 +1,21 @@
-// src/app/api/students/route.js
-
-import { studentSchema } from "@/validations/studentValidation";
+import { NextResponse } from "next/server";
+import connectMongoDB from "@/lib/mongodb";
+import Student from "@/models/Student";
 import { getStudentsService } from "@/services/studentService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import connectMongoDB from "@/lib/mongodb";
-import { handleApiError } from "@/utils/errorHandler";
-import { ApiError } from "@/errors/apiError";
-import { apiRateLimiter } from "@/lib/rateLimiter";
-
-export async function POST(req) {
-  try {
-    await connectMongoDB();
-
-    const ip =
-      req.headers.get("x-forwarded-for") ||
-      req.headers.get("x-real-ip") ||
-      "unknown";
-
-    const rateLimitResult = await apiRateLimiter.consume(ip);
-
-    if (!rateLimitResult.consumed) {
-      return handleApiError(new ApiError(429, "Rate limit exceeded"));
-    }
-
-    const body = await req.json();
-
-    const result = studentSchema.safeParse(body);
-
-    if (!result.success) {
-      return handleApiError(new ApiError(400, "Invalid student data"));
-    }
-
-    const data = result.data;
-
-    return Response.json({
-      status: "success",
-      data
-    });
-
-  } catch (error) {
-    return handleApiError(error);
-  }
-}
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+// Rate limiting removed to fix registration issue
 
 export async function GET(req) {
-
   try {
-
     await connectMongoDB();
 
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.collegeId) {
-      return Response.json(
+      return NextResponse.json(
         { status: "error", message: "Unauthorized" },
         { status: 401 }
       );
@@ -85,7 +47,7 @@ export async function GET(req) {
       session
     });
 
-    return Response.json({
+    return NextResponse.json({
       status: "success",
       totalStudents: result.totalStudents,
       page,
@@ -93,9 +55,7 @@ export async function GET(req) {
       totalPages: result.totalPages,
       data: result.students
     });
-
   } catch (error) {
     return handleApiError(error);
   }
-
 }

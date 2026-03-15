@@ -13,8 +13,9 @@ import {
 const sessionLabels = {
   FN: "Forenoon",
   AN: "Afternoon",
-  EN: "Evening",
 };
+
+const allowedSessions = ["FN", "AN"];
 
 export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
   const [loading, setLoading] = useState(true);
@@ -61,7 +62,10 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
     );
   }
 
-  const { sessionWiseAbsentees, sessionWisePresent, summary, sessions } = absData;
+  const { sessionWiseAbsentees, sessionWisePresent, summary, sessions = [] } = absData;
+  const visibleSessions = sessions.filter((sessionKey) =>
+    allowedSessions.includes(sessionKey)
+  );
 
   const formatTime = (timestamp) => {
     if (!timestamp) return "-";
@@ -104,7 +108,7 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
       </div>
 
       <div className="space-y-7">
-        {sessions.map((sessionKey) => (
+        {visibleSessions.map((sessionKey) => (
           <div key={sessionKey} className="mb-2">
             {/* Session pill */}
             <div className="mb-3 flex items-center justify-between gap-3">

@@ -2,11 +2,15 @@
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import { NextResponse } from "next/server";
+import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
 
 export async function GET(req, { params }) {
   await connectMongoDB();
   const { id } = params;
-  const allRecords = await Attendance.find({ studentId: id });
+  const allRecords = await Attendance.find({
+    studentId: id,
+    ...buildAttendanceSessionReadFilter(),
+  });
 
   const summary = {};
   const daySet = {};         // unique working days per month

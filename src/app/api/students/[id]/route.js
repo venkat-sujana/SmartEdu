@@ -6,14 +6,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-
-
-
-// Cloudinary కాన్ఫిగరేషన్
-
-
-
-// మెరుగైన పబ్లిక్ ఐడీ ఎక్స్ట్రాక్షన్
 function getPublicIdFromUrl(url) {
   if (!url) return null;
   try {
@@ -29,10 +21,6 @@ function getPublicIdFromUrl(url) {
     return null;
   }
 }
-
-
-
-
 
 // ✅ Session + CollegeId ఆధారంగా చెక్ చేసే helper
 async function getStudentByIdWithAuth(id) {
@@ -62,9 +50,10 @@ async function getStudentByIdWithAuth(id) {
 
 
 // 📌 GET
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
-    const { student, error, status } = await getStudentByIdWithAuth(params.id);
+    const { id } = await context.params;
+    const { student, error, status } = await getStudentByIdWithAuth(id);
     if (error) return NextResponse.json({ message: error }, { status });
     return NextResponse.json({ status: "success", data: student });
   } catch (error) {
@@ -76,11 +65,12 @@ export async function GET(req, { params }) {
 
 
 // 📌 PUT
-export async function PUT(req, { params }) {
+export async function PUT(req, context) {
+  console.log("🔄 PUT request received for student update");
   try {
-    const { student: existingStudent, error, status } = await getStudentByIdWithAuth(params.id);
-
-        
+  
+    const { id } = await context.params;
+    const { student: existingStudent, error, status } = await getStudentByIdWithAuth(id);
 
     if (error) return NextResponse.json({ message: error }, { status });
 
@@ -89,8 +79,7 @@ export async function PUT(req, { params }) {
       // 🐞 Debug logs
     console.log("📥 Incoming body:", body);
     console.log("📅 Raw dateOfJoining value:", body.dateOfJoining);
-
-    // 📅 dateOfJoining ఉంటే Date object గా మార్చడం
+      // 📅 dateOfJoining ఉంటే Date object గా మార్చడం
     if (body.dateOfJoining) {
       body.dateOfJoining = new Date(body.dateOfJoining);
     }
@@ -105,6 +94,7 @@ console.log("📅 dateOfJoining type:", typeof body.dateOfJoining, body.dateOfJo
       const publicId = getPublicIdFromUrl(existingStudent.photo);
       if (publicId) {
         try {
+          console.log("🗑️ Deleting old image with publicId:", publicId);
           await cloudinary.uploader.destroy(publicId);
         } catch (e) {
           console.error("Failed to delete old image:", e);
@@ -114,7 +104,7 @@ console.log("📅 dateOfJoining type:", typeof body.dateOfJoining, body.dateOfJo
 
     // 🔄 Student update చేయడం
 const updatedStudent = await Student.findOneAndUpdate(
-  { _id: params.id, collegeId: existingStudent.collegeId },
+  { _id: id, collegeId: existingStudent.collegeId },
   { $set: body },
   { new: true, runValidators: true }
 );
@@ -129,9 +119,10 @@ const updatedStudent = await Student.findOneAndUpdate(
 
 
 // 📌 DELETE
-export async function DELETE(req, { params }) {
+export async function DELETE(req, context) {
   try {
-    const { student, error, status } = await getStudentByIdWithAuth(params.id);
+    const { id } = await context.params;
+    const { student, error, status } = await getStudentByIdWithAuth(id);
     if (error) return NextResponse.json({ message: error }, { status });
 
     // Cloudinary నుండి ఫోటోని డిలీట్ చేయండి

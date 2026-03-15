@@ -5,6 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import Student from "@/models/Student";
+import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
 
 const MONTHS = [
   { label: "JUN", year: "2025" },
@@ -120,6 +121,7 @@ export async function GET(req) {
     const attendanceQuery = {
       collegeId: collegeObjectId,
       studentId: { $in: studentIds },
+      ...buildAttendanceSessionReadFilter(),
     };
 
     if (group) attendanceQuery.group = group;

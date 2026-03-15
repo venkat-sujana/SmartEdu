@@ -1,3 +1,4 @@
+//src/components/dashboard/DashboardTogglePanel.jsx
 "use client";
 
 import {
@@ -31,37 +32,37 @@ export default function DashboardTogglePanel({
     {
       key: "attendance",
       label: showAttendance ? "Hide Attendance" : "Take Attendance",
-      description: "Mark daily attendance",
+      description: "",
       active: showAttendance,
       onClick: onToggleAttendance,
-      icon: <CalendarCheck2 className="h-4 w-4" />,
+      icon: <CalendarCheck2 className="h-3 w-3" />,
       tone: "from-sky-600 to-blue-700",
     },
     {
       key: "students",
-      label: studentTable ? "Hide Student Table" : "Show Student Table",
-      description: "Browse and manage students",
+      label: studentTable ? "Hide Student Table" : "Students",
+      description: "",
       active: studentTable,
       onClick: onToggleStudentTable,
-      icon: <TableProperties className="h-4 w-4" />,
+      icon: <TableProperties className="h-3 w-3" />,
       tone: "from-violet-600 to-indigo-700",
     },
     {
       key: "absentees",
-      label: showTodayAbsentees ? "Hide Today Absentees" : "Show Today Absentees",
-      description: "Track today risks quickly",
+      label: showTodayAbsentees ? "Hide Today Absentees" : "Today's Absentees",
+      description: "",
       active: showTodayAbsentees,
       onClick: onToggleTodayAbsentees,
-      icon: <UsersRound className="h-4 w-4" />,
+      icon: <UsersRound className="h-3 w-3" />,
       tone: "from-teal-600 to-emerald-700",
     },
     {
       key: "monthly",
-      label: monthlyAttendance ? "Hide Monthly Attendance" : "Show Monthly Attendance",
-      description: "Open group analytics",
+      label: monthlyAttendance ? "Hide Monthly Attendance" : "Monthly Attendance",
+      description: "",
       active: monthlyAttendance,
       onClick: onToggleMonthlyAttendance,
-      icon: <LayoutGrid className="h-4 w-4" />,
+      icon: <LayoutGrid className="h-3 w-3" />,
       tone: "from-amber-500 to-orange-600",
     },
   ];
@@ -69,11 +70,11 @@ export default function DashboardTogglePanel({
   if (showEditToggle) {
     actions.push({
       key: "edit",
-      label: editAttendance ? "Hide Edit Attendance" : "Show Edit Attendance",
-      description: "Update existing entries",
+      label: editAttendance ? "Hide Edit Attendance" : "Edit Attendance",
+      description: "",
       active: editAttendance,
       onClick: onToggleEditAttendance,
-      icon: <FilePenLine className="h-4 w-4" />,
+      icon: <FilePenLine className="h-3 w-3" />,
       tone: "from-rose-600 to-pink-700",
     });
   }

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import mongoose from "mongoose";
+import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
 
 // Month array must match usage & DB
 const months = [
@@ -34,7 +35,8 @@ export async function GET(req) {
   try {
     // Fetch all attendance records for the student with session info
     const attendance = await Attendance.find({
-      studentId: new mongoose.Types.ObjectId(studentId)
+      studentId: new mongoose.Types.ObjectId(studentId),
+      ...buildAttendanceSessionReadFilter(),
     }).select("date month status session").lean();
 
     // Initialize aggregates

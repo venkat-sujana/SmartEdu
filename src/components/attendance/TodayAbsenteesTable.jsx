@@ -15,6 +15,7 @@ const sessionLabels = {
 };
 
 const yearOptions = ["First Year", "Second Year"];
+const allowedSessions = ["FN", "AN"];
 
 export default function TodayAbsenteesTable({
   collegeId,
@@ -57,8 +58,11 @@ export default function TodayAbsenteesTable({
     if (!absData || absData.status !== "success") return [];
 
     const { sessionWiseAbsentees = {}, sessionWisePresent = {}, sessions = [] } = absData;
+    const visibleSessions = sessions.filter(sessionKey =>
+      allowedSessions.includes(sessionKey)
+    );
 
-    return sessions.map(sessionKey => {
+    return visibleSessions.map(sessionKey => {
       const yearBuckets = yearOptions.map(yearKey => {
         let yearStudents =
           sessionWiseAbsentees[sessionKey]?.filter(

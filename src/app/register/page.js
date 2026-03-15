@@ -1,3 +1,4 @@
+//src/app/register/page.js
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
@@ -20,7 +21,17 @@ import {
   Loader2,
 } from 'lucide-react'
 
-const groups = ['MPC', 'BIPC', 'CEC', 'HEC', 'M&AT', 'MLT', 'CET']
+const groups = ['MPC', 'BiPC', 'CEC', 'HEC', 'M&AT', 'MLT', 'CET']
+const groupDashboardRoutes = {
+  MPC: '/dashboards/mpc',
+  BiPC: '/dashboards/bipc',
+  BIPC: '/dashboards/bipc',
+  CEC: '/dashboards/cec',
+  HEC: '/dashboards/hec',
+  'M&AT': '/dashboards/mandat',
+  MLT: '/dashboards/mlt',
+  CET: '/dashboards/cet',
+}
 const castes = [
   'OC',
   'OBC',
@@ -44,13 +55,16 @@ const baseInputClass = `w-full rounded-3xl border border-slate-200/50 bg-white/8
 
 const emptyForm = {
   name: '',
+  fatherName: '',
   mobile: '',
+  admissionNo: '',
   group: '',
   caste: '',
   gender: '',
   yearOfStudy: '',
   admissionYear: '',
   dateOfJoining: '',
+  password: '',
   address: '',
 }
 
@@ -84,13 +98,16 @@ export default function RegisterPage() {
 
     const form = new FormData()
     form.append('name', formData.name)
+    form.append('fatherName', formData.fatherName)
     form.append('mobile', formData.mobile)
+    form.append('admissionNo', formData.admissionNo)
     form.append('group', formData.group)
     form.append('caste', formData.caste)
     form.append('gender', formData.gender)
     form.append('yearOfStudy', formData.yearOfStudy)
     form.append('admissionYear', formData.admissionYear)
     form.append('dateOfJoining', formData.dateOfJoining)
+    form.append('password', formData.password)
     form.append('address', formData.address)
     form.append('collegeId', session.user.collegeId)
     form.append('lecturerId', session.user.id)
@@ -98,7 +115,7 @@ export default function RegisterPage() {
     if (photo) form.append('photo', photo)
 
     try {
-      const res = await fetch('/api/students', {
+      const res = await fetch('/api/students/register', {
         method: 'POST',
         body: form,
       })
@@ -106,14 +123,15 @@ export default function RegisterPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        toast.error(`Error: ${result.message || 'Failed to register student'}`)
+        toast.error(`Error: ${result.message || result.error || 'Failed to register student'}`)
         return
       }
 
       toast.success('Student registered successfully')
+      const redirectPath = groupDashboardRoutes[formData.group] || '/dashboards'
       setFormData(emptyForm)
       setPhoto(null)
-      router.push('/register')
+      router.push(redirectPath)
     } catch (err) {
       toast.error('Something went wrong.')
       console.error('Submit error:', err)
@@ -302,8 +320,6 @@ export default function RegisterPage() {
                     <option value="">Select Year</option>
                     <option value="First Year">First Year</option>
                     <option value="Second Year">Second Year</option>
-                    <option value="Third Year">Third Year</option>
-                    <option value="Final Year">Final Year</option>
                   </select>
                 </div>
 
@@ -447,4 +463,3 @@ export default function RegisterPage() {
     </main>
   )
 }
-

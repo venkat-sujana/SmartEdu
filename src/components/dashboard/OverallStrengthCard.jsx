@@ -11,7 +11,7 @@ export default function OverallStrengthCard({
   sessionWisePresent,
   sessionWiseAbsentees,
 }) {
-  const sessions = ["FN", "AN", "EN"];
+  const sessions = ["FN", "AN"];
 
   function sessionStats(session) {
     const present = sessionWisePresent[session]?.length || 0;

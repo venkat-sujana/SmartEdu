@@ -5,6 +5,12 @@ import Attendance from '@/models/Attendance'
 import connectMongoDB from '@/lib/mongodb'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import {
+  attendanceRecordSchema,
+  attendanceSessionParamSchema,
+  buildAttendanceSessionReadFilter,
+  normalizeAttendanceSession,
+} from '@/validations/attendanceValidation'
 
 // 🔽 POST Attendance
 export async function POST(req) {
@@ -27,13 +33,28 @@ export async function POST(req) {
       return NextResponse.json({ message: 'Invalid data', status: 'error' }, { status: 400 })
     }
 
+    const parsedRecords = records.map((record) => attendanceRecordSchema.safeParse(record))
+    const invalidRecord = parsedRecords.find((result) => !result.success)
+
+    if (invalidRecord) {
+      return NextResponse.json(
+        {
+          message: invalidRecord.error.issues[0]?.message || 'Invalid attendance record',
+          status: 'error',
+        },
+        { status: 400 }
+      )
+    }
+
+    const validRecords = parsedRecords.map((result) => result.data)
+
     // ✅ Extract common info
     // 🔥 Step 1: Duplicate check (same date + group + yearOfStudy + collegeId + session)
-    const { date, yearOfStudy, group, session: sessionVal } = records[0]
+    const { date, yearOfStudy, group, session: sessionVal } = validRecords[0]
     const selectedDate = new Date(date)
     const selectedGroup = group
     const selectedYearOfStudy = yearOfStudy
-    const selectedSession = sessionVal || 'FN'
+    const selectedSession = normalizeAttendanceSession(sessionVal)
 
     const alreadyMarked = await Attendance.findOne({
       collegeId,
@@ -56,7 +77,7 @@ export async function POST(req) {
     }
 
     // collect all studentIds
-const studentIds = records.map(r => r.studentId)
+const studentIds = validRecords.map(r => r.studentId)
 
 // fetch students in one query
 const students = await mongoose
@@ -71,7 +92,7 @@ const studentMap = new Map(
 
 let processedRecords = []
 
-for (const record of records) {
+for (const record of validRecords) {
 
   const student = studentMap.get(String(record.studentId))
   if (!student) continue
@@ -97,7 +118,7 @@ for (const record of records) {
     date: attendanceDate,
     yearOfStudy: record.yearOfStudy,
     group: record.group,
-    session: record.session || "FN",
+    session: normalizeAttendanceSession(record.session),
     markedAt: new Date()
   })
 }
@@ -155,13 +176,24 @@ export async function GET(req) {
     const month = searchParams.get('month')
     const year = searchParams.get('year')
 
-    const filter = { collegeId }
+    const filter = { collegeId, ...buildAttendanceSessionReadFilter() }
     if (month) filter.month = month
     if (year) filter.year = Number(year)
 
     // Add session filter if provided
     const sessionQ = searchParams.get('session')
-    if (sessionQ) filter.session = sessionQ
+    if (sessionQ) {
+      const parsedSession = attendanceSessionParamSchema.safeParse(sessionQ)
+
+      if (!parsedSession.success) {
+        return NextResponse.json(
+          { message: parsedSession.error.issues[0]?.message || 'Invalid session', status: 'error' },
+          { status: 400 }
+        )
+      }
+
+      filter.session = parsedSession.data
+    }
 
     const summary = await Attendance.aggregate([
   { $match: filter },
@@ -190,12 +222,17 @@ const records = await Attendance.find(filter)
   .select("studentId status date session group yearOfStudy")
   .lean()
 
+const normalizedRecords = records.map((record) => ({
+  ...record,
+  session: normalizeAttendanceSession(record.session),
+}))
+
 return NextResponse.json({
   status: "success",
   totalRecords: total,
   totalPresents: presents,
   attendancePercentage: percentage,
-  data: records
+  data: normalizedRecords
 })
   } catch (err) {
     console.error('💥 GET Error:', err)

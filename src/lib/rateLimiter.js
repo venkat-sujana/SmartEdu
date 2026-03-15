@@ -8,6 +8,6 @@ export const loginRateLimiter = new RateLimiterMemory({
 });
 
 export const apiRateLimiter = new RateLimiterMemory({
-  points: 100,    // 100 requests
+  points: 1000,   // 1000 requests (increased for dev/testing)
   duration: 60,   // per minute
 });

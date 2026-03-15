@@ -1,3 +1,5 @@
+//src/components/tables/GroupStudentTable.jsx
+
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -126,7 +128,7 @@ export default function GroupStudentTable({ groupName }) {
     doc.text(`${collegeName} - ${groupName} Students`, 148, 14, { align: "center" });
     autoTable(doc, {
       startY: 22,
-      head: [["S.No", "Name", "Father Name", "Mobile", "Caste", "Gender", "Year", "Admission No"]],
+      head: [["S.No", "Name", "Mobile", "Caste", "Gender", "Year"]],
       body: filteredStudents.map((student, index) => [
         index + 1,
         student.name,
@@ -152,8 +154,8 @@ export default function GroupStudentTable({ groupName }) {
       Group: student.group,
       Caste: student.caste,
       Gender: student.gender,
-      Year: student.yearOfStudy,
-      AdmissionNo: student.admissionNo,
+      Year: student.yearOfStudy
+     
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -193,15 +195,17 @@ export default function GroupStudentTable({ groupName }) {
 
     try {
       const response = await fetch(`/api/students/${id}`, { method: "DELETE" });
+      const result = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error("Delete failed");
+        throw new Error(result?.message || "Delete failed");
       }
 
       setStudents(prev => prev.filter(student => student._id !== id));
-      toast.success("Student deleted");
+      toast.success(result?.message || "Student deleted");
     } catch (error) {
       console.error("Student delete error:", error);
-      toast.error("Delete failed");
+      toast.error(error.message || "Delete failed");
     }
   };
 

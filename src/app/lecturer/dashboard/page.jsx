@@ -74,9 +74,6 @@ export default function LecturerDashboard() {
   // Schema groups/add/remove as needed
   const groupNames = ['MPC', 'BiPC', 'CEC', 'HEC', 'CET', 'M&AT', 'MLT']
   const years = ['First Year', 'Second Year']
-  const sessionLabels = { FN: 'Forenoon', AN: 'Afternoon', EN: 'Evening' }
-  const sessions = ['FN', 'AN', 'EN']
-
   const absentees = absApiData?.absentees || []
 
   useEffect(() => {

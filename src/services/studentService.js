@@ -3,6 +3,12 @@
 import mongoose from "mongoose";
 import { findStudents, countStudents } from "@/repositories/studentRepository";
 
+function normalizeGroupValue(group) {
+  if (!group) return group;
+
+  return group === "BIPC" ? "BiPC" : group;
+}
+
 export async function getStudentsService({
   collegeId,
   groupParam,
@@ -34,7 +40,11 @@ export async function getStudentsService({
   }
 
   if (groupParam) {
-    filter.group = groupParam;
+    const normalizedGroup = normalizeGroupValue(groupParam);
+    filter.group =
+      normalizedGroup === "BiPC"
+        ? { $in: ["BiPC", "BIPC"] }
+        : normalizedGroup;
   }
   else if (session?.user?.stream === "Vocational" && session?.user?.group) {
     filter.group = session.user.group;

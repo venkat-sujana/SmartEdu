@@ -5,6 +5,7 @@ import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
 
 export async function GET(req) {
   await connectMongoDB();
@@ -35,6 +36,7 @@ export async function GET(req) {
       const matchStage = {
         collegeId: collegeObjectId,
         yearOfStudy,
+        ...buildAttendanceSessionReadFilter(),
       };
 
       if (start && end) {

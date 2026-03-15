@@ -7,6 +7,7 @@ import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 import Attendance from "@/models/Attendance";
 import mongoose from "mongoose";
+import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
 
 // Public holidays, month number-0 based (same as monthly-summary)
 const publicHolidays = [
@@ -57,6 +58,7 @@ export async function GET(req) {
     attendanceQuery.collegeId = mongoose.Types.ObjectId.isValid(collegeId)
       ? new mongoose.Types.ObjectId(collegeId)
       : collegeId;
+    Object.assign(attendanceQuery, buildAttendanceSessionReadFilter());
     if (group) attendanceQuery.group = group;
     if (yearOfStudy)
       attendanceQuery.yearOfStudy = new RegExp(`^${yearOfStudy}$`, "i");

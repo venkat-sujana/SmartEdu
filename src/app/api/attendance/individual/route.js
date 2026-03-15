@@ -5,6 +5,11 @@ import connectMongoDB from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import mongoose from "mongoose";
+import {
+  attendanceSessionParamSchema,
+  buildAttendanceSessionReadFilter,
+  normalizeAttendanceSession,
+} from "@/validations/attendanceValidation";
 
 export async function GET(req) {
   await connectMongoDB();
@@ -32,6 +37,7 @@ export async function GET(req) {
     collegeId,
     group,
     yearOfStudy: year,
+    ...buildAttendanceSessionReadFilter(),
   };
 
   if (start && end) {
@@ -43,7 +49,16 @@ export async function GET(req) {
 
   // ⭐ FILTER SESSION (FN / AN)
   if (sessionParam) {
-    query.session = sessionParam;
+    const parsedSession = attendanceSessionParamSchema.safeParse(sessionParam);
+
+    if (!parsedSession.success) {
+      return NextResponse.json(
+        { message: parsedSession.error.issues[0]?.message || "Invalid session" },
+        { status: 400 }
+      );
+    }
+
+    query.session = parsedSession.data;
   }
 
   try {
@@ -58,7 +73,7 @@ export async function GET(req) {
       absent: a.status === "Absent" ? 1 : 0,
       date: a.date,
       status: a.status,
-      session: a.session,
+      session: normalizeAttendanceSession(a.session),
       group: a.group,
       year: a.yearOfStudy,
     }));

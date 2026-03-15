@@ -2,6 +2,10 @@
 import { NextResponse } from "next/server";
 import Attendance from "@/models/Attendance";
 import connectMongoDB from "@/lib/mongodb";
+import {
+  attendanceRecordUpdateSchema,
+  normalizeAttendanceSession,
+} from "@/validations/attendanceValidation";
 
 // 🔁 PUT (Update Attendance)
 export async function PUT(req, context) {
@@ -20,18 +24,35 @@ export async function PUT(req, context) {
   const updateData = await req.json();
 
   try {
-    const dateObj = new Date(updateData.date);
-    const month = dateObj.toLocaleString("default", { month: "long" });
-    const year = dateObj.getFullYear();
+    const parsedUpdate = attendanceRecordUpdateSchema.safeParse(updateData);
+
+    if (!parsedUpdate.success) {
+      return NextResponse.json(
+        {
+          message: parsedUpdate.error.issues[0]?.message || "Invalid attendance update",
+          status: "error",
+        },
+        { status: 400 }
+      );
+    }
+
+    const sanitizedUpdate = { ...parsedUpdate.data };
+    const updatePayload = { ...sanitizedUpdate };
+
+    if (sanitizedUpdate.session !== undefined) {
+      updatePayload.session = normalizeAttendanceSession(sanitizedUpdate.session);
+    }
+
+    if (sanitizedUpdate.date) {
+      const dateObj = new Date(sanitizedUpdate.date);
+      updatePayload.date = dateObj;
+      updatePayload.month = dateObj.getMonth() + 1;
+      updatePayload.year = dateObj.getFullYear();
+    }
 
     const updated = await Attendance.findByIdAndUpdate(
       id,
-      {
-        ...updateData,
-        date: dateObj,
-        month,
-        year,
-      },
+      updatePayload,
       { new: true }
     );
 
