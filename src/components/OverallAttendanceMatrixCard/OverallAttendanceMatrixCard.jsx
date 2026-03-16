@@ -11,28 +11,37 @@ const sessions = ['FN', 'AN']
 
 const fetcher = url => fetch(url).then(res => res.json())
 
+function normalizeGroupName(value) {
+  const normalized = String(value || '').trim().toUpperCase()
+
+  if (normalized === 'BIPC') return 'BiPC'
+  if (normalized === 'MANDAT' || normalized === 'M&AT') return 'M&AT'
+  if (normalized === 'MPC') return 'MPC'
+  if (normalized === 'CEC') return 'CEC'
+  if (normalized === 'HEC') return 'HEC'
+  if (normalized === 'CET') return 'CET'
+  if (normalized === 'MLT') return 'MLT'
+
+  return value || ''
+}
+
 function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees }) {
-  const { data: studentsData } = useSWR('/api/students', fetcher)
-
-  const studentsArray = Array.isArray(studentsData)
-    ? studentsData
-    : Array.isArray(studentsData?.students)
-      ? studentsData.students
-      : Array.isArray(studentsData?.data)
-        ? studentsData.data
-        : []
-
-  const groupStrength = studentsArray.filter(student => student.group === groupName).length
+  const normalizedGroupName = normalizeGroupName(groupName)
+  const { data: studentsData } = useSWR(
+    `/api/students?group=${encodeURIComponent(normalizedGroupName)}&limit=1`,
+    fetcher
+  )
+  const groupStrength = studentsData?.totalStudents || 0
 
   function stats(year, session) {
     const present =
       sessionWisePresent[session]?.filter(
-        student => student.group === groupName && student.yearOfStudy === year
+        student => normalizeGroupName(student.group) === normalizedGroupName && student.yearOfStudy === year
       ).length || 0
 
     const absent =
       sessionWiseAbsentees[session]?.filter(
-        student => student.group === groupName && student.yearOfStudy === year
+        student => normalizeGroupName(student.group) === normalizedGroupName && student.yearOfStudy === year
       ).length || 0
 
     return { present, absent, total: present + absent }

@@ -36,6 +36,7 @@ export async function POST(req) {
     const password = formData.get("password") || "default123";
     const address = formData.get("address");
     const collegeId = formData.get("collegeId");
+    const photoUrl = formData.get("photoUrl") || "";
     const normalizedDateOfJoining = dateOfJoining ? new Date(dateOfJoining) : new Date();
 
     if (!name || !fatherName || !mobile || !admissionNo || !group || !address || !collegeId) {
@@ -63,7 +64,7 @@ export async function POST(req) {
       yearOfStudy, admissionYear, dateOfJoining: normalizedDateOfJoining,
       dob: normalizedDateOfJoining,
       address, collegeId: new mongoose.Types.ObjectId(collegeId),
-      password: hashedPassword, status: "Active"
+      password: hashedPassword, status: "Active", photo: photoUrl
     });
 
     await student.save();

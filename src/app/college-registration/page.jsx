@@ -40,11 +40,10 @@ export default function CollegeRegistrationForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input name="name" onChange={handleChange} placeholder="College Name" className="w-full border p-2" required />
         <input name="code" onChange={handleChange} placeholder="College Code" className="w-full border p-2" required />
-        <input name="address" onChange={handleChange} placeholder="Address" className="w-full border p-2" />
+        <input name="address" onChange={handleChange} placeholder="College Address" className="w-full border p-2" />
         <input name="district" onChange={handleChange} placeholder="District" className="w-full border p-2" />
-        <input name="principalName" onChange={handleChange} placeholder="Principal Name" className="w-full border p-2" />
-        <input name="contactEmail" onChange={handleChange} placeholder="Email" className="w-full border p-2" />
-        <input name="contactPhone" onChange={handleChange} placeholder="Phone" className="w-full border p-2" />
+        <input name="contactEmail" onChange={handleChange} placeholder=" College Email" className="w-full border p-2" />
+        <input name="contactPhone" onChange={handleChange} placeholder=" college Phone" className="w-full border p-2" />
         <button className="bg-blue-600 text-white px-4 py-2 rounded">Register College</button>
 
       </form>

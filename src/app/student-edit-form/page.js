@@ -1,3 +1,5 @@
+//src/app/student-edit-form/page.js
+
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
@@ -15,42 +17,52 @@ import {
   School,
   Save,
   X,
+  KeyRound,
 } from 'lucide-react'
 
-const groups = ['MPC', 'BIPC', 'CEC', 'HEC', 'M&AT', 'MLT', 'CET']
-const castes = [
-  'OC',
-  'OBC',
-  'BC-A',
-  'BC-B',
-  'BC-C',
-  'BC-D',
-  'BC-E',
-  'SC',
-  'SC-A',
-  'SC-B',
-  'SC-C',
-  'ST',
-  'OTHER',
-]
+const groups = ['MPC', 'BiPC', 'BIPC', 'CEC', 'HEC', 'M&AT', 'MLT', 'CET']
+const castes = ['OC', 'OBC', 'BC-A', 'BC-B', 'BC-C', 'BC-D', 'BC-E', 'SC', 'SC-A', 'SC-B', 'SC-C', 'ST', 'OTHER']
+const yearOptions = ['First Year', 'Second Year']
+const statusOptions = ['Active', 'Terminated']
 
 const inputClass =
   'w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100'
 
-
+const normalizeDate = value => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toISOString().split('T')[0]
+}
 
 const createFormState = student => ({
   name: student?.name || '',
+  fatherName: student?.fatherName || '',
   mobile: student?.mobile || '',
+  admissionNo: student?.admissionNo || '',
   group: student?.group || '',
   caste: student?.caste || '',
+  dob: normalizeDate(student?.dob),
   gender: student?.gender || '',
+  yearOfStudy: student?.yearOfStudy || '',
+  status: student?.status || 'Active',
   dateOfJoining: normalizeDate(student?.dateOfJoining),
   admissionYear: student?.admissionYear || '',
+  password: student?.password || '',
   address: student?.address || '',
   photo: student?.photo || '',
   file: null,
 })
+
+const Field = ({ icon: Icon, iconClassName, label, children, className = '' }) => (
+  <div className={className}>
+    <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
+      <Icon className={`h-4 w-4 ${iconClassName}`} />
+      {label}
+    </label>
+    {children}
+  </div>
+)
 
 const StudentEditForm = ({ student, onCancel, onSave }) => {
   const [formData, setFormData] = useState(createFormState(student))
@@ -63,17 +75,29 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
 
   const collegeName = session?.user?.collegeName || 'Loading college...'
   const currentYear = useMemo(() => new Date().getFullYear(), [])
+  const isSecondYear = formData.yearOfStudy === 'Second Year'
+  const derivedSecondYearJoiningDate = useMemo(() => {
+    const year = Number(formData.admissionYear)
+
+    if (!Number.isInteger(year) || year < 2000) {
+      return ''
+    }
+
+    return `${year}-06-01`
+  }, [formData.admissionYear])
+  const effectiveDateOfJoining = isSecondYear
+    ? derivedSecondYearJoiningDate
+    : formData.dateOfJoining
 
   const handleChange = e => {
     const { name, value, files } = e.target
 
     if (name === 'file') {
       const file = files?.[0] || null
-      const previewUrl = file ? URL.createObjectURL(file) : formData.photo
       setFormData(prev => ({
         ...prev,
         file,
-        photo: previewUrl,
+        photo: file ? URL.createObjectURL(file) : student?.photo || '',
       }))
       return
     }
@@ -85,28 +109,21 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
   }
 
   const uploadToCloudinary = async file => {
-    const uploadPreset = process.env.NEXT_PUBLIC_UPLOAD_PRESET
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dlwxpzc83'
-
-    if (!uploadPreset) {
-      throw new Error('NEXT_PUBLIC_UPLOAD_PRESET is missing')
-    }
-
     const payload = new FormData()
     payload.append('file', file)
-    payload.append('upload_preset', uploadPreset)
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    const res = await fetch('/api/upload', {
       method: 'POST',
       body: payload,
     })
 
     if (!res.ok) {
-      throw new Error('Photo upload failed')
+      const result = await res.json().catch(() => ({}))
+      throw new Error(result.message || 'Photo upload failed')
     }
 
     const data = await res.json()
-    return data.secure_url
+    return data.url
   }
 
   const handleSubmit = async e => {
@@ -129,12 +146,18 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
 
       const updateData = {
         name: formData.name,
+        fatherName: formData.fatherName,
         mobile: formData.mobile,
+        admissionNo: formData.admissionNo,
         group: formData.group,
         caste: formData.caste,
+        dob: formData.dob || null,
         gender: formData.gender,
-        dateOfJoining: formData.dateOfJoining,
-        admissionYear: formData.admissionYear,
+        yearOfStudy: formData.yearOfStudy,
+        status: formData.status,
+        dateOfJoining: effectiveDateOfJoining,
+        admissionYear: Number(formData.admissionYear),
+        password: formData.password?.trim() || undefined,
         address: formData.address,
         photo: photoUrl,
         _id: student._id,
@@ -146,10 +169,10 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
         body: JSON.stringify(updateData),
       })
 
-      if (!res.ok) throw new Error('Update failed')
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.message || 'Update failed')
 
-      const updatedStudent = await res.json()
-      onSave(updatedStudent)
+      onSave(result.data)
       toast.success('Student updated successfully')
     } catch (err) {
       toast.error(`Update failed: ${err.message}`)
@@ -177,29 +200,35 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <User className="h-4 w-4 text-cyan-700" />
-            Full Name
-          </label>
+        <Field icon={User} iconClassName="text-cyan-700" label="Full Name">
           <input name="name" value={formData.name} onChange={handleChange} className={inputClass} required />
-        </div>
+        </Field>
 
-        
+        <Field icon={Pencil} iconClassName="text-emerald-700" label="Father's Name">
+          <input
+            name="fatherName"
+            value={formData.fatherName}
+            onChange={handleChange}
+            className={inputClass}
+            required
+          />
+        </Field>
 
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <Phone className="h-4 w-4 text-indigo-700" />
-            Mobile
-          </label>
+        <Field icon={Phone} iconClassName="text-indigo-700" label="Mobile">
           <input name="mobile" value={formData.mobile} onChange={handleChange} className={inputClass} required />
-        </div>
+        </Field>
 
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <Users2 className="h-4 w-4 text-purple-700" />
-            Group
-          </label>
+        <Field icon={IdCard} iconClassName="text-amber-700" label="Admission Number">
+          <input
+            name="admissionNo"
+            value={formData.admissionNo}
+            onChange={handleChange}
+            className={inputClass}
+            required
+          />
+        </Field>
+
+        <Field icon={Users2} iconClassName="text-purple-700" label="Group">
           <select name="group" value={formData.group} onChange={handleChange} className={inputClass} required>
             <option value="">Select Group</option>
             {groups.map(group => (
@@ -208,13 +237,9 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
               </option>
             ))}
           </select>
-        </div>
+        </Field>
 
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <IdCard className="h-4 w-4 text-rose-700" />
-            Caste
-          </label>
+        <Field icon={IdCard} iconClassName="text-rose-700" label="Caste">
           <select name="caste" value={formData.caste} onChange={handleChange} className={inputClass} required>
             <option value="">Select Caste</option>
             {castes.map(caste => (
@@ -223,46 +248,68 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
               </option>
             ))}
           </select>
-        </div>
+        </Field>
 
-        <div>
-        </div>
+        <Field icon={CalendarCheck2} iconClassName="text-orange-700" label="Date of Birth">
+          <input type="date" name="dob" value={formData.dob} onChange={handleChange} className={inputClass} />
+        </Field>
 
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <Users2 className="h-4 w-4 text-fuchsia-700" />
-            Gender
-          </label>
+        <Field icon={Users2} iconClassName="text-fuchsia-700" label="Gender">
           <select name="gender" value={formData.gender} onChange={handleChange} className={inputClass} required>
             <option value="">Select Gender</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
-        </div>
+        </Field>
 
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <CalendarCheck2 className="h-4 w-4 text-teal-700" />
-            Date of Joining
-          </label>
-          <input
-            type="date"
-            name="dateOfJoining"
-            value={formData.dateOfJoining}
+        <Field icon={School} iconClassName="text-blue-700" label="Year of Study">
+          <select
+            name="yearOfStudy"
+            value={formData.yearOfStudy}
             onChange={handleChange}
             className={inputClass}
             required
+          >
+            <option value="">Select Year</option>
+            {yearOptions.map(year => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field icon={School} iconClassName="text-slate-700" label="Status">
+          <select name="status" value={formData.status} onChange={handleChange} className={inputClass} required>
+            {statusOptions.map(status => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field icon={CalendarCheck2} iconClassName="text-teal-700" label="Date of Joining">
+          <input
+            type="date"
+            name="dateOfJoining"
+            value={effectiveDateOfJoining}
+            onChange={handleChange}
+            disabled={isSecondYear}
+            className={`${inputClass} ${
+              isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500 opacity-80' : ''
+            }`}
+            required={!isSecondYear}
           />
-        </div>
+          {isSecondYear ? (
+            <p className="mt-2 text-xs font-medium text-slate-500">
+              Date of joining is auto-set from admission year for second-year students.
+            </p>
+          ) : null}
+        </Field>
 
-        
-
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <CalendarCheck2 className="h-4 w-4 text-green-700" />
-            Admission Year
-          </label>
+        <Field icon={CalendarCheck2} iconClassName="text-green-700" label="Admission Year">
           <input
             type="number"
             min="2000"
@@ -273,13 +320,20 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
             className={inputClass}
             required
           />
-        </div>
+        </Field>
 
-        <div className="md:col-span-2">
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <MapPin className="h-4 w-4 text-red-700" />
-            Address
-          </label>
+        <Field icon={KeyRound} iconClassName="text-violet-700" label="Password" className="md:col-span-2">
+          <input
+            type="text"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className={inputClass}
+            placeholder="Leave as-is or enter a new password"
+          />
+        </Field>
+
+        <Field icon={MapPin} iconClassName="text-red-700" label="Address" className="md:col-span-2">
           <textarea
             name="address"
             value={formData.address}
@@ -288,13 +342,9 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
             className={inputClass}
             required
           />
-        </div>
+        </Field>
 
-        <div className="md:col-span-2">
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <ImageUp className="h-4 w-4 text-blue-700" />
-            Upload Photo
-          </label>
+        <Field icon={ImageUp} iconClassName="text-blue-700" label="Upload Photo" className="md:col-span-2">
           <input
             type="file"
             name="file"
@@ -309,7 +359,7 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
               className="mt-3 h-24 w-24 rounded-xl border border-slate-200 object-cover"
             />
           )}
-        </div>
+        </Field>
       </div>
 
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

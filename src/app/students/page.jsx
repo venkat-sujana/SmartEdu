@@ -406,7 +406,7 @@ export default function StudentsPage() {
         {/* Edit Modal */}
         {editingStudent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-lg bg-white p-6">
               <StudentEditForm
                 student={editingStudent}
                 onSave={handleUpdate}

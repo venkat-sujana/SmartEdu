@@ -84,6 +84,16 @@ export async function PUT(req, context) {
       body.dateOfJoining = new Date(body.dateOfJoining);
     }
 
+    if (body.dob) {
+      body.dob = new Date(body.dob);
+    } else if (body.dob === null || body.dob === "") {
+      body.dob = null;
+    }
+
+    if (body.password === undefined || body.password === "") {
+      delete body.password;
+    }
+
 
     console.log("📥 Incoming body:", body);
 console.log("📅 dateOfJoining type:", typeof body.dateOfJoining, body.dateOfJoining);

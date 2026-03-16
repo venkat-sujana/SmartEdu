@@ -26,6 +26,14 @@ const studentsPerPage = 10;
 const casteOptions = ["OC", "OBC", "BC-A", "BC-B", "BC-C", "BC-D", "BC-E", "SC", "ST"];
 const genderOptions = ["Male", "Female", "Other"];
 const yearOptions = ["First Year", "Second Year"];
+const statusOptions = ["Active", "Terminated"];
+const inputClass = "rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none";
+
+const normalizeDate = value => {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0];
+};
 
 export default function GroupStudentTable({ groupName }) {
   const { data: session, status } = useSession();
@@ -43,6 +51,7 @@ export default function GroupStudentTable({ groupName }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [editingStudent, setEditingStudent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const tableRef = useRef(null);
 
@@ -209,21 +218,64 @@ export default function GroupStudentTable({ groupName }) {
     }
   };
 
+  const uploadToCloudinary = async file => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(result.message || "Photo upload failed");
+    }
+
+    const result = await response.json();
+    return result.url;
+  };
+
   const handleUpdate = async updatedStudent => {
+    setIsUpdating(true);
     try {
-      const response = await fetch(`/api/students/${updatedStudent._id}`, {
+      let photoUrl = updatedStudent.photo || "";
+
+      if (updatedStudent.file) {
+        const toastId = toast.loading("Uploading photo...");
+        try {
+          photoUrl = await uploadToCloudinary(updatedStudent.file);
+          toast.success("Photo uploaded successfully", { id: toastId });
+        } catch (error) {
+          toast.error(error.message || "Photo upload failed", { id: toastId });
+          return;
+        }
+      }
+
+      const payload = {
+        ...updatedStudent,
+        photo: photoUrl,
+      };
+
+      delete payload.file;
+
+      const response = await fetch(`/api/students/${payload._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedStudent),
+        body: JSON.stringify(payload),
       });
 
+      const result = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error("Update failed");
+        throw new Error(result?.message || "Update failed");
       }
+
+      const savedStudent = result?.data || updatedStudent;
 
       setStudents(prev =>
         prev.map(student =>
-          student._id === updatedStudent._id ? updatedStudent : student
+          student._id === payload._id ? savedStudent : student
         )
       );
       setEditingStudent(null);
@@ -231,6 +283,8 @@ export default function GroupStudentTable({ groupName }) {
     } catch (error) {
       console.error("Student update error:", error);
       toast.error("Update failed");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -555,7 +609,7 @@ export default function GroupStudentTable({ groupName }) {
 
       {editingStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl">
+          <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl">
             <div className="mb-5">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                 Edit Student
@@ -572,7 +626,7 @@ export default function GroupStudentTable({ groupName }) {
                   setEditingStudent(prev => ({ ...prev, name: event.target.value }))
                 }
                 placeholder="Name"
-                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
+                className={inputClass}
               />
               <input
                 value={editingStudent.fatherName || ""}
@@ -583,7 +637,15 @@ export default function GroupStudentTable({ groupName }) {
                   }))
                 }
                 placeholder="Father Name"
-                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none"
+                className={inputClass}
+              />
+              <input
+                value={editingStudent.admissionNo || ""}
+                onChange={event =>
+                  setEditingStudent(prev => ({ ...prev, admissionNo: event.target.value }))
+                }
+                placeholder="Admission Number"
+                className={inputClass}
               />
               <input
                 value={editingStudent.mobile || ""}
@@ -591,20 +653,147 @@ export default function GroupStudentTable({ groupName }) {
                   setEditingStudent(prev => ({ ...prev, mobile: event.target.value }))
                 }
                 placeholder="Mobile"
-                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none sm:col-span-2"
+                className={inputClass}
               />
+              <select
+                value={editingStudent.gender || ""}
+                onChange={event =>
+                  setEditingStudent(prev => ({ ...prev, gender: event.target.value }))
+                }
+                className={inputClass}
+              >
+                <option value="">Select Gender</option>
+                {genderOptions.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={editingStudent.caste || ""}
+                onChange={event =>
+                  setEditingStudent(prev => ({ ...prev, caste: event.target.value }))
+                }
+                className={inputClass}
+              >
+                <option value="">Select Caste</option>
+                {casteOptions.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={editingStudent.yearOfStudy || ""}
+                onChange={event =>
+                  setEditingStudent(prev => ({ ...prev, yearOfStudy: event.target.value }))
+                }
+                className={inputClass}
+              >
+                <option value="">Select Year</option>
+                {yearOptions.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={editingStudent.status || "Active"}
+                onChange={event =>
+                  setEditingStudent(prev => ({ ...prev, status: event.target.value }))
+                }
+                className={inputClass}
+              >
+                {statusOptions.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="date"
+                value={normalizeDate(editingStudent.dob)}
+                onChange={event =>
+                  setEditingStudent(prev => ({ ...prev, dob: event.target.value }))
+                }
+                className={inputClass}
+              />
+              <input
+                type="date"
+                value={normalizeDate(editingStudent.dateOfJoining)}
+                onChange={event =>
+                  setEditingStudent(prev => ({
+                    ...prev,
+                    dateOfJoining: event.target.value,
+                  }))
+                }
+                className={inputClass}
+              />
+              <input
+                type="number"
+                value={editingStudent.admissionYear || ""}
+                onChange={event =>
+                  setEditingStudent(prev => ({
+                    ...prev,
+                    admissionYear: event.target.value,
+                  }))
+                }
+                placeholder="Admission Year"
+                className={inputClass}
+              />
+              <input
+                value={editingStudent.password || ""}
+                onChange={event =>
+                  setEditingStudent(prev => ({ ...prev, password: event.target.value }))
+                }
+                placeholder="Password"
+                className={inputClass}
+              />
+              <textarea
+                value={editingStudent.address || ""}
+                onChange={event =>
+                  setEditingStudent(prev => ({ ...prev, address: event.target.value }))
+                }
+                placeholder="Address"
+                rows={3}
+                className={`${inputClass} sm:col-span-2`}
+              />
+              <div className="space-y-3 sm:col-span-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={event => {
+                    const file = event.target.files?.[0] || null;
+                    setEditingStudent(prev => ({
+                      ...prev,
+                      file,
+                      photo: file ? URL.createObjectURL(file) : prev.photo || "",
+                    }));
+                  }}
+                  className={`${inputClass} w-full cursor-pointer border-dashed bg-slate-50 file:mr-3 file:rounded-lg file:border-0 file:bg-cyan-700 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white`}
+                />
+                {editingStudent.photo && (
+                  <img
+                    src={editingStudent.photo}
+                    alt="Student preview"
+                    className="h-24 w-24 rounded-2xl border border-slate-200 object-cover"
+                  />
+                )}
+              </div>
             </div>
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <button
+                disabled={isUpdating}
                 onClick={() => handleUpdate(editingStudent)}
-                className="flex-1 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                className="flex-1 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Save Changes
+                {isUpdating ? "Saving..." : "Save Changes"}
               </button>
               <button
+                disabled={isUpdating}
                 onClick={() => setEditingStudent(null)}
-                className="flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancel
               </button>

@@ -1,6 +1,7 @@
 //app/principal/dashboard/page.jsx
 'use client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Link from 'next/link'
 import useSWR from 'swr'
 import { useSession } from 'next-auth/react'
 import { useEffect, useMemo, useState } from 'react'
@@ -9,11 +10,22 @@ import AttendanceShortageSummary from '@/components/attendance-shortage-summary/
 import OverallAttendanceMatrixCard from '@/components/OverallAttendanceMatrixCard/OverallAttendanceMatrixCard'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
 import AttendanceStatsTable from '@/components/tables/AttendanceStatsTable'
-import { UserGroupIcon } from '@heroicons/react/24/solid'
+import {
+  Building2,
+  FileSpreadsheet,
+  GraduationCap,
+  LayoutGrid,
+  Percent,
+  Upload,
+  UserRoundCheck,
+  Users,
+} from 'lucide-react'
 import OverallStrengthCard from '@/components/dashboard/OverallStrengthCard'
 
 import MetricsCards from './MetricsCards'
 import PromotionCard from './PromotionCard'
+import OverviewStatCard from './OverviewStatCard'
+import AttendanceOverviewTable from './AttendanceOverviewTable'
 
 const fetcher = url => fetch(url).then(res => res.json())
 
@@ -22,7 +34,6 @@ export default function PrincipalDashboard() {
   const { data: session } = useSession()
   const principal = session?.user
   const collegeName = principal?.collegeName || 'Your College'
-  const [studentCount, setStudentCount] = useState(0)
 
   useEffect(() => {
     fetch('/api/attendance/shortage-summary')
@@ -30,38 +41,25 @@ export default function PrincipalDashboard() {
       .then(data => setShortageData(data.data || []))
   }, [])
 
-  const { data: studentData } = useSWR('/api/students', fetcher)
-  const totalStudents = studentData?.data?.length || 0
-
-  const { data: lecturerData } = useSWR('/api/lecturers', fetcher)
-  const totalLecturers = lecturerData?.data?.length || 0
-
-  const { data: activeLecturersData, error: activeLecturersError } = useSWR(
-    '/api/lecturers/active',
-    fetcher
+  const { data: dashboardOverview, error: dashboardOverviewError } = useSWR(
+    '/api/principal/dashboard-overview',
+    fetcher,
+    {
+      refreshInterval: 60000,
+      revalidateOnFocus: true,
+    }
   )
-  const { data } = useSWR('/api/attendance/today', fetcher)
-  const absentees = data?.absentees || []
-  const todaysPresent = data?.presentStudents?.length || 0
 
-  useEffect(() => {
-    if (!session?.user) return
-    fetch(
-      `/api/students/count?collegeId=${encodeURIComponent(session.user.collegeId)}&subject=${encodeURIComponent(
-        session.user.subject || ''
-      )}`
-    )
-      .then(res => res.json())
-      .then(data => {
-        if (data?.count !== undefined) setStudentCount(data.count)
-      })
-      .catch(err => {
-        console.error('Failed to fetch student count', err)
-      })
-  }, [session])
+  const { data: absenteesData } = useSWR('/api/attendance/today-absentees', fetcher, {
+    refreshInterval: 60000,
+    revalidateOnFocus: true,
+  })
 
-  const sessionWisePresent = data?.sessionWisePresent || {}
-  const sessionWiseAbsentees = data?.sessionWiseAbsentees || {}
+  const summary = dashboardOverview?.summary
+  const attendanceOverview = dashboardOverview?.attendanceOverview
+  const overviewLoading = !dashboardOverview && !dashboardOverviewError
+  const sessionWisePresent = absenteesData?.sessionWisePresent || {}
+  const sessionWiseAbsentees = absenteesData?.sessionWiseAbsentees || {}
 
   const todayDateLabel = useMemo(
     () =>
@@ -86,6 +84,49 @@ export default function PrincipalDashboard() {
     return { present, absent, total, percent }
   }
 
+  const summaryCards = [
+    {
+      title: 'Total Students',
+      value: summary?.totalStudents ?? 0,
+      subtitle: 'Active students across the college',
+      icon: GraduationCap,
+      accentClassName: 'text-blue-950',
+      iconClassName: 'bg-blue-100 text-blue-700',
+    },
+    {
+      title: 'Total Lecturers',
+      value: summary?.totalLecturers ?? 0,
+      subtitle: 'Teaching staff available in the institution',
+      icon: Users,
+      accentClassName: 'text-emerald-950',
+      iconClassName: 'bg-emerald-100 text-emerald-700',
+    },
+    {
+      title: 'Total Groups',
+      value: summary?.totalGroups ?? 0,
+      subtitle: 'Academic groups currently active',
+      icon: LayoutGrid,
+      accentClassName: 'text-violet-950',
+      iconClassName: 'bg-violet-100 text-violet-700',
+    },
+    {
+      title: "Today's Attendance %",
+      value: `${summary?.attendancePercentage ?? 0}%`,
+      subtitle: `${summary?.totalPresentToday ?? 0} students marked present today`,
+      icon: Percent,
+      accentClassName: 'text-amber-950',
+      iconClassName: 'bg-amber-100 text-amber-700',
+    },
+    {
+      title: 'Total Absentees Today',
+      value: summary?.totalAbsenteesToday ?? 0,
+      subtitle: 'Students not marked present for today',
+      icon: UserRoundCheck,
+      accentClassName: 'text-rose-950',
+      iconClassName: 'bg-rose-100 text-rose-700',
+    },
+  ]
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(29,78,216,0.14),rgba(248,250,252,0.92)_40%,rgba(226,232,240,0.9)_100%)] px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
       <main className="mx-auto w-full max-w-7xl space-y-6">
@@ -100,16 +141,66 @@ export default function PrincipalDashboard() {
               </h1>
               <p className="mt-2 text-sm text-slate-600">{todayDateLabel}</p>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-blue-700">Students</p>
-                <p className="text-2xl font-bold text-blue-950">{totalStudents}</p>
-              </div>
-              <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-emerald-700">Lecturers</p>
-                <p className="text-2xl font-bold text-emerald-950">{totalLecturers}</p>
+            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className="rounded-2xl bg-blue-100 p-3 text-blue-700">
+                  <Building2 className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-blue-700">Institution</p>
+                  <p className="text-lg font-bold text-blue-950">Daily administrative overview</p>
+                </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+                College Status Overview
+              </p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
+                College Status Overview
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                A quick snapshot of institutional strength and today&apos;s attendance.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            {summaryCards.map(card => (
+              <OverviewStatCard key={card.title} {...card} loading={overviewLoading} />
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+              Today&apos;s Attendance Overview
+            </p>
+            <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
+              Today&apos;s Attendance Overview
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Group-wise attendance split by academic year for the current day.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <AttendanceOverviewTable
+              title="First Year Attendance"
+              rows={attendanceOverview?.firstYear || []}
+              loading={overviewLoading}
+            />
+            <AttendanceOverviewTable
+              title="Second Year Attendance"
+              rows={attendanceOverview?.secondYear || []}
+              loading={overviewLoading}
+            />
           </div>
         </section>
 
@@ -141,12 +232,47 @@ export default function PrincipalDashboard() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
                   Total Strength
                 </p>
-                <p className="mt-1 text-3xl font-black text-indigo-950">{studentCount}</p>
-                <p className="text-xs text-slate-500">{todaysPresent} present today</p>
+                <p className="mt-1 text-3xl font-black text-indigo-950">
+                  {overviewLoading ? '...' : summary?.totalStudents ?? 0}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {overviewLoading ? 'Loading attendance...' : `${summary?.totalPresentToday ?? 0} present today`}
+                </p>
               </div>
               <div className="rounded-2xl bg-indigo-100 p-3 text-indigo-700">
-                <UserGroupIcon className="h-8 w-8" />
+                <GraduationCap className="h-8 w-8" />
               </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <Card className="rounded-3xl border-emerald-100 bg-white/90 shadow-md">
+            <CardContent className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-4">
+                <div className="rounded-2xl bg-emerald-100 p-3 text-emerald-700">
+                  <FileSpreadsheet className="h-7 w-7" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                    Student Management
+                  </p>
+                  <h2 className="mt-2 text-xl font-black tracking-tight text-slate-900">
+                    Bulk Upload Students
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm text-slate-600">
+                    Import student records in one step using the Excel bulk upload flow.
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/students/bulk-upload"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+              >
+                <Upload className="h-4 w-4" />
+                Open Bulk Upload
+              </Link>
             </CardContent>
           </Card>
         </section>
@@ -167,41 +293,20 @@ export default function PrincipalDashboard() {
               <OverallAttendanceMatrixCard />
             </Card>
 
-            <Card className="rounded-3xl border-slate-200 bg-white/85 p-3 shadow-md sm:p-4">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xl font-extrabold tracking-tight text-slate-900">
-                  Attendance At a Glance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AttendanceStatsTable stats={stats} />
-              </CardContent>
-            </Card>
+            
           </div>
 
           <div className="space-y-4">
-            <ActiveLecturersCard
-              className="w-full rounded-3xl shadow-md"
-              lecturers={activeLecturersData?.data || []}
-              loading={!activeLecturersData && !activeLecturersError}
-              error={activeLecturersError}
-              title="Currently Active Lecturers"
-            />
+            <ActiveLecturersCard title="Currently Active Lecturers" />
 
-            <Card className="rounded-3xl border-slate-200 bg-white/85 p-3 shadow-md">
+            {/* <Card className="rounded-3xl border-slate-200 bg-white/85 p-3 shadow-md">
               <AttendanceShortageSummary data={shortageData} />
-            </Card>
+            </Card> */}
           </div>
+
         </section>
 
-        <Card className="rounded-3xl border-slate-200 bg-white/90 p-3 shadow-md sm:p-4">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl font-bold text-slate-900">Today's Absentees</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TodayAbsenteesTable absetees={absentees} />
-          </CardContent>
-        </Card>
+        
 
         <footer className="rounded-3xl border border-slate-200 bg-white/80 px-4 py-6 text-slate-600 shadow-sm">
           <div className="mb-3 flex justify-center gap-6 text-xl">

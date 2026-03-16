@@ -13,7 +13,6 @@ const collegeSchema = new mongoose.Schema({
 }, // Example: "GJC-123"
   address: String,
   district: String,
-  principalName: String,
   contactEmail: String,
   contactPhone: String,
 }, { timestamps: true });

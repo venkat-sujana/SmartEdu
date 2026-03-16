@@ -24,7 +24,7 @@ export default function Sidebar({ onClose }) {
     { href: "/", label: "Home", icon: <HomeIcon className="h-5 w-5" /> },
     { href: "/timetable-management/login", label: "Time Table Management", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
     { href: "/timetable", label: "Academic Time Table", icon: <CalendarDaysIcon className="w-5 h-5 text-cyan-500" /> },
-    { href: "/register", label: "Add Student", icon: <AcademicCapIcon className="w-5 h-5 text-red-500 font-bold" /> },
+    
     { href: "/exams-form", label: "Marks Posting ", icon: <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-500" /> },
     { href: "/attendance-records/monthly-summary", label: "CAR", icon: <UserGroupIcon className="w-5 h-5 text-purple-500" /> },
     { href: "/attendance-records/attendance-calendar", label: "Calendar View ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },

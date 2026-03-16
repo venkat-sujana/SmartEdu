@@ -73,6 +73,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [photo, setPhoto] = useState(null)
+  const [photoPreview, setPhotoPreview] = useState('')
   const [formData, setFormData] = useState(emptyForm)
   const [collegeName, setCollegeName] = useState('')
 
@@ -81,10 +82,53 @@ export default function RegisterPage() {
   }, [session])
 
   const currentYear = useMemo(() => new Date().getFullYear(), [])
+  const isSecondYear = formData.yearOfStudy === 'Second Year'
+  const derivedSecondYearJoiningDate = useMemo(() => {
+    const year = Number(formData.admissionYear)
+
+    if (!Number.isInteger(year) || year < 2000) {
+      return ''
+    }
+
+    return `${year}-06-01`
+  }, [formData.admissionYear])
+
+  const effectiveDateOfJoining = isSecondYear
+    ? derivedSecondYearJoiningDate
+    : formData.dateOfJoining
 
   const handleChange = e => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
+
+  const uploadPhoto = async file => {
+    const payload = new FormData()
+    payload.append('file', file)
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: payload,
+    })
+
+    const result = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      throw new Error(result.message || 'Photo upload failed')
+    }
+
+    return result.url
+  }
+
+  useEffect(() => {
+    if (!photo) {
+      setPhotoPreview('')
+      return
+    }
+
+    const previewUrl = URL.createObjectURL(photo)
+    setPhotoPreview(previewUrl)
+
+    return () => URL.revokeObjectURL(previewUrl)
+  }, [photo])
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -106,15 +150,25 @@ export default function RegisterPage() {
     form.append('gender', formData.gender)
     form.append('yearOfStudy', formData.yearOfStudy)
     form.append('admissionYear', formData.admissionYear)
-    form.append('dateOfJoining', formData.dateOfJoining)
+    form.append('dateOfJoining', effectiveDateOfJoining)
     form.append('password', formData.password)
     form.append('address', formData.address)
     form.append('collegeId', session.user.collegeId)
     form.append('lecturerId', session.user.id)
 
-    if (photo) form.append('photo', photo)
-
     try {
+      if (photo) {
+        const toastId = toast.loading('Uploading photo...')
+        try {
+          const photoUrl = await uploadPhoto(photo)
+          form.append('photoUrl', photoUrl)
+          toast.success('Photo uploaded successfully', { id: toastId })
+        } catch (error) {
+          toast.error(error.message || 'Photo upload failed', { id: toastId })
+          return
+        }
+      }
+
       const res = await fetch('/api/students/register', {
         method: 'POST',
         body: form,
@@ -131,6 +185,7 @@ export default function RegisterPage() {
       const redirectPath = groupDashboardRoutes[formData.group] || '/dashboards'
       setFormData(emptyForm)
       setPhoto(null)
+      setPhotoPreview('')
       router.push(redirectPath)
     } catch (err) {
       toast.error('Something went wrong.')
@@ -353,11 +408,17 @@ export default function RegisterPage() {
                   <input
                     type="date"
                     name="dateOfJoining"
-                    value={formData.dateOfJoining}
+                    value={effectiveDateOfJoining}
                     onChange={handleChange}
-                    className={baseInputClass}
-                    required
+                    disabled={isSecondYear}
+                    className={`${baseInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500 opacity-80' : ''}`}
+                    required={!isSecondYear}
                   />
+                  {isSecondYear ? (
+                    <p className="mt-2 text-xs font-medium text-slate-500">
+                      Date of joining is auto-set from admission year for second-year students.
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -430,6 +491,19 @@ export default function RegisterPage() {
                     </div>
                   </label>
                 </div>
+                {photoPreview && (
+                  <div className="mt-4 flex items-center gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <img
+                      src={photoPreview}
+                      alt="Student preview"
+                      className="h-24 w-24 rounded-2xl object-cover shadow-sm"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-800">{photo?.name}</p>
+                      <p className="text-xs text-slate-500">Preview ready for upload</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
