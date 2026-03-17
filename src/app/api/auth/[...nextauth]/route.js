@@ -79,6 +79,9 @@ async function authenticatePrincipal(email, password) {
 }
 
 const authOptions = {
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     CredentialsProvider({
       id: "student-login",

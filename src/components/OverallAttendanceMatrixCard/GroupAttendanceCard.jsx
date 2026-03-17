@@ -11,28 +11,15 @@ import {
   XCircle,
 } from "lucide-react";
 import { getGroupTheme } from "@/components/dashboard/groupTheme";
+import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
 
 const years = ["First Year", "Second Year"];
 const sessions = ["FN", "AN"];
 
 const fetcher = url => fetch(url).then(res => res.json());
 
-function normalizeGroupName(value) {
-  const normalized = String(value || "").trim().toUpperCase();
-
-  if (normalized === "BIPC") return "BiPC";
-  if (normalized === "MANDAT" || normalized === "M&AT") return "M&AT";
-  if (normalized === "MPC") return "MPC";
-  if (normalized === "CEC") return "CEC";
-  if (normalized === "HEC") return "HEC";
-  if (normalized === "CET") return "CET";
-  if (normalized === "MLT") return "MLT";
-
-  return value || "";
-}
-
 export default function GroupAttendanceCard({ groupName }) {
-  const normalizedGroupName = normalizeGroupName(groupName);
+  const normalizedGroupName = normalizeAttendanceGroup(groupName);
   const theme = getGroupTheme(normalizedGroupName);
   const { data: absApiData } = useSWR("/api/attendance/today-absentees", fetcher);
   const sessionWisePresent = absApiData?.sessionWisePresent || {};
@@ -47,11 +34,11 @@ export default function GroupAttendanceCard({ groupName }) {
   function stats(year, session) {
     const present =
       sessionWisePresent[session]?.filter(
-        student => normalizeGroupName(student.group) === normalizedGroupName && student.yearOfStudy === year
+        student => normalizeAttendanceGroup(student.group) === normalizedGroupName && student.yearOfStudy === year
       ).length || 0;
     const absent =
       sessionWiseAbsentees[session]?.filter(
-        student => normalizeGroupName(student.group) === normalizedGroupName && student.yearOfStudy === year
+        student => normalizeAttendanceGroup(student.group) === normalizedGroupName && student.yearOfStudy === year
       ).length || 0;
     const total = present + absent;
     const percent = total > 0 ? Math.round((present / total) * 100) : 0;

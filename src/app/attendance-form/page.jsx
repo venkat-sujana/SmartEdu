@@ -213,7 +213,7 @@ export default function AttendanceFormPage() {
     const payload = students.map(student => ({
       studentId: student._id,
       date: selectedDate,
-      status: attendanceMap[student._id] || 'Absent',
+      ...(attendanceMap[student._id] ? { status: attendanceMap[student._id] } : {}),
       group: selectedGroup,
       yearOfStudy: selectedYear,
       session: selectedSession,
@@ -232,7 +232,10 @@ export default function AttendanceFormPage() {
       const json = await res.json()
 
       if (json?.status === 'success') {
-        setFeedback({ type: 'success', message: json.message || 'Attendance submitted successfully.' })
+        setFeedback({
+          type: 'success',
+          message: json.message || 'Attendance submitted successfully. Unselected students remain N/A.',
+        })
       } else {
         setFeedback({ type: 'error', message: json?.message || 'Failed to submit attendance.' })
       }

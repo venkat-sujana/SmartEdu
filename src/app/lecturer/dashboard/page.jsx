@@ -25,6 +25,7 @@ import OverallAttendanceMatrixCard from '@/components/OverallAttendanceMatrixCar
 import TodayAbsenteesTable from '@/app/absentees-table/page'
 import OverallStrengthCard from '@/components/dashboard/OverallStrengthCard'
 import MainLinks from '@/components/MainLinks';
+import { normalizeAttendanceGroup } from '@/utils/attendanceGroup';
 
 export default function LecturerDashboard() {
   const { data: shortageApiData } = useSWR('/api/attendance/shortage-summary', fetcher)
@@ -37,11 +38,16 @@ export default function LecturerDashboard() {
 
   // Helper: given group, year, session => stats
   function stats(group, year, session) {
+    const normalizedGroup = normalizeAttendanceGroup(group)
     const present =
-      sessionWisePresent[session]?.filter(s => s.group === group && s.yearOfStudy === year)
+      sessionWisePresent[session]?.filter(
+        s => normalizeAttendanceGroup(s.group) === normalizedGroup && s.yearOfStudy === year
+      )
         .length || 0
     const absent =
-      sessionWiseAbsentees[session]?.filter(s => s.group === group && s.yearOfStudy === year)
+      sessionWiseAbsentees[session]?.filter(
+        s => normalizeAttendanceGroup(s.group) === normalizedGroup && s.yearOfStudy === year
+      )
         .length || 0
     const total = present + absent
     const percent = total > 0 ? Math.round((present / total) * 100) : 0
@@ -170,11 +176,16 @@ export default function LecturerDashboard() {
     secondYearTotal > 0 ? Math.round((secondYearPresent / secondYearTotal) * 100) : 0
 
   function stats(group, year, session) {
+    const normalizedGroup = normalizeAttendanceGroup(group)
     const present =
-      sessionWisePresent[session]?.filter(s => s.group === group && s.yearOfStudy === year)
+      sessionWisePresent[session]?.filter(
+        s => normalizeAttendanceGroup(s.group) === normalizedGroup && s.yearOfStudy === year
+      )
         .length || 0
     const absent =
-      sessionWiseAbsentees[session]?.filter(s => s.group === group && s.yearOfStudy === year)
+      sessionWiseAbsentees[session]?.filter(
+        s => normalizeAttendanceGroup(s.group) === normalizedGroup && s.yearOfStudy === year
+      )
         .length || 0
     const total = present + absent
     const percent = total > 0 ? Math.round((present / total) * 100) : 0

@@ -47,10 +47,21 @@ export async function POST(req) {
     }
 
     const validRecords = parsedRecords.map((result) => result.data)
+    const markedRecords = validRecords.filter((record) => record.status)
+
+    if (markedRecords.length === 0) {
+      return NextResponse.json(
+        {
+          message: 'No attendance status selected. Unmarked students remain N/A.',
+          status: 'error',
+        },
+        { status: 400 }
+      )
+    }
 
     // ✅ Extract common info
     // 🔥 Step 1: Duplicate check (same date + group + yearOfStudy + collegeId + session)
-    const { date, yearOfStudy, group, session: sessionVal } = validRecords[0]
+    const { date, yearOfStudy, group, session: sessionVal } = markedRecords[0]
     const selectedDate = new Date(date)
     const selectedGroup = group
     const selectedYearOfStudy = yearOfStudy
@@ -77,7 +88,7 @@ export async function POST(req) {
     }
 
     // collect all studentIds
-const studentIds = validRecords.map(r => r.studentId)
+const studentIds = markedRecords.map(r => r.studentId)
 
 // fetch students in one query
 const students = await mongoose
@@ -92,7 +103,7 @@ const studentMap = new Map(
 
 let processedRecords = []
 
-for (const record of validRecords) {
+for (const record of markedRecords) {
 
   const student = studentMap.get(String(record.studentId))
   if (!student) continue
@@ -114,7 +125,7 @@ for (const record of validRecords) {
     lecturerId,
     studentName: student.name,
     studentId: record.studentId,
-    status: record.status || "Absent",
+    status: record.status,
     date: attendanceDate,
     yearOfStudy: record.yearOfStudy,
     group: record.group,

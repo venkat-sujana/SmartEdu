@@ -8,6 +8,7 @@ import {
   buildAttendanceSessionReadFilter,
   normalizeAttendanceSession,
 } from "@/validations/attendanceValidation";
+import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
 
 export async function getTodayAttendancePercent(collegeId) {
   await connectMongoDB();
@@ -267,7 +268,7 @@ export async function getTodayAbsentees(collegeId) {
     sessionWiseAbsentees[session] = absentees.map((r) => ({
       name: r.studentId?.name || "Unknown",
       yearOfStudy: r.yearOfStudy || r.studentId?.yearOfStudy,
-      group: r.group || r.studentId?.group,
+      group: normalizeAttendanceGroup(r.group || r.studentId?.group),
       session: r.session,
       lecturerName: r.lecturerName || "—",
       markedAt: r.markedAt || r.updatedAt || null,
@@ -276,7 +277,7 @@ export async function getTodayAbsentees(collegeId) {
     sessionWisePresent[session] = presentStudents.map((r) => ({
       name: r.studentId?.name || "Unknown",
       yearOfStudy: r.yearOfStudy || r.studentId?.yearOfStudy,
-      group: r.group || r.studentId?.group,
+      group: normalizeAttendanceGroup(r.group || r.studentId?.group),
       session: r.session,
       lecturerName: r.lecturerName || "—",
       markedAt: r.markedAt || r.updatedAt || null,

@@ -85,7 +85,7 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
     const attendanceRecords = filteredStudents.map((student) => ({
       studentId: student._id,
       date: selectedDate,
-      status: attendanceData[student._id] || "Absent",
+      ...(attendanceData[student._id] ? { status: attendanceData[student._id] } : {}),
       group: selectedGroup.toUpperCase(),
       month, yearOfStudy: selectedYearOfStudy,
       lecturerId: selectedLecturerId,
@@ -110,7 +110,9 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
       }
       
       if (result.status === "success") {
-        setFullscreenToastMessage(result.message || "Attendance submitted successfully!");
+        setFullscreenToastMessage(
+          result.message || "Attendance submitted successfully! Unselected students remain N/A."
+        );
         // Reset form
         setSelectedGroup("");
         setSelectedYearOfStudy("");

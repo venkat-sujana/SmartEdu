@@ -4,6 +4,7 @@ import React from 'react'
 import useSWR from 'swr'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { normalizeAttendanceGroup } from '@/utils/attendanceGroup'
 
 const groupNames = ['MPC', 'BiPC', 'CEC', 'HEC', 'CET', 'M&AT', 'MLT']
 const years = ['First Year', 'Second Year']
@@ -11,22 +12,8 @@ const sessions = ['FN', 'AN']
 
 const fetcher = url => fetch(url).then(res => res.json())
 
-function normalizeGroupName(value) {
-  const normalized = String(value || '').trim().toUpperCase()
-
-  if (normalized === 'BIPC') return 'BiPC'
-  if (normalized === 'MANDAT' || normalized === 'M&AT') return 'M&AT'
-  if (normalized === 'MPC') return 'MPC'
-  if (normalized === 'CEC') return 'CEC'
-  if (normalized === 'HEC') return 'HEC'
-  if (normalized === 'CET') return 'CET'
-  if (normalized === 'MLT') return 'MLT'
-
-  return value || ''
-}
-
 function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees }) {
-  const normalizedGroupName = normalizeGroupName(groupName)
+  const normalizedGroupName = normalizeAttendanceGroup(groupName)
   const { data: studentsData } = useSWR(
     `/api/students?group=${encodeURIComponent(normalizedGroupName)}&limit=1`,
     fetcher
@@ -36,12 +23,12 @@ function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees })
   function stats(year, session) {
     const present =
       sessionWisePresent[session]?.filter(
-        student => normalizeGroupName(student.group) === normalizedGroupName && student.yearOfStudy === year
+        student => normalizeAttendanceGroup(student.group) === normalizedGroupName && student.yearOfStudy === year
       ).length || 0
 
     const absent =
       sessionWiseAbsentees[session]?.filter(
-        student => normalizeGroupName(student.group) === normalizedGroupName && student.yearOfStudy === year
+        student => normalizeAttendanceGroup(student.group) === normalizedGroupName && student.yearOfStudy === year
       ).length || 0
 
     return { present, absent, total: present + absent }

@@ -4,6 +4,7 @@ import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import Lecturer from "@/models/Lecturer";
 import Student from "@/models/Student";
+import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
 
 function getTodayRange() {
   const start = new Date();
@@ -30,20 +31,7 @@ function getYearLabel(value) {
 }
 
 function getGroupLabel(value) {
-  const normalized = String(value || "").trim().toUpperCase();
-
-  if (normalized === "BIPC") {
-    return "BiPC";
-  }
-
-  if (normalized === "MPC") return "MPC";
-  if (normalized === "CEC") return "CEC";
-  if (normalized === "HEC") return "HEC";
-  if (normalized === "CET") return "CET";
-  if (normalized === "MLT") return "MLT";
-  if (normalized === "M&AT") return "M&AT";
-
-  return value || "Unknown";
+  return normalizeAttendanceGroup(value) || "Unknown";
 }
 
 export async function getPrincipalDashboardOverview(collegeId) {
@@ -121,6 +109,13 @@ export async function getPrincipalDashboardOverview(collegeId) {
       },
     ]),
   ]);
+
+  // DEBUG LOG - REMOVE AFTER VERIFICATION
+  console.log(`[PrincipalDashboard] Active students for college ${collegeId}:`, studentCounts.length);
+  if (studentCounts.length > 0) {
+    console.log('Sample:', studentCounts.slice(0, 3).map(s => ({group: s.group, year: s.year})));
+  }
+  console.log('Today attendance records:', todayAttendance.length);
 
   const normalizedStudentCounts = Array.from(
     studentCounts.reduce((map, item) => {
