@@ -1,3 +1,4 @@
+//src/components/layout/Footer.jsx
 "use client";
 
 import { Mail, MapPin, Phone } from "lucide-react";

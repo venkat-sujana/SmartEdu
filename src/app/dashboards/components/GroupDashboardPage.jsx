@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import useSWR from "swr";
 import { CalendarCheck2, LayoutDashboard, UserPlus, Users2 } from "lucide-react";
 import TodayAbsenteesTable from "@/components/attendance/TodayAbsenteesTable";
 import AttendanceForm from "@/components/attendance/AttendanceForm";
@@ -16,6 +17,14 @@ import LecturerInfoCard from "@/components/dashboard/LecturerInfoCard";
 import GroupAttendanceCard from "@/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
 import GroupStudentTable from "@/components/tables/GroupStudentTable";
 import { getGroupTheme } from "@/components/dashboard/groupTheme";
+
+const fetcher = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch data");
+  }
+  return response.json();
+};
 
 export default function GroupDashboardPage({
   groupName,
@@ -36,6 +45,15 @@ export default function GroupDashboardPage({
   const [editAttendance, setEditAttendance] = useState(false);
 
   const collegeName = user?.collegeName || "College";
+  const { data: collegeDetails } = useSWR(
+    user?.collegeId ? `/api/colleges/${user.collegeId}` : null,
+    fetcher
+  );
+  const footerAddress = [collegeDetails?.address, collegeDetails?.district]
+    .filter(Boolean)
+    .join(", ");
+  const footerPhone = collegeDetails?.phone || "";
+  const footerEmail = collegeDetails?.email || "";
   const years = ["First Year", "Second Year"];
   const theme = getGroupTheme(groupName);
   const defaultOverview =
@@ -234,7 +252,10 @@ export default function GroupDashboardPage({
 
         <section className={`rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} shadow-sm`}>
           <DashboardFooter
-            collegeName={collegeName}
+            collegeName={collegeDetails?.name || collegeName}
+            address={footerAddress || "Address not available"}
+            phone={footerPhone || "Phone not available"}
+            email={footerEmail || "Email not available"}
             groupName={groupName}
             facebookUrl="https://facebook.com/yourcollege"
             instagramUrl="https://instagram.com/yourcollege"
@@ -246,8 +267,3 @@ export default function GroupDashboardPage({
     </div>
   );
 }
-
-
-
-
-

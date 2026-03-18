@@ -81,7 +81,7 @@ export default function Navbar({ onOpenDrawer }) {
                   <CircleHelp className="h-4 w-4 text-violet-600" />
                   About
                 </Link>
-                {user?.role === "principal" && (
+                {user?.role === "admin" && (
                   <Link
                     href="/admin-panel"
                     className="flex items-center gap-1 rounded px-2 py-1 hover:bg-slate-100"
@@ -132,3 +132,5 @@ export default function Navbar({ onOpenDrawer }) {
     </motion.header>
   );
 }
+
+

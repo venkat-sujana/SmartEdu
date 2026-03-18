@@ -19,8 +19,8 @@ import {
   X,
   KeyRound,
 } from 'lucide-react'
+import { DEFAULT_COLLEGE_GROUPS } from '@/utils/collegeGroups'
 
-const groups = ['MPC', 'BiPC', 'BIPC', 'CEC', 'HEC', 'M&AT', 'MLT', 'CET']
 const castes = ['OC', 'OBC', 'BC-A', 'BC-B', 'BC-C', 'BC-D', 'BC-E', 'SC', 'SC-A', 'SC-B', 'SC-C', 'ST', 'OTHER']
 const yearOptions = ['First Year', 'Second Year']
 const statusOptions = ['Active', 'Terminated']
@@ -67,11 +67,33 @@ const Field = ({ icon: Icon, iconClassName, label, children, className = '' }) =
 const StudentEditForm = ({ student, onCancel, onSave }) => {
   const [formData, setFormData] = useState(createFormState(student))
   const [isUploading, setIsUploading] = useState(false)
+  const [availableGroups, setAvailableGroups] = useState(DEFAULT_COLLEGE_GROUPS)
   const { data: session } = useSession()
 
   useEffect(() => {
     setFormData(createFormState(student))
   }, [student])
+
+  useEffect(() => {
+    const fetchCollegeGroups = async () => {
+      if (!session?.user?.collegeId) return
+
+      try {
+        const res = await fetch(`/api/colleges/${session.user.collegeId}`)
+        const data = await res.json()
+        if (Array.isArray(data?.groups) && data.groups.length) {
+          setAvailableGroups(data.groups)
+        } else {
+          setAvailableGroups(DEFAULT_COLLEGE_GROUPS)
+        }
+      } catch (error) {
+        console.error('Failed to fetch college groups:', error)
+        setAvailableGroups(DEFAULT_COLLEGE_GROUPS)
+      }
+    }
+
+    fetchCollegeGroups()
+  }, [session?.user?.collegeId])
 
   const collegeName = session?.user?.collegeName || 'Loading college...'
   const currentYear = useMemo(() => new Date().getFullYear(), [])
@@ -231,7 +253,7 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
         <Field icon={Users2} iconClassName="text-purple-700" label="Group">
           <select name="group" value={formData.group} onChange={handleChange} className={inputClass} required>
             <option value="">Select Group</option>
-            {groups.map(group => (
+            {availableGroups.map(group => (
               <option key={group} value={group}>
                 {group}
               </option>

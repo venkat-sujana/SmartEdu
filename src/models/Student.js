@@ -17,8 +17,7 @@ const studentSchema = new mongoose.Schema(
   group: {
     type: String,
     required: true,
-    trim: true,
-    enum: ["MPC","BiPC","BIPC","CEC","HEC","CET","M&AT","MLT"]
+    trim: true
   },
 
   caste: {

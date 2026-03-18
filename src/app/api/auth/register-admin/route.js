@@ -3,6 +3,16 @@ import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import User from "@/models/User";
 import { hashPassword } from "@/lib/invigilation-auth";
 
+export async function GET() {
+  try {
+    await connectInvigilationDB();
+    const admins = await User.countDocuments({ role: "admin" });
+    return NextResponse.json({ hasAdmins: admins > 0, totalAdmins: admins });
+  } catch (error) {
+    return NextResponse.json({ message: error.message || "Failed" }, { status: 500 });
+  }
+}
+
 export async function POST(req) {
   try {
     await connectInvigilationDB();
@@ -38,4 +48,3 @@ export async function POST(req) {
     return NextResponse.json({ message: error.message || "Failed" }, { status: 500 });
   }
 }
-

@@ -1,4 +1,3 @@
-// app/api/auth/[...nextauth]/route.js
 import "@/models/College";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -7,6 +6,28 @@ import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";
 import Principal from "@/models/Principal";
 import Student from "@/models/Student";
+import User from "@/models/User";
+
+async function authenticateAdmin(email, password) {
+  await connectMongoDB();
+  const admin = await User.findOne({
+    email: email.trim().toLowerCase(),
+    role: "admin",
+  });
+  if (!admin) return null;
+
+  const isValid = await bcrypt.compare(password.trim(), admin.password);
+  if (!isValid) return null;
+
+  return {
+    id: admin._id.toString(),
+    name: admin.name,
+    email: admin.email,
+    role: "admin",
+    collegeId: null,
+    collegeName: "System Admin",
+  };
+}
 
 async function authenticateLecturer(email, password) {
   await connectMongoDB();
@@ -83,6 +104,20 @@ const authOptions = {
     strategy: "jwt",
   },
   providers: [
+    CredentialsProvider({
+      id: "admin-login",
+      name: "Admin Login",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+        return authenticateAdmin(credentials.email, credentials.password);
+      },
+    }),
     CredentialsProvider({
       id: "student-login",
       name: "Student Login",

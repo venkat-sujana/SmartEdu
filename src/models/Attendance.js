@@ -39,7 +39,6 @@ const attendanceSchema = new Schema(
 
   group: {
     type: String,
-    enum: ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"],
     required: true,
     index: true
   },

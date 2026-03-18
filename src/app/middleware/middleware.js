@@ -1,13 +1,18 @@
-// app/middleware/middleware.js
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { jwtVerify } from "jose";
 
-const LOGIN_PATHS = ["/auth/login", "/lecturer/login", "/principal/login", "/student/login"];
+const LOGIN_PATHS = [
+  "/auth/login",
+  "/admin/login",
+  "/lecturer/login",
+  "/principal/login",
+  "/student/login",
+];
+
 function getRoleHome(role) {
-  if (role === "lecturer") {
-    return "/dashboards";
-  }
+  if (role === "admin") return "/admin-panel";
+  if (role === "lecturer") return "/dashboards";
   if (role === "principal") return "/principal/dashboard";
   if (role === "student") return "/student/dashboard";
   return "/auth/login";
@@ -63,6 +68,10 @@ export async function middleware(req) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
+  if (token.role === "admin") {
+    return NextResponse.next();
+  }
+
   if (pathname.startsWith("/lecturer") && token.role !== "lecturer") {
     return NextResponse.redirect(new URL(getRoleHome(token.role), req.url));
   }
@@ -79,7 +88,7 @@ export async function middleware(req) {
     return NextResponse.redirect(new URL(getRoleHome(token.role), req.url));
   }
 
-  if (pathname.startsWith("/admin-panel") && token.role !== "principal") {
+  if (pathname.startsWith("/admin-panel") && token.role !== "admin") {
     return NextResponse.redirect(new URL(getRoleHome(token.role), req.url));
   }
 
@@ -97,3 +106,4 @@ export const config = {
     "/timetable-management/:path*",
   ],
 };
+

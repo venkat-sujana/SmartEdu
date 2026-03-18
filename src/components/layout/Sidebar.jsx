@@ -1,4 +1,3 @@
-// src/components/layout/Sidebar.jsx
 "use client"
 import Link from "next/link"
 import { Menu } from "lucide-react"
@@ -13,26 +12,35 @@ import {
   PencilSquareIcon,
   CalendarDaysIcon,
   XCircleIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/solid"
 
 export default function Sidebar({ onClose }) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const user = session?.user || {}
+  const isAdmin = user.role === "admin"
 
-  const links = [
-    { href: "/", label: "Home", icon: <HomeIcon className="h-5 w-5" /> },
-    { href: "/timetable-management/login", label: "Time Table Management", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
-    { href: "/timetable", label: "Academic Time Table", icon: <CalendarDaysIcon className="w-5 h-5 text-cyan-500" /> },
-    
-    { href: "/exams-form", label: "Marks Posting ", icon: <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-500" /> },
-    { href: "/attendance-records/monthly-summary", label: "CAR", icon: <UserGroupIcon className="w-5 h-5 text-purple-500" /> },
-    { href: "/attendance-records/attendance-calendar", label: "Calendar View ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
-    { href: "/attendance-records/individual", label: "Update Attendance ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
-    { href: "/absentees-table", label: "Today's Absentees ", icon: <XCircleIcon className="w-5 h-5 text-red-500" /> },
-    { href: "/components/attendance-shortage-summary", label: "Attendance Shortage ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
-    { href: "/attendance-form", label: "Take Attendance ", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
-  ]
+  const links = isAdmin
+    ? [
+        { href: "/", label: "Home", icon: <HomeIcon className="h-5 w-5" /> },
+        { href: "/admin-panel", label: "Admin Panel", icon: <ShieldCheckIcon className="w-5 h-5 text-cyan-400" /> },
+        { href: "/student-table", label: "Student Table", icon: <UserGroupIcon className="w-5 h-5 text-purple-400" /> },
+        { href: "/lecturer-registration", label: "Lecturer Registration", icon: <AcademicCapIcon className="w-5 h-5 text-emerald-400" /> },
+        { href: "/principal-registration", label: "Principal Registration", icon: <UserCircleIcon className="w-5 h-5 text-indigo-400" /> },
+      ]
+    : [
+        { href: "/", label: "Home", icon: <HomeIcon className="h-5 w-5" /> },
+        { href: "/timetable-management/login", label: "Time Table Management", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
+        { href: "/timetable", label: "Academic Time Table", icon: <CalendarDaysIcon className="w-5 h-5 text-cyan-500" /> },
+        { href: "/exams-form", label: "Marks Posting ", icon: <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-500" /> },
+        { href: "/attendance-records/monthly-summary", label: "CAR", icon: <UserGroupIcon className="w-5 h-5 text-purple-500" /> },
+        { href: "/attendance-records/attendance-calendar", label: "Calendar View ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
+        { href: "/attendance-records/individual", label: "Update Attendance ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
+        { href: "/absentees-table", label: "Today's Absentees ", icon: <XCircleIcon className="w-5 h-5 text-red-500" /> },
+        { href: "/components/attendance-shortage-summary", label: "Attendance Shortage ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
+        { href: "/attendance-form", label: "Take Attendance ", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
+      ]
 
   return (
     <aside className="flex h-full w-56 shrink-0 flex-col border-r border-slate-700/50 bg-linear-to-b from-slate-900 via-slate-900 to-slate-800 px-3 py-4 text-slate-100 shadow-2xl lg:w-60">
@@ -46,7 +54,7 @@ export default function Sidebar({ onClose }) {
               Dashboard
             </h3>
             <p className="truncate text-sm font-bold text-slate-100">
-              {user.collegeName || "Your College"}
+              {user.collegeName || (isAdmin ? "System Admin" : "Your College")}
             </p>
           </div>
         </div>

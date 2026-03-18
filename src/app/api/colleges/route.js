@@ -1,10 +1,8 @@
-// app/api/colleges/route.js
-
 import { NextResponse } from "next/server";
 import College from "@/models/College";
 import connectMongoDB from "@/lib/mongodb";
+import { ensureCollegeGroups } from "@/utils/collegeGroups";
 
-// ✅ POST: Create a new college
 export async function POST(req) {
   try {
     await connectMongoDB();
@@ -15,7 +13,10 @@ export async function POST(req) {
       return NextResponse.json({ error: "College already exists with this code." }, { status: 400 });
     }
 
-    const newCollege = await College.create(data);
+    const newCollege = await College.create({
+      ...data,
+      groups: ensureCollegeGroups(data.groups),
+    });
     return NextResponse.json(newCollege, { status: 201 });
   } catch (error) {
     console.error("POST College Error:", error);
@@ -23,14 +24,10 @@ export async function POST(req) {
   }
 }
 
-// ✅ GET: Return only required fields (_id, name) for dropdowns
 export async function GET() {
   try {
     await connectMongoDB();
-
-    console.log("GET Colleges: Connecting to MongoDB...");
-    const colleges = await College.find({}, "_id name").sort({ name: 1 });
-    console.log("GET Colleges: Fetched colleges:", colleges);
+    const colleges = await College.find({}, "_id name groups").sort({ name: 1 });
     return NextResponse.json(colleges, { status: 200 });
   } catch (error) {
     console.error("GET Colleges Error:", error);

@@ -15,15 +15,16 @@ export default function AutoRedirect() {
     }
 
     const role = session.user.role;
-    if (role === "lecturer") router.push("/lecturer/dashboard");
+    if (role === "admin") router.push("/admin-panel");
+    else if (role === "lecturer") router.push("/lecturer/dashboard");
     else if (role === "student") router.push("/student/dashboard");
     else if (role === "principal") router.push("/principal/dashboard");
     else router.push("/student/login");
   }, [session, status, router]);
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <p className="text-gray-600 text-lg">Redirecting...</p>
+    <div className="flex min-h-screen items-center justify-center">
+      <p className="text-lg text-gray-600">Redirecting...</p>
     </div>
   );
 }

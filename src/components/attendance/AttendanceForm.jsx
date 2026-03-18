@@ -5,8 +5,8 @@ import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { useRouter} from "next/navigation";
+import { DEFAULT_COLLEGE_GROUPS } from "@/utils/collegeGroups";
 
-const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const yearsList = ["First Year", "Second Year"];
 const sessionList = ["FN", "AN"];
@@ -24,6 +24,7 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
   const [isLoading, setIsLoading] = useState(false);
   const [collegeId, setCollegeId] = useState("");
   const [collegeName, setCollegeName] = useState("");
+  const [groupsList, setGroupsList] = useState(DEFAULT_COLLEGE_GROUPS);
   
   const { data: session } = useSession();
   const router = useRouter();
@@ -38,6 +39,27 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
     if (session?.user?.collegeId) setCollegeId(session.user.collegeId);
     if (session?.user?.collegeName) setCollegeName(session.user.collegeName);
   }, [session]);
+
+  useEffect(() => {
+    const fetchCollegeGroups = async () => {
+      if (!session?.user?.collegeId) return;
+
+      try {
+        const res = await fetch(`/api/colleges/${session.user.collegeId}`);
+        const data = await res.json();
+        if (Array.isArray(data?.groups) && data.groups.length) {
+          setGroupsList(data.groups);
+        } else {
+          setGroupsList(DEFAULT_COLLEGE_GROUPS);
+        }
+      } catch (error) {
+        console.error("Failed to fetch college groups:", error);
+        setGroupsList(DEFAULT_COLLEGE_GROUPS);
+      }
+    };
+
+    fetchCollegeGroups();
+  }, [session?.user?.collegeId]);
 
   useEffect(() => {
     if (!collegeId) return;

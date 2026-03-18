@@ -204,7 +204,7 @@ export default function LecturerDashboard() {
 
       <div className="mb-10 flex items-center justify-center">
         <h1 className="text-md font-bold tracking-tight text-black">LECTURER DASHBOARD</h1>
-        <img
+        <image
           src="/images/classroombg.jpg"
           alt="Lecturer Dashboard Icon"
           className="mr-2 h-15 w-15 rounded object-cover"
@@ -248,7 +248,7 @@ export default function LecturerDashboard() {
       <OverallAttendanceMatrixCard />
 
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">Today's Absentees</h2>
+        <h2 className="mb-6 text-2xl font-bold text-gray-900">Today Absentees</h2>
         <TodayAbsenteesTable absetees={absentees} />
       </div>
 

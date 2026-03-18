@@ -3,11 +3,12 @@ import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
+import College from "@/models/College";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
+import { ensureCollegeGroups } from "@/utils/collegeGroups";
 
-const ALLOWED_GROUPS = new Set(["MPC", "BiPC", "BIPC", "CEC", "HEC", "CET", "M&AT", "MLT"]);
 const ALLOWED_CASTES = new Set([
   "OC",
   "OBC",
@@ -95,6 +96,8 @@ export async function POST(req) {
   const errors = [];
   const seenAdmissionNos = new Set();
   const parsedRows = [];
+  const college = await College.findById(collegeObjectId).select("groups").lean();
+  const allowedGroups = new Set(ensureCollegeGroups(college?.groups));
 
   for (let i = 0; i < excelData.length; i += 1) {
     const row = excelData[i];
@@ -117,7 +120,7 @@ export async function POST(req) {
     if (!name) rowIssues.push("Name is required");
     if (!fatherName) rowIssues.push("FatherName is required");
     if (!/^[6-9]\d{9}$/.test(mobile)) rowIssues.push("Mobile must be a valid 10-digit Indian number");
-    if (!ALLOWED_GROUPS.has(group)) rowIssues.push(`Invalid Group: ${group || "(empty)"}`);
+    if (!allowedGroups.has(group)) rowIssues.push(`Invalid Group: ${group || "(empty)"}`);
     if (!ALLOWED_CASTES.has(caste)) rowIssues.push(`Invalid Caste: ${caste || "(empty)"}`);
     if (!ALLOWED_GENDERS.has(gender)) rowIssues.push(`Invalid Gender: ${gender || "(empty)"}`);
     if (!admissionNo) rowIssues.push("AdmissionNo is required");

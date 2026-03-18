@@ -20,8 +20,8 @@ import {
   ImageUp,
   Loader2,
 } from 'lucide-react'
+import { DEFAULT_COLLEGE_GROUPS } from '@/utils/collegeGroups'
 
-const groups = ['MPC', 'BiPC', 'CEC', 'HEC', 'M&AT', 'MLT', 'CET']
 const groupDashboardRoutes = {
   MPC: '/dashboards/mpc',
   BiPC: '/dashboards/bipc',
@@ -76,10 +76,32 @@ export default function RegisterPage() {
   const [photoPreview, setPhotoPreview] = useState('')
   const [formData, setFormData] = useState(emptyForm)
   const [collegeName, setCollegeName] = useState('')
+  const [availableGroups, setAvailableGroups] = useState(DEFAULT_COLLEGE_GROUPS)
 
   useEffect(() => {
     if (session?.user?.collegeName) setCollegeName(session.user.collegeName)
   }, [session])
+
+  useEffect(() => {
+    const fetchCollegeGroups = async () => {
+      if (!session?.user?.collegeId) return
+
+      try {
+        const res = await fetch(`/api/colleges/${session.user.collegeId}`)
+        const data = await res.json()
+        if (Array.isArray(data?.groups) && data.groups.length) {
+          setAvailableGroups(data.groups)
+        } else {
+          setAvailableGroups(DEFAULT_COLLEGE_GROUPS)
+        }
+      } catch (error) {
+        console.error('Failed to fetch college groups:', error)
+        setAvailableGroups(DEFAULT_COLLEGE_GROUPS)
+      }
+    }
+
+    fetchCollegeGroups()
+  }, [session?.user?.collegeId])
 
   const currentYear = useMemo(() => new Date().getFullYear(), [])
   const isSecondYear = formData.yearOfStudy === 'Second Year'
@@ -323,7 +345,7 @@ export default function RegisterPage() {
                 </label>
                 <select name="group" value={formData.group} onChange={handleChange} className={baseInputClass} required>
                   <option value="">Select Academic Group</option>
-                  {groups.map(group => (
+                  {availableGroups.map(group => (
                     <option key={group} value={group}>{group}</option>
                   ))}
                 </select>
