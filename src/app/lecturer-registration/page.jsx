@@ -1,7 +1,6 @@
 //app/lecturer-registration/page.jsx
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import SpinnerDots from "@/components/SpinnerDots";
 
 export default function LecturerRegister() {
@@ -12,11 +11,14 @@ export default function LecturerRegister() {
     collegeId: '',
     subject: '',
     collegeName: '',
+    photo: '',
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState('');
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   const [colleges, setColleges] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchColleges = async () => {
@@ -35,25 +37,63 @@ export default function LecturerRegister() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const uploadToCloudinary = async (file) => {
+    const payload = new FormData();
+    payload.append('file', file);
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: payload,
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.message || 'Photo upload failed.');
+    }
+
+    return data.url;
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setPhotoFile(file);
+    setPhotoPreview(file ? URL.createObjectURL(file) : '');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const res = await fetch('/api/lecturers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    try {
+      let photoUrl = form.photo;
 
-    const data = await res.json();
-    setIsLoading(false);
+      if (photoFile) {
+        setPhotoUploading(true);
+        photoUrl = await uploadToCloudinary(photoFile);
+      }
 
-    if (res.ok) {
-    
-      window.location.href = "/registration-success";
-      setForm({ name: '', email: '', password: '', collegeId: '', subject: '' });
-    } else {
-      alert(data.error || 'Registration failed.');
+      const res = await fetch('/api/lecturers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, photo: photoUrl }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        window.location.href = "/registration-success";
+        setForm({ name: '', email: '', password: '', collegeId: '', subject: '', collegeName: '', photo: '' });
+        setPhotoFile(null);
+        setPhotoPreview('');
+      } else {
+        alert(data.error || 'Registration failed.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert(error.message || 'Registration failed.');
+    } finally {
+      setPhotoUploading(false);
+      setIsLoading(false);
     }
   };
 
@@ -150,9 +190,29 @@ export default function LecturerRegister() {
           </select>
         </div>
 
+        <div>
+          <label className="block mb-1 font-medium">Photo</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            className="w-full border border-gray-300 rounded px-3 py-2 bg-white focus:outline-none focus:ring focus:border-blue-500"
+          />
+          {photoPreview && (
+            <img
+              src={photoPreview}
+              alt="Lecturer preview"
+              className="mt-3 h-24 w-24 rounded-2xl object-cover border border-gray-200"
+            />
+          )}
+          <p className="mt-2 text-xs text-gray-500">
+            {photoUploading ? 'Uploading photo...' : 'Selected image will be uploaded to Cloudinary during registration.'}
+          </p>
+        </div>
+
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || photoUploading}
           className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition disabled:opacity-70"
         >
           Register Lecturer

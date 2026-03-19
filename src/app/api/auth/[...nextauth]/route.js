@@ -45,6 +45,7 @@ async function authenticateLecturer(email, password) {
     collegeId: lecturer.collegeId?.toString() || null,
     collegeName: lecturer.collegeName || null,
     subject: lecturer.subject,
+    photo: lecturer.photo || "",
   };
 }
 
@@ -181,7 +182,10 @@ const authOptions = {
           token.address = user.address;
         }
 
-        if (user.role === "lecturer") token.subject = user.subject;
+        if (user.role === "lecturer") {
+          token.subject = user.subject;
+          token.photo = user.photo;
+        }
         if (user.role === "principal") token.photo = user.photo;
       }
 
@@ -205,7 +209,10 @@ const authOptions = {
         session.user.address = token.address;
       }
 
-      if (token.role === "lecturer") session.user.subject = token.subject;
+      if (token.role === "lecturer") {
+        session.user.subject = token.subject;
+        session.user.photo = token.photo;
+      }
       if (token.role === "principal") session.user.photo = token.photo;
 
       return session;

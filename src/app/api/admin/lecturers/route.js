@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";
@@ -16,6 +16,9 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const collegeId = searchParams.get("collegeId");
     const search = (searchParams.get("search") || "").trim();
+    const page = Math.max(Number(searchParams.get("page") || 1), 1);
+    const limit = Math.min(Math.max(Number(searchParams.get("limit") || 10), 1), 100);
+    const skip = (page - 1) * limit;
     const query = {};
 
     if (collegeId) query.collegeId = collegeId;
@@ -27,12 +30,25 @@ export async function GET(req) {
       ];
     }
 
-    const lecturers = await Lecturer.find(query)
-      .populate("collegeId", "name")
-      .sort({ createdAt: -1 })
-      .lean();
+    const [lecturers, total] = await Promise.all([
+      Lecturer.find(query)
+        .populate("collegeId", "name")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Lecturer.countDocuments(query),
+    ]);
 
-    return NextResponse.json({ data: lecturers });
+    return NextResponse.json({
+      data: lecturers,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(Math.ceil(total / limit), 1),
+      },
+    });
   } catch (error) {
     console.error("Admin lecturers GET error:", error);
     return NextResponse.json({ error: "Failed to fetch lecturers" }, { status: 500 });
@@ -85,3 +101,4 @@ export async function POST(req) {
     return NextResponse.json({ error: error.message || "Failed to create lecturer" }, { status: 500 });
   }
 }
+

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import College from "@/models/College";
 import { getAdminSession } from "@/lib/requireAdminSession";
@@ -14,6 +14,9 @@ export async function GET(req) {
     await connectMongoDB();
     const { searchParams } = new URL(req.url);
     const search = (searchParams.get("search") || "").trim();
+    const page = Math.max(Number(searchParams.get("page") || 1), 1);
+    const limit = Math.min(Math.max(Number(searchParams.get("limit") || 10), 1), 100);
+    const skip = (page - 1) * limit;
     const query = search
       ? {
           $or: [
@@ -24,8 +27,20 @@ export async function GET(req) {
         }
       : {};
 
-    const colleges = await College.find(query).sort({ name: 1 }).lean();
-    return NextResponse.json({ data: colleges });
+    const [colleges, total] = await Promise.all([
+      College.find(query).sort({ name: 1 }).skip(skip).limit(limit).lean(),
+      College.countDocuments(query),
+    ]);
+
+    return NextResponse.json({
+      data: colleges,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(Math.ceil(total / limit), 1),
+      },
+    });
   } catch (error) {
     console.error("Admin colleges GET error:", error);
     return NextResponse.json({ error: "Failed to fetch colleges" }, { status: 500 });
@@ -68,3 +83,4 @@ export async function POST(req) {
     return NextResponse.json({ error: error.message || "Failed to create college" }, { status: 500 });
   }
 }
+
