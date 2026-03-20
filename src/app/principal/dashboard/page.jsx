@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import { useEffect, useMemo, useState } from 'react'
 import ActiveLecturersCard from '@/components/dashboard/ActiveLecturersCard'
 import AttendanceShortageSummary from '@/components/attendance-shortage-summary/AttendanceShortageSummary'
+import AttendanceSmsHistoryCard from '@/components/attendance/AttendanceSmsHistoryCard'
 import OverallAttendanceMatrixCard from '@/components/OverallAttendanceMatrixCard/OverallAttendanceMatrixCard'
 import TodayAbsenteesTable from '@/app/absentees-table/page'
 import AttendanceStatsTable from '@/components/tables/AttendanceStatsTable'
@@ -24,6 +25,7 @@ import OverallStrengthCard from '@/components/dashboard/OverallStrengthCard'
 import { normalizeAttendanceGroup } from '@/utils/attendanceGroup'
 
 import MetricsCards from './MetricsCards'
+import AttendanceSmsCard from './AttendanceSmsCard'
 import PromotionCard from './PromotionCard'
 import OverviewStatCard from './OverviewStatCard'
 import AttendanceOverviewTable from './AttendanceOverviewTable'
@@ -217,7 +219,7 @@ export default function PrincipalDashboard() {
           <Card className="group rounded-3xl border-2 border-gradient-to-r from-blue-200/50 to-emerald-200/50 p-6 sm:p-8 shadow-2xl hover:shadow-3xl hover:-translate-y-2 transition-all duration-500 bg-white/90 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
               {principal?.photo ? (
-                <img
+                <image
                   src={principal.photo}
                   alt="Principal"
                   className="h-24 w-24 sm:h-28 sm:w-28 rounded-full border-6 border-gradient-to-r from-blue-400 via-white to-emerald-400 shadow-2xl object-cover ring-4 ring-white/50 group-hover:scale-110 transition-transform duration-300"
@@ -287,6 +289,8 @@ export default function PrincipalDashboard() {
         </section>
 
         <MetricsCards />
+        <AttendanceSmsCard />
+        <AttendanceSmsHistoryCard endpoint="/api/attendance/shortage-summary/sms-logs?limit=8" />
         <PromotionCard />
 
         <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[2.5fr_1fr] gap-8 p-2">
@@ -370,3 +374,4 @@ export default function PrincipalDashboard() {
     </div>
   )
 }
+

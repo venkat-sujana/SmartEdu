@@ -14,6 +14,7 @@ export default function StudentRegistration() {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSecondYear = formData.year === "2";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,7 +25,7 @@ export default function StudentRegistration() {
   const validateForm = () => {
     const nextErrors = {};
 
-    if (!formData.admissionNo.trim()) nextErrors.admissionNo = "Admission number is required";
+    if (!isSecondYear && !formData.admissionNo.trim()) nextErrors.admissionNo = "Admission number is required";
     if (!formData.name.trim() || formData.name.trim().length < 3) {
       nextErrors.name = "Name must be at least 3 characters";
     }
@@ -92,11 +93,13 @@ export default function StudentRegistration() {
           name="admissionNo"
           placeholder="Admission No"
           value={formData.admissionNo}
-          className={`w-full px-4 py-2 border rounded-md ${errors.admissionNo ? "border-red-500" : ""}`}
+          disabled={isSecondYear}
+          className={`w-full px-4 py-2 border rounded-md ${errors.admissionNo ? "border-red-500" : ""} ${isSecondYear ? "cursor-not-allowed bg-gray-100 text-gray-500" : ""}`}
           onChange={handleChange}
-          required
+          required={!isSecondYear}
         />
         {errors.admissionNo && <p className="text-sm text-red-600">{errors.admissionNo}</p>}
+        {isSecondYear && <p className="text-sm text-gray-500">Admission number is disabled for second-year students.</p>}
         <input
           type="text"
           name="name"

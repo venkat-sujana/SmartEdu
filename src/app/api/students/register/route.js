@@ -26,6 +26,7 @@ export async function POST(req) {
     const name = formData.get("name");
     const fatherName = formData.get("fatherName");
     const mobile = formData.get("mobile");
+    const parentMobile = formData.get("parentMobile");
     const admissionNo = normalizeAdmissionNo(formData.get("admissionNo"));
     const group = normalizeGroupValue(formData.get("group"));
     const caste = formData.get("caste");
@@ -39,7 +40,7 @@ export async function POST(req) {
     const photoUrl = formData.get("photoUrl") || "";
     const normalizedDateOfJoining = dateOfJoining ? new Date(dateOfJoining) : new Date();
 
-    if (!name || !fatherName || !mobile || !admissionNo || !group || !address || !collegeId) {
+    if (!name || !fatherName || !mobile || !parentMobile || !admissionNo || !group || !address || !collegeId) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
@@ -60,7 +61,7 @@ export async function POST(req) {
 
     // Create student
     const student = new Student({
-      name, fatherName, mobile, admissionNo, group, caste, gender,
+      name, fatherName, mobile, parentMobile, admissionNo, group, caste, gender,
       yearOfStudy, admissionYear, dateOfJoining: normalizedDateOfJoining,
       dob: normalizedDateOfJoining,
       address, collegeId: new mongoose.Types.ObjectId(collegeId),

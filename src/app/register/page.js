@@ -57,6 +57,7 @@ const emptyForm = {
   name: '',
   fatherName: '',
   mobile: '',
+  parentMobile: '',
   admissionNo: '',
   group: '',
   caste: '',
@@ -66,6 +67,29 @@ const emptyForm = {
   dateOfJoining: '',
   password: '',
   address: '',
+}
+
+async function parseResponseBody(res) {
+  const contentType = res.headers.get('content-type') || ''
+  const text = await res.text()
+
+  if (!text) {
+    return {}
+  }
+
+  if (contentType.includes('application/json')) {
+    return JSON.parse(text)
+  }
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    return {
+      message: res.ok
+        ? 'Unexpected non-JSON response from server.'
+        : 'Server returned an unexpected response. Check the API route or auth redirect.',
+    }
+  }
 }
 
 export default function RegisterPage() {
@@ -88,7 +112,12 @@ export default function RegisterPage() {
 
       try {
         const res = await fetch(`/api/colleges/${session.user.collegeId}`)
-        const data = await res.json()
+        const data = await parseResponseBody(res)
+
+        if (!res.ok) {
+          throw new Error(data.error || data.message || 'Failed to fetch college groups')
+        }
+
         if (Array.isArray(data?.groups) && data.groups.length) {
           setAvailableGroups(data.groups)
         } else {
@@ -132,7 +161,7 @@ export default function RegisterPage() {
       body: payload,
     })
 
-    const result = await res.json().catch(() => ({}))
+    const result = await parseResponseBody(res)
     if (!res.ok) {
       throw new Error(result.message || 'Photo upload failed')
     }
@@ -166,6 +195,7 @@ export default function RegisterPage() {
     form.append('name', formData.name)
     form.append('fatherName', formData.fatherName)
     form.append('mobile', formData.mobile)
+    form.append('parentMobile', formData.parentMobile)
     form.append('admissionNo', formData.admissionNo)
     form.append('group', formData.group)
     form.append('caste', formData.caste)
@@ -196,7 +226,7 @@ export default function RegisterPage() {
         body: form,
       })
 
-      const result = await res.json()
+      const result = await parseResponseBody(res)
 
       if (!res.ok) {
         toast.error(`Error: ${result.message || result.error || 'Failed to register student'}`)
@@ -316,6 +346,24 @@ export default function RegisterPage() {
                   required
                 />
               </div>
+
+              <div>
+                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
+                  <div className="rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 p-2 shadow-md">
+                    <Phone className="h-5 w-5 text-white" />
+                  </div>
+                  Parent Mobile Number *
+                </label>
+                <input
+                  name="parentMobile"
+                  type="tel"
+                  value={formData.parentMobile}
+                  onChange={handleChange}
+                  placeholder="10-digit parent mobile number"
+                  className={baseInputClass}
+                  required
+                />
+              </div>
             </div>
 
             <div className="space-y-6">
@@ -331,9 +379,15 @@ export default function RegisterPage() {
                   value={formData.admissionNo}
                   onChange={handleChange}
                   placeholder="e.g., 24MPC018"
-                  className={baseInputClass}
-                  required
+                  disabled={isSecondYear}
+                  className={`${baseInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500 opacity-80' : ''}`}
+                  required={!isSecondYear}
                 />
+                {isSecondYear ? (
+                  <p className="mt-2 text-xs font-medium text-slate-500">
+                    Admission number is disabled for second-year students.
+                  </p>
+                ) : null}
               </div>
 
               <div>
@@ -515,11 +569,11 @@ export default function RegisterPage() {
                 </div>
                 {photoPreview && (
                   <div className="mt-4 flex items-center gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <img
+                    <image
                       src={photoPreview}
                       alt="Student preview"
                       className="h-24 w-24 rounded-2xl object-cover shadow-sm"
-                    />
+                    image/>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-slate-800">{photo?.name}</p>
                       <p className="text-xs text-slate-500">Preview ready for upload</p>

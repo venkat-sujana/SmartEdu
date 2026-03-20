@@ -39,6 +39,7 @@ const createFormState = student => ({
   name: student?.name || '',
   fatherName: student?.fatherName || '',
   mobile: student?.mobile || '',
+  parentMobile: student?.parentMobile || '',
   admissionNo: student?.admissionNo || '',
   group: student?.group || '',
   caste: student?.caste || '',
@@ -170,6 +171,7 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
         name: formData.name,
         fatherName: formData.fatherName,
         mobile: formData.mobile,
+        parentMobile: formData.parentMobile,
         admissionNo: formData.admissionNo,
         group: formData.group,
         caste: formData.caste,
@@ -238,6 +240,16 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
 
         <Field icon={Phone} iconClassName="text-indigo-700" label="Mobile">
           <input name="mobile" value={formData.mobile} onChange={handleChange} className={inputClass} required />
+        </Field>
+
+        <Field icon={Phone} iconClassName="text-cyan-700" label="Parent Mobile">
+          <input
+            name="parentMobile"
+            value={formData.parentMobile}
+            onChange={handleChange}
+            className={inputClass}
+            required
+          />
         </Field>
 
         <Field icon={IdCard} iconClassName="text-amber-700" label="Admission Number">

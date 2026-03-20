@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import {
   BarChart3,
   Building2,
+  CalendarCheck2,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -66,12 +67,13 @@ const ENTITY_CONFIG = {
       icon: "bg-emerald-500/15 text-emerald-700",
       activeCard: "border-emerald-300 bg-emerald-50 text-emerald-950 shadow-emerald-100",
     },
-    bulkHeaders: ["CollegeCode", "Name", "FatherName", "Mobile", "AdmissionNo", "Password", "Group", "YearOfStudy", "Gender", "Caste", "AdmissionYear", "DOB", "DateOfJoining", "Photo", "Address"],
+    bulkHeaders: ["CollegeCode", "Name", "FatherName", "Mobile", "ParentMobile", "AdmissionNo", "Password", "Group", "YearOfStudy", "Gender", "Caste", "AdmissionYear", "DOB", "DateOfJoining", "Photo", "Address"],
     fields: [
       { name: "collegeId", label: "College", type: "select", required: true },
       { name: "name", label: "Name", type: "text", required: true },
       { name: "fatherName", label: "Father Name", type: "text", required: true },
       { name: "mobile", label: "Mobile", type: "text", required: true },
+      { name: "parentMobile", label: "Parent Mobile", type: "text", required: true },
       { name: "admissionNo", label: "Admission No", type: "text", required: true },
       { name: "password", label: "Password", type: "password", required: true },
       { name: "group", label: "Group", type: "select", required: true, options: ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"] },
@@ -91,6 +93,7 @@ const ENTITY_CONFIG = {
       { key: "group", label: "Group" },
       { key: "yearOfStudy", label: "Year" },
       { key: "mobile", label: "Mobile" },
+      { key: "parentMobile", label: "Parent Mobile" },
       { key: "status", label: "Status" },
       { key: "college", label: "College", render: (item) => item.collegeId?.name || "-" },
     ],
@@ -125,6 +128,7 @@ const ENTITY_CONFIG = {
   },
   principals: {
     label: "Principals",
+    singularLabel: "Principal",
     icon: School,
     endpoint: "/api/admin/principals",
     hasCollegeFilter: true,
@@ -151,6 +155,78 @@ const ENTITY_CONFIG = {
       { key: "college", label: "College", render: (item) => item.collegeId?.name || "-" },
     ],
   },
+  attendance: {
+    label: "Attendance",
+    singularLabel: "Attendance Record",
+    icon: CalendarCheck2,
+    endpoint: "/api/admin/attendance",
+    hasCollegeFilter: true,
+    accent: {
+      badge: "bg-rose-100 text-rose-800 border-rose-200",
+      button: "bg-rose-600 hover:bg-rose-700",
+      soft: "from-rose-500/20 via-orange-500/10 to-white",
+      icon: "bg-rose-500/15 text-rose-700",
+      activeCard: "border-rose-300 bg-rose-50 text-rose-950 shadow-rose-100",
+    },
+    bulkHeaders: ["CollegeCode", "StudentAdmissionNo", "Date", "Session", "Status", "LecturerName"],
+    fields: [
+      { name: "collegeId", label: "College", type: "select", required: true },
+      { name: "studentId", label: "Student", type: "select", required: true },
+      { name: "date", label: "Date", type: "date", required: true },
+      { name: "session", label: "Session", type: "select", required: true, options: ["FN", "AN"] },
+      { name: "status", label: "Status", type: "select", required: true, options: ["Present", "Absent"] },
+      { name: "lecturerName", label: "Lecturer Name", type: "text" },
+    ],
+    columns: [
+      { key: "student", label: "Student", render: (item) => item.studentId?.name || "-" },
+      { key: "admissionNo", label: "Admission No", render: (item) => item.studentId?.admissionNo || "-" },
+      { key: "date", label: "Date", render: (item) => formatDate(item.date) },
+      { key: "session", label: "Session" },
+      { key: "status", label: "Status" },
+      { key: "group", label: "Group" },
+      { key: "yearOfStudy", label: "Year" },
+      { key: "college", label: "College", render: (item) => item.collegeId?.name || "-" },
+    ],
+  },
+  exams: {
+    label: "Exams",
+    singularLabel: "Exam",
+    icon: BarChart3,
+    endpoint: "/api/admin/exams",
+    hasCollegeFilter: true,
+    accent: {
+      badge: "bg-violet-100 text-violet-800 border-violet-200",
+      button: "bg-violet-600 hover:bg-violet-700",
+      soft: "from-violet-500/20 via-fuchsia-500/10 to-white",
+      icon: "bg-violet-500/15 text-violet-700",
+      activeCard: "border-violet-300 bg-violet-50 text-violet-950 shadow-violet-100",
+    },
+    bulkHeaders: ["CollegeCode", "StudentAdmissionNo", "AcademicYear", "ExamType", "ExamDate", "Subjects"],
+    fields: [
+      { name: "collegeId", label: "College", type: "select", required: true },
+      { name: "studentId", label: "Student", type: "select", required: true },
+      { name: "academicYear", label: "Academic Year", type: "text", required: true },
+      {
+        name: "examType",
+        label: "Exam Type",
+        type: "select",
+        required: true,
+        options: ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4", "QUARTERLY", "HALFYEARLY", "PRE-PUBLIC-1", "PRE-PUBLIC-2"],
+      },
+      { name: "examDate", label: "Exam Date", type: "date", required: true },
+      { name: "subjects", label: "Subjects JSON", type: "textarea", required: true },
+    ],
+    columns: [
+      { key: "student", label: "Student", render: (item) => item.studentId?.name || "-" },
+      { key: "admissionNo", label: "Admission No", render: (item) => item.studentId?.admissionNo || "-" },
+      { key: "examType", label: "Exam Type" },
+      { key: "academicYear", label: "Academic Year" },
+      { key: "stream", label: "Stream" },
+      { key: "total", label: "Total" },
+      { key: "percentage", label: "Percentage", render: (item) => formatPercentage(item.percentage) },
+      { key: "college", label: "College", render: (item) => item.collegeId?.name || "-" },
+    ],
+  },
 };
 
 const INITIAL_FORM = {
@@ -162,6 +238,7 @@ const INITIAL_FORM = {
   photo: "",
   fatherName: "",
   mobile: "",
+  parentMobile: "",
   admissionNo: "",
   group: "",
   yearOfStudy: "",
@@ -177,6 +254,14 @@ const INITIAL_FORM = {
   contactEmail: "",
   contactPhone: "",
   groups: "",
+  studentId: "",
+  date: "",
+  session: "FN",
+  lecturerName: "",
+  academicYear: "",
+  examType: "",
+  examDate: "",
+  subjects: "",
 };
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -210,6 +295,7 @@ export default function AdminPanelPage() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadResult, setUploadResult] = useState(null);
+  const [studentOptions, setStudentOptions] = useState([]);
   const [collegeAnalytics, setCollegeAnalytics] = useState({
     overview: null,
     colleges: [],
@@ -259,6 +345,10 @@ export default function AdminPanelPage() {
     const college = colleges.find((item) => item._id === form.collegeId);
     return Array.isArray(college?.groups) ? college.groups : [];
   }, [colleges, form.collegeId]);
+  const selectedStudent = useMemo(
+    () => studentOptions.find((item) => item._id === form.studentId) || null,
+    [studentOptions, form.studentId]
+  );
   const allVisibleSelected = useMemo(
     () => records.length > 0 && records.every((record) => selectedIds.includes(record._id)),
     [records, selectedIds]
@@ -363,6 +453,41 @@ export default function AdminPanelPage() {
   }, [isAdmin, fetchRecords]);
 
   useEffect(() => {
+    async function loadStudentOptions() {
+      if (!showForm || !["attendance", "exams"].includes(entity) || !form.collegeId) {
+        setStudentOptions([]);
+        return;
+      }
+
+      try {
+        const params = new URLSearchParams({
+          collegeId: form.collegeId,
+          page: "1",
+          limit: "1000",
+        });
+        const res = await fetch(`/api/admin/students?${params.toString()}`);
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "Failed to fetch students");
+        setStudentOptions(Array.isArray(result.data) ? result.data : []);
+      } catch (err) {
+        console.error("Failed to fetch student options:", err);
+        setStudentOptions([]);
+      }
+    }
+
+    loadStudentOptions();
+  }, [showForm, entity, form.collegeId]);
+
+  useEffect(() => {
+    if (!selectedStudent || !["attendance", "exams"].includes(entity)) return;
+
+    setForm((prev) => ({
+      ...prev,
+      collegeId: prev.collegeId || selectedStudent.collegeId?._id || selectedStudent.collegeId || "",
+    }));
+  }, [selectedStudent, entity]);
+
+  useEffect(() => {
     if (pagination.totalPages > 0 && currentPage > pagination.totalPages) {
       setCurrentPage(pagination.totalPages);
     }
@@ -384,14 +509,19 @@ export default function AdminPanelPage() {
   }
 
   function openEditForm(record) {
+    const normalizedSubjects = record.generalSubjects || record.vocationalSubjects || {};
     setEditingRecord(record);
     setForm({
       ...INITIAL_FORM,
       ...record,
       collegeId: record.collegeId?._id || record.collegeId || selectedCollegeId || "",
+      studentId: record.studentId?._id || record.studentId || "",
       dob: record.dob ? toDateInput(record.dob) : "",
       dateOfJoining: record.dateOfJoining ? toDateInput(record.dateOfJoining) : "",
+      date: record.date ? toDateInput(record.date) : "",
+      examDate: record.examDate ? toDateInput(record.examDate) : "",
       groups: Array.isArray(record.groups) ? record.groups.join(", ") : "",
+      subjects: Object.keys(normalizedSubjects).length ? JSON.stringify(normalizedSubjects, null, 2) : "",
       password: "",
     });
     setShowForm(true);
@@ -595,7 +725,7 @@ export default function AdminPanelPage() {
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Platform Control</p>
                 <h1 className="text-2xl font-black text-white md:text-3xl">Admin Panel</h1>
                 <p className="max-w-2xl text-sm text-slate-200">
-                  Multi-college operations center for colleges, students, lecturers, and principals with one consistent workflow.
+                  Multi-college operations center for colleges, students, lecturers, principals, attendance, and exams with one consistent workflow.
                 </p>
               </div>
             </div>
@@ -868,7 +998,7 @@ export default function AdminPanelPage() {
                 </div>
                 <button type="button" onClick={openCreateForm} className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 font-semibold text-white shadow-lg transition ${activeConfig.accent.button}`}>
                   <UserPlus className="h-4 w-4" />
-                  Add {activeConfig.label.slice(0, -1)}
+                  Add {activeConfig.singularLabel || activeConfig.label.slice(0, -1)}
                 </button>
               </div>
 
@@ -990,7 +1120,7 @@ export default function AdminPanelPage() {
                 <div className="p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900">{editingRecord ? `Edit ${activeConfig.label.slice(0, -1)}` : `Create ${activeConfig.label.slice(0, -1)}`}</h3>
+                    <h3 className="text-lg font-bold text-slate-900">{editingRecord ? `Edit ${activeConfig.singularLabel || activeConfig.label.slice(0, -1)}` : `Create ${activeConfig.singularLabel || activeConfig.label.slice(0, -1)}`}</h3>
                     <p className="text-sm text-slate-600">Fill in the required details and save changes.</p>
                   </div>
                   <button type="button" onClick={closeForm} className="rounded-full border border-slate-200 p-2 text-slate-500 hover:bg-slate-50">
@@ -1007,9 +1137,17 @@ export default function AdminPanelPage() {
                           ...field,
                           required: editingRecord && field.name === "password" ? false : field.required,
                           label: editingRecord && field.name === "password" ? "New Password (optional)" : field.label,
+                          disabled: entity === "students" && field.name === "admissionNo" && form.yearOfStudy === "Second Year",
+                          required:
+                            entity === "students" && field.name === "admissionNo" && form.yearOfStudy === "Second Year"
+                              ? false
+                              : editingRecord && field.name === "password"
+                                ? false
+                                : field.required,
                         }}
                         value={form[field.name] ?? ""}
                         colleges={colleges}
+                        studentOptions={studentOptions}
                         groupOptions={selectedCollegeGroups}
                         onChange={handleFieldChange}
                         onPhotoUpload={handlePhotoUpload}
@@ -1046,6 +1184,18 @@ export default function AdminPanelPage() {
                             {item}
                           </span>
                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {["attendance", "exams"].includes(entity) && selectedStudent && (
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                      <div className="font-semibold text-slate-900">Selected Student Snapshot</div>
+                      <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+                        <div>Name: {selectedStudent.name}</div>
+                        <div>Admission No: {selectedStudent.admissionNo || "-"}</div>
+                        <div>Group: {selectedStudent.group || "-"}</div>
+                        <div>Year: {selectedStudent.yearOfStudy || "-"}</div>
                       </div>
                     </div>
                   )}
@@ -1112,7 +1262,7 @@ export default function AdminPanelPage() {
                             />
                           </td>
                           {activeConfig.columns.map((column) => (
-                            <td key={column.label} className="px-4 py-3 text-slate-700">{column.render ? column.render(record) : record[column.key] || "-"}</td>
+                            <td key={column.label} className="px-4 py-3 text-slate-700">{column.render ? column.render(record) : record[column.key] ?? "-"}</td>
                           ))}
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-2">
@@ -1163,13 +1313,16 @@ export default function AdminPanelPage() {
   );
 }
 
-function Field({ field, value, onChange, colleges, groupOptions = [], onPhotoUpload, photoUploading = false }) {
+function Field({ field, value, onChange, colleges, studentOptions = [], groupOptions = [], onPhotoUpload, photoUploading = false }) {
   const commonProps = {
     name: field.name,
     value,
     onChange,
     required: field.required,
-    className: "mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-cyan-400 focus:bg-white",
+    disabled: field.disabled,
+    className: `mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-cyan-400 focus:bg-white ${
+      field.disabled ? "cursor-not-allowed bg-slate-100 text-slate-500 opacity-80" : ""
+    }`,
   };
 
   if (field.type === "textarea") {
@@ -1184,6 +1337,11 @@ function Field({ field, value, onChange, colleges, groupOptions = [], onPhotoUpl
   if (field.type === "select") {
     const options = field.name === "collegeId"
       ? colleges.map((college) => ({ value: college._id, label: college.name }))
+      : field.name === "studentId"
+        ? studentOptions.map((student) => ({
+            value: student._id,
+            label: `${student.name}${student.admissionNo ? ` (${student.admissionNo})` : ""}`,
+          }))
       : field.name === "group" && groupOptions.length
         ? groupOptions.map((option) => ({ value: option, label: option }))
         : (field.options || []).map((option) => ({ value: option, label: option }));
@@ -1223,7 +1381,7 @@ function Field({ field, value, onChange, colleges, groupOptions = [], onPhotoUpl
             </label>
           </div>
           {value && (
-            <img
+            <image
               src={value}
               alt="Uploaded preview"
               className="mt-3 h-28 w-28 rounded-2xl border border-slate-200 object-cover"
@@ -1238,6 +1396,9 @@ function Field({ field, value, onChange, colleges, groupOptions = [], onPhotoUpl
     <label className="text-sm font-medium text-slate-700">
       {field.label}
       <input {...commonProps} type={field.type || "text"} />
+      {field.name === "admissionNo" && field.disabled ? (
+        <div className="mt-2 text-xs text-slate-500">Admission No is disabled for second-year students.</div>
+      ) : null}
     </label>
   );
 }
@@ -1281,6 +1442,7 @@ function buildPayload(entity, form, isEdit) {
     photo: form.photo,
     fatherName: form.fatherName,
     mobile: form.mobile,
+    parentMobile: form.parentMobile,
     admissionNo: form.admissionNo,
     group: form.group,
     yearOfStudy: form.yearOfStudy,
@@ -1296,6 +1458,14 @@ function buildPayload(entity, form, isEdit) {
     contactEmail: form.contactEmail,
     contactPhone: form.contactPhone,
     groups: form.groups,
+    studentId: form.studentId,
+    date: form.date || undefined,
+    session: form.session,
+    lecturerName: form.lecturerName,
+    academicYear: form.academicYear,
+    examType: form.examType,
+    examDate: form.examDate || undefined,
+    subjects: form.subjects,
   };
 
   if (isEdit && !payload.password) delete payload.password;
@@ -1308,6 +1478,7 @@ function buildPayload(entity, form, isEdit) {
     delete payload.photo;
     delete payload.fatherName;
     delete payload.mobile;
+    delete payload.parentMobile;
     delete payload.admissionNo;
     delete payload.group;
     delete payload.yearOfStudy;
@@ -1320,6 +1491,7 @@ function buildPayload(entity, form, isEdit) {
   } else if (entity !== "students") {
     delete payload.fatherName;
     delete payload.mobile;
+    delete payload.parentMobile;
     delete payload.admissionNo;
     delete payload.group;
     delete payload.yearOfStudy;
@@ -1350,6 +1522,72 @@ function buildPayload(entity, form, isEdit) {
     delete payload.groups;
   }
 
+  if (entity === "attendance") {
+    delete payload.name;
+    delete payload.email;
+    delete payload.password;
+    delete payload.subject;
+    delete payload.photo;
+    delete payload.fatherName;
+    delete payload.mobile;
+    delete payload.parentMobile;
+    delete payload.admissionNo;
+    delete payload.group;
+    delete payload.yearOfStudy;
+    delete payload.gender;
+    delete payload.caste;
+    delete payload.admissionYear;
+    delete payload.dob;
+    delete payload.dateOfJoining;
+    delete payload.address;
+    delete payload.code;
+    delete payload.district;
+    delete payload.contactEmail;
+    delete payload.contactPhone;
+    delete payload.groups;
+    delete payload.examType;
+    delete payload.examDate;
+    delete payload.academicYear;
+    delete payload.subjects;
+  }
+
+  if (entity === "exams") {
+    delete payload.name;
+    delete payload.email;
+    delete payload.password;
+    delete payload.subject;
+    delete payload.photo;
+    delete payload.fatherName;
+    delete payload.mobile;
+    delete payload.parentMobile;
+    delete payload.admissionNo;
+    delete payload.group;
+    delete payload.yearOfStudy;
+    delete payload.gender;
+    delete payload.caste;
+    delete payload.status;
+    delete payload.admissionYear;
+    delete payload.dob;
+    delete payload.dateOfJoining;
+    delete payload.address;
+    delete payload.code;
+    delete payload.district;
+    delete payload.contactEmail;
+    delete payload.contactPhone;
+    delete payload.groups;
+    delete payload.date;
+    delete payload.session;
+    delete payload.lecturerName;
+  }
+
+  if (entity === "exams" && typeof payload.subjects === "string") {
+    try {
+      payload.subjects = JSON.parse(payload.subjects);
+    } catch {
+      payload.subjects = form.subjects;
+    }
+  }
+
   Object.keys(payload).forEach((key) => {
     if (payload[key] === "" || payload[key] === undefined) delete payload[key];
   });
@@ -1371,4 +1609,7 @@ function formatDateTime(value) {
   return new Date(value).toLocaleString("en-IN");
 }
 
-
+function formatPercentage(value) {
+  if (value === null || value === undefined || value === "") return "-";
+  return `${Number(value).toFixed(2)}%`;
+}

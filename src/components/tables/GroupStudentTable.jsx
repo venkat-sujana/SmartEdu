@@ -160,6 +160,7 @@ export default function GroupStudentTable({ groupName }) {
       Name: student.name,
       FatherName: student.fatherName,
       Mobile: student.mobile,
+      ParentMobile: student.parentMobile,
       Group: student.group,
       Caste: student.caste,
       Gender: student.gender,
@@ -330,7 +331,7 @@ export default function GroupStudentTable({ groupName }) {
               <input
                 value={search}
                 onChange={event => setSearch(event.target.value)}
-                placeholder="Search name, father name, admission no"
+                placeholder="Search name, father name, parent mobile, admission no"
                 className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
               />
             </label>
@@ -462,6 +463,7 @@ export default function GroupStudentTable({ groupName }) {
                     <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                       <InfoChip label="Admission" value={student.admissionNo} />
                       <InfoChip label="Mobile" value={student.mobile} />
+                      <InfoChip label="Parent Mobile" value={student.parentMobile} />
                       <InfoChip label="Caste" value={student.caste} />
                       <InfoChip label="Gender" value={student.gender} />
                       <InfoChip label="Year" value={student.yearOfStudy} />
@@ -504,6 +506,7 @@ export default function GroupStudentTable({ groupName }) {
                         <th className="px-4 py-3">Student</th>
                         <th className="px-4 py-3">Father Name</th>
                         <th className="px-4 py-3">Mobile</th>
+                        <th className="px-4 py-3">Parent Mobile</th>
                         <th className="px-4 py-3">Caste</th>
                         <th className="px-4 py-3">Gender</th>
                         <th className="px-4 py-3">Year</th>
@@ -523,6 +526,7 @@ export default function GroupStudentTable({ groupName }) {
                           </td>
                           <td className="px-4 py-3">{student.fatherName}</td>
                           <td className="px-4 py-3">{student.mobile}</td>
+                          <td className="px-4 py-3">{student.parentMobile}</td>
                           <td className="px-4 py-3">{student.caste}</td>
                           <td className="px-4 py-3">{student.gender}</td>
                           <td className="px-4 py-3">{student.yearOfStudy}</td>
@@ -653,6 +657,14 @@ export default function GroupStudentTable({ groupName }) {
                   setEditingStudent(prev => ({ ...prev, mobile: event.target.value }))
                 }
                 placeholder="Mobile"
+                className={inputClass}
+              />
+              <input
+                value={editingStudent.parentMobile || ""}
+                onChange={event =>
+                  setEditingStudent(prev => ({ ...prev, parentMobile: event.target.value }))
+                }
+                placeholder="Parent Mobile"
                 className={inputClass}
               />
               <select
@@ -815,3 +827,7 @@ function InfoChip({ label, value }) {
     </div>
   );
 }
+
+
+
+

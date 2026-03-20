@@ -19,6 +19,7 @@ export async function PUT(req, context) {
       name: body.name?.trim(),
       fatherName: body.fatherName?.trim(),
       mobile: body.mobile?.trim(),
+      parentMobile: body.parentMobile?.trim(),
       group: body.group,
       caste: body.caste,
       gender: body.gender,

@@ -72,6 +72,7 @@ async function authenticateStudent(admissionNo, password) {
     group: student.group,
     fatherName: student.fatherName,
     mobile: student.mobile,
+    parentMobile: student.parentMobile,
     caste: student.caste,
     gender: student.gender,
     address: student.address,
@@ -177,6 +178,7 @@ const authOptions = {
           token.group = user.group;
           token.fatherName = user.fatherName;
           token.mobile = user.mobile;
+          token.parentMobile = user.parentMobile;
           token.caste = user.caste;
           token.gender = user.gender;
           token.address = user.address;
@@ -204,6 +206,7 @@ const authOptions = {
         session.user.group = token.group;
         session.user.fatherName = token.fatherName;
         session.user.mobile = token.mobile;
+        session.user.parentMobile = token.parentMobile;
         session.user.caste = token.caste;
         session.user.gender = token.gender;
         session.user.address = token.address;

@@ -106,6 +106,7 @@ export async function POST(req) {
     const name = toText(row.Name);
     const fatherName = toText(row.FatherName);
     const mobile = toText(row.Mobile);
+    const parentMobile = toText(row.ParentMobile);
     const group = normalizeGroup(row.Group);
     const caste = toText(row.Caste).toUpperCase();
     const gender = toText(row.Gender);
@@ -120,6 +121,7 @@ export async function POST(req) {
     if (!name) rowIssues.push("Name is required");
     if (!fatherName) rowIssues.push("FatherName is required");
     if (!/^[6-9]\d{9}$/.test(mobile)) rowIssues.push("Mobile must be a valid 10-digit Indian number");
+    if (!/^[6-9]\d{9}$/.test(parentMobile)) rowIssues.push("ParentMobile must be a valid 10-digit Indian number");
     if (!allowedGroups.has(group)) rowIssues.push(`Invalid Group: ${group || "(empty)"}`);
     if (!ALLOWED_CASTES.has(caste)) rowIssues.push(`Invalid Caste: ${caste || "(empty)"}`);
     if (!ALLOWED_GENDERS.has(gender)) rowIssues.push(`Invalid Gender: ${gender || "(empty)"}`);
@@ -147,6 +149,7 @@ export async function POST(req) {
       name,
       fatherName,
       mobile,
+      parentMobile,
       group,
       caste,
       gender,
@@ -224,3 +227,5 @@ export async function POST(req) {
     errors,
   });
 }
+
+

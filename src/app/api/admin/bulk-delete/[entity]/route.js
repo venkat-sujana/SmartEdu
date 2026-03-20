@@ -1,7 +1,9 @@
-﻿import mongoose from "mongoose";
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
+import Attendance from "@/models/Attendance";
 import connectMongoDB from "@/lib/mongodb";
 import College from "@/models/College";
+import Exam from "@/models/Exam";
 import Lecturer from "@/models/Lecturer";
 import Principal from "@/models/Principal";
 import Student from "@/models/Student";
@@ -12,6 +14,8 @@ const MODEL_MAP = {
   students: Student,
   lecturers: Lecturer,
   principals: Principal,
+  attendance: Attendance,
+  exams: Exam,
 };
 
 export async function POST(req, context) {
@@ -48,4 +52,3 @@ export async function POST(req, context) {
     return NextResponse.json({ error: error.message || "Bulk delete failed" }, { status: 500 });
   }
 }
-

@@ -14,6 +14,13 @@ const studentSchema = new mongoose.Schema(
     match: [/^[6-9]\d{9}$/, "Mobile must be a valid 10-digit Indian number"]
   },
 
+  parentMobile: {
+    type: String,
+    required: true,
+    trim: true,
+    match: [/^[6-9]\d{9}$/, "Parent mobile must be a valid 10-digit Indian number"]
+  },
+
   group: {
     type: String,
     required: true,

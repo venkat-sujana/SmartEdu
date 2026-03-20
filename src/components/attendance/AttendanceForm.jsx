@@ -6,6 +6,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { useRouter} from "next/navigation";
 import { DEFAULT_COLLEGE_GROUPS } from "@/utils/collegeGroups";
+import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
 
 const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const yearsList = ["First Year", "Second Year"];
@@ -72,7 +73,10 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
 
   useEffect(() => {
     const fetchStudents = async () => {
-      if (!selectedGroup || !session?.user?.collegeId) return;
+      if (!selectedGroup || !session?.user?.collegeId) {
+        setStudents([]);
+        return;
+      }
       const res = await fetch(`/api/students?collegeId=${session.user.collegeId}&group=${encodeURIComponent(selectedGroup)}`);
       const json = await res.json();
       if (json.status === "success") setStudents(json.data);
@@ -82,7 +86,14 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
 
   useEffect(() => {
     if (selectedGroup && selectedYearOfStudy) {
-      setFilteredStudents(students.filter(s => s.group === selectedGroup && s.yearOfStudy === selectedYearOfStudy));
+      const normalizedSelectedGroup = normalizeAttendanceGroup(selectedGroup);
+      setFilteredStudents(
+        students.filter(
+          (s) =>
+            normalizeAttendanceGroup(s.group) === normalizedSelectedGroup &&
+            s.yearOfStudy === selectedYearOfStudy
+        )
+      );
     } else {
       setFilteredStudents([]);
     }
@@ -103,12 +114,13 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
     const year = dateObj.getFullYear();
 
     const lecturerInfo = lecturers.find(l => l._id === selectedLecturerId);
+    const normalizedSelectedGroup = normalizeAttendanceGroup(selectedGroup);
 
     const attendanceRecords = filteredStudents.map((student) => ({
       studentId: student._id,
       date: selectedDate,
       ...(attendanceData[student._id] ? { status: attendanceData[student._id] } : {}),
-      group: selectedGroup.toUpperCase(),
+      group: normalizedSelectedGroup,
       month, yearOfStudy: selectedYearOfStudy,
       lecturerId: selectedLecturerId,
       lecturerName: lecturerInfo?.name || "",

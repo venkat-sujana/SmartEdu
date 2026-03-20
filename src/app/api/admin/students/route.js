@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
@@ -27,6 +27,7 @@ export async function GET(req) {
         { name: { $regex: search, $options: "i" } },
         { admissionNo: { $regex: search, $options: "i" } },
         { mobile: { $regex: search, $options: "i" } },
+        { parentMobile: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -69,6 +70,7 @@ export async function POST(req) {
       "name",
       "fatherName",
       "mobile",
+      "parentMobile",
       "group",
       "caste",
       "gender",
@@ -97,6 +99,7 @@ export async function POST(req) {
       name: body.name.trim(),
       fatherName: body.fatherName.trim(),
       mobile: body.mobile.trim(),
+      parentMobile: body.parentMobile.trim(),
       group: body.group,
       caste: body.caste,
       gender: body.gender,
@@ -121,4 +124,3 @@ export async function POST(req) {
     return NextResponse.json({ error: error.message || "Failed to create student" }, { status: 500 });
   }
 }
-

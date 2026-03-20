@@ -96,7 +96,7 @@ export default function StudentsPage() {
       startY: 25,
       head: [
         [
-          "S.No", "Name", "Mobile", "Group", "Caste", "Gender", "Year of Study", "Admission Year", "Date Of Joining", "Address"
+          "S.No", "Name", "Mobile", "Parent Mobile", "Group", "Caste", "Gender", "Year of Study", "Admission Year", "Date Of Joining", "Address"
         ],
       ],
       body: filteredStudents.map((s, idx) => [
@@ -121,7 +121,7 @@ export default function StudentsPage() {
     const studentData = filteredStudents.map((s, idx) => ({
       SNo: idx + 1,
       Name: s.name,
-      Mobile: s.mobile,
+      Mobile: s.mobile,`r`n      ParentMobile: s.parentMobile,
       Group: s.group,
       Caste: s.caste,
       Gender: s.gender,
@@ -441,3 +441,4 @@ export default function StudentsPage() {
     </div>
   );
 }
+
