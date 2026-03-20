@@ -121,7 +121,8 @@ export default function StudentsPage() {
     const studentData = filteredStudents.map((s, idx) => ({
       SNo: idx + 1,
       Name: s.name,
-      Mobile: s.mobile,`r`n      ParentMobile: s.parentMobile,
+      Mobile: s.mobile,
+      ParentMobile: s.parentMobile,
       Group: s.group,
       Caste: s.caste,
       Gender: s.gender,
