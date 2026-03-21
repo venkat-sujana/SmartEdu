@@ -45,7 +45,6 @@ export default function IndividualAttendancePage({ fixedGroup }) {
     // FN
     const fnRes = await fetch(`${baseUrl}&session=FN`);
     const fnData = await fnRes.json();
-    console.log("🌅 FN Response:", fnData);
     
     if (!fnRes.ok || fnData.success === false) {
   throw new Error(fnData.message || `FN failed: ${fnRes.status}`);
@@ -56,7 +55,6 @@ export default function IndividualAttendancePage({ fixedGroup }) {
     // AN  
     const anRes = await fetch(`${baseUrl}&session=AN`);
     const anData = await anRes.json();
-    console.log("🌇 AN Response:", anData);
     
     if (!anRes.ok || !anData.success) {
       throw new Error(anData.message || `AN failed: ${anRes.status}`);
@@ -67,7 +65,6 @@ export default function IndividualAttendancePage({ fixedGroup }) {
     toast.success(`✅ ${fnData.count || 0} FN + ${anData.count || 0} AN records loaded`);
 
   } catch (err) {
-    console.error("❌ Fetch Error:", err);
     toast.error(`డాటా లోడ్ అవ్వలేదు: ${err.message}`);
   }
 };
@@ -87,7 +84,6 @@ export default function IndividualAttendancePage({ fixedGroup }) {
       toast.success("Deleted successfully", { id: toastId });
       await fetchData();
     } catch (err) {
-      console.error("Delete error:", err);
       toast.error("Error deleting record", { id: toastId });
     }
   };

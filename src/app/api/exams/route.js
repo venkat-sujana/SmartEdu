@@ -2,9 +2,30 @@
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Exam from "@/models/Exam";
+import { createExamSchema } from "@/validations/examValidation";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
+
+function normalizeExamStream(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+
+  if (!normalized) return "";
+  if (normalized === "BIPC") return "BIPC";
+  if (normalized === "MPC") return "MPC";
+  if (normalized === "CEC") return "CEC";
+  if (normalized === "HEC") return "HEC";
+  if (normalized === "CET") return "CET";
+  if (normalized === "MLT") return "MLT";
+  if (normalized === "M&AT" || normalized === "M@AT" || normalized === "MANDAT") {
+    return "M&AT";
+  }
+
+  return String(value || "").trim();
+}
 
 // POST - Create Exam
 export async function POST(req) {
@@ -19,55 +40,21 @@ export async function POST(req) {
       );
     }
 
-    const collegeId = session.user.collegeId;
+    const { collegeId: sessionCollegeId } = session.user;
 
     const body = await req.json();
-    const {
-      studentId,
-      stream,
-      yearOfStudy,
-      academicYear,
-      examType,
-      examDate,
-      subjects,
-    } = body;
+    const data = createExamSchema.parse(body);
+    data.collegeId = sessionCollegeId;
 
-    // 👉 Filter based on stream
-    let filteredSubjects = {};
-    if (["MPC", "BIPC", "CEC", "HEC"].includes(stream)) {
-      filteredSubjects = Object.fromEntries(
-        Object.entries(subjects).slice(0, 6)
-      );
-    } else if (["M&AT", "CET", "MLT"].includes(stream)) {
-      filteredSubjects = Object.fromEntries(
-        Object.entries(subjects).slice(0, 5)
-      );
+    if (data.collegeId !== sessionCollegeId) {
+      return NextResponse.json({ success: false, message: "College mismatch" }, { status: 403 });
     }
 
-    const subjectMarks = Object.values(filteredSubjects)
-      .map(Number)
-      .filter((n) => !isNaN(n));
-    const total = subjectMarks.reduce((sum, mark) => sum + mark, 0);
-    const percentage =
-      subjectMarks.length > 0 ? (total / subjectMarks.length).toFixed(2) : 0;
-
+    // Use model hook for total/percentage
     const examData = {
-      studentId,
-      stream,
-      yearOfStudy,
-      academicYear,
-      examType,
-      examDate: new Date(examDate),
-      total,
-      percentage,
-      collegeId, // ✅ Injected from session
+      ...data,
+      examDate: new Date(data.examDate),
     };
-
-    if (["MPC", "BIPC", "CEC", "HEC"].includes(stream)) {
-      examData.generalSubjects = filteredSubjects;
-    } else {
-      examData.vocationalSubjects = filteredSubjects;
-    }
 
     const exam = new Exam(examData);
     await exam.save();
@@ -97,11 +84,39 @@ export async function GET(req) {
     }
     const { searchParams } = new URL(req.url);
     const includeTerminated = searchParams.get("includeTerminated") === "true";
+    const stream = normalizeExamStream(searchParams.get("stream"));
+    const yearOfStudy = searchParams.get("yearOfStudy");
+    const examType = searchParams.get("examType");
+    const academicYear = searchParams.get("academicYear");
+    const limitParam = Number(searchParams.get("limit") || 0);
 
-    const exams = await Exam.find({ collegeId }).populate(
-      "studentId",
-      "name yearOfStudy status"
-    );
+    const query = { collegeId };
+
+    if (stream) {
+      query.stream = stream === "BIPC" ? { $in: ["BIPC", "BiPC"] } : stream;
+    }
+
+    if (yearOfStudy) {
+      query.yearOfStudy = yearOfStudy;
+    }
+
+    if (examType) {
+      query.examType = examType;
+    }
+
+    if (academicYear) {
+      query.academicYear = academicYear;
+    }
+
+    const examsQuery = Exam.find(query)
+      .populate("studentId", "name yearOfStudy status group admissionNo")
+      .sort({ examDate: -1, createdAt: -1 });
+
+    if (limitParam > 0) {
+      examsQuery.limit(limitParam);
+    }
+
+    const exams = await examsQuery;
 
     const examsWithNames = exams.map((exam) => ({
       ...exam._doc,
@@ -110,6 +125,8 @@ export async function GET(req) {
       isStudentActive: exam.studentId?.status === "Active",
       student: {
         name: exam.studentId?.name || "Unknown",
+        group: exam.studentId?.group || exam.stream,
+        admissionNo: exam.studentId?.admissionNo || "",
       },
     }));
 

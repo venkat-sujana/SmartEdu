@@ -360,7 +360,6 @@ export default function AdminPanelPage() {
       const data = await res.json();
       setColleges(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Failed to fetch colleges:", err);
     }
   }, []);
 
@@ -379,7 +378,6 @@ export default function AdminPanelPage() {
         districtDistribution: Array.isArray(data.districtDistribution) ? data.districtDistribution : [],
       });
     } catch (err) {
-      console.error("Failed to fetch college analytics:", err);
     }
   }, []);
 
@@ -423,7 +421,6 @@ export default function AdminPanelPage() {
         totalPages: result.pagination?.totalPages || 1,
       });
     } catch (err) {
-      console.error(err);
       setError(err.message || "Failed to load records");
       setRecords([]);
       setPagination({
@@ -470,7 +467,6 @@ export default function AdminPanelPage() {
         if (!res.ok) throw new Error(result.error || "Failed to fetch students");
         setStudentOptions(Array.isArray(result.data) ? result.data : []);
       } catch (err) {
-        console.error("Failed to fetch student options:", err);
         setStudentOptions([]);
       }
     }
@@ -551,7 +547,6 @@ export default function AdminPanelPage() {
       setForm((prev) => ({ ...prev, photo: photoUrl }));
       setMessage("Photo uploaded successfully");
     } catch (err) {
-      console.error(err);
       setError(err.message || "Photo upload failed");
     } finally {
       setPhotoUploading(false);
@@ -582,7 +577,6 @@ export default function AdminPanelPage() {
       await loadCollegeAnalytics();
       if (entity === "colleges") await loadColleges();
     } catch (err) {
-      console.error(err);
       setError(err.message || "Request failed");
     } finally {
       setSubmitting(false);
@@ -603,7 +597,6 @@ export default function AdminPanelPage() {
       await loadCollegeAnalytics();
       if (entity === "colleges") await loadColleges();
     } catch (err) {
-      console.error(err);
       setError(err.message || "Delete failed");
     }
   }
@@ -646,7 +639,6 @@ export default function AdminPanelPage() {
       await loadCollegeAnalytics();
       if (entity === "colleges") await loadColleges();
     } catch (err) {
-      console.error(err);
       setError(err.message || "Bulk delete failed");
     } finally {
       setBulkActionLoading(false);
@@ -683,7 +675,6 @@ export default function AdminPanelPage() {
       await loadCollegeAnalytics();
       if (entity === "colleges") await loadColleges();
     } catch (err) {
-      console.error(err);
       setError(err.message || "Bulk upload failed");
     } finally {
       setBulkActionLoading(false);

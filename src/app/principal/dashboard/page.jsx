@@ -1,5 +1,6 @@
 //app/principal/dashboard/page.jsx
 'use client'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import useSWR from 'swr'
@@ -38,11 +39,7 @@ export default function PrincipalDashboard() {
   const principal = session?.user
   const collegeName = principal?.collegeName || 'Your College'
 
-  useEffect(() => {
-    fetch('/api/attendance/shortage-summary')
-      .then(res => res.json())
-      .then(data => setShortageData(data.data || []))
-  }, [])
+
 
   const { data: dashboardOverview, error: dashboardOverviewError } = useSWR(
     '/api/principal/dashboard-overview',
@@ -53,8 +50,7 @@ export default function PrincipalDashboard() {
     }
   )
 
-  console.log('Dashboard overview data:', dashboardOverview);
-  console.log('Dashboard error:', dashboardOverviewError);
+
 
   const { data: absenteesData } = useSWR('/api/attendance/today-absentees', fetcher, {
     refreshInterval: 60000,
@@ -219,9 +215,11 @@ export default function PrincipalDashboard() {
           <Card className="group rounded-3xl border-2 border-gradient-to-r from-blue-200/50 to-emerald-200/50 p-6 sm:p-8 shadow-2xl hover:shadow-3xl hover:-translate-y-2 transition-all duration-500 bg-white/90 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
               {principal?.photo ? (
-                <image
+                <Image
                   src={principal.photo}
                   alt="Principal"
+                  width={112}
+                  height={112}
                   className="h-24 w-24 sm:h-28 sm:w-28 rounded-full border-6 border-gradient-to-r from-blue-400 via-white to-emerald-400 shadow-2xl object-cover ring-4 ring-white/50 group-hover:scale-110 transition-transform duration-300"
                 />
               ) : (

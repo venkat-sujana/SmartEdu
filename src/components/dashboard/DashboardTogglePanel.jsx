@@ -3,6 +3,7 @@
 
 import {
   CalendarCheck2,
+  ChartColumn,
   FilePenLine,
   LayoutGrid,
   TableProperties,
@@ -14,16 +15,19 @@ export default function DashboardTogglePanel({
   onToggleStudentTable,
   onToggleTodayAbsentees,
   onToggleMonthlyAttendance,
+  onToggleExamResults,
   onToggleEditAttendance,
   showAttendance,
   studentTable,
   showTodayAbsentees,
   monthlyAttendance,
+  showExamResults,
   editAttendance,
   attendanceContent,
   studentTableContent,
   todayAbsenteesContent,
   groupMonthlyAttendanceContent,
+  examResultsContent,
   editAttendanceContent,
 }) {
   const showEditToggle = Boolean(onToggleEditAttendance && editAttendanceContent);
@@ -65,6 +69,15 @@ export default function DashboardTogglePanel({
       icon: <LayoutGrid className="h-3 w-3" />,
       tone: "from-amber-500 to-orange-600",
     },
+    {
+      key: "exams",
+      label: showExamResults ? "Hide Exam Output" : "Exam Output",
+      description: "",
+      active: showExamResults,
+      onClick: onToggleExamResults,
+      icon: <ChartColumn className="h-3 w-3" />,
+      tone: "from-indigo-600 to-sky-700",
+    },
   ];
 
   if (showEditToggle) {
@@ -81,49 +94,48 @@ export default function DashboardTogglePanel({
 
   return (
     <div className="flex w-full flex-col items-center gap-5">
-      <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-        {actions.map(action => (
-          <button
-            key={action.key}
-            onClick={action.onClick}
-            className={`overflow-hidden rounded-3xl border text-left transition ${
-              action.active
-                ? "border-slate-900 bg-slate-900 text-white shadow-lg"
-                : "border-slate-200 bg-white text-slate-900 shadow-sm hover:-translate-y-0.5 hover:border-slate-300"
-            }`}
-          >
-            <div
-              className={`h-1.5 w-full bg-linear-to-r ${action.tone} ${
-                action.active ? "opacity-100" : "opacity-80"
-              }`}
-            />
-            <div className="flex items-start gap-3 p-4">
-              <div
-                className={`rounded-2xl p-3 ${
-                  action.active ? "bg-white/10" : "bg-slate-100"
+      <div className="w-full rounded-3xl border border-slate-200 bg-white/90 p-3 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          {actions.map((action, index) => (
+            <div key={action.key} className="flex items-center gap-2">
+              {index > 0 ? (
+                <span className="hidden text-slate-300 sm:inline-flex" aria-hidden="true">
+                  /
+                </span>
+              ) : null}
+
+              <button
+                onClick={action.onClick}
+                className={`group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  action.active
+                    ? `bg-linear-to-r ${action.tone} border-transparent text-white shadow-md`
+                    : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-white"
                 }`}
+                aria-pressed={action.active}
               >
-                {action.icon}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold leading-5">{action.label}</p>
-                <p
-                  className={`mt-1 text-xs ${
-                    action.active ? "text-slate-300" : "text-slate-500"
+                <span
+                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${
+                    action.active ? "bg-white/15 text-white" : "bg-white text-slate-600 shadow-sm"
                   }`}
                 >
-                  {action.description}
-                </p>
-              </div>
+                  {action.icon}
+                </span>
+                <span>{action.label}</span>
+              </button>
             </div>
-          </button>
-        ))}
+          ))}
+        </div>
+
+        <p className="mt-3 text-xs text-slate-500">
+          Breadcrumb actions: tap any step to open or hide that section.
+        </p>
       </div>
 
       {showAttendance && <PanelShell>{attendanceContent}</PanelShell>}
       {studentTable && <PanelShell>{studentTableContent}</PanelShell>}
       {showTodayAbsentees && <PanelShell>{todayAbsenteesContent}</PanelShell>}
       {monthlyAttendance && <PanelShell>{groupMonthlyAttendanceContent}</PanelShell>}
+      {showExamResults && <PanelShell>{examResultsContent}</PanelShell>}
       {showEditToggle && editAttendance && <PanelShell>{editAttendanceContent}</PanelShell>}
     </div>
   );

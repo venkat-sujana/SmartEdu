@@ -29,8 +29,6 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
       year: record.year,
     };
 
-    console.log("Sending update data:", payload); // Debug log
-
     try {
       const response = await fetch(`/api/attendance/${record._id}`, {
         method: "PUT",
@@ -38,24 +36,17 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
         body: JSON.stringify(payload),
       });
 
-      console.log("Update response:", response); // Debug log
-
       const result = await response.json();
-      console.log("Update result:", result); // Debug log
-
       toast.dismiss(toastId);
 
       if (response.ok) {
-        console.log("Update successful"); // Debug log
         toast.success("Attendance updated!");
         onUpdate();
         onClose();
       } else {
-        console.error("Update failed:", result); // Debug log
         toast.error(result.message || "Failed to update");
       }
     } catch (error) {
-      console.error("Update error:", error); // Debug log
       toast.dismiss(toastId);
       toast.error("Error updating attendance");
     } finally {

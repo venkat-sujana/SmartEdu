@@ -1,6 +1,7 @@
 // models/Exam.js
 // This file defines the Mongoose schema and model for the Exam collection.
 import mongoose from 'mongoose';
+import { STREAMS, computePercentage } from '@/validations/examValidation';
 const { Schema } = mongoose;
 
 const examSchema = new Schema({
@@ -12,7 +13,7 @@ const examSchema = new Schema({
   stream: {
     type: String,
     required: true,
-    enum: ['MPC', 'BIPC', 'CEC', 'HEC', 'M&AT', 'CET', 'MLT'],
+    enum: STREAMS,
   },
   yearOfStudy: {
     type: String,
@@ -33,18 +34,16 @@ const examSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  generalSubjects: {
-    type: Schema.Types.Mixed,
-    required: function () {
-      return ['MPC', 'BIPC', 'CEC', 'HEC'].includes(this.stream);
-    },
-  },
-  vocationalSubjects: {
-    type: Schema.Types.Mixed,
-    required: function () {
-      return ['M&AT', 'CET', 'MLT'].includes(this.stream);
-    },
-  },
+  generalSubjects: [{
+    subject: { type: String, required: true, trim: true },
+    marks: { type: Number, required: true, min: 0, max: 100 },
+    maxMarks: { type: Number, default: 100, min: 1 }
+  }],
+  vocationalSubjects: [{
+    subject: { type: String, required: true, trim: true },
+    marks: { type: Number, required: true, min: 0, max: 100 },
+    maxMarks: { type: Number, default: 100, min: 1 }
+  }],
 
   collegeId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -61,8 +60,33 @@ const examSchema = new Schema({
     default: 0
   }
 }, {
-  timestamps: true,
+  timestamps: true
 });
+
+examSchema.pre('validate', function(next) {
+  const general = this.generalSubjects || [];
+  const vocational = this.vocationalSubjects || [];
+  let subjects;
+  
+  if (STREAMS.slice(0,4).includes(this.stream)) {
+    subjects = general;
+  } else if (STREAMS.slice(4).includes(this.stream)) {
+    subjects = vocational;
+  } else {
+    return next(new Error('Invalid stream'));
+  }
+  
+  if (subjects.length === 0) {
+    return next(new Error('Subjects required for the stream'));
+  }
+  
+  this.total = subjects.reduce((sum, s) => sum + (s.marks || 0), 0);
+  this.percentage = computePercentage(subjects);
+  next();
+});
+
+examSchema.index({ studentId: 1, examType: 1, academicYear: 1 });
+examSchema.index({ collegeId: 1, academicYear: 1, examType: 1 });
 
 const Exam = mongoose.models.Exam || mongoose.model('Exam', examSchema);
 export default Exam;

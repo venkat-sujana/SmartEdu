@@ -7,9 +7,15 @@ import Lecturer from "@/models/Lecturer";
 import Principal from "@/models/Principal";
 import Student from "@/models/Student";
 import User from "@/models/User";
+import { loginRateLimiter } from "@/lib/rateLimiter";
 
 async function authenticateAdmin(email, password) {
-  await connectMongoDB();
+  const key = `login:${email.toLowerCase()}`;
+  try {
+    await loginRateLimiter.consume(key);
+  } catch {
+    return null;
+  }
   const admin = await User.findOne({
     email: email.trim().toLowerCase(),
     role: "admin",
@@ -30,7 +36,12 @@ async function authenticateAdmin(email, password) {
 }
 
 async function authenticateLecturer(email, password) {
-  await connectMongoDB();
+  const key = `login:${email.toLowerCase()}`;
+  try {
+    await loginRateLimiter.consume(key);
+  } catch {
+    return null;
+  }
   const lecturer = await Lecturer.findOne({ email: email.trim().toLowerCase() });
   if (!lecturer) return null;
 
@@ -50,7 +61,12 @@ async function authenticateLecturer(email, password) {
 }
 
 async function authenticateStudent(admissionNo, password) {
-  await connectMongoDB();
+  const key = `login:${admissionNo.trim()}`;
+  try {
+    await loginRateLimiter.consume(key);
+  } catch {
+    return null;
+  }
   const student = await Student.findOne({ admissionNo: admissionNo.trim() }).populate(
     "collegeId",
     "name"
@@ -80,7 +96,12 @@ async function authenticateStudent(admissionNo, password) {
 }
 
 async function authenticatePrincipal(email, password) {
-  await connectMongoDB();
+  const key = `login:${email.toLowerCase()}`;
+  try {
+    await loginRateLimiter.consume(key);
+  } catch {
+    return null;
+  }
   const principal = await Principal.findOne({ email: email.trim().toLowerCase() }).populate(
     "collegeId",
     "name"

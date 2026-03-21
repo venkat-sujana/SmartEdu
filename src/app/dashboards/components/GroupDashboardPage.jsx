@@ -15,6 +15,7 @@ import GroupAttendanceSummary from "@/components/attendance/GroupAttendanceSumma
 import GroupShortageSummary from "@/components/attendance/GroupShortageSummary";
 import LecturerInfoCard from "@/components/dashboard/LecturerInfoCard";
 import GroupAttendanceCard from "@/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
+import GroupExamDashboardPanel from "@/components/exams/GroupExamDashboardPanel";
 import GroupStudentTable from "@/components/tables/GroupStudentTable";
 import { getGroupTheme } from "@/components/dashboard/groupTheme";
 
@@ -42,6 +43,7 @@ export default function GroupDashboardPage({
   const [studentTable, setStudentTable] = useState(false);
   const [showTodayAbsentees, setShowTodayAbsentees] = useState(false);
   const [monthlyAttendance, setMonthlyAttendance] = useState(false);
+  const [showExamResults, setShowExamResults] = useState(false);
   const [editAttendance, setEditAttendance] = useState(false);
 
   const collegeName = user?.collegeName || "College";
@@ -169,6 +171,7 @@ export default function GroupDashboardPage({
               onToggleStudentTable={() => setStudentTable(v => !v)}
               onToggleTodayAbsentees={() => setShowTodayAbsentees(v => !v)}
               onToggleMonthlyAttendance={() => setMonthlyAttendance(v => !v)}
+              onToggleExamResults={() => setShowExamResults(v => !v)}
               attendanceContent={
                 <AttendanceForm
                   defaultGroup={groupName}
@@ -177,6 +180,8 @@ export default function GroupDashboardPage({
               }
               studentTableContent={<GroupStudentTable groupName={groupName} />}
               todayAbsenteesContent={<TodayAbsenteesTable groupFilter={groupName} header={false} />}
+              showExamResults={showExamResults}
+              examResultsContent={<GroupExamDashboardPanel groupName={groupName} />}
               groupMonthlyAttendanceContent={
                 <div className="mx-auto mt-6 max-w-7xl space-y-8 rounded-2xl bg-white/95 p-4 shadow-sm md:p-6">
                   <h1 className="mb-2 text-center text-2xl font-bold text-slate-900">
@@ -267,4 +272,8 @@ export default function GroupDashboardPage({
     </div>
   );
 }
+
+
+
+
 
