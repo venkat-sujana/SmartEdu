@@ -163,7 +163,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50`}
       >
-        <SessionProvider>
+        <SessionProvider baseUrl={process.env.NEXTAUTH_URL || 'http://localhost:3000'} refetchInterval={60 * 1000}>
           <Toaster />
           <AppShell>{children}</AppShell>
         </SessionProvider>

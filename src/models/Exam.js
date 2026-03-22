@@ -63,18 +63,24 @@ const examSchema = new Schema({
   timestamps: true
 });
 
-examSchema.pre('validate', function(next) {
+examSchema.pre('save', function(next) {
   const general = this.generalSubjects || [];
   const vocational = this.vocationalSubjects || [];
   let subjects;
   
-  if (STREAMS.slice(0,4).includes(this.stream)) {
-    subjects = general;
-  } else if (STREAMS.slice(4).includes(this.stream)) {
-    subjects = vocational;
-  } else {
-    return next(new Error('Invalid stream'));
+const streamToSubjectType = {
+    MPC: 'general',
+    CEC: 'general', 
+    HEC: 'general',
+    M: 'general',
+    bipc: 'vocational', 
+    mpcVoc: 'vocational'
+  };
+  const subjectType = streamToSubjectType[this.stream];
+  if (!subjectType) {
+    return next(new Error(`Invalid stream: ${this.stream}`));
   }
+  subjects = subjectType === 'general' ? general : vocational;
   
   if (subjects.length === 0) {
     return next(new Error('Subjects required for the stream'));
@@ -87,6 +93,7 @@ examSchema.pre('validate', function(next) {
 
 examSchema.index({ studentId: 1, examType: 1, academicYear: 1 });
 examSchema.index({ collegeId: 1, academicYear: 1, examType: 1 });
+examSchema.index({ studentId: 1, collegeId: 1, examType: 1, academicYear: 1 }, { unique: true });
 
 const Exam = mongoose.models.Exam || mongoose.model('Exam', examSchema);
 export default Exam;

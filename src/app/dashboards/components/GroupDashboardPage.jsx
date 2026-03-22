@@ -151,7 +151,7 @@ export default function GroupDashboardPage({
 
             <div className="mb-4 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-left sm:text-3xl">
-                Attendance Operations Hub
+                 Operations Hub
               </h3>
               <Link
                 href={addStudentHref}
@@ -159,6 +159,13 @@ export default function GroupDashboardPage({
               >
                 <UserPlus className="h-4 w-4" />
                 Add Student
+              </Link>
+              <Link
+                href={"/exams-form"}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+              >
+                <UserPlus className="h-4 w-4" />
+                Add exam
               </Link>
             </div>
 

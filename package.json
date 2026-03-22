@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint app components lib models --ext .js,.jsx,.mjs",
+    "lint": "eslint src --ext .js,.jsx,.mjs",
     "seed:invigilation-admin": "node scripts/seed-invigilation-admin.mjs",
     "migrate:group-bipc": "node scripts/normalize-bipc-group.mjs --apply"
   },

@@ -225,7 +225,7 @@ export default function LecturerRegister() {
           </a>
         </p>
         <p>
-          if you don't have a college?{' '}<a href="/college-registration" className="text-blue-600 hover:underline">Register College</a> for your student
+          if you don&apos;t have a college?{' '}<a href="/college-registration" className="text-blue-600 hover:underline">Register College</a> for your student
         </p>
       </form>
     </div>

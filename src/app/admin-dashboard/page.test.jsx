@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-describe.only('AdminDashboard Page', () => {
+describe('AdminDashboard Page', () => {
     beforeEach(() => {
         cy.visit('/admin-dashboard', {
             onBeforeLoad(win) {

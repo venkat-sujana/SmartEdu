@@ -49,7 +49,7 @@ export default function CollegeRegistrationForm() {
       </form>
      
         <p className="mt-4 text-center text-gray-600">
-          Don't have an Lecturer account?{" "}
+          Don&apos;t have an Lecturer account?{" "}
           <a href="/lecturer-registration" className="text-blue-600 hover:underline">
             Register here
           </a>

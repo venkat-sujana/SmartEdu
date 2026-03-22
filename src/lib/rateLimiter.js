@@ -3,8 +3,8 @@
 import { RateLimiterMemory } from "rate-limiter-flexible";
 
 export const loginRateLimiter = new RateLimiterMemory({
-  points: 5,      // 5 requests
-  duration: 60,   // per 60 seconds
+points: 10,     // 10 requests
+  duration: 900,  // per 15 minutes
 });
 
 export const apiRateLimiter = new RateLimiterMemory({

@@ -1,3 +1,5 @@
+
+//src/app/api/auth/[...nextauth]/route.js
 import "@/models/College";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -10,20 +12,32 @@ import User from "@/models/User";
 import { loginRateLimiter } from "@/lib/rateLimiter";
 
 async function authenticateAdmin(email, password) {
+  await connectMongoDB();
+  
   const key = `login:${email.toLowerCase()}`;
-  try {
-    await loginRateLimiter.consume(key);
-  } catch {
-    return null;
+  if (process.env.NODE_ENV !== 'development') {
+    try {
+      await loginRateLimiter.consume(key);
+    } catch {
+      console.error(`[AUTH ADMIN RATE LIMIT] ${email}`);
+      return null;
+    }
   }
+  
   const admin = await User.findOne({
     email: email.trim().toLowerCase(),
     role: "admin",
   });
-  if (!admin) return null;
+  if (!admin) {
+    console.error(`[AUTH ADMIN NOT FOUND] ${email}`);
+    return null;
+  }
 
   const isValid = await bcrypt.compare(password.trim(), admin.password);
-  if (!isValid) return null;
+  if (!isValid) {
+    console.error(`[AUTH ADMIN INVALID PASS] ${email}`);
+    return null;
+  }
 
   return {
     id: admin._id.toString(),
@@ -36,17 +50,29 @@ async function authenticateAdmin(email, password) {
 }
 
 async function authenticateLecturer(email, password) {
+  await connectMongoDB();
+  
   const key = `login:${email.toLowerCase()}`;
-  try {
-    await loginRateLimiter.consume(key);
-  } catch {
+  if (process.env.NODE_ENV !== 'development') {
+    try {
+      await loginRateLimiter.consume(key);
+    } catch {
+      console.error(`[AUTH LECTURER RATE LIMIT] ${email}`);
+      return null;
+    }
+  }
+  
+  const lecturer = await Lecturer.findOne({ email: email.trim().toLowerCase() });
+  if (!lecturer) {
+    console.error(`[AUTH LECTURER NOT FOUND] ${email}`);
     return null;
   }
-  const lecturer = await Lecturer.findOne({ email: email.trim().toLowerCase() });
-  if (!lecturer) return null;
 
   const isValid = await bcrypt.compare(password.trim(), lecturer.password);
-  if (!isValid) return null;
+  if (!isValid) {
+    console.error(`[AUTH LECTURER INVALID PASS] ${email}`);
+    return null;
+  }
 
   return {
     id: lecturer._id.toString(),
@@ -61,20 +87,32 @@ async function authenticateLecturer(email, password) {
 }
 
 async function authenticateStudent(admissionNo, password) {
+  await connectMongoDB();
+  
   const key = `login:${admissionNo.trim()}`;
-  try {
-    await loginRateLimiter.consume(key);
-  } catch {
-    return null;
+  if (process.env.NODE_ENV !== 'development') {
+    try {
+      await loginRateLimiter.consume(key);
+    } catch {
+      console.error(`[AUTH STUDENT RATE LIMIT] ${admissionNo}`);
+      return null;
+    }
   }
+  
   const student = await Student.findOne({ admissionNo: admissionNo.trim() }).populate(
     "collegeId",
     "name"
   );
-  if (!student) return null;
+  if (!student) {
+    console.error(`[AUTH STUDENT NOT FOUND] ${admissionNo}`);
+    return null;
+  }
 
   const isValid = await bcrypt.compare(password.trim(), student.password);
-  if (!isValid) return null;
+  if (!isValid) {
+    console.error(`[AUTH STUDENT INVALID PASS] ${admissionNo}`);
+    return null;
+  }
 
   return {
     id: student._id.toString(),
@@ -96,20 +134,32 @@ async function authenticateStudent(admissionNo, password) {
 }
 
 async function authenticatePrincipal(email, password) {
+  await connectMongoDB();
+  
   const key = `login:${email.toLowerCase()}`;
-  try {
-    await loginRateLimiter.consume(key);
-  } catch {
-    return null;
+  if (process.env.NODE_ENV !== 'development') {
+    try {
+      await loginRateLimiter.consume(key);
+    } catch {
+      console.error(`[AUTH PRINCIPAL RATE LIMIT] ${email}`);
+      return null;
+    }
   }
+  
   const principal = await Principal.findOne({ email: email.trim().toLowerCase() }).populate(
     "collegeId",
     "name"
   );
-  if (!principal) return null;
+  if (!principal) {
+    console.error(`[AUTH PRINCIPAL NOT FOUND] ${email}`);
+    return null;
+  }
 
   const isValid = await bcrypt.compare(password.trim(), principal.password);
-  if (!isValid) return null;
+  if (!isValid) {
+    console.error(`[AUTH PRINCIPAL INVALID PASS] ${email}`);
+    return null;
+  }
 
   return {
     id: principal._id.toString(),
@@ -243,6 +293,10 @@ const authOptions = {
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    error: '/auth/error',
+    signIn: '/login',
+  },
 };
 
 const handler = NextAuth(authOptions);
