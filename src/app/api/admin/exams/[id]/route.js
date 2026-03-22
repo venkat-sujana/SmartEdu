@@ -1,3 +1,4 @@
+//src/app/api/admin/exams/[id]/route.js
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";

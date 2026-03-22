@@ -1,3 +1,4 @@
+//src/validations/examValidation.js
 import { z } from "zod";
 
 export const STREAMS = ["MPC", "BIPC", "CEC", "HEC", "M&AT", "CET", "MLT"];
@@ -8,30 +9,31 @@ export const EXAM_TYPES = [
 ];
 
 export const subjectSchema = z.object({
-  subject: z.string().min(1, "Subject name required").trim(),
-  marks: z.number().min(0).max(100, "Marks <= 100"),
-  maxMarks: z.number().min(1, "Max marks > 0").default(100),
+  subject: z.string().min(1).trim(),
+  marks: z.number().min(0).max(100),
+  maxMarks: z.number().min(1).default(100),
 });
 
-export const generalSubjectSchema = subjectSchema.extend({
-  // General stream subjects validation if needed
-});
+export const generalSubjectSchema = subjectSchema.extend({});
+export const vocationalSubjectSchema = subjectSchema.extend({});
 
-export const vocationalSubjectSchema = subjectSchema.extend({
-  // Vocational stream subjects
-});
 
-export const createExamSchema = z.object({
-  studentId: z.string().min(1, "Student ID required"),
+// ✅ BASE SCHEMA (NO refine)
+const baseExamSchema = z.object({
+  studentId: z.string().min(1),
   stream: z.enum(STREAMS),
   yearOfStudy: z.enum(YEARS_OF_STUDY),
-  academicYear: z.string().regex(/^\\d{4}-(1|2)$/, "Academic year format: YYYY-1 or YYYY-2"),
+  academicYear: z.string().regex(/^\d{4}-(1|2)$/),
   examType: z.enum(EXAM_TYPES),
   examDate: z.coerce.date(),
   generalSubjects: z.array(generalSubjectSchema).optional(),
   vocationalSubjects: z.array(vocationalSubjectSchema).optional(),
-  collegeId: z.string().min(1, "College ID required"),
-}).refine((data) => {
+  collegeId: z.string().min(1),
+});
+
+
+// ✅ CREATE SCHEMA (WITH refine)
+export const createExamSchema = baseExamSchema.refine((data) => {
   if (STREAMS.slice(0,4).includes(data.stream)) {
     return data.generalSubjects && data.generalSubjects.length > 0;
   }
@@ -39,13 +41,21 @@ export const createExamSchema = z.object({
     return data.vocationalSubjects && data.vocationalSubjects.length > 0;
   }
   return true;
-}, { message: "General subjects required for general streams" });
-
-export const updateExamSchema = createExamSchema.partial().extend({
-  total: z.number().min(0).optional(),
-  percentage: z.number().min(0).max(100).optional(),
+}, {
+  message: "Subjects required based on stream",
 });
 
+
+// ✅ UPDATE SCHEMA (NO refine conflict)
+export const updateExamSchema = baseExamSchema
+  .partial()
+  .extend({
+    total: z.number().min(0).optional(),
+    percentage: z.number().min(0).max(100).optional(),
+  });
+
+
+// باقي code unchanged
 export const listExamsQuerySchema = z.object({
   studentId: z.string().optional(),
   stream: z.enum(STREAMS).optional(),
@@ -65,7 +75,7 @@ export const examScheduleSchema = z.object({
   session: z.enum(["FN", "AN", "EN"]),
   subject: z.string().min(1).trim(),
   hallNo: z.string().min(1).trim(),
-  collegeId: z.string().min(1), // Added
+  collegeId: z.string().min(1),
 });
 
 export function computePercentage(subjects) {
@@ -74,4 +84,3 @@ export function computePercentage(subjects) {
   const maxTotal = subjects.reduce((sum, s) => sum + s.maxMarks, 0);
   return maxTotal > 0 ? Math.round((totalMarks / maxTotal) * 100) : 0;
 }
-
