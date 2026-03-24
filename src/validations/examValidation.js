@@ -1,3 +1,4 @@
+//src/validations/examValidation.js
 import { z } from "zod";
 
 export const STREAMS = ["MPC", "BIPC", "CEC", "HEC", "M&AT", "CET", "MLT"];
@@ -41,10 +42,24 @@ export const createExamSchema = z.object({
   return true;
 }, { message: "General subjects required for general streams" });
 
-export const updateExamSchema = createExamSchema.partial().extend({
-  total: z.number().min(0).optional(),
-  percentage: z.number().min(0).max(100).optional(),
-});
+// ✅ Update schema WITHOUT using .partial()
+export const updateExamSchema = z.object({
+  stream: z.enum(STREAMS).optional(),
+  generalSubjects: z.array(generalSubjectSchema).optional(),
+  vocationalSubjects: z.array(vocationalSubjectSchema).optional(),
+}).refine((data) => {
+  if (!data.stream) return true;
+
+  if (STREAMS.slice(0,4).includes(data.stream)) {
+    return data.generalSubjects && data.generalSubjects.length > 0;
+  }
+
+  if (STREAMS.slice(4).includes(data.stream)) {
+    return data.vocationalSubjects && data.vocationalSubjects.length > 0;
+  }
+
+  return true;
+}, { message: "Subjects required based on stream" });
 
 export const listExamsQuerySchema = z.object({
   studentId: z.string().optional(),

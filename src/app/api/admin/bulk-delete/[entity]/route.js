@@ -1,3 +1,5 @@
+//src/app/api/admin/bulk-delete/[entity]/route.js
+
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import Attendance from "@/models/Attendance";
