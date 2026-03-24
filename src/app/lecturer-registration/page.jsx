@@ -16,7 +16,6 @@ export default function LecturerRegister() {
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
   const [photoUploading, setPhotoUploading] = useState(false);
-
   const [colleges, setColleges] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -98,7 +97,7 @@ export default function LecturerRegister() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6 relative">
+    <div className="min-h-screen flex items-center justify-center bg-gray-500 p-6 relative">
       {isLoading && <SpinnerDots />}
 
       <form
@@ -199,7 +198,7 @@ export default function LecturerRegister() {
             className="w-full border border-gray-300 rounded px-3 py-2 bg-white focus:outline-none focus:ring focus:border-blue-500"
           />
           {photoPreview && (
-            <img
+            <image
               src={photoPreview}
               alt="Lecturer preview"
               className="mt-3 h-24 w-24 rounded-2xl object-cover border border-gray-200"

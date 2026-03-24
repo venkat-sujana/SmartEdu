@@ -30,7 +30,6 @@ export default function Sidebar({ onClose }) {
         { href: "/principal-registration", label: "Principal Registration", icon: <UserCircleIcon className="w-5 h-5 text-indigo-400" /> },
       ]
     : [
-        { href: "/", label: "Home", icon: <HomeIcon className="h-5 w-5" /> },
         { href: "/timetable-management/login", label: "Time Table Management", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
         { href: "/timetable", label: "Academic Time Table", icon: <CalendarDaysIcon className="w-5 h-5 text-cyan-500" /> },
         { href: "/exams-form", label: "Marks Posting ", icon: <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-500" /> },
@@ -38,7 +37,6 @@ export default function Sidebar({ onClose }) {
         { href: "/attendance-records/attendance-calendar", label: "Calendar View ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
         { href: "/attendance-records/individual", label: "Update Attendance ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
         { href: "/absentees-table", label: "Today's Absentees ", icon: <XCircleIcon className="w-5 h-5 text-red-500" /> },
-         
         { href: "/attendance-form", label: "Take Attendance ", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
       ]
 
