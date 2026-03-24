@@ -17,8 +17,8 @@ import {
 
 export default function Sidebar({ onClose }) {
   const pathname = usePathname()
-  const { data: session } = useSession()
-  const user = session?.user || {}
+  const session = useSession()
+  const user = session.data?.user || {}
   const isAdmin = user.role === "admin"
 
   const links = isAdmin
@@ -38,6 +38,7 @@ export default function Sidebar({ onClose }) {
         { href: "/attendance-records/individual", label: "Update Attendance ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
         { href: "/absentees-table", label: "Today's Absentees ", icon: <XCircleIcon className="w-5 h-5 text-red-500" /> },
         { href: "/attendance-form", label: "Take Attendance ", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
+        { href: "/attendance/ai-chat", label: "AI Attendance Assistant", icon: <AcademicCapIcon className="w-5 h-5 text-emerald-500" /> },
       ]
 
   return (

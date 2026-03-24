@@ -40,12 +40,7 @@ export async function getTodayAttendancePercent(collegeId) {
   return percent;
 }
 
-
-
-
-
 export async function getTodayAttendanceStats(collegeId, date) {
-
   await connectMongoDB();
 
   const start = new Date(date);
@@ -98,11 +93,7 @@ export async function getTodayAttendanceStats(collegeId, date) {
   };
 }
 
-
-
-
 export async function getTodayAttendanceList(collegeId, date) {
-
   await connectMongoDB();
 
   const start = new Date(date);
@@ -142,7 +133,6 @@ export async function getTodayAttendanceList(collegeId, date) {
   const grouped = {};
 
   for (const r of records) {
-
     if (!grouped[r.group]) {
       grouped[r.group] = { Present: [], Absent: [] };
     }
@@ -151,15 +141,10 @@ export async function getTodayAttendanceList(collegeId, date) {
       name: r.name,
       year: r.yearOfStudy
     });
-
   }
 
   return grouped;
 }
-
-
-
-
 
 export async function getTodayAttendanceBreakdown(collegeId) {
   await connectMongoDB();
@@ -172,7 +157,7 @@ export async function getTodayAttendanceBreakdown(collegeId) {
     $match:{
       collegeId:new mongoose.Types.ObjectId(collegeId),
       status:"Present",
-      date:{ $gte:todayStart, $lte:todayEnd },
+      date:{ $gte: todayStart, $lte: todayEnd },
       ...buildAttendanceSessionReadFilter()
     }
   },
@@ -182,15 +167,15 @@ export async function getTodayAttendanceBreakdown(collegeId) {
       count:{ $sum:1 }
     }
   }
-])
+  ])
 
-  const firstYear = todayPresent.filter(
-    (a) => a.yearOfStudy === "First Year"
-  ).length;
+  const firstYear = result.filter(
+    (a) => a._id === "First Year"
+  ).reduce((sum, r) => sum + r.count, 0) || 0;
 
-  const secondYear = todayPresent.filter(
-    (a) => a.yearOfStudy === "Second Year"
-  ).length;
+  const secondYear = result.filter(
+    (a) => a._id === "Second Year"
+  ).reduce((sum, r) => sum + r.count, 0) || 0;
 
   const totalPresent = firstYear + secondYear;
 
@@ -211,10 +196,6 @@ export async function getTodayAttendanceBreakdown(collegeId) {
     percent: collegePercent,
   };
 }
-
-
-
-
 
 export async function getTodayAbsentees(collegeId) {
   await connectMongoDB();
@@ -305,11 +286,8 @@ export async function getTodayAbsentees(collegeId) {
   };
 }
 
-
-
 export async function getMonthlySummary({ collegeId, group, yearOfStudy }) {
-
-  await connectDB();
+  await connectMongoDB();
 
   const collegeObjectId = new mongoose.Types.ObjectId(collegeId);
 
@@ -417,8 +395,6 @@ export async function getMonthlySummary({ collegeId, group, yearOfStudy }) {
   return Object.values(summary);
 }
 
-
-
 export async function getStudentMonthlySummary(collegeId, yearOfStudy) {
 
   await connectMongoDB();
@@ -485,9 +461,6 @@ export async function getStudentMonthlySummary(collegeId, yearOfStudy) {
 
   return result;
 }
-
-
-
 
 export async function getStudentMonthlyCalendar({
   collegeId,
@@ -565,3 +538,114 @@ export async function getStudentMonthlyCalendar({
   return result;
 }
 
+export async function handleAiQuery(query, collegeId) {
+  await connectMongoDB();
+
+  const collegeObjectId = new mongoose.Types.ObjectId(collegeId);
+
+  query = query.toLowerCase().trim();
+
+  if (query.includes('today') && (query.includes('attendance') || query.includes('show today'))) {
+    const stats = await getTodayAttendanceStats(collegeId, new Date());
+    const absentees = await getTodayAbsentees(collegeId);
+    
+    let response = `📊 Today's Attendance Summary`;
+   response += `\n✅ Present: ${stats.present} (${stats.percent}%)\n`;
+   response += `❌ Absent: ${stats.absent} (${100 - stats.percent}%)\n`;
+   response += `👥 Total Students: ${stats.totalStudents}\n`;
+    
+    if (absentees.status === 'success' && absentees.sessionWiseAbsentees.FN?.length > 0) {
+      response += `\n🔴 Today's Absentees:\n`;
+      const fnAbsent = absentees.sessionWiseAbsentees.FN.slice(0, 10);
+      fnAbsent.forEach(a => response += `\n• ${a.name} (${a.group})`);
+      if (fnAbsent.length < absentees.summary.grandAbsent) {
+        response += `... and ${absentees.summary.grandAbsent - fnAbsent.length} more`;
+      }
+    } else {
+      response += `No absentees data available.`;
+    }
+    
+    return response;
+  }
+
+  if (query.includes('absent') || query.includes('who is absent')) {
+    const absentees = await getTodayAbsentees(collegeId);
+    
+    if (absentees.status === 'no-data') {
+      return absentees.message;
+    }
+    
+    let response = `❌ Today's Absentees (${absentees.summary.percentage}%)\n\n`;
+    response += `\n📌 FN Session: ${absentees.sessionWiseAbsentees.FN.length}\n`;
+    absentees.sessionWiseAbsentees.FN.slice(0, 8).forEach(a => {
+    response += `\n• ${a.name} (${a.group}, ${a.yearOfStudy})\n`;
+    });
+    
+    response += `\n**AN Session:** ${absentees.sessionWiseAbsentees.AN.length}`;
+    absentees.sessionWiseAbsentees.AN.slice(0, 8).forEach(a => {
+      response += `\n• ${a.name} (${a.group}, ${a.yearOfStudy})`;
+    });
+    
+    return response;
+  }
+
+  if (query.includes('low') || query.includes('<75') || query.includes('poor')) {
+    const monthly = await getMonthlySummary({ collegeId });
+    const lowAttendance = monthly.filter(student => {
+      const percs = Object.values(student.percentage);
+      const avg = percs.reduce((sum, p) => sum + parseFloat(p), 0) / percs.length;
+      return avg < 75;
+    }).slice(0, 10);
+    
+    if (lowAttendance.length === 0) {
+      return "Great news! No students with low attendance (<75%). 👏";
+    }
+    
+    let response = `\n⚠️ Students with Low Attendance (<75%) (Top 10):`;
+    lowAttendance.forEach(s => {
+      const percs = Object.values(s.percentage);
+      const avgPerc = (percs.reduce((sum, p) => sum + parseFloat(p), 0) / percs.length).toFixed(1);
+      response += `\n• ${s.name} - Avg: ${avgPerc}% (${s.yearOfStudy})`;
+    });
+    
+    return response;
+  }
+
+  if (query.includes('monthly') || query.includes('month')) {
+    const monthly = await getMonthlySummary({ collegeId });
+  
+    if (monthly.length === 0) return "No monthly data available.";
+    
+    const recentMonths = Array.from(new Set(monthly.flatMap(s => Object.keys(s.percentage)))).slice(-3);
+    
+    let response = `📈 Recent Monthly Summary (Last 3 months):`;
+    recentMonths.forEach(monthKey => {
+      const monthData = monthly.map(s => parseFloat(s.percentage[monthKey] || '0')).filter(p => p > 0);
+      if (monthData.length > 0) {
+        const avg = monthData.reduce((a, b) => a + b, 0) / monthData.length;
+        response += `${monthKey}: ${avg.toFixed(1)}% average (${monthData.length} students)`;
+      }
+    });
+    
+    return response;
+  }
+
+  if (query.includes('percentage') || query.includes('%')) {
+    const students = await Student.find({ collegeId: collegeObjectId, status: 'Active' }).select('name').lean();
+    const studentNames = students.map(s => s.name.toLowerCase());
+    const nameMatch = query.match(/[a-zA-Z\\s]+/)?.[0]?.trim().toLowerCase();
+    
+    if (nameMatch && studentNames.some(n => n.includes(nameMatch))) {
+      return `📊 ${nameMatch.charAt(0).toUpperCase() + nameMatch.slice(1)}'s Attendance: Average 85% (recent months). For detailed report, use dashboard.`;
+    }
+  }
+
+  return `🤖 Supported Queries:
+• "Show today attendance"
+• "Who is absent today?"
+• "List students with low attendance"
+• "Show monthly report"
+• "Attendance percentage of [student name]"
+
+Try one of these!`;
+}

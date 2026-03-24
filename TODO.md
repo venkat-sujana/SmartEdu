@@ -1,41 +1,19 @@
-# Fix NextAuth CLIENT_FETCH_ERROR - Online Student Record & Attendance
+# AI Attendance Chat Assistant Implementation
 
-## Steps (0/6 complete)
+## Status: ✅ In Progress
 
-### Prerequisites
-- NextAuth v4 CLIENT_FETCH_ERROR \"Failed to fetch\" in Turbopack dev due to missing baseUrl
+**Plan approved by user. Breaking down into steps:**
 
-### Step-by-Step Plan
+### 1. [✅] Create TODO.md - Track progress
+### 2. [ ] Create new React Chat component: src/components/attendance/AiChat.jsx
+### 3. [ ] Create AI Chat page: src/app/attendance/ai-chat/page.jsx 
+### 4. [ ] Create API route: src/app/api/ai-attendance/route.js
+### 5. [ ] Extend service: src/services/attendanceService.js - Add handleAiQuery()
+### 6. [ ] Edit Sidebar: src/components/layout/Sidebar.jsx - Add AI link
+### 7. [ ] Edit Navbar: src/components/layout/Navbar.jsx - Add AI link  
+### 8. [ ] Integrate button in attendance-dashboard: src/app/attendance-dashboard/page.jsx
+### 9. [ ] Test: npm run dev, navigate /attendance/ai-chat, test queries like "show today attendance"
 
-- [ ] **1. Environment Variables** (User Manual)
-  Add to `.env.local`:
-  ```
-  NEXTAUTH_URL=http://localhost:3000
-  NEXTAUTH_SECRET=your-super-secret-key-here-generate-with-openssl-rand-hex-32-at-least-32-chars
-  ```
+**Next step:** Create AiChat.jsx component
 
-- [x] **2. Update SessionProvider** (Auto: edit src/app/layout.js) ✅
-  Add `baseUrl={process.env.NEXTAUTH_URL || 'http://localhost:3000'}` and `refetchInterval={60 * 1000}`
-
-- [ ] **3. Clear Build Cache & Restart**
-  ```
-  rm -rf .next
-  npm run dev
-  ```
-
-- [ ] **4. Test Client Fetch**
-  - Open DevTools Network tab
-  - Navigate to protected page
-  - Verify `/api/auth/session` 200 OK, no \"Failed to fetch\"
-
-- [ ] **5. Test Authentication Flow**
-  - Login as admin/lecturer/principal/student
-  - Check session data loads (useSession)
-
-- [ ] **6. Complete**
-  Remove/update TODO.md
-
-## Progress Tracking
-Updated when steps complete.
-
-**Status:** Plan implemented. Step 1 pending user action.
+**Updated: [Current Date]**
