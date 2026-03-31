@@ -9,6 +9,7 @@ import {
   normalizeAttendanceSession,
 } from "@/validations/attendanceValidation";
 import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
+import { getPublicHoliday, isSecondSaturday, isSunday } from "@/lib/attendanceCalendar";
 
 export async function getTodayAttendancePercent(collegeId) {
   await connectMongoDB();
@@ -529,8 +530,16 @@ export async function getStudentMonthlyCalendar({
       continue;
     }
 
-    const status =
-      recordMap.get(currentDate.toDateString()) || "N/A";
+    const holiday = getPublicHoliday(currentDate);
+    let status = recordMap.get(currentDate.toDateString()) || "N/A";
+
+    if (isSunday(currentDate)) {
+      status = "Sunday";
+    } else if (isSecondSaturday(currentDate)) {
+      status = "2nd Saturday";
+    } else if (holiday) {
+      status = holiday.name;
+    }
 
     result.push({
       date: currentDate,

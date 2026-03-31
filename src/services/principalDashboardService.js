@@ -152,19 +152,29 @@ export async function getPrincipalDashboardOverview(collegeId) {
       .filter((item) => item.isPresent === 1)
       .map((item) => String(item.studentId))
   );
+  const absentStudentIds = new Set(
+    normalizedTodayAttendance
+      .filter((item) => item.isPresent !== 1)
+      .map((item) => String(item.studentId))
+  );
 
   const totalPresentToday = presentStudentIds.size;
-  const totalAbsenteesToday = Math.max(totalStudents - totalPresentToday, 0);
+  const totalAbsenteesToday = absentStudentIds.size;
+  const totalMarkedToday = totalPresentToday + totalAbsenteesToday;
   const attendancePercentage =
-    totalStudents > 0 ? Number(((totalPresentToday / totalStudents) * 100).toFixed(1)) : 0;
+    totalMarkedToday > 0 ? Number(((totalPresentToday / totalMarkedToday) * 100).toFixed(1)) : 0;
 
   const attendanceByKey = normalizedTodayAttendance.reduce((map, item) => {
-    if (item.isPresent !== 1) {
-      return map;
+    const key = `${item.year}::${item.group}`;
+    const current = map.get(key) || { present: 0, absent: 0 };
+
+    if (item.isPresent === 1) {
+      current.present += 1;
+    } else {
+      current.absent += 1;
     }
 
-    const key = `${item.year}::${item.group}`;
-    map.set(key, (map.get(key) || 0) + 1);
+    map.set(key, current);
     return map;
   }, new Map());
 
@@ -174,15 +184,17 @@ export async function getPrincipalDashboardOverview(collegeId) {
       .map((item) => {
         const key = `${targetYear}::${item.group}`;
         const total = item.totalStudents;
-        const presentCount = attendanceByKey.get(key) || 0;
-        const absentCount = Math.max(total - presentCount, 0);
+        const attendance = attendanceByKey.get(key) || { present: 0, absent: 0 };
+        const presentCount = attendance.present;
+        const absentCount = attendance.absent;
+        const markedCount = presentCount + absentCount;
 
         return {
           group: item.group,
           totalStudents: total,
           present: presentCount,
           absent: absentCount,
-          percentage: total > 0 ? Number(((presentCount / total) * 100).toFixed(1)) : 0,
+          percentage: markedCount > 0 ? Number(((presentCount / markedCount) * 100).toFixed(1)) : 0,
         };
       })
       .sort((a, b) => a.group.localeCompare(b.group));

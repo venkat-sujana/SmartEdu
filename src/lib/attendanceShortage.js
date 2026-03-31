@@ -2,17 +2,7 @@ import mongoose from "mongoose";
 import Student from "@/models/Student";
 import Attendance from "@/models/Attendance";
 import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
-
-const publicHolidays = [
-  { month: 0, day: 26 },
-  { month: 5, day: 7 },
-  { month: 7, day: 8 },
-  { month: 7, day: 15 },
-];
-
-function isHoliday(dateObj) {
-  return publicHolidays.some((holiday) => holiday.month === dateObj.getMonth() && holiday.day === dateObj.getDate());
-}
+import { isNonWorkingDay } from "@/lib/attendanceCalendar";
 
 export function normalizeYearValue(value) {
   if (!value) return "";
@@ -84,7 +74,7 @@ export async function getAttendanceShortageSummary({
         }
 
         const recordDate = new Date(record.date);
-        if ((dateOfJoining && recordDate < dateOfJoining) || isHoliday(recordDate)) {
+        if ((dateOfJoining && recordDate < dateOfJoining) || isNonWorkingDay(recordDate)) {
           return;
         }
 

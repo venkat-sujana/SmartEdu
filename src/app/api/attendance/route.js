@@ -12,6 +12,12 @@ import {
   normalizeAttendanceSession,
 } from '@/validations/attendanceValidation'
 
+function normalizeAttendanceDate(value) {
+  const date = new Date(value)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
+
 // 🔽 POST Attendance
 export async function POST(req) {
   await connectMongoDB()
@@ -49,10 +55,12 @@ export async function POST(req) {
     const validRecords = parsedRecords.map((result) => result.data)
     const markedRecords = validRecords.filter((record) => record.status)
 
+    const unmarkedCount = validRecords.length - markedRecords.length
+
     if (markedRecords.length === 0) {
       return NextResponse.json(
         {
-          message: 'No attendance status selected. Unmarked students remain N/A.',
+          message: 'No attendance status selected. Use Mark All Present, Mark All Absent, or mark students individually. Unselected students remain N/A.',
           status: 'error',
         },
         { status: 400 }
@@ -62,16 +70,18 @@ export async function POST(req) {
     // ✅ Extract common info
     // 🔥 Step 1: Duplicate check (same date + group + yearOfStudy + collegeId + session)
     const { date, yearOfStudy, group, session: sessionVal } = markedRecords[0]
-    const selectedDate = new Date(date)
+    const selectedDate = normalizeAttendanceDate(date)
     const selectedGroup = group
     const selectedYearOfStudy = yearOfStudy
     const selectedSession = normalizeAttendanceSession(sessionVal)
+    const nextDate = new Date(selectedDate)
+    nextDate.setDate(nextDate.getDate() + 1)
 
     const alreadyMarked = await Attendance.findOne({
       collegeId,
       group: selectedGroup,
       yearOfStudy: selectedYearOfStudy,
-      date: selectedDate,
+      date: { $gte: selectedDate, $lt: nextDate },
       session: selectedSession,
     })
 
@@ -109,7 +119,7 @@ for (const record of markedRecords) {
   if (!student) continue
 
   const joinDate = student.dateOfJoining ? new Date(student.dateOfJoining) : null
-  const attendanceDate = new Date(record.date)
+  const attendanceDate = normalizeAttendanceDate(record.date)
 
   if (joinDate && attendanceDate < joinDate) continue
 
@@ -144,9 +154,10 @@ for (const record of markedRecords) {
     const bulkOps = processedRecords.map(rec => ({
       updateOne: {
         filter: {
+          collegeId: rec.collegeId,
           studentId: rec.studentId,
           date: rec.date,
-          session: rec.session || 'FN', // Default to 'FN' if session not provided
+          session: rec.session || 'FN',
         },
         update: { $set: rec },
         upsert: true,
@@ -155,7 +166,12 @@ for (const record of markedRecords) {
 
     await Attendance.bulkWrite(bulkOps)
 
-    return NextResponse.json({ message: 'Attendance submitted successfully', status: 'success' })
+    return NextResponse.json({
+      message: `Attendance submitted successfully. Marked: ${processedRecords.length}, N/A: ${unmarkedCount}.`,
+      status: 'success',
+      markedCount: processedRecords.length,
+      unmarkedCount,
+    })
   } catch (err) {
     console.error('POST Error:', err)
     return NextResponse.json(

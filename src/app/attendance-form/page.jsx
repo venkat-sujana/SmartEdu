@@ -1,5 +1,5 @@
+//src/app/attendance-form/page.jsx
 'use client'
-
 import { useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import {
@@ -171,7 +171,9 @@ export default function AttendanceFormPage() {
   const totalStudents = students.length
   const presentCount = Object.values(attendanceMap).filter(status => status === 'Present').length
   const absentCount = Object.values(attendanceMap).filter(status => status === 'Absent').length
-  const attendancePercentage = totalStudents > 0 ? ((presentCount / totalStudents) * 100).toFixed(1) : '0.0'
+  const naCount = Math.max(totalStudents - presentCount - absentCount, 0)
+  const markedCount = presentCount + absentCount
+  const attendancePercentage = markedCount > 0 ? ((presentCount / markedCount) * 100).toFixed(1) : '0.0'
 
   const setStudentStatus = (studentId, status) => {
     setAttendanceMap(prev => ({
@@ -368,6 +370,36 @@ export default function AttendanceFormPage() {
                 </div>
               </div>
 
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
+                <button
+                  type="button"
+                  onClick={markAllPresent}
+                  disabled={students.length === 0}
+                  className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Mark All Present
+                </button>
+                <button
+                  type="button"
+                  onClick={markAllAbsent}
+                  disabled={students.length === 0}
+                  className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Mark All Absent
+                </button>
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  disabled={students.length === 0}
+                  className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Clear Selection
+                </button>
+                <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">
+                  Selected: {markedCount} / {totalStudents}
+                </span>
+              </div>
+
               {feedback.message ? (
                 <div
                   className={[
@@ -408,6 +440,9 @@ export default function AttendanceFormPage() {
                 >
                   Clear Selection
                 </button>
+                <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">
+                  Selected: {markedCount} / {totalStudents}
+                </span>
               </div>
 
               <div className="overflow-x-auto rounded-lg border border-slate-200">
@@ -471,7 +506,7 @@ export default function AttendanceFormPage() {
             </section>
 
             <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
                 <div className="rounded-lg bg-slate-50 px-3 py-2">
                   <p className="text-xs text-slate-500">Total Students</p>
                   <p className="mt-1 font-semibold text-slate-900">{totalStudents}</p>
@@ -484,8 +519,12 @@ export default function AttendanceFormPage() {
                   <p className="text-xs text-rose-700">Absent Count</p>
                   <p className="mt-1 font-semibold text-rose-800">{absentCount}</p>
                 </div>
+                <div className="rounded-lg bg-slate-100 px-3 py-2">
+                  <p className="text-xs text-slate-600">N/A Count</p>
+                  <p className="mt-1 font-semibold text-slate-800">{naCount}</p>
+                </div>
                 <div className="rounded-lg bg-blue-50 px-3 py-2">
-                  <p className="text-xs text-blue-700">Attendance Percentage</p>
+                  <p className="text-xs text-blue-700">Marked Attendance %</p>
                   <p className="mt-1 font-semibold text-blue-800">{attendancePercentage}%</p>
                 </div>
               </div>

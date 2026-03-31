@@ -62,6 +62,36 @@ export default function PrincipalDashboard() {
   const overviewLoading = !dashboardOverview && !dashboardOverviewError
   const sessionWisePresent = absenteesData?.sessionWisePresent || {}
   const sessionWiseAbsentees = absenteesData?.sessionWiseAbsentees || {}
+  const absenteesSummary = absenteesData?.summary
+  const sessionSummaryCards = ['FN', 'AN'].map(sessionKey => {
+    const present = sessionWisePresent[sessionKey]?.length || 0
+    const absent = sessionWiseAbsentees[sessionKey]?.length || 0
+    const total = present + absent
+    const percent = total > 0 ? Math.round((present / total) * 100) : 0
+
+    return {
+      session: sessionKey,
+      present,
+      absent,
+      total,
+      percent,
+    }
+  })
+  const enrichAttendanceRows = (rows = [], year) =>
+    rows.map(row => {
+      const fn = stats(row.group, year, 'FN')
+      const an = stats(row.group, year, 'AN')
+
+      return {
+        ...row,
+        fnPresent: fn.present,
+        fnAbsent: fn.absent,
+        fnPercentage: fn.percent,
+        anPresent: an.present,
+        anAbsent: an.absent,
+        anPercentage: an.percent,
+      }
+    })
 
   const todayDateLabel = useMemo(
     () =>
@@ -118,16 +148,16 @@ export default function PrincipalDashboard() {
     },
     {
       title: "Today's Attendance %",
-      value: `${summary?.attendancePercentage ?? 0}%`,
-      subtitle: `${summary?.totalPresentToday ?? 0} students marked present today`,
+      value: `${Number(absenteesSummary?.percentage ?? summary?.attendancePercentage ?? 0)}%`,
+      subtitle: `${absenteesSummary?.grandPresent ?? summary?.totalPresentToday ?? 0} present out of ${absenteesSummary?.grandTotal ?? 0} marked records today`,
       icon: Percent,
       accentClassName: 'text-amber-950',
       iconClassName: 'bg-amber-100 text-amber-700',
     },
     {
       title: 'Total Absentees Today',
-      value: summary?.totalAbsenteesToday ?? 0,
-      subtitle: 'Students not marked present for today',
+      value: absenteesSummary?.grandAbsent ?? summary?.totalAbsenteesToday ?? 0,
+      subtitle: 'Actual absent records marked across FN and AN sessions',
       icon: UserRoundCheck,
       accentClassName: 'text-rose-950',
       iconClassName: 'bg-rose-100 text-rose-700',
@@ -197,15 +227,57 @@ export default function PrincipalDashboard() {
             </p>
           </div>
 
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {sessionSummaryCards.map(card => (
+              <div
+                key={card.session}
+                className="rounded-3xl border border-white/60 bg-white/90 px-5 py-5 shadow-xl backdrop-blur-sm"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-wider text-indigo-600 bg-indigo-100/50 px-3 py-1 rounded-full inline-block">
+                      {card.session} Session
+                    </p>
+                    <h3 className="mt-3 text-2xl font-black text-slate-900">
+                      Session-wise Attendance
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Present, absent, total, and percentage for {card.session}.
+                    </p>
+                  </div>
+                  <div className="rounded-3xl bg-gradient-to-br from-indigo-500 to-blue-600 px-4 py-3 text-white shadow-lg">
+                    <p className="text-xs uppercase tracking-wide text-white/75">Attendance</p>
+                    <p className="mt-1 text-2xl font-black">{card.percent}%</p>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid grid-cols-3 gap-3">
+                  <div className="rounded-2xl bg-emerald-50 px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Present</p>
+                    <p className="mt-1 text-2xl font-black text-emerald-900">{card.present}</p>
+                  </div>
+                  <div className="rounded-2xl bg-rose-50 px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-700">Absent</p>
+                    <p className="mt-1 text-2xl font-black text-rose-900">{card.absent}</p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-100 px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">Total Marked</p>
+                    <p className="mt-1 text-2xl font-black text-slate-900">{card.total}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
             <AttendanceOverviewTable
               title="First Year Attendance"
-              rows={attendanceOverview?.firstYear || []}
+              rows={enrichAttendanceRows(attendanceOverview?.firstYear || [], 'First Year')}
               loading={overviewLoading}
             />
             <AttendanceOverviewTable
               title="Second Year Attendance"
-              rows={attendanceOverview?.secondYear || []}
+              rows={enrichAttendanceRows(attendanceOverview?.secondYear || [], 'Second Year')}
               loading={overviewLoading}
             />
           </div>
@@ -372,4 +444,3 @@ export default function PrincipalDashboard() {
     </div>
   )
 }
-

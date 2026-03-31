@@ -21,6 +21,18 @@ function TableRowSkeleton() {
       <td className="px-4 py-3">
         <div className="h-4 w-16 rounded bg-slate-200" />
       </td>
+      <td className="px-4 py-3">
+        <div className="h-4 w-12 rounded bg-slate-200" />
+      </td>
+      <td className="px-4 py-3">
+        <div className="h-4 w-12 rounded bg-slate-200" />
+      </td>
+      <td className="px-4 py-3">
+        <div className="h-4 w-16 rounded bg-slate-200" />
+      </td>
+      <td className="px-4 py-3">
+        <div className="h-4 w-16 rounded bg-slate-200" />
+      </td>
     </tr>
   );
 }
@@ -40,9 +52,13 @@ export default function AttendanceOverviewTable({ title, rows = [], loading = fa
               <tr>
                 <th className="px-4 py-3">Group</th>
                 <th className="px-4 py-3">Total Students</th>
-                <th className="px-4 py-3">Present</th>
-                <th className="px-4 py-3">Absent</th>
-                <th className="px-4 py-3">Percentage</th>
+                <th className="px-4 py-3">FN Present</th>
+                <th className="px-4 py-3">FN Absent</th>
+                <th className="px-4 py-3">FN %</th>
+                <th className="px-4 py-3">AN Present</th>
+                <th className="px-4 py-3">AN Absent</th>
+                <th className="px-4 py-3">AN %</th>
+                <th className="px-4 py-3">Overall %</th>
               </tr>
             </thead>
             <tbody>
@@ -56,14 +72,18 @@ export default function AttendanceOverviewTable({ title, rows = [], loading = fa
                   >
                     <td className="px-4 py-3 font-semibold text-slate-900">{row.group}</td>
                     <td className="px-4 py-3 text-slate-700">{row.totalStudents}</td>
-                    <td className="px-4 py-3 text-emerald-700">{row.present}</td>
-                    <td className="px-4 py-3 text-rose-700">{row.absent}</td>
+                    <td className="px-4 py-3 text-emerald-700">{row.fnPresent ?? 0}</td>
+                    <td className="px-4 py-3 text-rose-700">{row.fnAbsent ?? 0}</td>
+                    <td className="px-4 py-3 font-semibold text-blue-700">{row.fnPercentage ?? 0}%</td>
+                    <td className="px-4 py-3 text-emerald-700">{row.anPresent ?? 0}</td>
+                    <td className="px-4 py-3 text-rose-700">{row.anAbsent ?? 0}</td>
+                    <td className="px-4 py-3 font-semibold text-blue-700">{row.anPercentage ?? 0}%</td>
                     <td className="px-4 py-3 font-semibold text-blue-700">{row.percentage}%</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan="9" className="px-4 py-8 text-center text-slate-500">
                     No attendance data available for today.
                   </td>
                 </tr>

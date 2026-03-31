@@ -7,6 +7,7 @@ import Attendance from "@/models/Attendance";
 import Student from "@/models/Student";
 import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
 import { canLecturerAccessGroup, getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
+import { isNonWorkingDay } from "@/lib/attendanceCalendar";
 
 const MONTHS = [
   { label: "JUN", year: "2025" },
@@ -20,20 +21,6 @@ const MONTHS = [
   { label: "FEB", year: "2026" },
   { label: "MAR", year: "2026" },
 ];
-
-const publicHolidays = [
-  { month: 0, day: 26 },
-  { month: 5, day: 7 },
-  { month: 7, day: 8 },
-  { month: 7, day: 15 },
-];
-
-function isHoliday(dateObj) {
-  return publicHolidays.some(
-    holiday =>
-      holiday.month === dateObj.getMonth() && holiday.day === dateObj.getDate()
-  );
-}
 
 function normalizeYear(value) {
   if (!value) return "";
@@ -170,11 +157,9 @@ export async function GET(req) {
       if (!studentId || !summaries.has(studentId)) return;
 
       const recordDate = new Date(record.date);
-      if (Number.isNaN(recordDate.getTime()) || recordDate.getUTCDay() === 0) {
+      if (Number.isNaN(recordDate.getTime()) || isNonWorkingDay(recordDate)) {
         return;
       }
-
-      if (isHoliday(recordDate)) return;
 
       const joiningDate = joiningDates.get(studentId);
       if (joiningDate && recordDate < joiningDate) return;

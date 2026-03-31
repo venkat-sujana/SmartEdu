@@ -30,6 +30,7 @@ export default function OverallStrengthCard({
   const totalStrength = stats.reduce((sum, entry) => sum + entry.strength, 0);
   const totalPresent = stats.reduce((sum, entry) => sum + entry.present, 0);
   const totalAbsent = stats.reduce((sum, entry) => sum + entry.absent, 0);
+  const totalPercent = totalStrength > 0 ? Math.round((totalPresent / totalStrength) * 100) : 0;
 
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -47,10 +48,11 @@ export default function OverallStrengthCard({
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <SummaryStat label="Strength" value={totalStrength} />
             <SummaryStat label="Present" value={totalPresent} />
             <SummaryStat label="Absent" value={totalAbsent} />
+            <SummaryStat label="Attendance %" value={`${totalPercent}%`} />
           </div>
         </div>
       </div>

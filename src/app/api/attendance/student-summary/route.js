@@ -5,23 +5,13 @@ import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import mongoose from "mongoose";
 import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
+import { isNonWorkingDay } from "@/lib/attendanceCalendar";
 
 // Month array must match usage & DB
 const months = [
   "June", "July", "August", "September", "October", "November",
   "December", "January", "February", "March"
 ];
-
-// Define public holidays if needed
-const publicHolidays = [
-  { month: 0, day: 26, name: 'Republic Day' },
-  { month: 5, day: 7, name: 'Bakrid' },
-  // ... (add other holidays)
-];
-
-function isHoliday(dateObj) {
-  return publicHolidays.some(h => h.month === dateObj.getMonth() && h.day === dateObj.getDate());
-}
 
 export async function GET(req) {
   await connectMongoDB();
@@ -49,8 +39,7 @@ export async function GET(req) {
       const dt = new Date(a.date);
       const dateStr = dt.toDateString();
 
-      // Skip Sundays and holidays
-      if (dt.getDay() === 0 || isHoliday(dt)) return;
+      if (isNonWorkingDay(dt)) return;
 
       if (!daysByMonth[m]) daysByMonth[m] = new Set();
       daysByMonth[m].add(dateStr);

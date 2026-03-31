@@ -6,17 +6,7 @@ import Attendance from "@/models/Attendance";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
-
-// Example holidays
-const publicHolidays = [
-  { month: 0, day: 26 },
-];
-
-function isHoliday(date) {
-  return publicHolidays.some(
-    h => h.month === date.getMonth() && h.day === date.getDate()
-  );
-}
+import { isNonWorkingDay } from "@/lib/attendanceCalendar";
 
 function calculateMonthlySummary(records) {
 
@@ -28,7 +18,7 @@ function calculateMonthlySummary(records) {
 
     const monthKey = `${dt.getFullYear()}-${dt.getMonth()+1}`;
 
-    if (dt.getDay() === 0 || isHoliday(dt)) continue;
+    if (isNonWorkingDay(dt)) continue;
 
     if (!byMonth[monthKey]) {
       byMonth[monthKey] = {
