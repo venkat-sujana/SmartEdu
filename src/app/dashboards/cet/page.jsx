@@ -1,8 +1,8 @@
-import GroupDashboardPage from "../components/GroupDashboardPage";
+import RestrictedGroupDashboardPage from "../components/RestrictedGroupDashboardPage";
 
 export default function CETDashboard() {
   return (
-    <GroupDashboardPage
+    <RestrictedGroupDashboardPage
       groupName="CET"
       routeSegment="cet"
       includeExternalLinks

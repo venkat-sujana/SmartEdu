@@ -3,12 +3,15 @@
 import { useMemo } from "react";
 import { useSession } from "next-auth/react";
 import GroupDashboardPage from "./components/GroupDashboardPage";
+import { getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
 
 function getDashboardConfig(subject) {
-  switch (subject) {
-    case "MandAT":
+  const groupName = getLecturerGroupFromSubject(subject);
+
+  switch (groupName) {
+    case "M&AT":
       return {
-        groupName: "M&AT",
+        groupName,
         routeSegment: "mandat",
         deskLabel: "MandAT Desk",
         includeEditAttendance: true,
@@ -18,23 +21,18 @@ function getDashboardConfig(subject) {
           "Monitor attendance, update records, and review shortage summaries for both academic years.",
       };
     case "CET":
-      return { groupName: "CET", routeSegment: "cet", includeExternalLinks: true, includeEditAttendance: true };
+      return { groupName, routeSegment: "cet", includeExternalLinks: true, includeEditAttendance: true };
     case "MLT":
-      return { groupName: "MLT", routeSegment: "mlt", includeExternalLinks: true, includeEditAttendance: true };
-    case "Botany":
-    case "Zoology":
-      return { groupName: "BiPC", routeSegment: "bipc", includeEditAttendance: true };
-    case "Civics":
-    case "Economics":
-    case "Commerce":
-      return { groupName: "CEC", routeSegment: "cec", includeEditAttendance: true };
-    case "History":
-      return { groupName: "HEC", routeSegment: "hec", includeEditAttendance: true };
+      return { groupName, routeSegment: "mlt", includeExternalLinks: true, includeEditAttendance: true };
+    case "BiPC":
+      return { groupName, routeSegment: "bipc", includeEditAttendance: true };
+    case "CEC":
+      return { groupName, routeSegment: "cec", includeEditAttendance: true };
+    case "HEC":
+      return { groupName, routeSegment: "hec", includeEditAttendance: true };
     case "GFC":
-      return { groupName: "GFC", routeSegment: "gfc" };
-    case "Maths":
-    case "Physics":
-    case "Chemistry":
+      return { groupName, routeSegment: "gfc" };
+    case "MPC":
     default:
       return { groupName: "MPC", routeSegment: "mpc", includeEditAttendance: true };
   }

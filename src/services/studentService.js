@@ -2,6 +2,7 @@
 
 import mongoose from "mongoose";
 import { findStudents, countStudents } from "@/repositories/studentRepository";
+import { canLecturerAccessGroup, getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
 
 function normalizeGroupValue(group) {
   if (!group) return group;
@@ -30,6 +31,18 @@ export async function getStudentsService({
     status: "Active"
   };
 
+  if (session?.user?.role === "lecturer") {
+    const allowedGroup = getLecturerGroupFromSubject(session.user.subject);
+
+    if (groupParam && !canLecturerAccessGroup(session, groupParam)) {
+      const error = new Error("You can only view students from your assigned group.");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    filter.group = allowedGroup === "BiPC" ? { $in: ["BiPC", "BIPC"] } : allowedGroup;
+  }
+
   // 🔍 optimized search
   if (searchParam) {
     filter.$text = { $search: searchParam };
@@ -39,7 +52,7 @@ export async function getStudentsService({
     filter.yearOfStudy = yearParam;
   }
 
-  if (groupParam) {
+  if (groupParam && session?.user?.role !== "lecturer") {
     const normalizedGroup = normalizeGroupValue(groupParam);
     filter.group =
       normalizedGroup === "BiPC"

@@ -19,6 +19,8 @@ import { motion } from "framer-motion";
 export default function Navbar({ onOpenDrawer }) {
   const { data: session } = useSession();
   const user = session?.user || null;
+  const canAccessAiAttendance =
+    user?.role === "lecturer" || user?.role === "principal";
 
   return (
     <motion.header
@@ -81,13 +83,15 @@ export default function Navbar({ onOpenDrawer }) {
                   <CircleHelp className="h-4 w-4 text-violet-600" />
                   About
                 </Link>
-                <Link
-                  href="/attendance/ai-chat"
-                  className="flex items-center gap-1 rounded px-2 py-1 hover:bg-slate-100"
-                >
-                  <GraduationCap className="h-4 w-4 text-emerald-600" />
-                  AI Chat
-                </Link>
+                {canAccessAiAttendance && (
+                  <Link
+                    href="/attendance/ai-chat"
+                    className="flex items-center gap-1 rounded px-2 py-1 hover:bg-slate-100"
+                  >
+                    <GraduationCap className="h-4 w-4 text-emerald-600" />
+                    AI Chat
+                  </Link>
+                )}
                 {user?.role === "admin" && (
                   <Link
                     href="/admin-panel"

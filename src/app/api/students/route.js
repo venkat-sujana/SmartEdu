@@ -44,7 +44,7 @@ export async function GET(req) {
       searchParam,
       page,
       limit,
-      session
+      session,
     });
 
     return NextResponse.json({
@@ -53,9 +53,12 @@ export async function GET(req) {
       page,
       limit,
       totalPages: result.totalPages,
-      data: result.students
+      data: result.students,
     });
   } catch (error) {
-    return handleApiError(error);
+    return NextResponse.json(
+      { status: "error", message: error.message || "Internal Server Error" },
+      { status: error.statusCode || 500 }
+    );
   }
 }

@@ -1,8 +1,8 @@
-import GroupDashboardPage from "../components/GroupDashboardPage";
+import RestrictedGroupDashboardPage from "../components/RestrictedGroupDashboardPage";
 
 export default function MandATDashboard() {
   return (
-    <GroupDashboardPage
+    <RestrictedGroupDashboardPage
       groupName="M&AT"
       routeSegment="mandat"
       deskLabel="MandAT Desk"

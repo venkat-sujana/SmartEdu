@@ -1,3 +1,4 @@
+//src/components/layout/Sidebar.jsx
 "use client"
 import Link from "next/link"
 import { Menu } from "lucide-react"
@@ -20,6 +21,7 @@ export default function Sidebar({ onClose }) {
   const session = useSession()
   const user = session.data?.user || {}
   const isAdmin = user.role === "admin"
+  const canAccessAiAttendance = user.role === "lecturer" || user.role === "principal"
 
   const links = isAdmin
     ? [
@@ -38,7 +40,15 @@ export default function Sidebar({ onClose }) {
         { href: "/attendance-records/individual", label: "Update Attendance ", icon: <CalendarDaysIcon className="w-5 h-5 text-blue-500" /> },
         { href: "/absentees-table", label: "Today's Absentees ", icon: <XCircleIcon className="w-5 h-5 text-red-500" /> },
         { href: "/attendance-form", label: "Take Attendance ", icon: <PencilSquareIcon className="w-5 h-5 text-blue-500" /> },
-        { href: "/attendance/ai-chat", label: "AI Attendance Assistant", icon: <AcademicCapIcon className="w-5 h-5 text-emerald-500" /> },
+        ...(canAccessAiAttendance
+          ? [
+              {
+                href: "/attendance/ai-chat",
+                label: "AI Attendance Assistant",
+                icon: <AcademicCapIcon className="w-5 h-5 text-emerald-500" />,
+              },
+            ]
+          : []),
       ]
 
   return (

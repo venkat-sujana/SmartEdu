@@ -1,8 +1,8 @@
-import GroupDashboardPage from "../components/GroupDashboardPage";
+import RestrictedGroupDashboardPage from "../components/RestrictedGroupDashboardPage";
 
 export default function MLTDashboard() {
   return (
-    <GroupDashboardPage
+    <RestrictedGroupDashboardPage
       groupName="MLT"
       routeSegment="mlt"
       includeExternalLinks

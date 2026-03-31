@@ -1,6 +1,5 @@
-import GroupDashboardPage from "../components/GroupDashboardPage";
+import RestrictedGroupDashboardPage from "../components/RestrictedGroupDashboardPage";
 
 export default function BiPCDashboard() {
-  return <GroupDashboardPage groupName="BiPC" routeSegment="bipc"
-      includeEditAttendance />;
+  return <RestrictedGroupDashboardPage groupName="BiPC" routeSegment="bipc" includeEditAttendance />;
 }

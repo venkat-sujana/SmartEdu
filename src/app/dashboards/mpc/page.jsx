@@ -1,6 +1,5 @@
-import GroupDashboardPage from "../components/GroupDashboardPage";
+import RestrictedGroupDashboardPage from "../components/RestrictedGroupDashboardPage";
 
 export default function MPCDashboard() {
-  return <GroupDashboardPage groupName="MPC" routeSegment="mpc"
-      includeEditAttendance />;
+  return <RestrictedGroupDashboardPage groupName="MPC" routeSegment="mpc" includeEditAttendance />;
 }

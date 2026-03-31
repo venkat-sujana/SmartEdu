@@ -1,6 +1,5 @@
-import GroupDashboardPage from "../components/GroupDashboardPage";
+import RestrictedGroupDashboardPage from "../components/RestrictedGroupDashboardPage";
 
 export default function CECDashboard() {
-  return <GroupDashboardPage groupName="CEC" routeSegment="cec"
-      includeEditAttendance />;
+  return <RestrictedGroupDashboardPage groupName="CEC" routeSegment="cec" includeEditAttendance />;
 }

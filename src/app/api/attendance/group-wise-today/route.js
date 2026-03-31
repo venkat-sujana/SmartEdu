@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import {
   buildAttendanceSessionReadFilter,
   normalizeAttendanceSession,
 } from "@/validations/attendanceValidation";
+import { getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
 
 export async function GET(req) {
   await connectMongoDB();
+  const session = await getServerSession(authOptions);
 
   const { searchParams } = new URL(req.url);
   const collegeId = searchParams.get("collegeId");
@@ -29,11 +33,17 @@ export async function GET(req) {
     endOfDay.setHours(23, 59, 59, 999);
   }
 
-  const attendanceRecords = await Attendance.find({
+  const attendanceQuery = {
     date: { $gte: startOfDay, $lte: endOfDay },
     collegeId,
     ...buildAttendanceSessionReadFilter(),
-  }).lean();
+  };
+
+  if (session?.user?.role === "lecturer") {
+    attendanceQuery.group = getLecturerGroupFromSubject(session.user.subject);
+  }
+
+  const attendanceRecords = await Attendance.find(attendanceQuery).lean();
 
   // ==== Group by group → year → session ====
   const result = {};

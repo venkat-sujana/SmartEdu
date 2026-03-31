@@ -1,26 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth.js";
 import connectMongoDB from "@/lib/mongodb";
 import { handleAiQuery } from "@/services/attendanceService";
-import { requireRole } from "@/lib/requireRole";
-
+import { getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
 export async function POST(request) {
   try {
     await connectMongoDB();
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.collegeId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          response: "Please sign in to use the AI attendance assistant.",
+        },
+        { status: 401 }
+      );
     }
 
     const { query } = await request.json();
     if (!query || typeof query !== "string") {
-      return NextResponse.json({ error: "Query required" }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Query required",
+          response: "Please enter a question about attendance.",
+        },
+        { status: 400 }
+      );
     }
 
     const collegeId = session.user.collegeId;
-    const response = await handleAiQuery(query.toLowerCase(), collegeId);
+    const allowedGroup =
+      session.user.role === "lecturer"
+        ? getLecturerGroupFromSubject(session.user.subject)
+        : null;
+    const response = await handleAiQuery(query.trim(), collegeId, allowedGroup);
 
     return NextResponse.json({ response });
 

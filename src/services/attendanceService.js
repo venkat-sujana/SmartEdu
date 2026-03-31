@@ -40,7 +40,7 @@ export async function getTodayAttendancePercent(collegeId) {
   return percent;
 }
 
-export async function getTodayAttendanceStats(collegeId, date) {
+export async function getTodayAttendanceStats(collegeId, date, group) {
   await connectMongoDB();
 
   const start = new Date(date);
@@ -56,6 +56,7 @@ export async function getTodayAttendanceStats(collegeId, date) {
       $match: {
         collegeId: collegeObjectId,
         date: { $gte: start, $lte: end },
+        ...(group ? { group } : {}),
         ...buildAttendanceSessionReadFilter(),
       }
     },
@@ -74,7 +75,8 @@ export async function getTodayAttendanceStats(collegeId, date) {
 
   const totalStudents = await Student.countDocuments({
     collegeId: collegeObjectId,
-    status: "Active"
+    status: "Active",
+    ...(group ? { group } : {}),
   });
 
   const present = result[0]?.present || 0;
@@ -93,7 +95,7 @@ export async function getTodayAttendanceStats(collegeId, date) {
   };
 }
 
-export async function getTodayAttendanceList(collegeId, date) {
+export async function getTodayAttendanceList(collegeId, date, group) {
   await connectMongoDB();
 
   const start = new Date(date);
@@ -107,6 +109,7 @@ export async function getTodayAttendanceList(collegeId, date) {
       $match: {
         collegeId: new mongoose.Types.ObjectId(collegeId),
         date: { $gte: start, $lte: end },
+        ...(group ? { group } : {}),
         ...buildAttendanceSessionReadFilter(),
       }
     },
@@ -197,7 +200,7 @@ export async function getTodayAttendanceBreakdown(collegeId) {
   };
 }
 
-export async function getTodayAbsentees(collegeId) {
+export async function getTodayAbsentees(collegeId, group) {
   await connectMongoDB();
 
   const today = new Date();
@@ -210,6 +213,7 @@ export async function getTodayAbsentees(collegeId) {
   const todayRecords = await Attendance.find({
     collegeId,
     date: { $gte: start, $lte: end },
+    ...(group ? { group } : {}),
     ...buildAttendanceSessionReadFilter(),
   }).populate("studentId", "name yearOfStudy group");
 
@@ -538,114 +542,424 @@ export async function getStudentMonthlyCalendar({
   return result;
 }
 
-export async function handleAiQuery(query, collegeId) {
+export async function getTodayAttendanceSessionStats(collegeId, date, group) {
+  await connectMongoDB();
+
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+
+  const records = await Attendance.find({
+    collegeId,
+    date: { $gte: start, $lte: end },
+    ...(group ? { group } : {}),
+    ...buildAttendanceSessionReadFilter(),
+  })
+    .select("status session")
+    .lean();
+
+  const summary = {
+    FN: { present: 0, absent: 0, total: 0, percent: 0 },
+    AN: { present: 0, absent: 0, total: 0, percent: 0 },
+  };
+
+  records.forEach((record) => {
+    const session = normalizeAttendanceSession(record.session);
+    if (!summary[session]) return;
+
+    summary[session].total += 1;
+    if (record.status === "Present") {
+      summary[session].present += 1;
+    } else {
+      summary[session].absent += 1;
+    }
+  });
+
+  Object.keys(summary).forEach((session) => {
+    const item = summary[session];
+    item.percent = item.total > 0 ? Math.round((item.present / item.total) * 100) : 0;
+  });
+
+  return summary;
+}
+
+export async function getTodayGroupComparison(collegeId, date) {
+  await connectMongoDB();
+
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+
+  const records = await Attendance.find({
+    collegeId,
+    date: { $gte: start, $lte: end },
+    ...buildAttendanceSessionReadFilter(),
+  })
+    .select("group status session")
+    .lean();
+
+  const grouped = {};
+
+  records.forEach((record) => {
+    const groupName = normalizeAttendanceGroup(record.group);
+    const session = normalizeAttendanceSession(record.session);
+
+    if (!groupName) return;
+
+    if (!grouped[groupName]) {
+      grouped[groupName] = {
+        FN: { present: 0, absent: 0, total: 0, percent: 0 },
+        AN: { present: 0, absent: 0, total: 0, percent: 0 },
+      };
+    }
+
+    if (!grouped[groupName][session]) return;
+
+    grouped[groupName][session].total += 1;
+    if (record.status === "Present") {
+      grouped[groupName][session].present += 1;
+    } else {
+      grouped[groupName][session].absent += 1;
+    }
+  });
+
+  Object.keys(grouped).forEach((groupName) => {
+    ["FN", "AN"].forEach((session) => {
+      const item = grouped[groupName][session];
+      item.percent = item.total > 0 ? Math.round((item.present / item.total) * 100) : 0;
+    });
+  });
+
+  return grouped;
+}
+
+function buildStructuredResponse({
+  title,
+  metrics = [],
+  bullets = [],
+  info = [],
+  detailTitle = "Details",
+  sections = [],
+}) {
+  return {
+    type: "structured",
+    title,
+    metrics,
+    bullets,
+    info,
+    detailTitle,
+    sections,
+  };
+}
+
+function normalizeAiPrompt(query) {
+  if (!query || typeof query !== "string") {
+    return "";
+  }
+
+  let normalized = query.toLowerCase().trim();
+
+  const replacements = [
+    [/ఈరోజు|ఈ రోజు|నేడు|టుడే/g, " today "],
+    [/అటెండెన్స్|హాజరు|హాజరు వివరాలు/g, " attendance "],
+    [/చూపించు|చూపించండి|చూపు|చెప్పు|చెప్పండి|show me/g, " show "],
+    [/ఎవరు absent|ఎవరు గైర్హాజరు|గైర్హాజరు|లేరు ఎవరు|లేరు/g, " absent "],
+    [/నెలవారీ|మంత్లీ|నెల|month wise/g, " monthly "],
+    [/తక్కువ|low attendance|షార్టేజ్|shortage/g, " low "],
+    [/శాతం|percent|percentage/g, " percentage "],
+    [/అన్ని గ్రూపులు|అన్ని గ్రూప్స్|all groups/g, " all groups "],
+    [/కంపేర్|compare|సరిపోల్చు|సరిపోల్చండి/g, " compare "],
+    [/గ్రూప్ వారీగా|group wise/g, " group wise "],
+    [/గ్రూప్|group/g, " group "],
+    [/ఈరోజు అటెండెన్స్ చూపించు/g, " show today attendance "],
+    [/ఎవరు absent today|ఈరోజు ఎవరు absent/g, " who is absent today "],
+  ];
+
+  replacements.forEach(([pattern, value]) => {
+    normalized = normalized.replace(pattern, value);
+  });
+
+  return normalized.replace(/\s+/g, " ").trim();
+}
+
+export async function handleAiQuery(query, collegeId, allowedGroup = null) {
   await connectMongoDB();
 
   const collegeObjectId = new mongoose.Types.ObjectId(collegeId);
+  const scopedGroup = allowedGroup ? normalizeAttendanceGroup(allowedGroup) : null;
 
-  query = query.toLowerCase().trim();
+  query = normalizeAiPrompt(query);
 
-  if (query.includes('today') && (query.includes('attendance') || query.includes('show today'))) {
-    const stats = await getTodayAttendanceStats(collegeId, new Date());
-    const absentees = await getTodayAbsentees(collegeId);
-    
-    let response = `📊 Today's Attendance Summary`;
-   response += `\n✅ Present: ${stats.present} (${stats.percent}%)\n`;
-   response += `❌ Absent: ${stats.absent} (${100 - stats.percent}%)\n`;
-   response += `👥 Total Students: ${stats.totalStudents}\n`;
-    
-    if (absentees.status === 'success' && absentees.sessionWiseAbsentees.FN?.length > 0) {
-      response += `\n🔴 Today's Absentees:\n`;
-      const fnAbsent = absentees.sessionWiseAbsentees.FN.slice(0, 10);
-      fnAbsent.forEach(a => response += `\n• ${a.name} (${a.group})`);
-      if (fnAbsent.length < absentees.summary.grandAbsent) {
-        response += `... and ${absentees.summary.grandAbsent - fnAbsent.length} more`;
-      }
-    } else {
-      response += `No absentees data available.`;
+  if (query.includes("today") && (query.includes("attendance") || query.includes("show today"))) {
+    const stats = await getTodayAttendanceStats(collegeId, new Date(), scopedGroup);
+    const sessionStats = await getTodayAttendanceSessionStats(collegeId, new Date(), scopedGroup);
+    const absentees = await getTodayAbsentees(collegeId, scopedGroup);
+    const fnAbsentees = absentees.status === "success"
+      ? absentees.sessionWiseAbsentees.FN || []
+      : [];
+    const bulletItems = fnAbsentees.slice(0, 10).map((a) => `${a.name} (${a.group})`);
+
+    if (fnAbsentees.length > bulletItems.length) {
+      bulletItems.push(`and ${fnAbsentees.length - bulletItems.length} more`);
     }
-    
-    return response;
+
+    return buildStructuredResponse({
+      title: scopedGroup
+        ? `Today's Attendance Summary - ${scopedGroup}`
+        : "Today's Attendance Summary",
+      metrics: [
+        { label: "FN Present", value: `${sessionStats.FN.present} (${sessionStats.FN.percent}%)` },
+        { label: "FN Absent", value: String(sessionStats.FN.absent) },
+        { label: "AN Present", value: `${sessionStats.AN.present} (${sessionStats.AN.percent}%)` },
+        { label: "AN Absent", value: String(sessionStats.AN.absent) },
+        { label: "FN Total", value: String(sessionStats.FN.total) },
+        { label: "AN Total", value: String(sessionStats.AN.total) },
+        { label: "Total Students", value: String(stats.totalStudents) },
+      ],
+      bullets: bulletItems,
+      info: fnAbsentees.length === 0 ? ["No absentees data available."] : [],
+      detailTitle: "Today's Absentees",
+    });
   }
 
-  if (query.includes('absent') || query.includes('who is absent')) {
-    const absentees = await getTodayAbsentees(collegeId);
-    
-    if (absentees.status === 'no-data') {
+  if (query.includes("absent") || query.includes("who is absent")) {
+    const absentees = await getTodayAbsentees(collegeId, scopedGroup);
+    const sessionStats = await getTodayAttendanceSessionStats(collegeId, new Date(), scopedGroup);
+
+    if (absentees.status === "no-data") {
       return absentees.message;
     }
-    
-    let response = `❌ Today's Absentees (${absentees.summary.percentage}%)\n\n`;
-    response += `\n📌 FN Session: ${absentees.sessionWiseAbsentees.FN.length}\n`;
-    absentees.sessionWiseAbsentees.FN.slice(0, 8).forEach(a => {
-    response += `\n• ${a.name} (${a.group}, ${a.yearOfStudy})\n`;
+
+    const fnItems = absentees.sessionWiseAbsentees.FN
+      .slice(0, 8)
+      .map((a) => `FN: ${a.name} (${a.group}, ${a.yearOfStudy})`);
+    const anItems = absentees.sessionWiseAbsentees.AN
+      .slice(0, 8)
+      .map((a) => `AN: ${a.name} (${a.group}, ${a.yearOfStudy})`);
+
+    return buildStructuredResponse({
+      title: scopedGroup
+        ? `Today's Absentees - ${scopedGroup}`
+        : "Today's Absentees",
+      metrics: [
+        { label: "FN Absent", value: `${absentees.sessionWiseAbsentees.FN.length} (${100 - sessionStats.FN.percent}%)` },
+        { label: "AN Absent", value: `${absentees.sessionWiseAbsentees.AN.length} (${100 - sessionStats.AN.percent}%)` },
+        { label: "FN Present %", value: `${sessionStats.FN.percent}%` },
+        { label: "AN Present %", value: `${sessionStats.AN.percent}%` },
+      ],
+      bullets: [...fnItems, ...anItems],
+      info: [],
+      detailTitle: "Session-wise Absentees",
     });
-    
-    response += `\n**AN Session:** ${absentees.sessionWiseAbsentees.AN.length}`;
-    absentees.sessionWiseAbsentees.AN.slice(0, 8).forEach(a => {
-      response += `\n• ${a.name} (${a.group}, ${a.yearOfStudy})`;
-    });
-    
-    return response;
   }
 
-  if (query.includes('low') || query.includes('<75') || query.includes('poor')) {
-    const monthly = await getMonthlySummary({ collegeId });
-    const lowAttendance = monthly.filter(student => {
-      const percs = Object.values(student.percentage);
-      const avg = percs.reduce((sum, p) => sum + parseFloat(p), 0) / percs.length;
-      return avg < 75;
-    }).slice(0, 10);
-    
+  if (query.includes("low") || query.includes("<75") || query.includes("poor")) {
+    const monthly = await getMonthlySummary({ collegeId, group: scopedGroup });
+    const lowAttendance = monthly
+      .filter((student) => {
+        const percs = Object.values(student.percentage);
+        const avg = percs.reduce((sum, p) => sum + parseFloat(p), 0) / percs.length;
+        return avg < 75;
+      })
+      .slice(0, 10);
+
     if (lowAttendance.length === 0) {
-      return "Great news! No students with low attendance (<75%). 👏";
+      return "Great news! No students with low attendance (<75%).";
     }
-    
-    let response = `\n⚠️ Students with Low Attendance (<75%) (Top 10):`;
-    lowAttendance.forEach(s => {
-      const percs = Object.values(s.percentage);
-      const avgPerc = (percs.reduce((sum, p) => sum + parseFloat(p), 0) / percs.length).toFixed(1);
-      response += `\n• ${s.name} - Avg: ${avgPerc}% (${s.yearOfStudy})`;
+
+    return buildStructuredResponse({
+      title: scopedGroup
+        ? `Students with Low Attendance in ${scopedGroup}`
+        : "Students with Low Attendance",
+      metrics: [
+        { label: "Threshold", value: "<75%" },
+        { label: "Students", value: String(lowAttendance.length) },
+      ],
+      bullets: lowAttendance.map((s) => {
+        const percs = Object.values(s.percentage);
+        const avgPerc = (
+          percs.reduce((sum, p) => sum + parseFloat(p), 0) / percs.length
+        ).toFixed(1);
+        return `${s.name} - Avg: ${avgPerc}% (${s.yearOfStudy})`;
+      }),
+      detailTitle: "At-Risk Students",
     });
-    
-    return response;
   }
 
-  if (query.includes('monthly') || query.includes('month')) {
-    const monthly = await getMonthlySummary({ collegeId });
-  
+  if (query.includes("monthly") || query.includes("month")) {
+    const monthly = await getMonthlySummary({ collegeId, group: scopedGroup });
+
     if (monthly.length === 0) return "No monthly data available.";
-    
-    const recentMonths = Array.from(new Set(monthly.flatMap(s => Object.keys(s.percentage)))).slice(-3);
-    
-    let response = `📈 Recent Monthly Summary (Last 3 months):`;
-    recentMonths.forEach(monthKey => {
-      const monthData = monthly.map(s => parseFloat(s.percentage[monthKey] || '0')).filter(p => p > 0);
-      if (monthData.length > 0) {
+
+    const recentMonths = Array.from(
+      new Set(monthly.flatMap((s) => Object.keys(s.percentage)))
+    ).slice(-3);
+
+    const monthMetrics = recentMonths
+      .map((monthKey) => {
+        const monthData = monthly
+          .map((s) => parseFloat(s.percentage[monthKey] || "0"))
+          .filter((p) => p > 0);
+
+        if (monthData.length === 0) {
+          return null;
+        }
+
         const avg = monthData.reduce((a, b) => a + b, 0) / monthData.length;
-        response += `${monthKey}: ${avg.toFixed(1)}% average (${monthData.length} students)`;
-      }
+        return {
+          label: monthKey,
+          value: `${avg.toFixed(1)}% avg (${monthData.length})`,
+        };
+      })
+      .filter(Boolean);
+
+    return buildStructuredResponse({
+      title: scopedGroup
+        ? `Recent Monthly Summary - ${scopedGroup}`
+        : "Recent Monthly Summary",
+      metrics: monthMetrics,
+      info: ["Last 3 months average attendance overview."],
+      detailTitle: "Monthly Trends",
     });
-    
-    return response;
   }
 
-  if (query.includes('percentage') || query.includes('%')) {
-    const students = await Student.find({ collegeId: collegeObjectId, status: 'Active' }).select('name').lean();
-    const studentNames = students.map(s => s.name.toLowerCase());
-    const nameMatch = query.match(/[a-zA-Z\\s]+/)?.[0]?.trim().toLowerCase();
-    
-    if (nameMatch && studentNames.some(n => n.includes(nameMatch))) {
-      return `📊 ${nameMatch.charAt(0).toUpperCase() + nameMatch.slice(1)}'s Attendance: Average 85% (recent months). For detailed report, use dashboard.`;
+  if (
+    !scopedGroup &&
+    (
+      query.includes("compare all groups") ||
+      query.includes("all groups compare") ||
+      query.includes("compare groups") ||
+      query.includes("all groups attendance") ||
+      query.includes("group wise compare")
+    )
+  ) {
+    const grouped = await getTodayGroupComparison(collegeId, new Date());
+    const rankedGroups = Object.entries(grouped)
+      .map(([groupName, stats]) => {
+        const combinedPresent = stats.FN.present + stats.AN.present;
+        const combinedTotal = stats.FN.total + stats.AN.total;
+        const overallPercent =
+          combinedTotal > 0 ? Math.round((combinedPresent / combinedTotal) * 100) : 0;
+
+        return {
+          groupName,
+          stats,
+          overallPercent,
+          combinedTotal,
+        };
+      })
+      .sort((a, b) => {
+        if (b.overallPercent !== a.overallPercent) {
+          return b.overallPercent - a.overallPercent;
+        }
+
+        return a.groupName.localeCompare(b.groupName);
+      });
+
+    const highestGroup = rankedGroups[0]?.groupName || null;
+    const lowestGroup = rankedGroups[rankedGroups.length - 1]?.groupName || null;
+
+    const sections = rankedGroups.map((item, index) => ({
+      title: `${item.groupName} Group`,
+      rank: index + 1,
+      badge:
+        item.groupName === highestGroup
+          ? "Highest Attendance"
+          : item.groupName === lowestGroup
+            ? "Needs Attention"
+            : null,
+      highlight:
+        item.groupName === highestGroup
+          ? "success"
+          : item.groupName === lowestGroup
+            ? "warning"
+            : "default",
+      metrics: [
+        { label: "FN Present", value: `${item.stats.FN.present} (${item.stats.FN.percent}%)` },
+        { label: "FN Absent", value: String(item.stats.FN.absent) },
+        { label: "AN Present", value: `${item.stats.AN.present} (${item.stats.AN.percent}%)` },
+        { label: "AN Absent", value: String(item.stats.AN.absent) },
+        { label: "FN Total", value: String(item.stats.FN.total) },
+        { label: "AN Total", value: String(item.stats.AN.total) },
+        { label: "Overall", value: `${item.overallPercent}%` },
+      ],
+    }));
+
+    return buildStructuredResponse({
+      title: "All Groups Attendance Comparison",
+      metrics: [
+        { label: "Groups", value: String(rankedGroups.length) },
+        { label: "Top Group", value: highestGroup || "-" },
+        { label: "Lowest Group", value: lowestGroup || "-" },
+      ],
+      info: ["Today's FN and AN attendance is shown separately for each group, sorted by overall attendance."],
+      sections,
+      detailTitle: "Group Comparison",
+    });
+  }
+
+  if (query.includes("group") && (query.includes("attendance") || query.includes("show") || query.includes("today"))) {
+    const groupMatch = query.match(/group\s+([a-zA-Z0-9&]+)/i);
+    const groupName = groupMatch ? normalizeAttendanceGroup(groupMatch[1].toUpperCase()) : null;
+
+    if (groupName) {
+      if (scopedGroup && groupName !== scopedGroup) {
+        return `You can only view attendance for your assigned group: ${scopedGroup}.`;
+      }
+
+      const todayList = await getTodayAttendanceList(collegeId, new Date(), scopedGroup || groupName);
+      if (todayList[groupName]) {
+        const groupData = todayList[groupName];
+        const totalGroup = groupData.Present.length + groupData.Absent.length;
+        const presentGroup = groupData.Present.length;
+        const percentGroup = totalGroup > 0 ? Math.round((presentGroup / totalGroup) * 100) : 0;
+
+        return buildStructuredResponse({
+          title: `${groupName} Group Attendance Today`,
+          metrics: [
+            { label: "Present", value: `${presentGroup} (${percentGroup}%)` },
+            { label: "Absent", value: String(groupData.Absent.length) },
+            { label: "Total", value: String(totalGroup) },
+          ],
+          bullets: groupData.Absent.slice(0, 5).map((a) => a.name),
+          info:
+            groupData.Absent.length > 0
+              ? []
+              : ["No absentees today!"],
+          detailTitle: "Absentees",
+        });
+      }
+
+      return `No attendance data found for ${groupName} group today.`;
     }
   }
 
-  return `🤖 Supported Queries:
-• "Show today attendance"
-• "Who is absent today?"
-• "List students with low attendance"
-• "Show monthly report"
-• "Attendance percentage of [student name]"
+  if (query.includes("percentage") || query.includes("%")) {
+    const students = await Student.find({
+      collegeId: collegeObjectId,
+      status: "Active",
+      ...(scopedGroup ? { group: scopedGroup } : {}),
+    })
+      .select("name")
+      .lean();
+    const studentNames = students.map((s) => s.name.toLowerCase());
+    const nameMatch = query.match(/[a-zA-Z\s]+/)?.[0]?.trim().toLowerCase();
+
+    if (nameMatch && studentNames.some((n) => n.includes(nameMatch))) {
+      return `${nameMatch.charAt(0).toUpperCase() + nameMatch.slice(1)}'s Attendance: Average 85% (recent months). For detailed report, use dashboard.`;
+    }
+  }
+
+  return `Supported Queries:
+- "Show today attendance"
+- "Who is absent today?"
+- "List students with low attendance"
+- "Show monthly report"
+- "Attendance percentage of [student name]"
 
 Try one of these!`;
 }

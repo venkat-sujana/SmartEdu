@@ -6,6 +6,7 @@ import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import Student from "@/models/Student";
 import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
+import { canLecturerAccessGroup, getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
 
 const MONTHS = [
   { label: "JUN", year: "2025" },
@@ -81,7 +82,7 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
 
     const queryCollegeId = searchParams.get("collegeId");
-    const group = searchParams.get("group");
+    const requestedGroup = searchParams.get("group");
     const yearOfStudyRaw = searchParams.get("yearOfStudy");
     const yearOfStudy = normalizeYear(yearOfStudyRaw);
 
@@ -93,6 +94,20 @@ export async function GET(req) {
         { status: 400 }
       );
     }
+
+    if (session?.user?.role === "lecturer") {
+      if (requestedGroup && !canLecturerAccessGroup(session, requestedGroup)) {
+        return NextResponse.json(
+          { error: "You can only view monthly attendance for your assigned group." },
+          { status: 403 }
+        );
+      }
+    }
+
+    const group =
+      session?.user?.role === "lecturer"
+        ? getLecturerGroupFromSubject(session.user.subject)
+        : requestedGroup;
 
     const collegeObjectId = mongoose.Types.ObjectId.isValid(effectiveCollegeId)
       ? new mongoose.Types.ObjectId(effectiveCollegeId)
