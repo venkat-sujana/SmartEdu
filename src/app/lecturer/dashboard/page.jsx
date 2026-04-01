@@ -3,15 +3,12 @@
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { GraduationCap } from 'lucide-react'
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import useSWR from 'swr'
-import GroupWiseAttendanceTable from '@/components/groupwise-attendance-table/GroupwiseAttendanceTable'
 import AttendanceShortageTable from '@/components/attendance-shortage-summary/AttendanceShortageSummary'
 import ActiveLecturersCard from '@/components/dashboard/ActiveLecturersCard'
-import { UserGroupIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import { UserGroupIcon } from '@heroicons/react/24/solid'
 import LecturerInfoCard from "@/components/dashboard/LecturerInfoCard";
 import ExternalLinks from "@/components/ExternalLinks";
 
@@ -25,7 +22,6 @@ import OverallAttendanceMatrixCard from '@/components/OverallAttendanceMatrixCar
 import TodayAbsenteesTable from '@/app/absentees-table/page'
 import OverallStrengthCard from '@/components/dashboard/OverallStrengthCard'
 import MainLinks from '@/components/MainLinks';
-import { normalizeAttendanceGroup } from '@/utils/attendanceGroup';
 
 export default function LecturerDashboard() {
   const { data: shortageApiData } = useSWR('/api/attendance/shortage-summary', fetcher)
@@ -36,24 +32,6 @@ export default function LecturerDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  // Helper: given group, year, session => stats
-  function stats(group, year, session) {
-    const normalizedGroup = normalizeAttendanceGroup(group)
-    const present =
-      sessionWisePresent[session]?.filter(
-        s => normalizeAttendanceGroup(s.group) === normalizedGroup && s.yearOfStudy === year
-      )
-        .length || 0
-    const absent =
-      sessionWiseAbsentees[session]?.filter(
-        s => normalizeAttendanceGroup(s.group) === normalizedGroup && s.yearOfStudy === year
-      )
-        .length || 0
-    const total = present + absent
-    const percent = total > 0 ? Math.round((present / total) * 100) : 0
-    return { present, absent, total, percent }
-  }
-
   const { data: activeLecturersData, error: activeLecturersError } = useSWR(
     '/api/lecturers/active',
     fetcher
@@ -63,23 +41,16 @@ export default function LecturerDashboard() {
   const [collegeName, setCollegeName] = useState('')
   const [studentCount, setStudentCount] = useState(0)
 
-  const [fnFirstYearPresent, setFnFirstYearPresent] = useState(0)
-  const [fnFirstYearAbsent, setFnFirstYearAbsent] = useState(0)
-  const [anFirstYearPresent, setAnFirstYearPresent] = useState(0)
-  const [anFirstYearAbsent, setAnFirstYearAbsent] = useState(0)
+  const [, setFnFirstYearPresent] = useState(0)
+  const [, setFnFirstYearAbsent] = useState(0)
+  const [, setAnFirstYearPresent] = useState(0)
+  const [, setAnFirstYearAbsent] = useState(0)
 
-  const [fnSecondYearPresent, setFnSecondYearPresent] = useState(0)
-  const [fnSecondYearAbsent, setFnSecondYearAbsent] = useState(0)
-  const [anSecondYearPresent, setAnSecondYearPresent] = useState(0)
-  const [anSecondYearAbsent, setAnSecondYearAbsent] = useState(0)
+  const [, setFnSecondYearPresent] = useState(0)
+  const [, setFnSecondYearAbsent] = useState(0)
+  const [, setAnSecondYearPresent] = useState(0)
+  const [, setAnSecondYearAbsent] = useState(0)
 
-  const [overallPresent, setOverallPresent] = useState(0)
-  const [overallAbsent, setOverallAbsent] = useState(0)
-  const [overallPercent, setOverallPercent] = useState(0)
-
-  // Schema groups/add/remove as needed
-  const groupNames = ['MPC', 'BiPC', 'CEC', 'HEC', 'CET', 'M&AT', 'MLT']
-  const years = ['First Year', 'Second Year']
   const absentees = absApiData?.absentees || []
 
   useEffect(() => {
@@ -138,19 +109,6 @@ export default function LecturerDashboard() {
           setAnSecondYearAbsent(
             (absent.AN || []).filter(s => s.yearOfStudy?.toLowerCase().includes('second')).length
           )
-
-
-          // Overall
-          const totalPresent =
-            (present.FN ? present.FN.length : 0) + (present.AN ? present.AN.length : 0)
-          const totalAbsent =
-            (absent.FN ? absent.FN.length : 0) + (absent.AN ? absent.AN.length : 0)
-          setOverallPresent(totalPresent)
-          setOverallAbsent(totalAbsent)
-          const totalStudents = totalPresent + totalAbsent
-          setOverallPercent(
-            totalStudents > 0 ? Math.round((totalPresent / totalStudents) * 100) : 0
-          )
         })
     }
   }, [status, session, router])
@@ -160,37 +118,6 @@ export default function LecturerDashboard() {
   }
 
   const user = session?.user || {}
-
-  // First Year values
-  const firstYearTotal =
-    fnFirstYearPresent + fnFirstYearAbsent + anFirstYearPresent + anFirstYearAbsent
-  const firstYearPresent = fnFirstYearPresent + anFirstYearPresent
-  const firstYearPercent =
-    firstYearTotal > 0 ? Math.round((firstYearPresent / firstYearTotal) * 100) : 0
-
-  // Second Year values
-  const secondYearTotal =
-    fnSecondYearPresent + fnSecondYearAbsent + anSecondYearPresent + anSecondYearAbsent
-  const secondYearPresent = fnSecondYearPresent + anSecondYearPresent
-  const secondYearPercent =
-    secondYearTotal > 0 ? Math.round((secondYearPresent / secondYearTotal) * 100) : 0
-
-  function stats(group, year, session) {
-    const normalizedGroup = normalizeAttendanceGroup(group)
-    const present =
-      sessionWisePresent[session]?.filter(
-        s => normalizeAttendanceGroup(s.group) === normalizedGroup && s.yearOfStudy === year
-      )
-        .length || 0
-    const absent =
-      sessionWiseAbsentees[session]?.filter(
-        s => normalizeAttendanceGroup(s.group) === normalizedGroup && s.yearOfStudy === year
-      )
-        .length || 0
-    const total = present + absent
-    const percent = total > 0 ? Math.round((present / total) * 100) : 0
-    return { present, absent, total, percent }
-  }
 
   return (
     <div className="mx-auto mt-2 max-w-7xl rounded-3xl border border-gray-200 bg-[url('/images/classroombg.jpg')] bg-cover bg-center p-6 bg-blend-normal shadow-lg">

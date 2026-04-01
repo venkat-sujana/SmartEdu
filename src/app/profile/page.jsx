@@ -2,8 +2,6 @@
 
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { User } from "lucide-react";
-import { AcademicCapIcon, EnvelopeIcon, UserCircleIcon, BuildingOffice2Icon } from "@heroicons/react/24/solid";
 export default function ProfilePage() {
   const { data: session } = useSession();
   const user = session?.user;

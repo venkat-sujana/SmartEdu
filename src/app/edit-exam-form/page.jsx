@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 
+const GENERAL_STREAMS = ["MPC", "BIPC", "CEC", "HEC"];
+
 export default function EditExamForm({ examData, onClose, onUpdated }) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -22,16 +24,13 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
   });
   const { data: session } = useSession();
 
-  const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
-  const vocationalStreams = ["M&AT", "CET", "MLT"];
-
 const examId = examData?._id;
 console.log("PUT examId =>", examId);
 
 
 const subjectKeys = useMemo(() => {
     if (!formData.stream) return [];
-    return generalStreams.includes(formData.stream)
+    return GENERAL_STREAMS.includes(formData.stream)
       ? [
           "Telugu/Sanskrit/Hindi",
           "English",
@@ -133,7 +132,7 @@ useEffect(() => {
     yearOfStudy: formData.yearOfStudy,
     total: formData.total,
     percentage: formData.percentage,
-    ...(generalStreams.includes(formData.stream)
+    ...(GENERAL_STREAMS.includes(formData.stream)
       ? { generalSubjects: formData.subjects }
       : { vocationalSubjects: formData.subjects }),
   };

@@ -10,7 +10,22 @@ const groupNames = ['MPC', 'BiPC', 'CEC', 'HEC', 'CET', 'M&AT', 'MLT']
 const years = ['First Year', 'Second Year']
 const sessions = ['FN', 'AN']
 
-const fetcher = url => fetch(url).then(res => res.json())
+const fetcher = async url => {
+  const res = await fetch(url, { credentials: 'include' })
+  const contentType = res.headers.get('content-type') || ''
+
+  if (!contentType.includes('application/json')) {
+    throw new Error(`Expected JSON but received ${contentType || 'unknown content type'}`)
+  }
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new Error(data?.message || data?.error || 'Request failed')
+  }
+
+  return data
+}
 
 function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees }) {
   const normalizedGroupName = normalizeAttendanceGroup(groupName)
@@ -136,7 +151,7 @@ function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees })
               <td className="text-right"></td>
               <td colSpan={2}>{anPercent}%</td>
             </tr>
-            <tr className="bg-yellow-50 font-bold text-purple-700">
+            {/* <tr className="bg-yellow-50 font-bold text-purple-700">
               <td colSpan={3} className="text-right">
                 First Year AN Absent
               </td>
@@ -151,7 +166,7 @@ function GroupTableCard({ groupName, sessionWisePresent, sessionWiseAbsentees })
               <td colSpan={3} className="text-xl">
                 {stats('Second Year', 'AN').absent}
               </td>
-            </tr>
+            </tr> */}
           </tfoot>
         </table>
       </CardContent>

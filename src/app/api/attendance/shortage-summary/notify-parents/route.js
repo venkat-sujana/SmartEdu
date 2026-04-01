@@ -162,7 +162,7 @@ export async function POST(req) {
         failed.push({
           studentId: student.studentId,
           name: student.name,
-          mobile: student.mobile,
+          mobile: student.parentMobile,
           error: error.message || "SMS send failed",
         });
         logs.push({
@@ -171,7 +171,7 @@ export async function POST(req) {
           group: student.group,
           yearOfStudy: student.yearOfStudy,
           recipientName: student.fatherName || student.name,
-          mobile: student.mobile,
+          mobile: student.parentMobile,
           percentage: student.percentage,
           threshold,
           message,

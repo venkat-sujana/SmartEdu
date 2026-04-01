@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 
 /**
  * Optimized fetch hook with caching, request deduplication, and error handling
@@ -20,6 +20,7 @@ export function useOptimizedFetch(url, options = {}) {
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
+  const dependencyKey = useMemo(() => JSON.stringify(dependencies), [dependencies])
 
   // Cache reference
   const cacheRef = useRef(new Map())
@@ -29,7 +30,7 @@ export function useOptimizedFetch(url, options = {}) {
     async (skipCache = false) => {
       if (!url || !enabled) return
 
-      const cacheKey = url
+      const cacheKey = dependencyKey ? `${url}:${dependencyKey}` : url
       const cached = cacheRef.current.get(cacheKey)
       const now = Date.now()
 
@@ -92,7 +93,7 @@ export function useOptimizedFetch(url, options = {}) {
         setIsFetching(false)
       }
     },
-    [url, enabled, staleTime, onSuccess, onError, ...dependencies]
+    [url, enabled, staleTime, onSuccess, onError, dependencyKey]
   )
 
   // Refetch function
@@ -214,6 +215,3 @@ export function usePaginatedData(items, options = {}) {
     setCurrentPage,
   }
 }
-
-// Import useMemo at the top
-import { useMemo } from 'react'

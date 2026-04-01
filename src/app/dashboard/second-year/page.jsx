@@ -15,35 +15,26 @@ import {
   FileDown,
   FileSpreadsheet,
   Plus,
-  Pencil,
-  Trash2,
   Printer,
 } from "lucide-react";
 // import GenderWiseChart from "./components/GenderWiseChart";
 // import CasteWiseChart from "./components/CasteWisechart";
 
 export default function GroupDashboard() {
-  const [students, setStudents] = useState([]);
   const [groupCounts, setGroupCounts] = useState([]);
   const [casteCounts, setCasteCounts] = useState([]);
   const [genderCounts, setGenderCounts] = useState([]);
   const [admissionYearCounts, setAdmissionYearCounts] = useState([]);
   const [dateWiseCounts, setDateWiseCounts] = useState([]);
-  const [total, setTotal] = useState(0);
-
-const [selectedYear, setSelectedYear] = useState("Second Year");
+  const selectedYear = "Second Year";
 
   const { data: session } = useSession();
   console.log("SESSION: ", session);
   
-  const [collegeId, setCollegeId] = useState('');
   const [collegeName, setCollegeName] = useState('');
   
     
     useEffect(() => {
-      if (session?.user?.collegeId) {
-        setCollegeId(session.user.collegeId);
-      }
       if (session?.user?.collegeName) {
         setCollegeName(session.user.collegeName);
       }
@@ -65,8 +56,6 @@ useEffect(() => {
           student.collegeId === session.user.collegeId
       );
 
-      setStudents(filteredData);
-      setTotal(filteredData.length);
       setGroupCounts(getCounts(filteredData, "group"));
       setCasteCounts(getCounts(filteredData, "caste"));
       setGenderCounts(getCounts(filteredData, "gender"));
@@ -225,12 +214,6 @@ useEffect(() => {
       </div>
     );
   };
-
-  const currentDate = new Date().toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">

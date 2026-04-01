@@ -46,7 +46,7 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
       } else {
         toast.error(result.message || "Failed to update");
       }
-    } catch (error) {
+    } catch {
       toast.dismiss(toastId);
       toast.error("Error updating attendance");
     } finally {

@@ -3,8 +3,6 @@
 import { useMemo, useState } from 'react'
 import {
   CalendarDays,
-  ChevronLeft,
-  ChevronRight,
   ClipboardCheck,
   FileText,
   LayoutDashboard,

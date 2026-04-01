@@ -12,8 +12,22 @@ const YEARS = ['First Year', 'Second Year']
 const SESSIONS = ['FN', 'AN']
 
 // Optimized fetcher with caching
-const fetcher = (url) => 
-  fetch(url, { credentials: 'include' }).then((res) => res.json())
+const fetcher = async (url) => {
+  const res = await fetch(url, { credentials: 'include' })
+  const contentType = res.headers.get('content-type') || ''
+
+  if (!contentType.includes('application/json')) {
+    throw new Error(`Expected JSON but received ${contentType || 'unknown content type'}`)
+  }
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new Error(data?.message || data?.error || 'Request failed')
+  }
+
+  return data
+}
 
 // SWR config for minimal re-fetching
 const SWR_CONFIG = {

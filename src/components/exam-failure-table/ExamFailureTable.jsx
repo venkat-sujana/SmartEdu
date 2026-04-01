@@ -9,8 +9,8 @@ export default function ExamFailureTable({ reports = [], enableFilters = false }
   const [year, setYear] = useState("");
   const [stream, setStream] = useState("");
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("examType");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy] = useState("examType");
+  const [sortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
 

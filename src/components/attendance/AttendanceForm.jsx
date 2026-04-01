@@ -2,7 +2,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { useRouter} from "next/navigation";
 import { DEFAULT_COLLEGE_GROUPS } from "@/utils/collegeGroups";
@@ -164,7 +163,7 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
       } else {
         setFullscreenToastMessage(result.message || "Something went wrong!");
       }
-    } catch (error) {
+    } catch {
       setFullscreenToastMessage("Error submitting attendance");
     } finally {
       setIsLoading(false);

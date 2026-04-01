@@ -1,18 +1,17 @@
 //app/student/dashboard/page.jsx
 'use client'
+import Image from 'next/image'
 import StudentIndividualExams from '@/components/StudentIndividualExams/StudentIndividualExams'
 import StudentMonthlyAttendanceSummary from '@/components/StudentMonthlyAttendanceSummary/StudentMonthlyAttendanceSummary'
 import { useSession } from 'next-auth/react'
 // import { FaUserGraduate, FaPhoneAlt, FaUsers, FaBirthdayCake, FaVenusMars, FaHome, FaUniversity, FaBook, FaUserTie } from "react-icons/fa" // If needed
 
 export default function StudentDashboard() {
-  const { data: session } = useSession()
-  console.log("session.user =", session?.user)
+  const { data: session, status } = useSession()
 
   // ఇక్కడ _id ని use చేయాలి
   const studentId = session?.user?.id
 
-  console.log("Dashboard studentId =", studentId)
 
   if (status === 'loading') {
     return (
@@ -32,7 +31,6 @@ export default function StudentDashboard() {
 
   const user = session.user
   // student dashboard pageలో
-console.log("session.user.studentId =", session?.user?.studentId)
 
 
   return (
@@ -51,10 +49,13 @@ console.log("session.user.studentId =", session?.user?.studentId)
         <div className="flex flex-col items-center gap-10 md:flex-row md:items-start">
           {/* Profile Photo */}
           <div className="relative">
-            <img
+            <Image
               src={user.photo || '/default-avatar.png'}
               alt={user.name}
+              width={144}
+              height={144}
               className="shadow-4xl h-36 w-36 rounded-full border-2 border-blue-400 object-cover"
+              unoptimized
             />
             <span className="absolute right-2 bottom-2 h-4 w-4 rounded-full border-2 border-white bg-green-500"></span>
           </div>
@@ -110,9 +111,9 @@ console.log("session.user.studentId =", session?.user?.studentId)
 
       {/* Monthly Attendance Summary Section */}
       
-      <StudentMonthlyAttendanceSummary studentId={user.id} />
+      <StudentMonthlyAttendanceSummary studentId={studentId} />
       {/* Individual Exam Results Section */}
-      <StudentIndividualExams studentId={session?.user?.id} />
+      <StudentIndividualExams studentId={studentId} />
     </div>
   )
 }

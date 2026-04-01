@@ -12,7 +12,7 @@ export default function TerminatedStudentsPage() {
       const res = await fetch("/api/students/terminated");
       const data = await res.json();
       setStudents(data);
-    } catch (err) {
+    } catch {
       setError("Failed to load terminated students");
     } finally {
       setLoading(false);
@@ -36,7 +36,7 @@ export default function TerminatedStudentsPage() {
       if (data.success) {
         setStudents(students.filter((s) => s._id !== id));
       }
-    } catch (err) {
+    } catch {
       alert("Restore failed");
     }
   };

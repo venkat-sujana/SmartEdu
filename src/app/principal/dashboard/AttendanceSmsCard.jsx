@@ -4,16 +4,28 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { MessageSquareWarning, Send } from "lucide-react";
 
+const groupOptions = ["", "MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
+const yearOptions = ["", "First Year", "Second Year"];
+
 export default function AttendanceSmsCard() {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [threshold, setThreshold] = useState(75);
 
   useEffect(() => {
     async function loadPreview() {
       try {
-        const res = await fetch("/api/attendance/shortage-summary/notify-parents");
+        const params = new URLSearchParams();
+        if (selectedGroup) params.set("group", selectedGroup);
+        if (selectedYear) params.set("yearOfStudy", selectedYear);
+        params.set("threshold", String(threshold));
+
+        const url = `/api/attendance/shortage-summary/notify-parents?${params.toString()}`;
+        const res = await fetch(url);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to load SMS preview");
         setPreview(data.data);
@@ -26,7 +38,7 @@ export default function AttendanceSmsCard() {
     }
 
     loadPreview();
-  }, []);
+  }, [selectedGroup, selectedYear, threshold]);
 
   async function handleSend() {
     setSending(true);
@@ -36,7 +48,11 @@ export default function AttendanceSmsCard() {
       const res = await fetch("/api/attendance/shortage-summary/notify-parents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ threshold: 75 }),
+        body: JSON.stringify({
+          threshold,
+          group: selectedGroup || undefined,
+          yearOfStudy: selectedYear || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send SMS");
@@ -65,6 +81,56 @@ export default function AttendanceSmsCard() {
       </div>
 
       <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+        <div className="mb-4 grid gap-3 md:grid-cols-3">
+          <label className="text-xs font-medium text-slate-600">
+            Group
+            <select
+              value={selectedGroup}
+              onChange={(event) => setSelectedGroup(event.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-amber-500"
+            >
+              <option value="">All Groups</option>
+              {groupOptions
+                .filter((group) => group)
+                .map((group) => (
+                  <option key={group} value={group}>
+                    {group}
+                  </option>
+                ))}
+            </select>
+          </label>
+
+          <label className="text-xs font-medium text-slate-600">
+            Year
+            <select
+              value={selectedYear}
+              onChange={(event) => setSelectedYear(event.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-amber-500"
+            >
+              <option value="">All Years</option>
+              {yearOptions
+                .filter((year) => year)
+                .map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+            </select>
+          </label>
+
+          <label className="text-xs font-medium text-slate-600">
+            Threshold %
+            <input
+              type="number"
+              min="1"
+              max="100"
+              value={threshold}
+              onChange={(event) => setThreshold(Number(event.target.value) || 75)}
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-amber-500"
+            />
+          </label>
+        </div>
+
         {loading ? (
           <p>Loading SMS preview...</p>
         ) : (
@@ -86,6 +152,11 @@ export default function AttendanceSmsCard() {
             <p className="mt-1 text-xs text-slate-500">
               SMS content: English + Telugu bilingual message
             </p>
+            {(selectedGroup || selectedYear) ? (
+              <p className="mt-1 text-xs text-slate-500">
+                Active filter: {selectedGroup || "All Groups"} / {selectedYear || "All Years"}
+              </p>
+            ) : null}
           </>
         )}
       </div>

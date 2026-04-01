@@ -8,10 +8,6 @@ import { SUBJECT_LECTURERS } from '@/lib/lecturers';
 // ---------------- CONSTANTS ----------------
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-const MIN_PERIODS = 16
-const MAX_PERIODS = 18
-
-
 const SUBJECTS = {
   general: [
     '',

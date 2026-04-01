@@ -70,7 +70,7 @@ export default function IndividualAttendancePage({ fixedGroup }) {
 };
 
 
-  const handleDelete = async (id, sessionType) => {
+  const handleDelete = async (id) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this attendance record?"
     );
@@ -83,7 +83,7 @@ export default function IndividualAttendancePage({ fixedGroup }) {
 
       toast.success("Deleted successfully", { id: toastId });
       await fetchData();
-    } catch (err) {
+    } catch {
       toast.error("Error deleting record", { id: toastId });
     }
   };

@@ -9,7 +9,7 @@ import GroupStudentTable from "@/components/tables/GroupStudentTable";
 import GroupAttendanceSummary from '@/components/attendance/GroupAttendanceSummary';
 
 export default function GFCDashboard() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const user = session?.user
 
   const collegeName = user?.collegeName || 'College'

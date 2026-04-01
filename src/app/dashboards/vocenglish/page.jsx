@@ -9,7 +9,7 @@ import MainLinks from '@/components/MainLinks';
 import ExternalLinks from "@/components/ExternalLinks";
 
 export default function VocEnglishDashboard() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const user = session?.user
 return (
     <div className="flex flex-col items-center gap-8 min-h-screen bg-gradient-to-b from-blue-50 to-blue-200">

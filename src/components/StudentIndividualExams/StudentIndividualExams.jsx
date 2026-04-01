@@ -73,7 +73,7 @@ export default function StudentIndividualExams({ studentId }) {
           let obtained = 0;
           let result = "Pass";
 
-          Object.entries(subjects).forEach(([_, score]) => {
+          Object.entries(subjects).forEach(([, score]) => {
             const marks = score === "A" ? 0 : parseInt(score, 10) || 0;
             obtained += marks;
 

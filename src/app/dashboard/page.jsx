@@ -2,26 +2,18 @@
 //app/dashboard/page.jsx
 'use client'
 import { useEffect, useState } from 'react'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
-import * as XLSX from 'xlsx'
-import { Users, FileDown, FileSpreadsheet, Printer } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
 export default function GroupDashboard() {
-  const [students, setStudents] = useState([])
   const [groupCounts, setGroupCounts] = useState([])
   const [casteCounts, setCasteCounts] = useState([])
   const [genderCounts, setGenderCounts] = useState([])
   const [admissionYearCounts, setAdmissionYearCounts] = useState([])
-  const [total, setTotal] = useState(0)
   const [selectedYear, setSelectedYear] = useState('First Year')
   const { data: session } = useSession()
-  const [collegeId, setCollegeId] = useState('')
   const [collegeName, setCollegeName] = useState('')
 
   useEffect(() => {
-    if (session?.user?.collegeId) setCollegeId(session.user.collegeId)
     if (session?.user?.collegeName) setCollegeName(session.user.collegeName)
   }, [session])
 
@@ -38,8 +30,6 @@ export default function GroupDashboard() {
           student.yearOfStudy === selectedYear &&
           student.collegeId === session.user.collegeId
       )
-      setStudents(filteredData)
-      setTotal(filteredData.length)
       setGroupCounts(getCounts(filteredData, 'group'))
       setCasteCounts(getCounts(filteredData, 'caste'))
       setGenderCounts(getCounts(filteredData, 'gender'))

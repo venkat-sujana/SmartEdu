@@ -3,7 +3,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import React from "react";
-import Link from "next/link";
 import { Printer } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -29,8 +28,6 @@ export default function MonthlySummary() {
   const [selectedYear, setSelectedYear] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const { data: session } = useSession();
-
-  const collegeName = session?.user?.collegeName || "College";
 
   useEffect(() => {
     if (!selectedGroup || !selectedYear) return;
@@ -152,7 +149,7 @@ export default function MonthlySummary() {
       >
         {shortageFilteredData.length === 0 ? (
           <p className="text-gray-500 mt-4 text-center py-6">
-            All students below 75% attendance.
+            No students below 75% attendance.
           </p>
         ) : (
           <table className="table-auto w-full border border-gray-300 text-sm font-sans shadow-lg rounded-lg overflow-hidden">

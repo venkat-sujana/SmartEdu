@@ -1,6 +1,5 @@
 // app/components/attendance-stats-table/AttendanceStatsTable.jsx
 const groups = ['MPC', 'BiPC', 'CEC', 'HEC', 'M&AT', 'MLT', 'CET']
-const years = ['First Year', 'Second Year']
 const yearLabels = ['I', 'II']
 const sessions = ['FN', 'AN']
 const rowLabels = ['Present', 'Absent', 'Total', 'FN Total Present', 'AN Total Present']

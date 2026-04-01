@@ -2,6 +2,7 @@
 
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 
 export default function PrincipalRegistrationForm() {
@@ -137,10 +138,13 @@ export default function PrincipalRegistrationForm() {
 
       {/* Photo preview */}
       {photoUrl && (
-        <img
+        <Image
           src={photoUrl}
           alt="Photo preview"
+          width={128}
+          height={128}
           className="w-32 h-32 object-cover rounded mx-auto mt-2"
+          unoptimized
         />
       )}
 

@@ -1,10 +1,9 @@
 //app/lecturer/attendance/page.jsx
 'use client';
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
 // Group Icons
@@ -24,7 +23,7 @@ export default function AttendancePage() {
   const [attendanceData, setAttendanceData] = useState({});
   const [date, setDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
 
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     try {
       const res = await axios.get("/api/attendance/today-list", {
         params: {
@@ -36,13 +35,13 @@ export default function AttendancePage() {
     } catch (error) {
       console.error("Error fetching attendance:", error);
     }
-  };
+  }, [date, session?.user?.collegeId]);
 
   useEffect(() => {
     if (session?.user?.collegeId) {
       fetchAttendance();
     }
-  }, [session, date]);
+  }, [fetchAttendance, session?.user?.collegeId]);
 
   const years = ["First Year", "Second Year"];
 

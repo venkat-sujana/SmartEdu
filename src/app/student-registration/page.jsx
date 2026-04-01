@@ -73,7 +73,7 @@ export default function StudentRegistration() {
       // Keep existing logic as requested
       console.log("Student Registered:", formData);
       toast.success("Student registered successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Unable to verify admission number. Please try again.");
     } finally {
       setIsSubmitting(false);

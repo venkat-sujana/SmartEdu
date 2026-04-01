@@ -359,7 +359,7 @@ export default function AdminPanelPage() {
       const res = await fetch("/api/colleges");
       const data = await res.json();
       setColleges(Array.isArray(data) ? data : []);
-    } catch (err) {
+    } catch {
     }
   }, []);
 
@@ -377,7 +377,7 @@ export default function AdminPanelPage() {
         groupDistribution: Array.isArray(data.groupDistribution) ? data.groupDistribution : [],
         districtDistribution: Array.isArray(data.districtDistribution) ? data.districtDistribution : [],
       });
-    } catch (err) {
+    } catch {
     }
   }, []);
 
@@ -466,7 +466,7 @@ export default function AdminPanelPage() {
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || "Failed to fetch students");
         setStudentOptions(Array.isArray(result.data) ? result.data : []);
-      } catch (err) {
+      } catch {
         setStudentOptions([]);
       }
     }

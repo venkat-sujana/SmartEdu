@@ -1,17 +1,14 @@
 //app/principal/dashboard/page.jsx
 'use client'
 import Image from 'next/image'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { useSession } from 'next-auth/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import ActiveLecturersCard from '@/components/dashboard/ActiveLecturersCard'
-import AttendanceShortageSummary from '@/components/attendance-shortage-summary/AttendanceShortageSummary'
 import AttendanceSmsHistoryCard from '@/components/attendance/AttendanceSmsHistoryCard'
 import OverallAttendanceMatrixCard from '@/components/OverallAttendanceMatrixCard/OverallAttendanceMatrixCard'
-import TodayAbsenteesTable from '@/app/absentees-table/page'
-import AttendanceStatsTable from '@/components/tables/AttendanceStatsTable'
 import {
   Building2,
   FileSpreadsheet,
@@ -34,7 +31,6 @@ import AttendanceOverviewTable from './AttendanceOverviewTable'
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function PrincipalDashboard() {
-  const [shortageData, setShortageData] = useState([])
   const { data: session } = useSession()
   const principal = session?.user
   const collegeName = principal?.collegeName || 'Your College'

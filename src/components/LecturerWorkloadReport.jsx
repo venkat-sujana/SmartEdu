@@ -1,5 +1,5 @@
 // app/components/LecturerWorkloadReport.jsx
-function LecturerWorkloadReport({ data }) {
+export default function LecturerWorkloadReport({ data }) {
   if (!data.length) return null
 
   return (

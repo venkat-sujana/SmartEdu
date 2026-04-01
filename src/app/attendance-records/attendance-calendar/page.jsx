@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
@@ -119,9 +120,10 @@ export default function CalendarView() {
   const selectedStudent = students.find(
     (student) => student._id?.toString() === studentId?.toString()
   );
-  const joinDateObj = selectedStudent?.joinDate
-    ? new Date(selectedStudent.joinDate)
-    : null;
+  const joinDateObj = useMemo(
+    () => (selectedStudent?.joinDate ? new Date(selectedStudent.joinDate) : null),
+    [selectedStudent?.joinDate]
+  );
 
   const presentCount = Object.values(attendanceMap).filter(
     (status) => status === "Present"
@@ -316,13 +318,13 @@ export default function CalendarView() {
                   <div className="flex flex-col items-center gap-1 mt-1">
                     <div className="text-green-700 text-lg">Present</div>
                     {selectedStudent?.photo && (
-                      <img
+                      <Image
                         src={selectedStudent.photo}
                         alt="Student"
-                        onError={(event) => {
-                          event.target.src = "/default-avatar.png";
-                        }}
+                        width={56}
+                        height={56}
                         className="w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover border border-gray-300"
+                        unoptimized
                       />
                     )}
                     <p className="text-xs text-gray-700">{selectedStudent?.name}</p>

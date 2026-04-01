@@ -55,7 +55,7 @@ export default function StudentActivatePage() {
       setTimeout(() => {
         window.location.href = "/registration-success";
       }, 800);
-    } catch (e) {
+    } catch {
       setErr("Server error. Please try again.");
     } finally {
       setIsLoading(false);

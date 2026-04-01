@@ -277,7 +277,7 @@ export default function AttendanceForm({ defaultGroup = '', returnUrl = '/lectur
       } else {
         setFullscreenToastMessage(result.message || 'Something went wrong!')
       }
-    } catch (error) {
+    } catch {
       setFullscreenToastMessage('Error submitting attendance')
     } finally {
       setIsLoading(false)

@@ -1,8 +1,7 @@
 //app/components/MobileTopbar.jsx
 
 "use client"
-import { useState } from "react"
-import { Menu, X } from "lucide-react"
+import { Menu } from "lucide-react"
 
 export default function MobileTopbar({ onToggle }) {
   return (

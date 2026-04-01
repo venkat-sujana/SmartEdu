@@ -28,7 +28,7 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
         const res = await fetch(`/api/attendance/today`);
         const json = await res.json();
         setAbsData(json);
-      } catch (err) {
+      } catch {
         setAbsData(null);
       }
       setLoading(false);

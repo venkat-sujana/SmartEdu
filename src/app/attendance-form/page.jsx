@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   CalendarDays,
-  CheckCircle2,
   ClipboardCheck,
   FileText,
   LayoutDashboard,
@@ -102,7 +101,7 @@ function ToggleSwitch({ checked, onChange, color = 'green' }) {
 }
 
 export default function AttendanceFormPage() {
-  const { data: session } = useSession()
+  useSession()
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
@@ -156,7 +155,7 @@ export default function AttendanceFormPage() {
           setAttendanceMap({})
           setFeedback({ type: 'error', message: json?.message || 'Failed to load students.' })
         }
-      } catch (error) {
+      } catch {
         setStudents([])
         setAttendanceMap({})
         setFeedback({ type: 'error', message: 'Unable to fetch students.' })
@@ -241,7 +240,7 @@ export default function AttendanceFormPage() {
       } else {
         setFeedback({ type: 'error', message: json?.message || 'Failed to submit attendance.' })
       }
-    } catch (error) {
+    } catch {
       setFeedback({ type: 'error', message: 'Submission failed. Please try again.' })
     } finally {
       setSubmitting(false)

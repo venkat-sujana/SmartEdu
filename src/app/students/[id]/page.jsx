@@ -1,6 +1,7 @@
 //app/students/[id]/page.jsx
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -14,9 +15,7 @@ import {
   Phone,
   MapPin,
   Landmark,
-  BadgeIndianRupee,
   GraduationCap,
-  Users,
   ClipboardList
 } from "lucide-react";
 
@@ -90,17 +89,7 @@ export default function StudentProfilePage() {
     return false;
   };
 
-  if (status === "loading" || (!student && !error)) return <PulseDots />;
-
-  if (error) {
-    return (
-      <div className="p-6 text-center text-red-600 font-semibold">
-        {error}
-      </div>
-    );
-  }
-
-  const stream = isGeneral(student.group) ? "general" : "vocational";
+  const stream = isGeneral(student?.group) ? "general" : "vocational";
   const subjectCount = stream === "general" ? 6 : 5;
 
   const attendanceOverview = useMemo(() => {
@@ -146,7 +135,7 @@ export default function StudentProfilePage() {
       const total = marksArray.reduce((a, b) => a + (Number.isNaN(b) ? 0 : b), 0);
       const denominator = subjectCount * maxMark;
       const percentage = denominator > 0 ? (total / denominator) * 100 : 0;
-      const hasFail = Object.entries(subjects).some(([_, m]) =>
+      const hasFail = Object.entries(subjects).some(([, m]) =>
         isFail(m, maxMark, stream, exam.examType)
       );
 
@@ -164,6 +153,16 @@ export default function StudentProfilePage() {
       passRate: ((passCount / totalExams) * 100).toFixed(2),
     };
   }, [exams, stream, subjectCount]);
+
+  if (status === "loading" || (!student && !error)) return <PulseDots />;
+
+  if (error) {
+    return (
+      <div className="p-6 text-center text-red-600 font-semibold">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto text-gray-800">
@@ -197,10 +196,10 @@ export default function StudentProfilePage() {
             <p><MapPin className="inline mr-1" size={16} /> <strong>Address:</strong> {student.address}</p>
           </div>
           <div className="flex justify-center items-center">
-            <img src="/images/apbise.png" alt="Board Logo" className="w-28 h-28 object-contain" />
+            <Image src="/images/apbise.png" alt="Board Logo" width={112} height={112} className="w-28 h-28 object-contain" />
           </div>
           <div className="flex justify-end">
-            <img src={student.photo || "/student-placeholder.png"} alt="Student" className="w-40 h-48 object-cover border rounded-md shadow-sm" />
+            <Image src={student.photo || "/student-placeholder.png"} alt="Student" width={160} height={192} className="w-40 h-48 object-cover border rounded-md shadow-sm" unoptimized />
           </div>
         </div>
       </div>
@@ -265,7 +264,7 @@ export default function StudentProfilePage() {
             const marksArray = Object.values(subjects).map((m) => m === "A" || m === "AB" ? 0 : Number(m));
             const total = marksArray.reduce((a, b) => a + (isNaN(b) ? 0 : b), 0);
             const percentage = ((total / (subjectCount * maxMark)) * 100).toFixed(2);
-            const hasFail = Object.entries(subjects).some(([_, m]) => isFail(m, maxMark, stream, e.examType));
+            const hasFail = Object.entries(subjects).some(([, m]) => isFail(m, maxMark, stream, e.examType));
 
             return (
               <div key={i} className="border rounded-lg p-3 shadow bg-white">

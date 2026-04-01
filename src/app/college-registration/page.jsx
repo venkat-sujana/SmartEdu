@@ -1,8 +1,6 @@
 //app/college-registration/page.jsx
 "use client"
 import { useState } from "react";
-import Link from "next/link";
-import LoginPage from "../login/page";
 export default function CollegeRegistrationForm() {
   const [form, setForm] = useState({
     name: "", code: "", address: "", district: "",

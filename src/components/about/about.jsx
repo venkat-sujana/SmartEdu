@@ -1,6 +1,6 @@
 //app/components/about/page.jsx
 import React from 'react'
-import { AcademicCapIcon, UserGroupIcon, UserIcon } from '@heroicons/react/24/outline'
+import { AcademicCapIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 
 export default function AboutPage() {
   const imageSrc = '/images/profile.jpg'

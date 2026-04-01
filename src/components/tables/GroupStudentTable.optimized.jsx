@@ -14,7 +14,6 @@ import {
   Download,
   FileSpreadsheet,
   Pencil,
-  Printer,
   Search,
   Trash2,
   Users2,
@@ -25,8 +24,6 @@ const STUDENTS_PER_PAGE = 10;
 const CASTE_OPTIONS = ["OC", "OBC", "BC-A", "BC-B", "BC-C", "BC-D", "BC-E", "SC", "ST"];
 const GENDER_OPTIONS = ["Male", "Female", "Other"];
 const YEAR_OPTIONS = ["First Year", "Second Year"];
-const STATUS_OPTIONS = ["Active", "Terminated"];
-
 // Memoized components
 const FilterSelect = memo(function FilterSelect({ label, name, value, onChange, options }) {
   return (
@@ -123,7 +120,6 @@ export default function GroupStudentTable({ groupName }) {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ caste: "", gender: "", yearOfStudy: "" });
   const [currentPage, setCurrentPage] = useState(0);
-  const [editingStudent, setEditingStudent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const tableRef = useRef(null);
 

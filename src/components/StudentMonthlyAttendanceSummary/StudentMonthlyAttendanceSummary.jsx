@@ -74,10 +74,6 @@ export default function StudentMonthlyAttendanceSummary({ studentId }) {
     (sum, m) => sum + (parseInt(m.presentDays) || 0),
     0
   )
-  const totalShortage = monthlySummary.reduce(
-    (sum, m) => sum + (parseInt(m.shortage) || 0),
-    0
-  )
   const totalPercent =
     totalWorking > 0 ? ((totalPresent / totalWorking) * 100).toFixed(2) : '0.00'
 

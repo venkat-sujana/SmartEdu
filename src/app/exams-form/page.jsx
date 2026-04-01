@@ -39,7 +39,7 @@ useEffect(() => {
 
       const json = await res.json();
       setStudents(Array.isArray(json.data) ? json.data : []);
-    } catch (err) {
+    } catch {
       setStudents([]);
     }
   };
@@ -82,7 +82,7 @@ useEffect(() => {
       } else {
         toast.error(`❌ Error: ${result.message}`);
       }
-    } catch (err) {
+    } catch {
       toast.error("❌ Server error while submitting.");
     } finally {
       setIsSubmitting(false);
