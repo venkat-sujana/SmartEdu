@@ -20,6 +20,7 @@ import {
   Users,
 } from 'lucide-react'
 import OverallStrengthCard from '@/components/dashboard/OverallStrengthCard'
+import Tutorials from '@/components/tutorials/Tutorials'
 import { normalizeAttendanceGroup } from '@/utils/attendanceGroup'
 
 import MetricsCards from './MetricsCards'
@@ -352,6 +353,8 @@ export default function PrincipalDashboard() {
               </Link>
             </CardContent>
           </Card>
+
+          <Tutorials />
         </section>
 
         <MetricsCards />

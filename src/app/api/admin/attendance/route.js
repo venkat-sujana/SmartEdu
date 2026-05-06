@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import Student from "@/models/Student";
+import { createAuditLog } from "@/lib/auditLog";
 import { getAdminSession } from "@/lib/requireAdminSession";
 
 function isValidDate(value) {
@@ -150,6 +151,20 @@ export async function POST(req) {
       .populate("studentId", "name admissionNo group yearOfStudy")
       .populate("collegeId", "name")
       .lean();
+
+    await createAuditLog({
+      session,
+      req,
+      action: "create",
+      entity: "attendance",
+      entityId: attendance._id,
+      message: `Created attendance for ${created?.studentId?.name || "student"} on ${date.toISOString().slice(0, 10)} ${sessionValue}`,
+      after: created,
+      metadata: {
+        studentId: body.studentId,
+        collegeId: body.collegeId,
+      },
+    });
 
     return NextResponse.json({ message: "Attendance created", data: created }, { status: 201 });
   } catch (error) {

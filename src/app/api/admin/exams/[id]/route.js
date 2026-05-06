@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Exam from "@/models/Exam";
 import Student from "@/models/Student";
+import { createAuditLog } from "@/lib/auditLog";
 import { getAdminSession } from "@/lib/requireAdminSession";
 
 const GENERAL_STREAMS = new Set(["MPC", "BIPC", "CEC", "HEC"]);
@@ -116,6 +117,21 @@ export async function PUT(req, context) {
       .populate("studentId", "name admissionNo group yearOfStudy")
       .populate("collegeId", "name");
 
+    await createAuditLog({
+      session,
+      req,
+      action: "update",
+      entity: "exam",
+      entityId: id,
+      message: `Updated ${update.examType} exam for ${updated?.studentId?.name || "student"} (${update.academicYear})`,
+      before: existing,
+      after: updated?.toObject?.() || updated,
+      metadata: {
+        studentId,
+        collegeId,
+      },
+    });
+
     return NextResponse.json({ message: "Exam updated", data: updated });
   } catch (error) {
     console.error("Admin exams PUT error:", error);
@@ -123,7 +139,7 @@ export async function PUT(req, context) {
   }
 }
 
-export async function DELETE(_req, context) {
+export async function DELETE(req, context) {
   try {
     const session = await getAdminSession();
     if (!session) {
@@ -136,10 +152,32 @@ export async function DELETE(_req, context) {
       return NextResponse.json({ error: "Invalid exam id" }, { status: 400 });
     }
 
+    const existing = await Exam.findById(id)
+      .populate("studentId", "name admissionNo group yearOfStudy")
+      .populate("collegeId", "name")
+      .lean();
+    if (!existing) {
+      return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+    }
+
     const deleted = await Exam.findByIdAndDelete(id);
     if (!deleted) {
       return NextResponse.json({ error: "Exam not found" }, { status: 404 });
     }
+
+    await createAuditLog({
+      session,
+      req,
+      action: "delete",
+      entity: "exam",
+      entityId: id,
+      message: `Deleted ${existing.examType} exam for ${existing?.studentId?.name || "student"} (${existing.academicYear})`,
+      before: existing,
+      metadata: {
+        studentId: existing?.studentId?._id || existing?.studentId,
+        collegeId: existing?.collegeId?._id || existing?.collegeId,
+      },
+    });
 
     return NextResponse.json({ message: "Exam deleted" });
   } catch (error) {

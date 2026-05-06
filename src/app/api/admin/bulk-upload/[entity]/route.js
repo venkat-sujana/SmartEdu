@@ -8,6 +8,7 @@ import Exam from "@/models/Exam";
 import Lecturer from "@/models/Lecturer";
 import Principal from "@/models/Principal";
 import Student from "@/models/Student";
+import { createAuditLog } from "@/lib/auditLog";
 import { getAdminSession } from "@/lib/requireAdminSession";
 import { ensureCollegeGroups } from "@/utils/collegeGroups";
 
@@ -476,6 +477,18 @@ export async function POST(req, context) {
         return NextResponse.json({ message: "All rows were skipped", insertedCount: 0, skippedCount: rows.length, errors: formatErrors(errors) }, { status: 400 });
       }
       await College.insertMany(filteredDocs, { ordered: false });
+      await createAuditLog({
+        session,
+        req,
+        action: "bulk_upload",
+        entity,
+        message: `Bulk uploaded ${filteredDocs.length} colleges`,
+        metadata: {
+          insertedCount: filteredDocs.length,
+          skippedCount: rows.length - filteredDocs.length,
+          fileName: file.name || "",
+        },
+      });
       return NextResponse.json({
         message: `${filteredDocs.length} colleges uploaded successfully`,
         insertedCount: filteredDocs.length,
@@ -507,6 +520,20 @@ export async function POST(req, context) {
 
       await Attendance.insertMany(filteredDocs, { ordered: false });
 
+      await createAuditLog({
+        session,
+        req,
+        action: "bulk_upload",
+        entity,
+        message: `Bulk uploaded ${filteredDocs.length} attendance records`,
+        metadata: {
+          insertedCount: filteredDocs.length,
+          skippedCount: rows.length - filteredDocs.length,
+          fileName: file.name || "",
+          collegeId: defaultCollegeId,
+        },
+      });
+
       return NextResponse.json({
         message: `${filteredDocs.length} attendance records uploaded successfully`,
         insertedCount: filteredDocs.length,
@@ -517,6 +544,20 @@ export async function POST(req, context) {
 
     if (entity === "exams") {
       await Exam.insertMany(docs, { ordered: false });
+
+      await createAuditLog({
+        session,
+        req,
+        action: "bulk_upload",
+        entity,
+        message: `Bulk uploaded ${docs.length} exam records`,
+        metadata: {
+          insertedCount: docs.length,
+          skippedCount: rows.length - docs.length,
+          fileName: file.name || "",
+          collegeId: defaultCollegeId,
+        },
+      });
 
       return NextResponse.json({
         message: `${docs.length} exams uploaded successfully`,
@@ -544,6 +585,20 @@ export async function POST(req, context) {
     }
 
     await Model.insertMany(filteredDocs, { ordered: false });
+
+    await createAuditLog({
+      session,
+      req,
+      action: "bulk_upload",
+      entity,
+      message: `Bulk uploaded ${filteredDocs.length} ${entity}`,
+      metadata: {
+        insertedCount: filteredDocs.length,
+        skippedCount: rows.length - filteredDocs.length,
+        fileName: file.name || "",
+        collegeId: defaultCollegeId,
+      },
+    });
 
     return NextResponse.json({
       message: `${filteredDocs.length} ${entity} uploaded successfully`,

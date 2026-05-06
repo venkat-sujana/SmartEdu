@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Exam from "@/models/Exam";
 import Student from "@/models/Student";
+import { createAuditLog } from "@/lib/auditLog";
 import { getAdminSession } from "@/lib/requireAdminSession";
 
 const GENERAL_STREAMS = new Set(["MPC", "BIPC", "CEC", "HEC"]);
@@ -185,6 +186,20 @@ export async function POST(req) {
       .populate("studentId", "name admissionNo group yearOfStudy")
       .populate("collegeId", "name")
       .lean();
+
+    await createAuditLog({
+      session,
+      req,
+      action: "create",
+      entity: "exam",
+      entityId: exam._id,
+      message: `Created ${payload.examType} exam for ${created?.studentId?.name || "student"} (${payload.academicYear})`,
+      after: created,
+      metadata: {
+        studentId: body.studentId,
+        collegeId: body.collegeId,
+      },
+    });
 
     return NextResponse.json({ message: "Exam created", data: created }, { status: 201 });
   } catch (error) {

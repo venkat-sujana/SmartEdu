@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import {
+  Activity,
   BarChart3,
   Building2,
   CalendarCheck2,
@@ -307,6 +308,8 @@ export default function AdminPanelPage() {
   });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
 
   const activeConfig = ENTITY_CONFIG[entity];
 
@@ -381,6 +384,27 @@ export default function AdminPanelPage() {
     }
   }, []);
 
+  const loadAuditLogs = useCallback(async () => {
+    setAuditLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: "1",
+        limit: "8",
+      });
+      if (entity === "attendance" || entity === "exams") {
+        params.set("entity", entity === "exams" ? "exam" : entity);
+      }
+      const res = await fetch(`/api/admin/audit-logs?${params.toString()}`);
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to fetch audit logs");
+      setAuditLogs(Array.isArray(result.data) ? result.data : []);
+    } catch {
+      setAuditLogs([]);
+    } finally {
+      setAuditLoading(false);
+    }
+  }, [entity]);
+
   const uploadToCloudinary = useCallback(async (file) => {
     const payload = new FormData();
     payload.append("file", file);
@@ -448,6 +472,11 @@ export default function AdminPanelPage() {
     if (!isAdmin) return;
     fetchRecords();
   }, [isAdmin, fetchRecords]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    loadAuditLogs();
+  }, [isAdmin, loadAuditLogs]);
 
   useEffect(() => {
     async function loadStudentOptions() {
@@ -575,6 +604,7 @@ export default function AdminPanelPage() {
       closeForm();
       await fetchRecords();
       await loadCollegeAnalytics();
+      await loadAuditLogs();
       if (entity === "colleges") await loadColleges();
     } catch (err) {
       setError(err.message || "Request failed");
@@ -595,6 +625,7 @@ export default function AdminPanelPage() {
       setMessage(result.message || "Deleted successfully");
       await fetchRecords();
       await loadCollegeAnalytics();
+      await loadAuditLogs();
       if (entity === "colleges") await loadColleges();
     } catch (err) {
       setError(err.message || "Delete failed");
@@ -637,6 +668,7 @@ export default function AdminPanelPage() {
       setSelectedIds([]);
       await fetchRecords();
       await loadCollegeAnalytics();
+      await loadAuditLogs();
       if (entity === "colleges") await loadColleges();
     } catch (err) {
       setError(err.message || "Bulk delete failed");
@@ -673,6 +705,7 @@ export default function AdminPanelPage() {
       setUploadFile(null);
       await fetchRecords();
       await loadCollegeAnalytics();
+      await loadAuditLogs();
       if (entity === "colleges") await loadColleges();
     } catch (err) {
       setError(err.message || "Bulk upload failed");
@@ -926,6 +959,59 @@ export default function AdminPanelPage() {
             </div>
           </section>
         )}
+
+        <section className="rounded-[28px] border border-white/70 bg-white/85 p-4 shadow-[0_18px_60px_-40px_rgba(15,23,42,0.7)] backdrop-blur">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                <Activity className="h-3.5 w-3.5" />
+                Recent Activity
+              </div>
+              <h2 className="mt-3 text-xl font-bold text-slate-900">Audit Trail</h2>
+              <p className="text-sm text-slate-600">See who changed attendance, exams, and bulk operations across the admin workspace.</p>
+            </div>
+            <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">
+              {entity === "attendance" || entity === "exams" ? `${activeConfig.label} focus` : "Latest platform activity"}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
+            {auditLoading ? (
+              <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                Loading audit history...
+              </div>
+            ) : auditLogs.length === 0 ? (
+              <div className="lg:col-span-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                No activity captured yet for this view.
+              </div>
+            ) : (
+              auditLogs.map((log) => (
+                <article key={log._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white">
+                      {log.action?.replace(/_/g, " ") || "activity"}
+                    </span>
+                    <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600">
+                      {log.entity || "record"}
+                    </span>
+                    <span className="text-xs text-slate-500">{formatAuditTimestamp(log.createdAt)}</span>
+                  </div>
+                  <p className="mt-3 text-sm font-semibold text-slate-900">{log.message || "Activity recorded"}</p>
+                  <div className="mt-2 text-sm text-slate-600">
+                    {log.actorName || "Unknown user"}{log.actorRole ? ` • ${log.actorRole}` : ""}{log.actorEmail ? ` • ${log.actorEmail}` : ""}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                    {log.ipAddress ? <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">IP {log.ipAddress}</span> : null}
+                    {log.entityId ? <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Record {String(log.entityId).slice(-6)}</span> : null}
+                    {log.metadata?.deletedCount ? <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">{log.metadata.deletedCount} deleted</span> : null}
+                    {log.metadata?.insertedCount ? <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">{log.metadata.insertedCount} inserted</span> : null}
+                    {log.metadata?.skippedCount ? <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">{log.metadata.skippedCount} skipped</span> : null}
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
 
         <section className="grid gap-4 lg:grid-cols-[280px_1fr]">
           <div className="space-y-4 rounded-[28px] border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_-40px_rgba(15,23,42,0.7)] backdrop-blur">
@@ -1603,4 +1689,12 @@ function formatDateTime(value) {
 function formatPercentage(value) {
   if (value === null || value === undefined || value === "") return "-";
   return `${Number(value).toFixed(2)}%`;
+}
+
+function formatAuditTimestamp(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 }

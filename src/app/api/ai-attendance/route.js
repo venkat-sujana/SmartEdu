@@ -1,8 +1,9 @@
+//src/app/api/ai-attendance/route.js
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth.js";
 import connectMongoDB from "@/lib/mongodb";
-import { handleAiQuery } from "@/services/attendanceService";
+import { handleAiQuery } from "@/services/aiAttendanceService";
 import { getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
 export async function POST(request) {
   try {

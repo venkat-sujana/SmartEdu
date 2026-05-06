@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import Student from "@/models/Student";
+import { createAuditLog } from "@/lib/auditLog";
 import { getAdminSession } from "@/lib/requireAdminSession";
 
 function normalizeSession(value) {
@@ -83,6 +84,21 @@ export async function PUT(req, context) {
       .populate("studentId", "name admissionNo group yearOfStudy")
       .populate("collegeId", "name");
 
+    await createAuditLog({
+      session,
+      req,
+      action: "update",
+      entity: "attendance",
+      entityId: id,
+      message: `Updated attendance for ${updated?.studentId?.name || "student"} on ${date.toISOString().slice(0, 10)} ${sessionValue}`,
+      before: existing,
+      after: updated?.toObject?.() || updated,
+      metadata: {
+        studentId,
+        collegeId,
+      },
+    });
+
     return NextResponse.json({ message: "Attendance updated", data: updated });
   } catch (error) {
     console.error("Admin attendance PUT error:", error);
@@ -90,7 +106,7 @@ export async function PUT(req, context) {
   }
 }
 
-export async function DELETE(_req, context) {
+export async function DELETE(req, context) {
   try {
     const session = await getAdminSession();
     if (!session) {
@@ -103,10 +119,32 @@ export async function DELETE(_req, context) {
       return NextResponse.json({ error: "Invalid attendance id" }, { status: 400 });
     }
 
+    const existing = await Attendance.findById(id)
+      .populate("studentId", "name admissionNo group yearOfStudy")
+      .populate("collegeId", "name")
+      .lean();
+    if (!existing) {
+      return NextResponse.json({ error: "Attendance not found" }, { status: 404 });
+    }
+
     const deleted = await Attendance.findByIdAndDelete(id);
     if (!deleted) {
       return NextResponse.json({ error: "Attendance not found" }, { status: 404 });
     }
+
+    await createAuditLog({
+      session,
+      req,
+      action: "delete",
+      entity: "attendance",
+      entityId: id,
+      message: `Deleted attendance for ${existing?.studentId?.name || "student"} on ${new Date(existing.date).toISOString().slice(0, 10)} ${existing.session}`,
+      before: existing,
+      metadata: {
+        studentId: existing?.studentId?._id || existing?.studentId,
+        collegeId: existing?.collegeId?._id || existing?.collegeId,
+      },
+    });
 
     return NextResponse.json({ message: "Attendance deleted" });
   } catch (error) {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function PromotionCard() {
@@ -67,6 +68,17 @@ export default function PromotionCard() {
   return (
     <div className="mt-6 space-y-4 rounded-xl border bg-white p-6 shadow-xl">
       <h2 className="text-xl font-semibold">Year Promotion Actions</h2>
+      <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+        <p className="text-sm font-medium text-blue-900">Tutorial Reference</p>
+        <Link
+          href="https://code2tutorial.com/tutorial/47e2a7b5-b5bd-4555-8672-adb68170ced7/index.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 inline-flex text-sm font-semibold text-blue-700 hover:underline"
+        >
+          Open year promotion tutorial
+        </Link>
+      </div>
 
       <button
         onClick={runSafeTestPromotion}

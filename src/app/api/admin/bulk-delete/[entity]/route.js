@@ -9,6 +9,7 @@ import Exam from "@/models/Exam";
 import Lecturer from "@/models/Lecturer";
 import Principal from "@/models/Principal";
 import Student from "@/models/Student";
+import { createAuditLog } from "@/lib/auditLog";
 import { getAdminSession } from "@/lib/requireAdminSession";
 
 const MODEL_MAP = {
@@ -43,7 +44,21 @@ export async function POST(req, context) {
     }
 
     await connectMongoDB();
+    const existingRecords = await Model.find({ _id: { $in: ids } }).lean();
     const result = await Model.deleteMany({ _id: { $in: ids } });
+
+    await createAuditLog({
+      session,
+      req,
+      action: "bulk_delete",
+      entity,
+      message: `Bulk deleted ${result.deletedCount || 0} ${entity}`,
+      before: existingRecords,
+      metadata: {
+        requestedIds: ids,
+        deletedCount: result.deletedCount || 0,
+      },
+    });
 
     return NextResponse.json({
       message: `${result.deletedCount || 0} ${entity} deleted successfully`,

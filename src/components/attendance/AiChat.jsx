@@ -1,3 +1,4 @@
+//src/components/attendance/AiChat.jsx
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -9,6 +10,7 @@ const BASE_QUICK_PROMPTS = [
   "Who is absent today?",
   "Show monthly report",
   "List students with low attendance",
+  "Attendance percentage of Suresh",
 ];
 
 const TELUGU_QUICK_PROMPTS = [
@@ -463,6 +465,8 @@ export default function AiChat() {
             <Bot className="mx-auto mb-4 h-16 w-16 opacity-30" />
             <p>Ask something like:</p>
             <p className="mt-2 text-sm">Show today attendance</p>
+            <p className="mt-1 text-sm">Which group is lowest today?</p>
+            <p className="mt-1 text-sm">List students below 70% attendance</p>
             <p className="mt-1 text-sm">ఈరోజు అటెండెన్స్ చూపించు</p>
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               {quickPrompts.map((prompt) => (
@@ -556,6 +560,12 @@ export default function AiChat() {
           />
           <QuickChip
             icon={<Sparkles className="h-4 w-4" />}
+            label="Student %"
+            onClick={() => sendMessage("Attendance percentage of Suresh")}
+            disabled={loading || status === "loading" || !collegeId}
+          />
+          <QuickChip
+            icon={<Sparkles className="h-4 w-4" />}
             label="ఈరోజు"
             onClick={() => sendMessage("ఈరోజు అటెండెన్స్ చూపించు")}
             disabled={loading || status === "loading" || !collegeId}
@@ -577,6 +587,14 @@ export default function AiChat() {
               icon={<Users className="h-4 w-4" />}
               label="Compare Groups"
               onClick={() => sendMessage("Compare all groups today")}
+              disabled={loading || status === "loading" || !collegeId}
+            />
+          )}
+          {role === "principal" && (
+            <QuickChip
+              icon={<TriangleAlert className="h-4 w-4" />}
+              label="Lowest Group"
+              onClick={() => sendMessage("Which group is lowest today?")}
               disabled={loading || status === "loading" || !collegeId}
             />
           )}
