@@ -169,7 +169,7 @@ export default function StudentLoginPage() {
                   whileTap={{ scale: 0.99 }}
                   type="submit"
                   disabled={loading}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-lime-600 to-emerald-600 px-5 py-3.5 font-semibold text-white shadow-lg shadow-lime-200/70 transition hover:from-lime-500 hover:to-emerald-500 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-lime-600 to-emerald-600 px-5 py-3.5 font-semibold text-white shadow-lg shadow-lime-200/70 transition hover:from-lime-500 hover:to-emerald-500 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
                 >
                   {loading ? "Signing in..." : "Login to Dashboard"}
                   {!loading && <ArrowRight className="h-4 w-4" />}
@@ -178,7 +178,7 @@ export default function StudentLoginPage() {
 
               <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
                 Need access to your student account?{" "}
-                <Link href="/student-activate" className="font-semibold text-lime-700 hover:text-lime-800 hover:underline">
+                <Link href="/student-activate" className="font-semibold text-lime-700 hover:text-lime-800 hover:underline cursor-pointer">
                   Activate here
                 </Link>
               </div>

@@ -1,3 +1,4 @@
+//src/app/principal/login/page.jsx
 "use client";
 
 import Link from "next/link";
@@ -162,7 +163,7 @@ export default function PrincipalLogin() {
                   whileTap={{ scale: 0.99 }}
                   type="submit"
                   disabled={loading}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-emerald-600 to-teal-600 px-5 py-3.5 font-semibold text-white shadow-lg shadow-emerald-200/70 transition hover:from-emerald-500 hover:to-teal-500 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-emerald-600 to-teal-600 px-5 py-3.5 font-semibold text-white shadow-lg shadow-emerald-200/70 transition hover:from-emerald-500 hover:to-teal-500 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
                 >
                   {loading ? "Signing in..." : "Login to Dashboard"}
                   {!loading && <ArrowRight className="h-4 w-4" />}

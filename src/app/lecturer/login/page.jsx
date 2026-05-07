@@ -1,3 +1,4 @@
+//src/app/lecturer/login/page.jsx
 "use client";
 
 import Link from "next/link";
@@ -169,7 +170,7 @@ export default function LecturerLogin() {
                   whileTap={{ scale: 0.99 }}
                   type="submit"
                   disabled={loading}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-cyan-600 to-sky-600 px-5 py-3.5 font-semibold text-white shadow-lg shadow-cyan-200/70 transition hover:from-cyan-500 hover:to-sky-500 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-cyan-600 to-sky-600 px-5 py-3.5 font-semibold text-white shadow-lg shadow-cyan-200/70 transition hover:from-cyan-500 hover:to-sky-500 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
                 >
                   {loading ? "Signing in..." : "Login to Dashboard"}
                   {!loading && <ArrowRight className="h-4 w-4" />}
@@ -178,7 +179,7 @@ export default function LecturerLogin() {
 
               <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
                 Need a lecturer account?{" "}
-                <Link href="/lecturer-registration" className="font-semibold text-cyan-700 hover:text-cyan-800 hover:underline">
+                <Link href="/lecturer-registration" className="font-semibold text-cyan-700 hover:text-cyan-800 hover:underline cursor-pointer">
                   Register here
                 </Link>
               </div>

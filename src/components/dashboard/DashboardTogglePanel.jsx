@@ -40,7 +40,8 @@ export default function DashboardTogglePanel({
       active: showAttendance,
       onClick: onToggleAttendance,
       icon: <CalendarCheck2 className="h-3 w-3" />,
-      tone: "from-sky-600 to-blue-700",
+      tone: "from-sky-600 to-blue-700 ",
+      
     },
     {
       key: "students",
@@ -50,6 +51,7 @@ export default function DashboardTogglePanel({
       onClick: onToggleStudentTable,
       icon: <TableProperties className="h-3 w-3" />,
       tone: "from-violet-600 to-indigo-700",
+      
     },
     {
       key: "absentees",
@@ -59,6 +61,7 @@ export default function DashboardTogglePanel({
       onClick: onToggleTodayAbsentees,
       icon: <UsersRound className="h-3 w-3" />,
       tone: "from-teal-600 to-emerald-700",
+      
     },
     {
       key: "monthly",
@@ -68,6 +71,7 @@ export default function DashboardTogglePanel({
       onClick: onToggleMonthlyAttendance,
       icon: <LayoutGrid className="h-3 w-3" />,
       tone: "from-amber-500 to-orange-600",
+      
     },
     {
       key: "exams",
@@ -77,6 +81,7 @@ export default function DashboardTogglePanel({
       onClick: onToggleExamResults,
       icon: <ChartColumn className="h-3 w-3" />,
       tone: "from-indigo-600 to-sky-700",
+      
     },
   ];
 
