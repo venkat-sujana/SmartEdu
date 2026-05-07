@@ -16,6 +16,13 @@ import Link from "next/link";
 const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
 const vocationalStreams = ["M&AT", "CET", "MLT"];
 
+function normalizeGroup(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+}
+
 export default function ExamsForm({
   collegeName,
   students,
@@ -33,7 +40,7 @@ const academicYearOptions = [
 const filteredStudents = formData.stream
   ? students.filter((s) => {
       const sameGroup =
-        s.group?.toLowerCase() === formData.stream.toLowerCase();
+        normalizeGroup(s.group) === normalizeGroup(formData.stream);
 
       if (!formData.academicYear) return sameGroup;
 
@@ -117,6 +124,9 @@ const filteredStudents = formData.stream
       setFormData((prev) => ({
         ...prev,
         [name]: value,
+        ...(name === "stream" || name === "academicYear"
+          ? { studentId: "", yearOfStudy: "" }
+          : {}),
       }));
     }
   };

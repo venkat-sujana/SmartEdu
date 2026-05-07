@@ -28,6 +28,14 @@ const sidebarMenu = [
 const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
 
+function isUnitExam(examType) {
+  return UNIT_EXAMS.includes(examType)
+}
+
+function isPublicExam(examType) {
+  return PUBLIC_EXAMS.includes(examType)
+}
+
 function formatDate(dateValue) {
   if (!dateValue) return 'N/A'
   const date = new Date(dateValue)
@@ -43,8 +51,78 @@ function formatAcademicYearLabel(value) {
   return value
 }
 
-function isVocational(stream) {
-  return ['M&AT', 'CET', 'MLT'].includes(stream || '')
+function formatExamLabel(value) {
+  return String(value || '')
+    .replace('HALFYEARLY', 'Half Yearly')
+    .replace('QUARTERLY', 'Quarterly')
+    .replace('PRE-PUBLIC-1', 'Pre-Public - 1')
+    .replace('PRE-PUBLIC-2', 'Pre-Public - 2')
+    .replace('UNIT-', 'Unit - ')
+}
+
+function getSubjectEntries(report) {
+  const source = report.generalSubjects?.length ? report.generalSubjects : report.vocationalSubjects
+
+  if (Array.isArray(source)) {
+    return source
+      .map(subject => [subject?.subject, subject?.marks, subject?.maxMarks])
+      .filter(([subject]) => String(subject || '').trim())
+  }
+
+  if (source && typeof source === 'object') {
+    return Object.entries(source)
+  }
+
+  return []
+}
+
+function getSubjectMarks(report) {
+  return getSubjectEntries(report).map(([, marks]) => marks)
+}
+
+function getSubjectTotal(report) {
+  return getSubjectMarks(report).reduce((sum, mark) => {
+    const numericMark = Number(mark)
+    return Number.isFinite(numericMark) ? sum + numericMark : sum
+  }, 0)
+}
+
+function getSubjectMaxTotal(report) {
+  const entries = getSubjectEntries(report)
+  if (!entries.length) return 0
+
+  if (isUnitExam(report.examType)) {
+    return entries.length * 25
+  }
+
+  if (isPublicExam(report.examType)) {
+    return entries.length * 50
+  }
+
+  return entries.reduce((sum, [, , maxMarks]) => {
+    const numericMax = Number(maxMarks)
+    return sum + (Number.isFinite(numericMax) && numericMax > 0 ? numericMax : 100)
+  }, 0)
+}
+
+function getReportPercentage(report) {
+  const maxTotal = getSubjectMaxTotal(report)
+  if (!maxTotal) return 0
+  return (getSubjectTotal(report) / maxTotal) * 100
+}
+
+function getAverageReportPercentage(rows) {
+  if (!rows.length) return 0
+  const total = rows.reduce((sum, row) => sum + getReportPercentage(row), 0)
+  return total / rows.length
+}
+
+function getStudentName(report) {
+  return report?.student?.name || report?.studentId?.name || 'Unknown'
+}
+
+function getStudentGroup(report) {
+  return report?.student?.group || report?.studentId?.group || report?.stream || '-'
 }
 
 function isAbsentMark(mark) {
@@ -53,8 +131,7 @@ function isAbsentMark(mark) {
 }
 
 function isReportPass(report) {
-  const subjectMarks = report.generalSubjects || report.vocationalSubjects || {}
-  const marks = Object.values(subjectMarks)
+  const marks = getSubjectMarks(report)
 
   if (marks.length === 0) return false
   if (marks.some(isAbsentMark)) return false
@@ -65,13 +142,8 @@ function isReportPass(report) {
 
     if (numericMark === 0) return false
 
-    if (UNIT_EXAMS.includes(report.examType) && numericMark < 9) return false
-    if (['QUARTERLY', 'HALFYEARLY'].includes(report.examType) && numericMark < 18) return false
-
-    if (['PRE-PUBLIC-1', 'PRE-PUBLIC-2'].includes(report.examType)) {
-      if (isVocational(report.stream) && numericMark < 18) return false
-      if (!isVocational(report.stream) && numericMark < 35) return false
-    }
+    if (isUnitExam(report.examType) && numericMark < 9) return false
+    if (isPublicExam(report.examType) && numericMark < 18) return false
   }
 
   return true
@@ -144,7 +216,7 @@ function SummaryCard({ title, value, hint, icon: Icon }) {
   )
 }
 
-function UnitCard({ item }) {
+function UnitCard({ item, onViewDetails }) {
   return (
     <article className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/30">
       <h3 className="text-sm font-semibold text-slate-900">{item.unit}</h3>
@@ -161,6 +233,7 @@ function UnitCard({ item }) {
       </div>
       <button
         type="button"
+        onClick={() => onViewDetails({ examType: item.examType, title: item.unit })}
         className="mt-3 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-700"
       >
         View Details
@@ -169,7 +242,7 @@ function UnitCard({ item }) {
   )
 }
 
-function PublicExamCard({ item }) {
+function PublicExamCard({ item, onViewDetails }) {
   const badgeClass =
     item.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
 
@@ -187,6 +260,13 @@ function PublicExamCard({ item }) {
       <p className="mt-1 text-xs text-slate-600">
         Average %: <span className="font-medium text-slate-800">{item.average}</span>
       </p>
+      <button
+        type="button"
+        onClick={() => onViewDetails({ examType: item.examType, title: item.name })}
+        className="mt-3 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-700"
+      >
+        View Details
+      </button>
     </article>
   )
 }
@@ -199,6 +279,7 @@ export default function ExamReportPage() {
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [academicYear, setAcademicYear] = useState('all')
+  const [detailsFilter, setDetailsFilter] = useState(null)
 
   useEffect(() => {
     const loadReports = async () => {
@@ -233,6 +314,20 @@ export default function ExamReportPage() {
     if (academicYear === 'all') return reports
     return reports.filter(report => report.academicYear === academicYear)
   }, [reports, academicYear])
+
+  const detailRows = useMemo(() => {
+    if (!detailsFilter) return []
+
+    return filteredReports
+      .filter(report => {
+        const sameType = detailsFilter.examTypes
+          ? detailsFilter.examTypes.includes(report.examType)
+          : !detailsFilter.examType || report.examType === detailsFilter.examType
+        const sameDate = !detailsFilter.date || formatDate(report.examDate) === detailsFilter.date
+        return sameType && sameDate
+      })
+      .sort((a, b) => getStudentName(a).localeCompare(getStudentName(b)))
+  }, [detailsFilter, filteredReports])
 
   const summaryStats = useMemo(() => {
     const uniqueExamEvents = new Set()
@@ -303,11 +398,12 @@ export default function ExamReportPage() {
       const unitReports = filteredReports.filter(r => r.examType === unit)
       const totalStudents = unitReports.length
       const passStudents = unitReports.filter(isReportPass).length
-      const highestMarks = unitReports.reduce((max, row) => Math.max(max, Number(row.total || 0)), 0)
+      const highestMarks = unitReports.reduce((max, row) => Math.max(max, getSubjectTotal(row)), 0)
       const maxMarksLabel = unitReports.length > 0 ? `${highestMarks}` : '-'
       const passPercent = totalStudents > 0 ? `${((passStudents / totalStudents) * 100).toFixed(1)}%` : '0.0%'
 
       return {
+        examType: unit,
         unit: unit.replace('UNIT-', 'Unit - '),
         totalStudents,
         passPercent,
@@ -324,6 +420,7 @@ export default function ExamReportPage() {
       const rows = filteredReports.filter(r => r.examType === type)
       if (rows.length === 0) {
         return {
+          examType: type,
           name: type.replace('HALFYEARLY', 'Half Yearly').replace('-', ' - '),
           examDate: 'N/A',
           average: '0.0%',
@@ -336,17 +433,17 @@ export default function ExamReportPage() {
         return dt > latest ? dt : latest
       }, new Date(rows[0].examDate))
 
-      const passCount = rows.filter(isReportPass).length
-      const passAvg = `${((passCount / rows.length) * 100).toFixed(1)}%`
+      const averageMarksPercentage = `${getAverageReportPercentage(rows).toFixed(1)}%`
 
       return {
+        examType: type,
         name: type
           .replace('HALFYEARLY', 'Half Yearly')
           .replace('QUARTERLY', 'Quarterly')
           .replace('PRE-PUBLIC-1', 'Pre-Public - 1')
           .replace('PRE-PUBLIC-2', 'Pre-Public - 2'),
         examDate: formatDate(latestDate),
-        average: passAvg,
+        average: averageMarksPercentage,
         status: latestDate < today ? 'Completed' : 'Upcoming',
       }
     })
@@ -381,6 +478,7 @@ export default function ExamReportPage() {
     return Object.values(groups)
       .map((row, index) => ({
         id: index + 1,
+        examType: row.examName,
         examName: row.examName
           .replace('HALFYEARLY', 'Half Yearly')
           .replace('QUARTERLY', 'Quarterly')
@@ -426,7 +524,10 @@ export default function ExamReportPage() {
               </label>
               <select
                 value={academicYear}
-                onChange={e => setAcademicYear(e.target.value)}
+                onChange={e => {
+                  setAcademicYear(e.target.value)
+                  setDetailsFilter(null)
+                }}
                 className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500"
               >
                 {academicYearOptions.map(year => (
@@ -486,6 +587,7 @@ export default function ExamReportPage() {
                 <h2 className="text-base font-semibold text-slate-900">Unit-Wise Performance</h2>
                 <button
                   type="button"
+                  onClick={() => setDetailsFilter({ examTypes: UNIT_EXAMS, title: 'All Unit Exams' })}
                   className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                 >
                   View All Units
@@ -493,7 +595,7 @@ export default function ExamReportPage() {
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
                 {unitPerformance.map(item => (
-                  <UnitCard key={item.unit} item={item} />
+                  <UnitCard key={item.unit} item={item} onViewDetails={setDetailsFilter} />
                 ))}
               </div>
             </section>
@@ -502,10 +604,97 @@ export default function ExamReportPage() {
               <h2 className="mb-3 text-base font-semibold text-slate-900">Public Exams</h2>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
                 {publicExamCards.map(item => (
-                  <PublicExamCard key={item.name} item={item} />
+                  <PublicExamCard key={item.name} item={item} onViewDetails={setDetailsFilter} />
                 ))}
               </div>
             </section>
+
+            {detailsFilter ? (
+              <section className="rounded-lg border border-blue-200 bg-white px-4 py-3 shadow-sm">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-base font-semibold text-slate-900">
+                      {detailsFilter.title || 'Exam Details'}
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      {detailRows.length} student records
+                      {academicYear !== 'all' ? ` - ${formatAcademicYearLabel(academicYear)}` : ''}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDetailsFilter(null)}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50 text-slate-600">
+                        <th className="px-3 py-2 text-left font-medium">S.No</th>
+                        <th className="px-3 py-2 text-left font-medium">Student</th>
+                        <th className="px-3 py-2 text-left font-medium">Group</th>
+                        <th className="px-3 py-2 text-left font-medium">Year</th>
+                        <th className="px-3 py-2 text-left font-medium">Exam</th>
+                        <th className="px-3 py-2 text-left font-medium">Date</th>
+                        <th className="px-3 py-2 text-left font-medium">Subjects</th>
+                        <th className="px-3 py-2 text-left font-medium">Total</th>
+                        <th className="px-3 py-2 text-left font-medium">%</th>
+                        <th className="px-3 py-2 text-left font-medium">Result</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detailRows.length === 0 ? (
+                        <tr>
+                          <td colSpan={10} className="px-3 py-6 text-center text-sm text-slate-500">
+                            No student records found for this selection.
+                          </td>
+                        </tr>
+                      ) : (
+                        detailRows.map((row, index) => {
+                          const passed = isReportPass(row)
+                          return (
+                            <tr
+                              key={row._id || `${row.studentId}_${row.examType}_${index}`}
+                              className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
+                            >
+                              <td className="px-3 py-2">{index + 1}</td>
+                              <td className="px-3 py-2 font-medium text-slate-900">{getStudentName(row)}</td>
+                              <td className="px-3 py-2">{getStudentGroup(row)}</td>
+                              <td className="px-3 py-2">{row.yearOfStudy || '-'}</td>
+                              <td className="px-3 py-2">{formatExamLabel(row.examType)}</td>
+                              <td className="px-3 py-2">{formatDate(row.examDate)}</td>
+                              <td className="max-w-[320px] px-3 py-2 text-xs">
+                                {getSubjectEntries(row)
+                                  .map(([subject, marks]) => `${subject}: ${marks}`)
+                                  .join(', ') || '-'}
+                              </td>
+                              <td className="px-3 py-2">{getSubjectTotal(row)}</td>
+                              <td className="px-3 py-2 font-medium text-blue-700">
+                                {getReportPercentage(row).toFixed(1)}%
+                              </td>
+                              <td className="px-3 py-2">
+                                <span
+                                  className={[
+                                    'rounded-full px-2 py-1 text-xs font-semibold',
+                                    passed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
+                                  ].join(' ')}
+                                >
+                                  {passed ? 'Pass' : 'Fail'}
+                                </span>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            ) : null}
 
             <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
@@ -549,6 +738,13 @@ export default function ExamReportPage() {
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
+                                onClick={() =>
+                                  setDetailsFilter({
+                                    examType: row.examType,
+                                    date: row.date,
+                                    title: `${row.examName} - ${row.date}`,
+                                  })
+                                }
                                 className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
                               >
                                 View

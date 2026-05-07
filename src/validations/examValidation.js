@@ -8,6 +8,20 @@ export const EXAM_TYPES = [
   "QUARTERLY", "HALFYEARLY", "PRE-PUBLIC-1", "PRE-PUBLIC-2"
 ];
 
+function normalizeExamStream(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+
+  if (normalized === "BIPC") return "BIPC";
+  if (normalized === "M&AT" || normalized === "M@AT" || normalized === "MANDAT") {
+    return "M&AT";
+  }
+
+  return normalized;
+}
+
 export const subjectSchema = z.object({
   subject: z.string().min(1, "Subject name required").trim(),
   marks: z.number().min(0).max(100, "Marks <= 100"),
@@ -24,9 +38,9 @@ export const vocationalSubjectSchema = subjectSchema.extend({
 
 export const createExamSchema = z.object({
   studentId: z.string().min(1, "Student ID required"),
-  stream: z.enum(STREAMS),
+  stream: z.preprocess(normalizeExamStream, z.enum(STREAMS)),
   yearOfStudy: z.enum(YEARS_OF_STUDY),
-  academicYear: z.string().regex(/^\\d{4}-(1|2)$/, "Academic year format: YYYY-1 or YYYY-2"),
+  academicYear: z.string().regex(/^\d{4}-(1|2)$/, "Academic year format: YYYY-1 or YYYY-2"),
   examType: z.enum(EXAM_TYPES),
   examDate: z.coerce.date(),
   generalSubjects: z.array(generalSubjectSchema).optional(),

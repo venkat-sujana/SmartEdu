@@ -4,6 +4,20 @@ import mongoose from 'mongoose';
 import { STREAMS, computePercentage } from '@/validations/examValidation';
 const { Schema } = mongoose;
 
+function normalizeExamStream(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+
+  if (normalized === "BIPC") return "BIPC";
+  if (normalized === "M&AT" || normalized === "M@AT" || normalized === "MANDAT") {
+    return "M&AT";
+  }
+
+  return normalized;
+}
+
 const examSchema = new Schema({
   studentId: {
     type: Schema.Types.ObjectId,
@@ -67,14 +81,16 @@ examSchema.pre('save', function(next) {
   const general = this.generalSubjects || [];
   const vocational = this.vocationalSubjects || [];
   let subjects;
+  this.stream = normalizeExamStream(this.stream);
   
 const streamToSubjectType = {
     MPC: 'general',
-    CEC: 'general', 
+    BIPC: 'general',
+    CEC: 'general',
     HEC: 'general',
-    M: 'general',
-    bipc: 'vocational', 
-    mpcVoc: 'vocational'
+    "M&AT": 'vocational',
+    CET: 'vocational',
+    MLT: 'vocational'
   };
   const subjectType = streamToSubjectType[this.stream];
   if (!subjectType) {
