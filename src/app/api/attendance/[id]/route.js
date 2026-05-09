@@ -27,6 +27,7 @@ export async function PUT(req, context) {
     const parsedUpdate = attendanceRecordUpdateSchema.safeParse(updateData);
 
     if (!parsedUpdate.success) {
+      console.log("❌ Validation Error:", parsedUpdate.error.issues);
       return NextResponse.json(
         {
           message: parsedUpdate.error.issues[0]?.message || "Invalid attendance update",
@@ -81,9 +82,12 @@ export async function PUT(req, context) {
 }
 
 // 🗑️ DELETE (Delete Attendance)
+// app/api/attendance/[id]/route.js
+
 export async function DELETE(req, context) {
   await connectMongoDB();
 
+  // ✅ await add చేయండి — PUT లో చేసినట్టే
   const { id } = await context.params;
 
   if (!id) {
@@ -98,19 +102,19 @@ export async function DELETE(req, context) {
 
     if (!deleted) {
       return NextResponse.json(
-        { message: "Attendance not found", status: "error" },
+        { message: "Record not found", status: "error" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({
-      message: "Attendance deleted",
-      status: "success",
-    });
+    return NextResponse.json(
+      { message: "Deleted successfully", status: "success" },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("DELETE Error:", err);
     return NextResponse.json(
-      { message: "Error deleting attendance", status: "error" },
+      { message: "Error deleting record", status: "error" },
       { status: 500 }
     );
   }

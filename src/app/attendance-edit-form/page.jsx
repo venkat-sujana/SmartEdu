@@ -1,6 +1,5 @@
 //app/attendance-edit-form/page.jsx
 "use client";
-
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
@@ -9,6 +8,7 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+      console.log("EDIT RECORD:", record);
     if (record?.status) {
       setStatus(record.status);
     } else {
@@ -22,12 +22,13 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
     const toastId = toast.loading("Updating attendance...");
 
     const payload = {
-      status,
-      date: record.date,
-      student: record.student,
-      group: record.group,
-      year: record.year,
-    };
+  status,
+  date: record.date,
+  studentId: record.studentId?._id || record.studentId,
+  group: record.group,
+  yearOfStudy: record.yearOfStudy, // ✅
+  session: record.session,
+};
 
     try {
       const response = await fetch(`/api/attendance/${record._id}`, {
@@ -57,40 +58,41 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
   if (!record) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4 text-blue-700">Edit Attendance</h2>
+    <div className="bg-opacity-40 fixed inset-0 z-50 flex items-center justify-center bg-black">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+        <h2 className="mb-4 text-xl font-semibold text-blue-700">Edit Attendance</h2>
 
         <p className="mb-2">
-          <strong>Student:</strong> {record?.student || "N/A"}
+          <strong>Student:</strong> {record?.student || "N/A"} {/* ✅ */}
         </p>
 
         <p className="mb-2">
-  <strong>Group:</strong> {record?.student?.group || "N/A"}
-</p>
+          <strong>Group:</strong> {record?.group || 'N/A'}
+        </p>
 
-<p className="mb-2">
-  <strong>Year:</strong> {record?.student?.yearOfStudy || "N/A"}
+        <p className="mb-2">
+  <strong>Year:</strong> {record?.yearOfStudy || "N/A"} {/* ✅ */}
 </p>
-
 
         <p className="mb-4">
-          <strong>Date:</strong> {record.date ? new Date(record.date).toLocaleDateString() : "No Date"}
+          <strong>Date:</strong>{' '}
+          {record.date ? new Date(record.date).toLocaleDateString() : 'No Date'}
         </p>
 
-
-        <div className="flex gap-4 mb-6">
+        <div className="mb-6 flex gap-4">
           <button
-            onClick={() => setStatus("Present")}
-            className={`px-4 py-2 rounded-md ${status === "Present" ? "bg-green-600 text-white" : "bg-gray-300"
-              }`}
+            onClick={() => setStatus('Present')}
+            className={`rounded-md px-4 py-2 ${
+              status === 'Present' ? 'bg-green-600 text-white' : 'bg-gray-300'
+            }`}
           >
             Present
           </button>
           <button
-            onClick={() => setStatus("Absent")}
-            className={`px-4 py-2 rounded-md ${status === "Absent" ? "bg-red-600 text-white" : "bg-gray-300"
-              }`}
+            onClick={() => setStatus('Absent')}
+            className={`rounded-md px-4 py-2 ${
+              status === 'Absent' ? 'bg-red-600 text-white' : 'bg-gray-300'
+            }`}
           >
             Absent
           </button>
@@ -99,7 +101,7 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="bg-gray-500 text-white px-4 py-2 rounded-md"
+            className="rounded-md bg-gray-500 px-4 py-2 text-white"
             disabled={isSubmitting}
           >
             Cancel
@@ -107,7 +109,7 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
 
           <button
             onClick={handleUpdate}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md"
+            className="rounded-md bg-blue-600 px-4 py-2 text-white"
             disabled={isSubmitting}
           >
             Update
@@ -115,7 +117,7 @@ const AttendanceEditForm = ({ record, onClose, onUpdate }) => {
         </div>
       </div>
     </div>
-  );
+  )
 };
 
 export default AttendanceEditForm;

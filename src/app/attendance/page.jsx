@@ -1,5 +1,5 @@
+//src/app/attendance/page.jsx
 'use client'
-
 import { useMemo, useState } from 'react'
 import useSWR from 'swr'
 import { useSession } from 'next-auth/react'

@@ -246,8 +246,10 @@ const percentage = total
 
 // optional: fetch records separately with lean
 const records = await Attendance.find(filter)
-  .select("studentId status date session group yearOfStudy")
-  .lean()
+.populate("studentId", "studentName name")
+.select("studentId status date session group yearOfStudy")
+.lean()
+
 
 const normalizedRecords = records.map((record) => ({
   ...record,

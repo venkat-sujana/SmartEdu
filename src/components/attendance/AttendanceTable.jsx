@@ -1,3 +1,4 @@
+//src/components/attendance/AttendanceTable.jsx
 "use client";
 import { Pencil, Trash2 } from "lucide-react";
 
