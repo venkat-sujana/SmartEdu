@@ -1,3 +1,4 @@
+//src/app/api/timetable/auto/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";

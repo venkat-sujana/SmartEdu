@@ -1,3 +1,4 @@
+//src/app/api/timetable/lecturer-summary/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
