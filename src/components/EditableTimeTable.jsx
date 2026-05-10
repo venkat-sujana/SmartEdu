@@ -1,13 +1,14 @@
-//
 'use client'
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import {
-  Save, Lock, Unlock, RefreshCw, Printer,
+  Lock, Unlock, RefreshCw, Printer,
   CheckCircle2, AlertCircle, Loader2, Trash2,
-  Zap, Database, Clock, BookOpen
+  Database, Clock, BookOpen, FileText, AlertTriangle, X
 } from 'lucide-react'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
-// ── CONSTANTS ───────────────────────────────────────────────────────
+// ── CONSTANTS ────────────────────────────────────────────────────────
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 const COLUMNS = [
@@ -39,7 +40,6 @@ const SUBJECTS = {
   ],
 }
 
-// Subject → background color
 const SUBJECT_COLORS = {
   'Maths':               'bg-blue-100 text-blue-800',
   'Physics':             'bg-yellow-100 text-yellow-800',
@@ -81,7 +81,7 @@ const SUBJECT_LECTURERS = {
 const MIN_PERIODS = 16
 const MAX_PERIODS = 18
 
-// ── WORKLOAD CALCULATION ─────────────────────────────────────────────
+// ── WORKLOAD ─────────────────────────────────────────────────────────
 function calculateWorkload(table) {
   const workload = {}
   table.forEach(dayRow => {
@@ -89,7 +89,12 @@ function calculateWorkload(table) {
       if (!cell?.subject) return
       const lecturer = SUBJECT_LECTURERS[cell.subject]
       if (!lecturer) return
-      if (!workload[lecturer]) workload[lecturer] = { lecturer, theory: 0, practical: 0, total: 0 }
+      if (!workload[lecturer]) {
+        workload[lecturer] = { lecturer, subjects: [], theory: 0, practical: 0, total: 0 }
+      }
+      if (!workload[lecturer].subjects.includes(cell.subject)) {
+        workload[lecturer].subjects.push(cell.subject)
+      }
       if (cell.subject.toLowerCase().includes('practical')) workload[lecturer].practical++
       else workload[lecturer].theory++
       workload[lecturer].total++
@@ -98,31 +103,28 @@ function calculateWorkload(table) {
   return Object.values(workload)
 }
 
-// ── WORKLOAD TABLE ───────────────────────────────────────────────────
+// ── WORKLOAD TABLE ────────────────────────────────────────────────────
 function WorkloadReport({ data }) {
   if (!data.length) return null
   return (
-    <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm print:mt-6">
-      <h3 className="mb-4 text-center text-base font-bold text-slate-700">
+    <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-4 text-center text-sm font-bold text-slate-700">
         📊 Lecturer Workload Report
       </h3>
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-slate-800 text-white">
-              {['Lecturer','Theory','Practical','Total / Week','Status'].map(h => (
+              {['Lecturer', 'Theory', 'Practical', 'Total / Week', 'Status'].map(h => (
                 <th key={h} className="px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {data.map(row => {
-              const status   = row.total < MIN_PERIODS ? 'Underload' : row.total > MAX_PERIODS ? 'Overload' : 'Normal'
-              const rowStyle = status === 'Normal'
-                ? 'bg-emerald-50'
-                : 'bg-rose-50'
+              const status = row.total < MIN_PERIODS ? 'Underload' : row.total > MAX_PERIODS ? 'Overload' : 'Normal'
               return (
-                <tr key={row.lecturer} className={rowStyle}>
+                <tr key={row.lecturer} className={status === 'Normal' ? 'bg-emerald-50' : 'bg-rose-50'}>
                   <td className="px-4 py-2 font-semibold text-slate-800">{row.lecturer}</td>
                   <td className="px-4 py-2 text-center">{row.theory}</td>
                   <td className="px-4 py-2 text-center">{row.practical}</td>
@@ -139,52 +141,107 @@ function WorkloadReport({ data }) {
         </table>
       </div>
       <div className="mt-3 flex justify-center gap-6 text-xs font-semibold">
-        <span className="text-emerald-700">🟢 16–18 Periods : Normal</span>
-        <span className="text-rose-700">🔴 &lt;16 or &gt;18 : Under / Over Load</span>
+        <span className="text-emerald-700">🟢 16–18 : Normal</span>
+        <span className="text-rose-700">🔴 &lt;16 or &gt;18 : Under/Over Load</span>
       </div>
     </div>
   )
 }
 
-// ── SAVE STATUS INDICATOR ────────────────────────────────────────────
+// ── SAVE STATUS ───────────────────────────────────────────────────────
 function SaveStatus({ status }) {
-  if (status === 'saving')  return <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-600"><Loader2 size={12} className="animate-spin"/> Saving...</span>
-  if (status === 'saved')   return <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600"><CheckCircle2 size={12}/> Saved</span>
-  if (status === 'error')   return <span className="flex items-center gap-1.5 text-xs font-semibold text-rose-600"><AlertCircle size={12}/> Save failed</span>
-  if (status === 'loading') return <span className="flex items-center gap-1.5 text-xs font-semibold text-blue-600"><Loader2 size={12} className="animate-spin"/> Loading...</span>
+  if (status === 'saving')  return <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-400"><Loader2 size={12} className="animate-spin"/> Saving...</span>
+  if (status === 'saved')   return <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400"><CheckCircle2 size={12}/> Saved</span>
+  if (status === 'error')   return <span className="flex items-center gap-1.5 text-xs font-semibold text-rose-400"><AlertCircle size={12}/> Failed</span>
+  if (status === 'loading') return <span className="flex items-center gap-1.5 text-xs font-semibold text-blue-400"><Loader2 size={12} className="animate-spin"/> Loading...</span>
   return null
 }
 
-// ── MAIN COMPONENT ───────────────────────────────────────────────────
+// ── CONFLICT TOOLTIP ──────────────────────────────────────────────────
+function ConflictTooltip({ conflict }) {
+  if (!conflict) return null
+  return (
+    <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 w-52 rounded-xl border border-red-200 bg-white p-3 shadow-xl text-left pointer-events-none">
+      <div className="flex items-center gap-1.5 mb-2">
+        <AlertTriangle size={12} className="text-red-500 shrink-0" />
+        <span className="text-xs font-bold text-red-600">Conflict!</span>
+      </div>
+      <p className="text-[10px] font-semibold text-slate-600 mb-1">
+        {conflict.lecturerName}
+      </p>
+      <p className="text-[10px] text-slate-500 mb-1.5">
+        {conflict.day} · Period {Number(conflict.periodIndex) + 1}
+      </p>
+      <div className="space-y-1">
+        {conflict.classes?.map((cls, i) => (
+          <div key={i} className="flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1">
+            <span className="text-[9px] font-bold text-red-700 truncate">{cls.classLabel}</span>
+          </div>
+        ))}
+      </div>
+      {/* Tooltip arrow */}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white" />
+    </div>
+  )
+}
+
+// ── MAIN COMPONENT ────────────────────────────────────────────────────
 export default function EditableTimeTable({
   title,
-  stream        = 'general',
-  academicYear  = '2026-2027',
-  readOnly      = false,
+  stream       = 'general',
+  academicYear = '2026-2027',
+  readOnly     = false,
+  onConflictChange, // parent కి conflict count notify చేయడానికి
 }) {
   const printRef   = useRef(null)
-  const classLabel = title  // classLabel = title string
+  const classLabel = title
 
-  // ── State ──────────────────────────────────────────────────────────
-  // table[dayIndex][periodIndex] = { subject, lecturerName, isLocked, _id }
   const emptyTable = () =>
     DAYS.map(() =>
       COLUMNS.map(c => ({
-        subject:      c.type === 'period' ? '' : c.label,
+        subject:     c.type === 'period' ? '' : c.label,
         lecturerName: '',
-        isLocked:     false,
-        isPractical:  false,
-        _id:          null,
-        periodType:   c.type,
+        isLocked:    false,
+        isPractical: false,
+        _id:         null,
+        periodType:  c.type,
       }))
     )
 
-  const [table,      setTable]      = useState(emptyTable)
-  const [editing,    setEditing]    = useState(null)
-  const [saveStatus, setSaveStatus] = useState(null)  // 'loading'|'saving'|'saved'|'error'|null
-  const [savingCell, setSavingCell] = useState(null)  // { dIndex, pIndex }
+  const [table,        setTable]        = useState(emptyTable)
+  const [editing,      setEditing]      = useState(null)
+  const [saveStatus,   setSaveStatus]   = useState(null)
+  const [savingCell,   setSavingCell]   = useState(null)
+  const [conflicts,    setConflicts]    = useState([])   // ✅ conflict state
+  const [hoverConflict,setHoverConflict]= useState(null) // tooltip
 
-  // ── Fetch from DB ──────────────────────────────────────────────────
+  // ── Fetch conflicts from API ─────────────────────────────────────
+  const fetchConflicts = useCallback(async () => {
+    try {
+      const res  = await fetch(
+        `/api/timetable-builder/conflicts?academicYear=${encodeURIComponent(academicYear)}`
+      )
+      const data = await res.json()
+      if (!res.ok) return
+
+      const allConflicts = data.data?.conflicts || []
+
+      // ✅ ఈ class కి related conflicts మాత్రమే filter చేయండి
+      const myConflicts = allConflicts.filter(c =>
+        c.classes?.some(cls => cls.classLabel === classLabel)
+      )
+
+      setConflicts(myConflicts)
+
+      // Parent కి total conflicts notify చేయండి
+      onConflictChange?.(classLabel, myConflicts.length)
+
+    } catch (err) {
+      console.error('Conflict fetch error:', err)
+    }
+  }, [classLabel, academicYear, onConflictChange])
+
+  // ── Fetch timetable ───────────────────────────────────────────────
   const fetchTimetable = useCallback(async () => {
     setSaveStatus('loading')
     try {
@@ -192,30 +249,26 @@ export default function EditableTimeTable({
         `/api/timetable-builder/slots?classLabel=${encodeURIComponent(classLabel)}&academicYear=${encodeURIComponent(academicYear)}`
       )
       const data = await res.json()
-
-      if (!res.ok) throw new Error(data.message || 'Fetch failed')
+      if (!res.ok) throw new Error(data.message)
 
       const slots = data.data?.slots || []
-
       if (slots.length === 0) {
-        // DB లో data లేదు — empty table చూపించు
         setTable(emptyTable())
         setSaveStatus(null)
         return
       }
 
-      // DB slots → table grid గా map చేయండి
       const newTable = emptyTable()
       slots.forEach(slot => {
         const dIndex = DAYS.indexOf(slot.day)
         if (dIndex === -1) return
         newTable[dIndex][slot.periodIndex] = {
-          subject:      slot.subject      || '',
-          lecturerName: slot.lecturerName || '',
-          isLocked:     slot.isLocked     || false,
-          isPractical:  slot.isPractical  || false,
-          _id:          slot._id,
-          periodType:   slot.periodType   || 'period',
+          subject:     slot.subject      || '',
+          lecturerName:slot.lecturerName || '',
+          isLocked:    slot.isLocked     || false,
+          isPractical: slot.isPractical  || false,
+          _id:         slot._id,
+          periodType:  slot.periodType   || 'period',
         }
       })
 
@@ -223,17 +276,19 @@ export default function EditableTimeTable({
       setSaveStatus(null)
 
     } catch (err) {
-      console.error('Fetch timetable error:', err)
+      console.error('Fetch error:', err)
       setSaveStatus('error')
     }
   }, [classLabel, academicYear])
 
-  useEffect(() => { fetchTimetable() }, [fetchTimetable])
+  useEffect(() => {
+    fetchTimetable().then(() => fetchConflicts())
+  }, [fetchTimetable, fetchConflicts])
 
-  // ── Save single cell to DB ─────────────────────────────────────────
+  // ── Save cell ──────────────────────────────────────────────────────
   const saveCell = async (dIndex, pIndex, subject) => {
-    const day         = DAYS[dIndex]
-    const col         = COLUMNS[pIndex]
+    const day          = DAYS[dIndex]
+    const col          = COLUMNS[pIndex]
     const lecturerName = SUBJECT_LECTURERS[subject] || ''
     const isPractical  = subject.toLowerCase().includes('practical')
 
@@ -245,31 +300,19 @@ export default function EditableTimeTable({
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          classLabel,
-          stream,
-          academicYear,
-          day,
-          periodIndex:  pIndex,
-          periodLabel:  col.label,
-          periodType:   col.type,
-          subject,
-          lecturerName,
-          isPractical,
-          subjectColor: '#e2e8f0',
+          classLabel, stream, academicYear,
+          day, periodIndex: pIndex, periodLabel: col.label, periodType: col.type,
+          subject, lecturerName, isPractical, subjectColor: '#e2e8f0',
         }),
       })
-
       const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Save failed')
+      if (!res.ok) throw new Error(data.message)
 
-      // ✅ Local state update
       setTable(prev => {
         const copy = prev.map(row => [...row])
         copy[dIndex][pIndex] = {
           ...copy[dIndex][pIndex],
-          subject,
-          lecturerName,
-          isPractical,
+          subject, lecturerName, isPractical,
           _id: data.data?._id || copy[dIndex][pIndex]._id,
         }
         return copy
@@ -278,8 +321,10 @@ export default function EditableTimeTable({
       setSaveStatus('saved')
       setTimeout(() => setSaveStatus(null), 2000)
 
+      // ✅ Save తర్వాత conflicts re-check చేయండి
+      await fetchConflicts()
+
     } catch (err) {
-      console.error('Save cell error:', err)
       setSaveStatus('error')
       setTimeout(() => setSaveStatus(null), 3000)
     } finally {
@@ -287,20 +332,27 @@ export default function EditableTimeTable({
     }
   }
 
+  // ── Conflict helpers ───────────────────────────────────────────────
+
+  // ఒక cell conflict లో ఉందా?
+  const getConflict = useCallback((dIndex, pIndex) => {
+    const day = DAYS[dIndex]
+    return conflicts.find(
+      c => c.day === day && Number(c.periodIndex) === pIndex
+    ) || null
+  }, [conflicts])
+
   // ── Toggle Lock ────────────────────────────────────────────────────
   const toggleLock = async (dIndex, pIndex) => {
-    const cell      = table[dIndex][pIndex]
+    const cell = table[dIndex][pIndex]
+    if (!cell._id) return
     const newLocked = !cell.isLocked
-
-    if (!cell._id) return  // DB లో save కానిది lock చేయలేము
-
     try {
       await fetch(`/api/timetable-builder/slots/${cell._id}`, {
-        method:  'PUT',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ isLocked: newLocked }),
+        body: JSON.stringify({ isLocked: newLocked }),
       })
-
       setTable(prev => {
         const copy = prev.map(row => [...row])
         copy[dIndex][pIndex] = { ...copy[dIndex][pIndex], isLocked: newLocked }
@@ -321,10 +373,10 @@ export default function EditableTimeTable({
         { method: 'DELETE' }
       )
       setTable(emptyTable())
+      setConflicts([])
+      onConflictChange?.(classLabel, 0)
       setSaveStatus(null)
-    } catch (err) {
-      setSaveStatus('error')
-    }
+    } catch (err) { setSaveStatus('error') }
   }
 
   // ── Print ──────────────────────────────────────────────────────────
@@ -346,34 +398,148 @@ export default function EditableTimeTable({
     window.location.reload()
   }
 
-  // ── Workload ───────────────────────────────────────────────────────
-  const workloadData = useMemo(() => calculateWorkload(table), [table])
+  // ── Export PDF ──────────────────────────────────────────────────────
+  const handleExportPDF = () => {
+    const doc = new jsPDF('landscape', 'mm', 'a4')
+
+    const subjectColors = {
+      'Maths': [219,234,254], 'Physics': [254,243,199], 'Chemistry': [209,250,229],
+      'Physics Practicals': [253,230,138], 'Chemistry Practicals': [167,243,208],
+      'Botany': [220,252,231], 'Botany Practicals': [187,247,208],
+      'Zoology': [204,251,241], 'Zoology Practicals': [153,246,228],
+      'Civics': [243,232,255], 'Economics': [254,228,226], 'History': [255,237,213],
+      'Commerce': [254,243,199], 'English': [224,242,254], 'Telugu': [237,233,254],
+      'Sanskrit': [253,232,243], 'Hindi': [253,231,243],
+      'Study Hour': [241,245,249], 'GFC': [236,253,245], 'Bridge Course': [224,231,255],
+    }
+
+    doc.setFontSize(13)
+    doc.setFont('helvetica', 'bold')
+    doc.text(title, 148, 12, { align: 'center' })
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Academic Year: ${academicYear}  ·  Stream: ${stream}  ·  ${filledPeriods}/${totalPeriods} filled`, 148, 18, { align: 'center' })
+
+    if (conflicts.length > 0) {
+      doc.setTextColor(220, 38, 38)
+      doc.text(`⚠ ${conflicts.length} conflict(s) detected`, 148, 23, { align: 'center' })
+      doc.setTextColor(0, 0, 0)
+    }
+
+    const head = [['Day', ...COLUMNS.map(c => c.label)]]
+    const body = DAYS.map((day, dIndex) => [
+      day,
+      ...COLUMNS.map((col, pIndex) => {
+        if (col.type === 'break') return 'BREAK'
+        if (col.type === 'lunch') return 'LUNCH'
+        return table[dIndex]?.[pIndex]?.subject || ''
+      }),
+    ])
+
+    const cellColorMap = DAYS.map((_, dIndex) =>
+      COLUMNS.map((col, pIndex) => {
+        if (col.type === 'break') return [209,213,219]
+        if (col.type === 'lunch') return [156,163,175]
+        // Conflict → red
+        if (getConflict(dIndex, pIndex)) return [254, 202, 202]
+        const subj = table[dIndex]?.[pIndex]?.subject || ''
+        return subjectColors[subj] || null
+      })
+    )
+
+    autoTable(doc, {
+      startY: conflicts.length > 0 ? 27 : 22,
+      head, body,
+      theme: 'grid',
+      styles: { fontSize: 7, cellPadding: 2, halign: 'center', valign: 'middle', minCellHeight: 11, textColor: [30,41,59], lineColor: [203,213,225], lineWidth: 0.2 },
+      headStyles: { fillColor: [30,41,59], textColor: [255,255,255], fontStyle: 'bold', fontSize: 7 },
+      columnStyles: { 0: { fontStyle: 'bold', halign: 'left', fillColor: [248,250,252], cellWidth: 22 } },
+      didParseCell(hookData) {
+        if (hookData.section !== 'body') return
+        if (hookData.column.index === 0) return
+        const color = cellColorMap[hookData.row.index]?.[hookData.column.index - 1]
+        if (color) hookData.cell.styles.fillColor = color
+      },
+      margin: { left: 5, right: 5 },
+    })
+
+    if (workloadData.length > 0) {
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Lecturer Workload', 148, doc.lastAutoTable.finalY + 8, { align: 'center' })
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 12,
+        head: [['#', 'Lecturer', 'Theory', 'Practical', 'Total', 'Status']],
+        body: workloadData.map((row, i) => {
+          const s = row.total < MIN_PERIODS ? 'Underload' : row.total > MAX_PERIODS ? 'Overload' : 'Normal'
+          return [i + 1, row.lecturer, row.theory, row.practical, row.total, s]
+        }),
+        theme: 'grid',
+        styles: { fontSize: 8, halign: 'center', textColor: [30,41,59] },
+        headStyles: { fillColor: [30,41,59], textColor: [255,255,255], fontStyle: 'bold' },
+        columnStyles: { 0: { cellWidth: 10 }, 1: { halign: 'left', fontStyle: 'bold' } },
+        didParseCell(h) {
+          if (h.section !== 'body' || h.column.index !== 5) return
+          if (h.cell.raw === 'Normal')    h.cell.styles.fillColor = [209,250,229]
+          if (h.cell.raw === 'Underload') h.cell.styles.fillColor = [254,226,226]
+          if (h.cell.raw === 'Overload')  h.cell.styles.fillColor = [254,202,202]
+        },
+        margin: { left: 30, right: 30 },
+      })
+    }
+
+    const pageCount = doc.getNumberOfPages()
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i)
+      doc.setFontSize(7)
+      doc.setTextColor(150)
+      doc.text(`Page ${i} of ${pageCount}  ·  ${new Date().toLocaleString()}`, 148, 205, { align: 'center' })
+    }
+
+    doc.save(`${title.replace(/\s+/g, '_')}_${academicYear}.pdf`)
+  }
 
   // ── Stats ──────────────────────────────────────────────────────────
+  const workloadData  = useMemo(() => calculateWorkload(table), [table])
   const totalPeriods  = COLUMNS.filter(c => c.type === 'period').length * DAYS.length
   const filledPeriods = table.flat().filter(c => c.periodType === 'period' && c.subject).length
   const fillPercent   = Math.round((filledPeriods / totalPeriods) * 100)
+  const conflictCount = conflicts.length
 
   return (
     <div className="mb-12 rounded-2xl border border-slate-200 bg-white shadow-sm">
 
       {/* ── Header ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4 rounded-t-2xl">
+      <div className={`flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 rounded-t-2xl ${
+        conflictCount > 0
+          ? 'bg-gradient-to-r from-red-900 to-rose-800 border-red-700'
+          : 'bg-gradient-to-r from-slate-800 to-slate-700 border-slate-700'
+      }`}>
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500 shadow">
+          <div className={`flex h-9 w-9 items-center justify-center rounded-xl shadow ${
+            conflictCount > 0 ? 'bg-red-500' : 'bg-blue-500'
+          }`}>
             <BookOpen size={16} className="text-white" />
           </div>
           <div>
             <h2 className="text-base font-black text-white">{title}</h2>
-            <p className="text-xs font-medium text-slate-400">{academicYear} · {stream} stream</p>
+            <p className="text-xs font-medium text-slate-400">{academicYear} · {stream}</p>
           </div>
+
+          {/* ✅ Conflict Badge */}
+          {conflictCount > 0 && (
+            <div className="flex items-center gap-1.5 rounded-xl bg-red-500 px-3 py-1 shadow-md animate-pulse">
+              <AlertTriangle size={13} className="text-white" />
+              <span className="text-xs font-black text-white">
+                {conflictCount} Conflict{conflictCount > 1 ? 's' : ''}!
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Stats + Actions */}
-        <div className="flex flex-wrap items-center gap-3">
-
+        <div className="flex flex-wrap items-center gap-2">
           {/* Fill Progress */}
-          <div className="flex items-center gap-2 rounded-xl bg-slate-700 px-3 py-1.5">
+          <div className="flex items-center gap-2 rounded-xl bg-slate-700/80 px-3 py-1.5">
             <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-600">
               <div
                 className="h-full rounded-full bg-blue-400 transition-all duration-500"
@@ -383,46 +549,61 @@ export default function EditableTimeTable({
             <span className="text-xs font-bold text-slate-300">{filledPeriods}/{totalPeriods}</span>
           </div>
 
-          {/* Save Status */}
-          <div className="min-w-[80px]">
-            <SaveStatus status={saveStatus} />
-          </div>
+          <div className="min-w-[80px]"><SaveStatus status={saveStatus} /></div>
 
-          {/* Buttons */}
           {!readOnly && (
             <>
-              <button
-                onClick={fetchTimetable}
-                className="flex items-center gap-1.5 rounded-xl bg-slate-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-500 print:hidden"
-              >
+              <button onClick={() => fetchTimetable().then(fetchConflicts)}
+                className="flex items-center gap-1.5 rounded-xl bg-slate-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-500 print:hidden">
                 <RefreshCw size={12} /> Refresh
               </button>
-              <button
-                onClick={handleClearAll}
-                className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-700 print:hidden"
-              >
+              <button onClick={handleClearAll}
+                className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 print:hidden">
                 <Trash2 size={12} /> Clear All
               </button>
             </>
           )}
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 print:hidden"
-          >
+          <button onClick={handlePrint}
+            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 print:hidden">
             <Printer size={12} /> Print
+          </button>
+          <button onClick={handleExportPDF}
+            className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 print:hidden">
+            <FileText size={12} /> PDF
           </button>
         </div>
       </div>
+
+      {/* ✅ Conflict Alert Bar */}
+      {conflictCount > 0 && (
+        <div className="border-b border-red-200 bg-red-50 px-5 py-2.5 print:hidden">
+          <div className="flex flex-wrap items-center gap-2">
+            <AlertTriangle size={14} className="shrink-0 text-red-500" />
+            <span className="text-xs font-bold text-red-700">
+              {conflictCount} conflict{conflictCount > 1 ? 's' : ''} detected!
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {conflicts.map((c, i) => (
+                <span key={i} className="inline-flex items-center gap-1 rounded-lg bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">
+                  <AlertTriangle size={9} />
+                  {c.lecturerName} · {c.day} · P{Number(c.periodIndex) + 1}
+                  <span className="text-red-400">({c.classes?.length} classes)</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── DB Sync indicator ── */}
       <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-5 py-2 print:hidden">
         <Database size={11} className="text-slate-400" />
         <span className="text-xs text-slate-400">
-          Cell select చేసినప్పుడు automatically DB లో save అవుతుంది
+          Cell select → Auto save · Conflict check automatic
         </span>
-        {saveStatus === null && filledPeriods > 0 && (
+        {saveStatus === null && filledPeriods > 0 && conflictCount === 0 && (
           <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-emerald-600">
-            <CheckCircle2 size={11} /> DB Synced
+            <CheckCircle2 size={11} /> No Conflicts ✅
           </span>
         )}
       </div>
@@ -432,22 +613,15 @@ export default function EditableTimeTable({
         <table className="min-w-[1000px] w-full border-collapse text-sm">
           <thead>
             <tr className="bg-slate-800 text-white">
-              <th className="border border-slate-600 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide w-24">
-                Day
-              </th>
+              <th className="border border-slate-600 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide w-24">Day</th>
               {COLUMNS.map((c, i) => (
-                <th
-                  key={i}
-                  className={`border px-2 py-2.5 text-xs font-bold text-center ${
-                    c.type === 'break' ? 'border-slate-600 bg-slate-600 w-12'
-                    : c.type === 'lunch' ? 'border-slate-500 bg-slate-500 w-14'
-                    : 'border-slate-600'
-                  }`}
-                >
+                <th key={i} className={`border px-2 py-2.5 text-xs font-bold text-center ${
+                  c.type === 'break' ? 'border-slate-600 bg-slate-600 w-12'
+                  : c.type === 'lunch' ? 'border-slate-500 bg-slate-500 w-14'
+                  : 'border-slate-600'
+                }`}>
                   <div className="flex flex-col gap-0.5 items-center">
-                    {c.type === 'period' && (
-                      <Clock size={10} className="text-slate-400 mb-0.5" />
-                    )}
+                    {c.type === 'period' && <Clock size={10} className="text-slate-400 mb-0.5" />}
                     <span className="whitespace-nowrap">{c.label}</span>
                   </div>
                 </th>
@@ -458,14 +632,10 @@ export default function EditableTimeTable({
           <tbody>
             {DAYS.map((day, dIndex) => (
               <tr key={day} className={dIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
-
-                {/* Day label */}
                 <td className="border border-slate-200 px-3 py-2 font-bold text-slate-700 text-xs whitespace-nowrap">
                   <div className="flex flex-col">
                     <span>{day}</span>
-                    <span className="text-slate-400 font-normal">
-                      {['Mon','Tue','Wed','Thu','Fri','Sat'][dIndex]}
-                    </span>
+                    <span className="text-slate-400 font-normal">{['Mon','Tue','Wed','Thu','Fri','Sat'][dIndex]}</span>
                   </div>
                 </td>
 
@@ -473,17 +643,16 @@ export default function EditableTimeTable({
                   const cell      = table[dIndex][pIndex]
                   const isSaving  = savingCell?.dIndex === dIndex && savingCell?.pIndex === pIndex
                   const isEditing = editing?.dIndex === dIndex && editing?.pIndex === pIndex
-                  const colorClass = SUBJECT_COLORS[cell.subject] || ''
+                  const conflict  = getConflict(dIndex, pIndex)    // ✅
+                  const colorClass = conflict
+                    ? ''   // conflict ఉంటే custom style వాడతాం
+                    : (SUBJECT_COLORS[cell.subject] || '')
 
-                  // Break / Lunch cells
                   if (col.type !== 'period') {
                     return (
-                      <td
-                        key={pIndex}
-                        className={`border border-slate-200 text-center text-xs font-bold px-1 py-2 ${
-                          col.type === 'break' ? 'bg-slate-200 text-slate-600' : 'bg-slate-300 text-slate-700'
-                        }`}
-                      >
+                      <td key={pIndex} className={`border border-slate-200 text-center text-xs font-bold px-1 py-2 ${
+                        col.type === 'break' ? 'bg-slate-200 text-slate-600' : 'bg-slate-300 text-slate-700'
+                      }`}>
                         {col.type === 'break' ? '☕' : '🍱'}
                         <div className="text-[9px] mt-0.5">{col.label}</div>
                       </td>
@@ -493,13 +662,16 @@ export default function EditableTimeTable({
                   return (
                     <td
                       key={pIndex}
-                      className={`border border-slate-200 p-0 text-center text-xs transition-all ${
+                      className={`border p-0 text-center text-xs transition-all ${
+                        conflict
+                          ? 'border-red-400 ring-2 ring-red-400 ring-inset'   // ✅ red ring
+                          : 'border-slate-200'
+                      } ${
                         readOnly ? '' : 'cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-inset'
                       } ${isSaving ? 'opacity-60' : ''}`}
                       onClick={() => !readOnly && !cell.isLocked && setEditing({ dIndex, pIndex })}
                     >
                       {isEditing ? (
-                        // ── Editing: dropdown ──────────────────────
                         <select
                           autoFocus
                           value={cell.subject}
@@ -514,45 +686,64 @@ export default function EditableTimeTable({
                             <option key={sub} value={sub}>{sub || '— Select —'}</option>
                           ))}
                         </select>
-
                       ) : (
-                        // ── Display cell ───────────────────────────
-                        <div className={`relative min-h-[52px] flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 ${colorClass}`}>
+                        <div
+                          className={`relative min-h-[52px] flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 ${
+                            conflict
+                              ? 'bg-red-100'                // ✅ conflict → red background
+                              : colorClass
+                          }`}
+                          onMouseEnter={() => conflict && setHoverConflict({ dIndex, pIndex, conflict })}
+                          onMouseLeave={() => setHoverConflict(null)}
+                        >
+                          {/* ✅ Conflict icon */}
+                          {conflict && (
+                            <AlertTriangle
+                              size={10}
+                              className="absolute top-1 left-1 text-red-500 animate-pulse"
+                            />
+                          )}
 
-                          {/* Lock icon */}
                           {cell.isLocked && (
                             <Lock size={9} className="absolute top-1 right-1 text-slate-500" />
                           )}
 
-                          {/* Saving spinner */}
-                          {isSaving && (
-                            <Loader2 size={14} className="animate-spin text-blue-500" />
-                          )}
+                          {isSaving && <Loader2 size={14} className="animate-spin text-blue-500" />}
 
-                          {/* Subject name */}
                           {!isSaving && (
                             <>
-                              <span className="font-semibold leading-tight text-center" style={{ fontSize: '10px' }}>
-                                {cell.subject || (
-                                  <span className="text-slate-300 font-normal">Click to add</span>
-                                )}
+                              <span className={`font-semibold leading-tight text-center ${conflict ? 'text-red-800' : ''}`} style={{ fontSize: '10px' }}>
+                                {cell.subject || <span className="text-slate-300 font-normal">Click to add</span>}
                               </span>
                               {cell.lecturerName && (
-                                <span className="text-[9px] opacity-60 leading-tight">{cell.lecturerName}</span>
+                                <span className={`text-[9px] leading-tight ${conflict ? 'text-red-600 font-bold' : 'opacity-60'}`}>
+                                  {cell.lecturerName}
+                                </span>
+                              )}
+                              {/* Conflict label */}
+                              {conflict && (
+                                <span className="text-[8px] font-bold text-red-600 bg-red-200 px-1 rounded mt-0.5">
+                                  CONFLICT
+                                </span>
                               )}
                             </>
                           )}
 
-                          {/* Lock toggle button */}
+                          {/* Conflict Tooltip */}
+                          {hoverConflict?.dIndex === dIndex && hoverConflict?.pIndex === pIndex && (
+                            <ConflictTooltip conflict={conflict} />
+                          )}
+
+                          {/* Lock toggle */}
                           {!readOnly && cell.subject && cell._id && !isSaving && (
                             <button
                               onClick={e => { e.stopPropagation(); toggleLock(dIndex, pIndex) }}
-                              className="absolute bottom-0.5 right-0.5 opacity-0 hover:opacity-100 group-hover:opacity-100 transition-opacity print:hidden"
-                              title={cell.isLocked ? 'Unlock' : 'Lock this slot'}
+                              className="absolute bottom-0.5 right-0.5 opacity-0 hover:opacity-100 transition-opacity print:hidden"
+                              title={cell.isLocked ? 'Unlock' : 'Lock'}
                             >
                               {cell.isLocked
                                 ? <Unlock size={8} className="text-slate-500"/>
-                                : <Lock size={8} className="text-slate-400 hover:text-slate-700"/>
+                                : <Lock    size={8} className="text-slate-400"/>
                               }
                             </button>
                           )}
@@ -565,21 +756,21 @@ export default function EditableTimeTable({
             ))}
           </tbody>
         </table>
-
-        {/* ── Workload Report ── */}
         <WorkloadReport data={workloadData} />
       </div>
 
       {/* ── Footer ── */}
       <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-5 py-2.5 rounded-b-2xl print:hidden">
         <span className="text-xs text-slate-400">
-          {!readOnly ? '💡 Cell click చేయండి → Subject select చేయండి → Auto save అవుతుంది' : '👁 Read-only view'}
+          {!readOnly ? '💡 Cell click → Subject select → Auto save' : '👁 Read-only'}
         </span>
-        <div className="flex items-center gap-4 text-xs text-slate-400">
-          <span className="flex items-center gap-1">
-            <Lock size={10}/> Locked: {table.flat().filter(c => c.isLocked).length}
-          </span>
-          <span className="flex items-center gap-1">
+        <div className="flex items-center gap-4 text-xs">
+          {conflictCount > 0 && (
+            <span className="flex items-center gap-1 font-bold text-red-600">
+              <AlertTriangle size={10}/> {conflictCount} conflict{conflictCount > 1 ? 's' : ''}
+            </span>
+          )}
+          <span className="flex items-center gap-1 text-slate-400">
             <CheckCircle2 size={10} className="text-emerald-500"/>
             {filledPeriods} filled · {totalPeriods - filledPeriods} empty
           </span>
