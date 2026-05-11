@@ -1,12 +1,15 @@
+// ── Imports ───────────────────────────────────────────────────────
+//src/components/EditableTimeTable.jsx
 'use client'
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import {
   Lock, Unlock, RefreshCw, Printer,
   CheckCircle2, AlertCircle, Loader2, Trash2,
-  Database, Clock, BookOpen, FileText, AlertTriangle, X
+  Database, Clock, BookOpen, FileText, AlertTriangle, X,Zap
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import AutoGenerateModal from '@/components/AutoGenerateModal'
 
 // ── CONSTANTS ────────────────────────────────────────────────────────
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -33,10 +36,23 @@ const SUBJECTS = {
     'English', 'Telugu', 'Sanskrit', 'Hindi', 'Study Hour',
   ],
   vocational: [
-    '', 'English', 'GFC', 'V1', 'V1 Practicals',
-    'V2', 'V2 Practicals', 'V3', 'V3 Practicals',
-    'V4', 'V4 Practicals', 'V5', 'V5 Practicals',
-    'V6', 'V6 Practicals', 'Study Hour', 'Bridge Course',
+    '', 
+    'English', 
+    'GFC',
+    'V1', 
+    'V1 Practicals',
+    'V2', 
+    'V2 Practicals', 
+    'V3', 
+    'V3 Practicals',
+    'V4', 
+    'V4 Practicals', 
+    'V5', 
+    'V5 Practicals',
+    'V6', 
+    'V6 Practicals', 
+    'Study Hour', 
+    'Bridge Course',
   ],
 }
 
@@ -64,22 +80,47 @@ const SUBJECT_COLORS = {
 }
 
 const SUBJECT_LECTURERS = {
-  'Maths':               'Maths Lecturer',
-  'Physics':             'Physics Lecturer',
-  'Chemistry':           'Chemistry Lecturer',
-  'Physics Practicals':  'Physics Lecturer',
-  'Chemistry Practicals':'Chemistry Lecturer',
-  'Botany':              'Botany Lecturer',
-  'Botany Practicals':   'Botany Lecturer',
-  'Zoology':             'Zoology Lecturer',
-  'Zoology Practicals':  'Zoology Lecturer',
-  'English':             'English Lecturer',
-  'Telugu':              'Telugu Lecturer',
-  'GFC':                 'GFC Lecturer',
+  //General Stream
+  'Maths':               'K.Seenaiah',
+  'Physics':             'G.Sujatha',
+  'Chemistry':           'K.Sailaja',
+  'Physics Practicals':  'G.Sujatha',
+  'Chemistry Practicals':'K.Sailaja',
+  'Botany':              'A.Munikrishnaiah',
+  'Botany Practicals':   'A.Munikrishnaiah',
+  'Zoology':             'A.Sujathamma',
+  'Zoology Practicals':  'A.Sujathamma',
+  'English General':             'Ch.Kesava Prasad',
+  'Telugu':              'R.B.Penchal Singh',
+  'Sanskrit':            'No lecturer found',
+  'Hindi':               'K.Salajakumari',
+  'Civics':              'S.Sudhakar Rao',
+  'Economics':           'Balli.Venkataiah',
+  'History':             'Bandi Venkataiah',
+  'Commerce':            'M.Sumalatha',
+  'Study Hour General':          '',
+  //vocational stream
+  'GFC':                 'P.Ramesh',
+  'English Vocational':  'K.Sudheer',
+  'Bridge Course':       'Bridge Course Lecturer',
+  'V1':             'E.V/K.B.R/R.G',
+  'V1 Practicals':  'E.V/K.B.R/R.G',
+  'V2':             'G.K/K.B.R/B.V',
+  'V2 Practicals':  'G.K/K.B.R/B.V',
+  'V3':             'G.K/K.B.R/R.G',
+  'V3 Practicals':  'G.K/K.B.R/R.G',
+  'V4':             'E.V/K.B.R/R.G',
+  'V4 Practicals':  'E.V/K.B.R/R.G',
+  'V5':             'G.K/K.B.R/R.G',
+  'V5 Practicals':  'G.K/K.B.R/R.G',
+  'V6':             'G.K/K.B.R/R.G',
+  'V6 Practicals':  'G.K/K.B.R/R.G',
+
+
 }
 
 const MIN_PERIODS = 16
-const MAX_PERIODS = 18
+const MAX_PERIODS = 24
 
 // ── WORKLOAD ─────────────────────────────────────────────────────────
 function calculateWorkload(table) {
@@ -141,8 +182,8 @@ function WorkloadReport({ data }) {
         </table>
       </div>
       <div className="mt-3 flex justify-center gap-6 text-xs font-semibold">
-        <span className="text-emerald-700">🟢 16–18 : Normal</span>
-        <span className="text-rose-700">🔴 &lt;16 or &gt;18 : Under/Over Load</span>
+        <span className="text-emerald-700">🟢 16–24 : Normal</span>
+        <span className="text-rose-700">🔴 &lt;16 or &gt;24 : Under/Over Load</span>
       </div>
     </div>
   )
@@ -195,6 +236,9 @@ export default function EditableTimeTable({
 }) {
   const printRef   = useRef(null)
   const classLabel = title
+
+
+  const [showAutoModal, setShowAutoModal] = useState(false)
 
   const emptyTable = () =>
     DAYS.map(() =>
@@ -508,27 +552,32 @@ export default function EditableTimeTable({
 
   return (
     <div className="mb-12 rounded-2xl border border-slate-200 bg-white shadow-sm">
-
       {/* ── Header ── */}
-      <div className={`flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 rounded-t-2xl ${
-        conflictCount > 0
-          ? 'bg-gradient-to-r from-red-900 to-rose-800 border-red-700'
-          : 'bg-gradient-to-r from-slate-800 to-slate-700 border-slate-700'
-      }`}>
+      <div
+        className={`flex flex-wrap items-center justify-between gap-3 rounded-t-2xl border-b px-5 py-4 ${
+          conflictCount > 0
+            ? 'border-red-700 bg-gradient-to-r from-red-900 to-rose-800'
+            : 'border-slate-700 bg-gradient-to-r from-slate-800 to-slate-700'
+        }`}
+      >
         <div className="flex items-center gap-3">
-          <div className={`flex h-9 w-9 items-center justify-center rounded-xl shadow ${
-            conflictCount > 0 ? 'bg-red-500' : 'bg-blue-500'
-          }`}>
+          <div
+            className={`flex h-9 w-9 items-center justify-center rounded-xl shadow ${
+              conflictCount > 0 ? 'bg-red-500' : 'bg-blue-500'
+            }`}
+          >
             <BookOpen size={16} className="text-white" />
           </div>
           <div>
             <h2 className="text-base font-black text-white">{title}</h2>
-            <p className="text-xs font-medium text-slate-400">{academicYear} · {stream}</p>
+            <p className="text-xs font-medium text-slate-400">
+              {academicYear} · {stream}
+            </p>
           </div>
 
           {/* ✅ Conflict Badge */}
           {conflictCount > 0 && (
-            <div className="flex items-center gap-1.5 rounded-xl bg-red-500 px-3 py-1 shadow-md animate-pulse">
+            <div className="flex animate-pulse items-center gap-1.5 rounded-xl bg-red-500 px-3 py-1 shadow-md">
               <AlertTriangle size={13} className="text-white" />
               <span className="text-xs font-black text-white">
                 {conflictCount} Conflict{conflictCount > 1 ? 's' : ''}!
@@ -546,30 +595,48 @@ export default function EditableTimeTable({
                 style={{ width: `${fillPercent}%` }}
               />
             </div>
-            <span className="text-xs font-bold text-slate-300">{filledPeriods}/{totalPeriods}</span>
+            <span className="text-xs font-bold text-slate-300">
+              {filledPeriods}/{totalPeriods}
+            </span>
           </div>
 
-          <div className="min-w-[80px]"><SaveStatus status={saveStatus} /></div>
+          <div className="min-w-[80px]">
+            <SaveStatus status={saveStatus} />
+          </div>
 
           {!readOnly && (
             <>
-              <button onClick={() => fetchTimetable().then(fetchConflicts)}
-                className="flex items-center gap-1.5 rounded-xl bg-slate-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-500 print:hidden">
+              <button
+                onClick={() => fetchTimetable().then(fetchConflicts)}
+                className="flex items-center gap-1.5 rounded-xl bg-slate-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-500 print:hidden"
+              >
                 <RefreshCw size={12} /> Refresh
               </button>
-              <button onClick={handleClearAll}
-                className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 print:hidden">
+              <button
+                onClick={handleClearAll}
+                className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 print:hidden"
+              >
                 <Trash2 size={12} /> Clear All
               </button>
             </>
           )}
-          <button onClick={handlePrint}
-            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 print:hidden">
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 print:hidden"
+          >
             <Printer size={12} /> Print
           </button>
-          <button onClick={handleExportPDF}
-            className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 print:hidden">
+          <button
+            onClick={handleExportPDF}
+            className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 print:hidden"
+          >
             <FileText size={12} /> PDF
+          </button>
+          <button
+            onClick={() => setShowAutoModal(true)}
+            className="flex items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-700 print:hidden"
+          >
+            <Zap size={12} /> Auto Generate
           </button>
         </div>
       </div>
@@ -584,7 +651,10 @@ export default function EditableTimeTable({
             </span>
             <div className="flex flex-wrap gap-2">
               {conflicts.map((c, i) => (
-                <span key={i} className="inline-flex items-center gap-1 rounded-lg bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1 rounded-lg bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700"
+                >
                   <AlertTriangle size={9} />
                   {c.lecturerName} · {c.day} · P{Number(c.periodIndex) + 1}
                   <span className="text-red-400">({c.classes?.length} classes)</span>
@@ -610,18 +680,25 @@ export default function EditableTimeTable({
 
       {/* ── Timetable Grid ── */}
       <div ref={printRef} className="overflow-x-auto p-4">
-        <table className="min-w-[1000px] w-full border-collapse text-sm">
+        <table className="w-full min-w-[1000px] border-collapse text-sm">
           <thead>
             <tr className="bg-slate-800 text-white">
-              <th className="border border-slate-600 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide w-24">Day</th>
+              <th className="w-24 border border-slate-600 px-3 py-2.5 text-left text-xs font-bold tracking-wide uppercase">
+                Day
+              </th>
               {COLUMNS.map((c, i) => (
-                <th key={i} className={`border px-2 py-2.5 text-xs font-bold text-center ${
-                  c.type === 'break' ? 'border-slate-600 bg-slate-600 w-12'
-                  : c.type === 'lunch' ? 'border-slate-500 bg-slate-500 w-14'
-                  : 'border-slate-600'
-                }`}>
-                  <div className="flex flex-col gap-0.5 items-center">
-                    {c.type === 'period' && <Clock size={10} className="text-slate-400 mb-0.5" />}
+                <th
+                  key={i}
+                  className={`border px-2 py-2.5 text-center text-xs font-bold ${
+                    c.type === 'break'
+                      ? 'w-12 border-slate-600 bg-slate-600'
+                      : c.type === 'lunch'
+                        ? 'w-14 border-slate-500 bg-slate-500'
+                        : 'border-slate-600'
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-0.5">
+                    {c.type === 'period' && <Clock size={10} className="mb-0.5 text-slate-400" />}
                     <span className="whitespace-nowrap">{c.label}</span>
                   </div>
                 </th>
@@ -632,29 +709,36 @@ export default function EditableTimeTable({
           <tbody>
             {DAYS.map((day, dIndex) => (
               <tr key={day} className={dIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
-                <td className="border border-slate-200 px-3 py-2 font-bold text-slate-700 text-xs whitespace-nowrap">
+                <td className="border border-slate-200 px-3 py-2 text-xs font-bold whitespace-nowrap text-slate-700">
                   <div className="flex flex-col">
                     <span>{day}</span>
-                    <span className="text-slate-400 font-normal">{['Mon','Tue','Wed','Thu','Fri','Sat'][dIndex]}</span>
+                    <span className="font-normal text-slate-400">
+                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dIndex]}
+                    </span>
                   </div>
                 </td>
 
                 {COLUMNS.map((col, pIndex) => {
-                  const cell      = table[dIndex][pIndex]
-                  const isSaving  = savingCell?.dIndex === dIndex && savingCell?.pIndex === pIndex
+                  const cell = table[dIndex][pIndex]
+                  const isSaving = savingCell?.dIndex === dIndex && savingCell?.pIndex === pIndex
                   const isEditing = editing?.dIndex === dIndex && editing?.pIndex === pIndex
-                  const conflict  = getConflict(dIndex, pIndex)    // ✅
+                  const conflict = getConflict(dIndex, pIndex) // ✅
                   const colorClass = conflict
-                    ? ''   // conflict ఉంటే custom style వాడతాం
-                    : (SUBJECT_COLORS[cell.subject] || '')
+                    ? '' // conflict ఉంటే custom style వాడతాం
+                    : SUBJECT_COLORS[cell.subject] || ''
 
                   if (col.type !== 'period') {
                     return (
-                      <td key={pIndex} className={`border border-slate-200 text-center text-xs font-bold px-1 py-2 ${
-                        col.type === 'break' ? 'bg-slate-200 text-slate-600' : 'bg-slate-300 text-slate-700'
-                      }`}>
+                      <td
+                        key={pIndex}
+                        className={`border border-slate-200 px-1 py-2 text-center text-xs font-bold ${
+                          col.type === 'break'
+                            ? 'bg-slate-200 text-slate-600'
+                            : 'bg-slate-300 text-slate-700'
+                        }`}
+                      >
                         {col.type === 'break' ? '☕' : '🍱'}
-                        <div className="text-[9px] mt-0.5">{col.label}</div>
+                        <div className="mt-0.5 text-[9px]">{col.label}</div>
                       </td>
                     )
                   }
@@ -664,10 +748,12 @@ export default function EditableTimeTable({
                       key={pIndex}
                       className={`border p-0 text-center text-xs transition-all ${
                         conflict
-                          ? 'border-red-400 ring-2 ring-red-400 ring-inset'   // ✅ red ring
+                          ? 'border-red-400 ring-2 ring-red-400 ring-inset' // ✅ red ring
                           : 'border-slate-200'
                       } ${
-                        readOnly ? '' : 'cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-inset'
+                        readOnly
+                          ? ''
+                          : 'cursor-pointer hover:ring-2 hover:ring-blue-300 hover:ring-inset'
                       } ${isSaving ? 'opacity-60' : ''}`}
                       onClick={() => !readOnly && !cell.isLocked && setEditing({ dIndex, pIndex })}
                     >
@@ -680,27 +766,31 @@ export default function EditableTimeTable({
                             await saveCell(dIndex, pIndex, e.target.value)
                           }}
                           onBlur={() => setEditing(null)}
-                          className="w-full rounded border-0 bg-white px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          className="w-full rounded border-0 bg-white px-1 py-1.5 text-xs focus:ring-2 focus:ring-blue-400 focus:outline-none"
                         >
                           {SUBJECTS[stream].map(sub => (
-                            <option key={sub} value={sub}>{sub || '— Select —'}</option>
+                            <option key={sub} value={sub}>
+                              {sub || '— Select —'}
+                            </option>
                           ))}
                         </select>
                       ) : (
                         <div
-                          className={`relative min-h-[52px] flex flex-col items-center justify-center gap-0.5 px-1 py-1.5 ${
+                          className={`relative flex min-h-[52px] flex-col items-center justify-center gap-0.5 px-1 py-1.5 ${
                             conflict
-                              ? 'bg-red-100'                // ✅ conflict → red background
+                              ? 'bg-red-100' // ✅ conflict → red background
                               : colorClass
                           }`}
-                          onMouseEnter={() => conflict && setHoverConflict({ dIndex, pIndex, conflict })}
+                          onMouseEnter={() =>
+                            conflict && setHoverConflict({ dIndex, pIndex, conflict })
+                          }
                           onMouseLeave={() => setHoverConflict(null)}
                         >
                           {/* ✅ Conflict icon */}
                           {conflict && (
                             <AlertTriangle
                               size={10}
-                              className="absolute top-1 left-1 text-red-500 animate-pulse"
+                              className="absolute top-1 left-1 animate-pulse text-red-500"
                             />
                           )}
 
@@ -712,17 +802,24 @@ export default function EditableTimeTable({
 
                           {!isSaving && (
                             <>
-                              <span className={`font-semibold leading-tight text-center ${conflict ? 'text-red-800' : ''}`} style={{ fontSize: '10px' }}>
-                                {cell.subject || <span className="text-slate-300 font-normal">Click to add</span>}
+                              <span
+                                className={`text-center leading-tight font-semibold ${conflict ? 'text-red-800' : ''}`}
+                                style={{ fontSize: '10px' }}
+                              >
+                                {cell.subject || (
+                                  <span className="font-normal text-slate-300">Click to add</span>
+                                )}
                               </span>
                               {cell.lecturerName && (
-                                <span className={`text-[9px] leading-tight ${conflict ? 'text-red-600 font-bold' : 'opacity-60'}`}>
+                                <span
+                                  className={`text-[9px] leading-tight ${conflict ? 'font-bold text-red-600' : 'opacity-60'}`}
+                                >
                                   {cell.lecturerName}
                                 </span>
                               )}
                               {/* Conflict label */}
                               {conflict && (
-                                <span className="text-[8px] font-bold text-red-600 bg-red-200 px-1 rounded mt-0.5">
+                                <span className="mt-0.5 rounded bg-red-200 px-1 text-[8px] font-bold text-red-600">
                                   CONFLICT
                                 </span>
                               )}
@@ -737,14 +834,18 @@ export default function EditableTimeTable({
                           {/* Lock toggle */}
                           {!readOnly && cell.subject && cell._id && !isSaving && (
                             <button
-                              onClick={e => { e.stopPropagation(); toggleLock(dIndex, pIndex) }}
-                              className="absolute bottom-0.5 right-0.5 opacity-0 hover:opacity-100 transition-opacity print:hidden"
+                              onClick={e => {
+                                e.stopPropagation()
+                                toggleLock(dIndex, pIndex)
+                              }}
+                              className="absolute right-0.5 bottom-0.5 opacity-0 transition-opacity hover:opacity-100 print:hidden"
                               title={cell.isLocked ? 'Unlock' : 'Lock'}
                             >
-                              {cell.isLocked
-                                ? <Unlock size={8} className="text-slate-500"/>
-                                : <Lock    size={8} className="text-slate-400"/>
-                              }
+                              {cell.isLocked ? (
+                                <Unlock size={8} className="text-slate-500" />
+                              ) : (
+                                <Lock size={8} className="text-slate-400" />
+                              )}
                             </button>
                           )}
                         </div>
@@ -759,19 +860,32 @@ export default function EditableTimeTable({
         <WorkloadReport data={workloadData} />
       </div>
 
+      {showAutoModal && (
+        <AutoGenerateModal
+          classLabel={classLabel}
+          stream={stream}
+          academicYear={academicYear}
+          onClose={() => setShowAutoModal(false)}
+          onGenerated={() => {
+            setShowAutoModal(false)
+            fetchTimetable().then(fetchConflicts)
+          }}
+        />
+      )}
+
       {/* ── Footer ── */}
-      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-5 py-2.5 rounded-b-2xl print:hidden">
+      <div className="flex items-center justify-between rounded-b-2xl border-t border-slate-100 bg-slate-50 px-5 py-2.5 print:hidden">
         <span className="text-xs text-slate-400">
           {!readOnly ? '💡 Cell click → Subject select → Auto save' : '👁 Read-only'}
         </span>
         <div className="flex items-center gap-4 text-xs">
           {conflictCount > 0 && (
             <span className="flex items-center gap-1 font-bold text-red-600">
-              <AlertTriangle size={10}/> {conflictCount} conflict{conflictCount > 1 ? 's' : ''}
+              <AlertTriangle size={10} /> {conflictCount} conflict{conflictCount > 1 ? 's' : ''}
             </span>
           )}
           <span className="flex items-center gap-1 text-slate-400">
-            <CheckCircle2 size={10} className="text-emerald-500"/>
+            <CheckCircle2 size={10} className="text-emerald-500" />
             {filledPeriods} filled · {totalPeriods - filledPeriods} empty
           </span>
         </div>

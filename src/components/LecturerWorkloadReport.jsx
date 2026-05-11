@@ -2,7 +2,7 @@
 import { CheckCircle2, AlertCircle, BookOpen, User, FlaskConical } from 'lucide-react'
 
 const MIN_PERIODS = 16
-const MAX_PERIODS = 18
+const MAX_PERIODS = 24
 
 export default function LecturerWorkloadReport({ data }) {
   if (!data || !data.length) return null

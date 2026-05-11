@@ -1,3 +1,4 @@
+//src/components/layout/Sidebar.jsx
 "use client";
 
 import Link from "next/link";
@@ -57,6 +58,9 @@ export default function Sidebar({ onClose }) {
     : [
         { href: "/timetable-management/login", label: "Time Table Management", icon: <PencilSquareIcon className="h-5 w-5 text-sky-500" /> },
         { href: "/timetable", label: "Academic Time Table", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
+        { href: "/timetable/dashboard", label: "Time Table Dashboard", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
+        { href: "/timetable/lecturer", label: "Lecturer Time Table", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
+        { href: "/timetable/student", label: "Time Table student", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
         { href: "/exams-form", label: "Marks Posting", icon: <ClipboardDocumentListIcon className="h-5 w-5 text-indigo-500" /> },
         { href: "/attendance-records/monthly-summary", label: "CAR", icon: <UserGroupIcon className="h-5 w-5 text-violet-500" /> },
         { href: "/attendance-records/attendance-calendar", label: "Calendar View", icon: <CalendarDaysIcon className="h-5 w-5 text-blue-500" /> },
