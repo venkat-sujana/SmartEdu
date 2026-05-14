@@ -5,105 +5,77 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectMongoDB from "@/lib/mongodb";
 import TimetableSlot from "@/models/TimetableSlot";
 import mongoose from "mongoose";
+import {
+  TIMETABLE_COLUMNS as COLUMNS,
+  TIMETABLE_DAYS as DAYS,
+  TIMETABLE_SUBJECT_HEX_COLORS as SUBJECT_COLORS,
+} from "@/lib/timetable-config";
 
-const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+function normalizeLecturerName(name = "") {
+  return String(name).trim().replace(/\s+/g, " ").toLowerCase();
+}
 
-const COLUMNS = [
-  { label: "9:10 - 10:00",  type: "period" },
-  { label: "10:00 - 10:50", type: "period" },
-  { label: "BREAK",         type: "break"  },
-  { label: "11:00 - 11:50", type: "period" },
-  { label: "11:50 - 12:40", type: "period" },
-  { label: "LUNCH",         type: "lunch"  },
-  { label: "1:20 - 2:10",   type: "period" },
-  { label: "2:10 - 3:00",   type: "period" },
-  { label: "3:10 - 4:00",   type: "period" },
-  { label: "4:00 - 5:00",   type: "period" },
-];
+function getLecturerKey({ lecturerId, lecturerName }) {
+  if (lecturerId) return `id:${String(lecturerId)}`;
+  const normalizedName = normalizeLecturerName(lecturerName);
+  return normalizedName ? `name:${normalizedName}` : null;
+}
 
-// ── Subject color map (UI కోసం) ──────────────────────────────────────
-const SUBJECT_COLORS = {
-  "Maths":               "#dbeafe",
-  "Physics":             "#fef3c7",
-  "Chemistry":           "#d1fae5",
-  "Botany":              "#dcfce7",
-  "Zoology":             "#f0fdf4",
-  "Civics":              "#fae8ff",
-  "Economics":           "#ffe4e6",
-  "History":             "#fff7ed",
-  "Commerce":            "#fefce8",
-  "English":             "#f0f9ff",
-  "Telugu":              "#fdf4ff",
-  "Sanskrit":            "#fef9c3",
-  "Hindi":               "#fce7f3",
-  "Study Hour":          "#f1f5f9",
-  "GFC":                 "#ecfdf5",
-  "Physics Practicals":  "#fde68a",
-  "Chemistry Practicals":"#a7f3d0",
-  "Botany Practicals":   "#6ee7b7",
-  "Zoology Practicals":  "#86efac",
-};
+function getBusyKey(lecturerKey, day, periodIndex) {
+  return `${lecturerKey}::${day}::${periodIndex}`;
+}
 
 // ── Auto-Generate Algorithm ───────────────────────────────────────────
 // subjectHours: [{ subject, lecturerName, hoursPerWeek, isPractical }]
-function generateTimetable(subjectHours) {
-  // Step 1: Expand subjects into individual period slots needed
+// subjectHours: [{ subject, lecturerName, lecturerId, hoursPerWeek, isPractical }]
+function generateTimetable(subjectHours, { availableSlots, busyKeys }) {
   const periodsNeeded = [];
-  subjectHours.forEach(({ subject, lecturerName, hoursPerWeek, isPractical }) => {
+  subjectHours.forEach(({ subject, lecturerName, lecturerId, hoursPerWeek, isPractical }) => {
     for (let i = 0; i < hoursPerWeek; i++) {
-      periodsNeeded.push({ subject, lecturerName, isPractical });
+      periodsNeeded.push({ subject, lecturerName, lecturerId, isPractical });
     }
   });
 
-  // Step 2: Shuffle for randomness
   for (let i = periodsNeeded.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [periodsNeeded[i], periodsNeeded[j]] = [periodsNeeded[j], periodsNeeded[i]];
   }
 
-  // Step 3: Only period slots (skip break/lunch)
-  const periodSlots = []; // [{ day, periodIndex }]
-  DAYS.forEach((day) => {
-    COLUMNS.forEach((col, pIndex) => {
-      if (col.type === "period") {
-        periodSlots.push({ day, periodIndex: pIndex, periodLabel: col.label });
-      }
-    });
-  });
-
-  // Step 4: Assign periods → slots
   const assignments = [];
-  let pIdx = 0;
+  const assignedSlotKeys = new Set();
+  const generatedBusyKeys = new Set(busyKeys);
+  const unallocated = [];
 
   periodsNeeded.forEach((period) => {
-    if (pIdx >= periodSlots.length) return; // slots exhausted
+    const lecturerKey = getLecturerKey(period);
+    const slot = availableSlots.find((candidate) => {
+      const slotKey = `${candidate.day}-${candidate.periodIndex}`;
+      if (assignedSlotKeys.has(slotKey)) return false;
+      if (!lecturerKey) return true;
+      return !generatedBusyKeys.has(getBusyKey(lecturerKey, candidate.day, candidate.periodIndex));
+    });
 
-    // Skip already assigned slot (shouldn't happen with fresh generate)
-    const slot = periodSlots[pIdx];
+    if (!slot) {
+      unallocated.push(period);
+      return;
+    }
+
+    assignedSlotKeys.add(`${slot.day}-${slot.periodIndex}`);
+    if (lecturerKey) {
+      generatedBusyKeys.add(getBusyKey(lecturerKey, slot.day, slot.periodIndex));
+    }
+
     assignments.push({
       ...slot,
-      subject:      period.subject,
+      subject: period.subject,
       lecturerName: period.lecturerName,
-      isPractical:  period.isPractical,
+      lecturerId: period.lecturerId || null,
+      isPractical: period.isPractical,
       subjectColor: SUBJECT_COLORS[period.subject] || "#e2e8f0",
     });
-
-    pIdx++;
   });
 
-  // Step 5: Fill remaining slots as empty
-  for (; pIdx < periodSlots.length; pIdx++) {
-    const slot = periodSlots[pIdx];
-    assignments.push({
-      ...slot,
-      subject:      "",
-      lecturerName: "",
-      isPractical:  false,
-      subjectColor: "#e2e8f0",
-    });
-  }
-
-  return assignments;
+  return { assignments, unallocated };
 }
 
 // ── POST — Auto Generate చేయడం ───────────────────────────────────────
@@ -139,8 +111,43 @@ export async function POST(req) {
       lockedSlots.map((s) => `${s.day}-${s.periodIndex}`)
     );
 
-    // Generate assignments
-    const assignments = generateTimetable(subjectHours);
+    const availableSlots = [];
+    DAYS.forEach((day) => {
+      COLUMNS.forEach((col, periodIndex) => {
+        const key = `${day}-${periodIndex}`;
+        if (col.type === "period" && !lockedKeys.has(key)) {
+          availableSlots.push({ day, periodIndex, periodLabel: col.label });
+        }
+      });
+    });
+
+    const existingBusySlots = await TimetableSlot.find({
+      collegeId,
+      academicYear,
+      periodType: "period",
+      subject: { $ne: "" },
+      $or: [
+        { lecturerId: { $ne: null } },
+        { lecturerName: { $ne: "" } },
+      ],
+    }).lean();
+
+    const busyKeys = new Set();
+    existingBusySlots.forEach((slot) => {
+      const slotKey = `${slot.day}-${slot.periodIndex}`;
+      const isCurrentClass = slot.classLabel === classLabel;
+      if (isCurrentClass && !lockedKeys.has(slotKey)) return;
+
+      const lecturerKey = getLecturerKey(slot);
+      if (!lecturerKey) return;
+      busyKeys.add(getBusyKey(lecturerKey, slot.day, slot.periodIndex));
+    });
+
+    // Generate assignments without placing lecturers into already-busy periods.
+    const { assignments, unallocated } = generateTimetable(subjectHours, {
+      availableSlots,
+      busyKeys,
+    });
 
     // Break/Lunch slots కూడా save చేయాలి
     const allSlots = [];
@@ -173,7 +180,7 @@ export async function POST(req) {
           periodType:   "period",
           subject:      assignment?.subject      || "",
           lecturerName: assignment?.lecturerName || "",
-          lecturerId:   null,
+          lecturerId:   assignment?.lecturerId   || null,
           subjectColor: assignment?.subjectColor || "#e2e8f0",
           isLocked:     false,
           isPractical:  assignment?.isPractical  || false,
@@ -208,6 +215,7 @@ export async function POST(req) {
     return NextResponse.json({
       message:   "Timetable auto-generated ✅",
       totalSaved: allSlots.length,
+      unallocated,
       workload:  Object.entries(workloadMap).map(([name, w]) => ({ name, ...w })),
     });
 

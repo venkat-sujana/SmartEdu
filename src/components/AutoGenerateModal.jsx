@@ -5,116 +5,14 @@ import {
   CheckCircle2, Loader2, RotateCcw,
   BookOpen, FlaskConical, Clock, Info
 } from 'lucide-react'
+import {
+  TIMETABLE_DEFAULT_HOURS as DEFAULT_HOURS,
+  TIMETABLE_GENERATOR_SUBJECT_LECTURERS as SUBJECT_LECTURERS,
+  TIMETABLE_GENERATOR_SUBJECT_COLORS as SUBJECT_COLORS,
+  TIMETABLE_GENERATOR_SUBJECTS as ALL_SUBJECTS,
+  TIMETABLE_TOTAL_PERIODS_PER_CLASS as TOTAL_PERIODS_PER_WEEK,
+} from '@/lib/timetable-config'
 
-
-// ── Constants ────────────────────────────────────────────────────────
-const TOTAL_PERIODS_PER_WEEK = 48  // 6 days × 8 periods (break/lunch বাদ)
-
-const SUBJECT_LECTURERS = {
-    //General Stream
-  'Maths':               'K.Seenaiah',
-  'Physics':             'G.Sujatha',
-  'Chemistry':           'K.Sailaja',
-  'Physics Practicals':  'G.Sujatha',
-  'Chemistry Practicals':'K.Sailaja',
-  'Botany':              'A.Munikrishnaiah',
-  'Botany Practicals':   'A.Munikrishnaiah',
-  'Zoology':             'A.Sujathamma',
-  'Zoology Practicals':  'A.Sujathamma',
-  'English General':             'Ch.Kesava Prasad',
-  'Telugu':              'R.B.Penchal Singh',
-  'Sanskrit':            'No lecturer found',
-  'Hindi':               'K.Salajakumari',
-  'Civics':              'S.Sudhakar Rao',
-  'Economics':           'Balli.Venkataiah',
-  'History':             'Bandi Venkataiah',
-  'Commerce':            'M.Sumalatha',
-  'Study Hour General':          '',
-  //vocational stream
-  'GFC':                 'P.Ramesh',
-  'English Vocational':  'K.Sudheer',
-  'Bridge Course':       'Bridge Course Lecturer',
-  'V1':             'E.V/K.B.R/R.G',
-  'V1 Practicals':  'E.V/K.B.R/R.G',
-  'V2':             'G.K/K.B.R/B.V',
-  'V2 Practicals':  'G.K/K.B.R/B.V',
-  'V3':             'G.K/K.B.R/R.G',
-  'V3 Practicals':  'G.K/K.B.R/R.G',
-  'V4':             'E.V/K.B.R/R.G',
-  'V4 Practicals':  'E.V/K.B.R/R.G',
-  'V5':             'G.K/K.B.R/R.G',
-  'V5 Practicals':  'G.K/K.B.R/R.G',
-  'V6':             'G.K/K.B.R/R.G',
-  'V6 Practicals':  'G.K/K.B.R/R.G',
-}
-
-const DEFAULT_HOURS = {
-  general: {
-    'Maths':               5,
-    'Physics':             4,
-    'Chemistry':           4,
-    'Physics Practicals':  2,
-    'Chemistry Practicals':2,
-    'Botany':              4,
-    'Botany Practicals':   2,
-    'Zoology':             4,
-    'Zoology Practicals':  2,
-    'English':             4,
-    'Telugu':              3,
-    'Study Hour':          2,
-  },
-  vocational: {
-    'English':        4,
-    'GFC':            5,
-    'V1':             4,
-    'V1 Practicals':  2,
-    'V2':             4,
-    'V2 Practicals':  2,
-    'Study Hour':     2,
-    'Bridge Course':  2,
-  },
-}
-
-const SUBJECT_COLORS = {
-  'Maths':               'bg-blue-50 border-blue-200 text-blue-700',
-  'Physics':             'bg-yellow-50 border-yellow-200 text-yellow-700',
-  'Chemistry':           'bg-emerald-50 border-emerald-200 text-emerald-700',
-  'Physics Practicals':  'bg-yellow-50 border-yellow-300 text-yellow-800',
-  'Chemistry Practicals':'bg-emerald-50 border-emerald-300 text-emerald-800',
-  'Botany':              'bg-green-50 border-green-200 text-green-700',
-  'Botany Practicals':   'bg-green-50 border-green-300 text-green-800',
-  'Zoology':             'bg-teal-50 border-teal-200 text-teal-700',
-  'Zoology Practicals':  'bg-teal-50 border-teal-300 text-teal-800',
-  'English':             'bg-sky-50 border-sky-200 text-sky-700',
-  'Telugu':              'bg-violet-50 border-violet-200 text-violet-700',
-  'Sanskrit':            'bg-pink-50 border-pink-200 text-pink-700',
-  'Hindi':               'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700',
-  'Civics':              'bg-purple-50 border-purple-200 text-purple-700',
-  'Economics':           'bg-rose-50 border-rose-200 text-rose-700',
-  'History':             'bg-orange-50 border-orange-200 text-orange-700',
-  'Commerce':            'bg-amber-50 border-amber-200 text-amber-700',
-  'Study Hour':          'bg-slate-50 border-slate-200 text-slate-600',
-  'GFC':                 'bg-lime-50 border-lime-200 text-lime-700',
-  'Bridge Course':       'bg-indigo-50 border-indigo-200 text-indigo-700',
-}
-
-const ALL_SUBJECTS = {
-  general: [
-    'Maths','Physics','Chemistry',
-    'Physics Practicals','Chemistry Practicals',
-    'Botany','Botany Practicals',
-    'Zoology','Zoology Practicals',
-    'Civics','Economics','History','Commerce',
-    'English','Telugu','Sanskrit','Hindi','Study Hour',
-  ],
-  vocational: [
-    'English','GFC',
-    'V1','V1 Practicals','V2','V2 Practicals',
-    'V3','V3 Practicals','V4','V4 Practicals',
-    'V5','V5 Practicals','V6','V6 Practicals',
-    'Study Hour','Bridge Course',
-  ],
-}
 
 // ── AutoGenerateModal ────────────────────────────────────────────────
 export default function AutoGenerateModal({
@@ -202,10 +100,11 @@ export default function AutoGenerateModal({
         message:     data.message,
         totalSaved:  data.totalSaved,
         workload:    data.workload || [],
+        unallocated: data.unallocated || [],
       })
 
       // Parent callback — timetable refresh చేయాలి
-      onGenerated?.()
+      onGenerated?.({ unallocated: data.unallocated || [] })
 
     } catch (err) {
       setResult({ success: false, message: err.message || 'Generation failed' })
@@ -373,6 +272,13 @@ export default function AutoGenerateModal({
                     {w.name}: {w.total} periods
                   </span>
                 ))}
+              </div>
+            )}
+            {result.success && result.unallocated?.length > 0 && (
+              <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1.5">
+                <p className="text-[10px] font-bold text-amber-700">
+                  {result.unallocated.length} period{result.unallocated.length > 1 ? 's' : ''} could not be placed without lecturer conflicts.
+                </p>
               </div>
             )}
           </div>

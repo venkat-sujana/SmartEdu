@@ -1,21 +1,38 @@
-//app/timetable/page.jsx
+// app/timetable/page.jsx
 import EditableTimeTable from '@/components/EditableTimeTable'
+import {
+  TIMETABLE_ACADEMIC_YEAR,
+  TIMETABLE_CLASSES,
+} from '@/lib/timetable-config'
+
 export default function TimeTablePage() {
   return (
     <div className="p-4 md:p-8">
-      <h1 className="mb-2 text-center text-3xl font-extrabold text-blue-900">
-        Academic Year 2026 – 2027
-      </h1>
       
+      <h1 className="mb-2 text-center text-3xl font-extrabold text-blue-900">
+        S.K.R.GOVERNMENT JUNIOR COLLEGE,GUDUR
+        TIME TABLE FOR THE YEAR {TIMETABLE_ACADEMIC_YEAR}
+      </h1>
+
       {/* GENERAL STREAM */}
-      <EditableTimeTable title="FIRST YEAR SCIENCE - GENERAL" stream="general" />
-      <EditableTimeTable title="SECOND YEAR SCIENCE - GENERAL" stream="general" />
-      <EditableTimeTable title="FIRST YEAR ARTS - GENERAL" stream="general" />
-      <EditableTimeTable title="SECOND YEAR ARTS - GENERAL" stream="general" />
+      {TIMETABLE_CLASSES.filter((cls) => cls.stream === 'general').map((cls) => (
+        <EditableTimeTable
+          key={cls.title}
+          title={cls.title}
+          stream={cls.stream}
+          academicYear={TIMETABLE_ACADEMIC_YEAR}
+        />
+      ))}
 
       {/* VOCATIONAL STREAM */}
-      <EditableTimeTable title="FIRST YEAR VOCATIONAL" stream="vocational" />
-      <EditableTimeTable title="SECOND YEAR VOCATIONAL " stream="vocational" />
+      {TIMETABLE_CLASSES.filter((cls) => cls.stream === 'vocational').map((cls) => (
+        <EditableTimeTable
+          key={cls.title}
+          title={cls.title}
+          stream={cls.stream}
+          academicYear={TIMETABLE_ACADEMIC_YEAR}
+        />
+      ))}
     </div>
   )
 }

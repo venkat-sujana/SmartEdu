@@ -5,8 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectMongoDB from "@/lib/mongodb";
 import TimetableSlot from "@/models/TimetableSlot";
 import mongoose from "mongoose";
-
-const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+import { TIMETABLE_DAYS as DAYS } from "@/lib/timetable-config";
 
 // ── GET — class timetable load చేయడం ────────────────────────────────
 export async function GET(req) {

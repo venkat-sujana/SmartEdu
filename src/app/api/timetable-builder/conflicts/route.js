@@ -6,6 +6,31 @@ import connectMongoDB from "@/lib/mongodb";
 import TimetableSlot from "@/models/TimetableSlot";
 import mongoose from "mongoose";
 
+function normalizeLecturerName(name = "") {
+  return String(name).trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function getLecturerIdentity(slot) {
+  if (slot.lecturerId) {
+    return {
+      key: `id:${String(slot.lecturerId)}`,
+      type: "lecturerId",
+      lecturerId: slot.lecturerId,
+      lecturerName: slot.lecturerName || "Unknown lecturer",
+    };
+  }
+
+  const normalizedName = normalizeLecturerName(slot.lecturerName);
+  if (!normalizedName) return null;
+
+  return {
+    key: `name:${normalizedName}`,
+    type: "lecturerName",
+    lecturerId: null,
+    lecturerName: slot.lecturerName,
+  };
+}
+
 // ── GET — Conflicts + Workload report ────────────────────────────────
 //
 // Conflict = ఒక lecturer కి same day + same periodIndex లో
@@ -28,31 +53,43 @@ export async function GET(req) {
       collegeId,
       academicYear,
       periodType: "period",
-      lecturerName: { $ne: "" },
+      subject: { $ne: "" },
+      $or: [
+        { lecturerId: { $ne: null } },
+        { lecturerName: { $ne: "" } },
+      ],
     }).lean();
 
     // ── Conflict Detection ────────────────────────────────────────────
     // Key: lecturer + day + periodIndex → రెండు classes ఉంటే conflict
     const slotMap = {}; // key → [slot, slot, ...]
     slots.forEach((slot) => {
-      const key = `${slot.lecturerName}::${slot.day}::${slot.periodIndex}`;
+      const identity = getLecturerIdentity(slot);
+      if (!identity) return;
+      const key = `${identity.key}::${slot.day}::${slot.periodIndex}`;
       if (!slotMap[key]) slotMap[key] = [];
       slotMap[key].push(slot);
     });
 
     const conflicts = [];
     Object.entries(slotMap).forEach(([key, group]) => {
-      if (group.length > 1) {
+      const uniqueClasses = new Set(group.map((slot) => slot.classLabel));
+      if (uniqueClasses.size > 1) {
         // Conflict! ఒక lecturer కి same time లో రెండు classes
-        const [lecturerName, day, periodIndex] = key.split("::");
+        const [, day, periodIndex] = key.split("::");
+        const identity = getLecturerIdentity(group[0]);
         conflicts.push({
-          lecturerName,
+          lecturerKey: identity.key,
+          lecturerKeyType: identity.type,
+          lecturerId: identity.lecturerId,
+          lecturerName: identity.lecturerName,
           day,
           periodIndex: Number(periodIndex),
           periodLabel: group[0].periodLabel,
           classes:     group.map((s) => ({
             classLabel: s.classLabel,
             subject:    s.subject,
+            lecturerId: s.lecturerId,
             slotId:     s._id,
           })),
         });
@@ -63,13 +100,22 @@ export async function GET(req) {
     // Per lecturer: theory + practical + total per week (all classes కలిపి)
     const workloadMap = {};
     slots.forEach((slot) => {
-      const name = slot.lecturerName;
-      if (!workloadMap[name]) {
-        workloadMap[name] = { name, theory: 0, practical: 0, total: 0 };
+      const identity = getLecturerIdentity(slot);
+      if (!identity) return;
+      if (!workloadMap[identity.key]) {
+        workloadMap[identity.key] = {
+          lecturerKey: identity.key,
+          lecturerKeyType: identity.type,
+          lecturerId: identity.lecturerId,
+          name: identity.lecturerName,
+          theory: 0,
+          practical: 0,
+          total: 0,
+        };
       }
-      if (slot.isPractical) workloadMap[name].practical++;
-      else                   workloadMap[name].theory++;
-      workloadMap[name].total++;
+      if (slot.isPractical) workloadMap[identity.key].practical++;
+      else                   workloadMap[identity.key].theory++;
+      workloadMap[identity.key].total++;
     });
 
     const workload = Object.values(workloadMap).sort((a, b) => b.total - a.total);

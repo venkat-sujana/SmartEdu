@@ -10,143 +10,70 @@ import {
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import AutoGenerateModal from '@/components/AutoGenerateModal'
+import LecturerWorkloadReport from './LecturerWorkloadReport'
+import {
+  TIMETABLE_COLUMNS as COLUMNS,
+  TIMETABLE_DAYS as DAYS,
+  TIMETABLE_SUBJECT_COLORS as SUBJECT_COLORS,
+  TIMETABLE_SUBJECT_LECTURERS as SUBJECT_LECTURERS,
+  TIMETABLE_SUBJECT_OPTIONS as SUBJECTS,
+  TIMETABLE_SUBJECT_TARGETS as SUBJECT_TARGETS,
+} from '@/lib/timetable-config'
 
 // ── CONSTANTS ────────────────────────────────────────────────────────
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
-const COLUMNS = [
-  { label: '9:10 - 10:00',  type: 'period' },
-  { label: '10:00 - 10:50', type: 'period' },
-  { label: 'BREAK',         type: 'break'  },
-  { label: '11:00 - 11:50', type: 'period' },
-  { label: '11:50 - 12:40', type: 'period' },
-  { label: 'LUNCH',         type: 'lunch'  },
-  { label: '1:20 - 2:10',   type: 'period' },
-  { label: '2:10 - 3:00',   type: 'period' },
-  { label: '3:10 - 4:00',   type: 'period' },
-  { label: '4:00 - 5:00',   type: 'period' },
-]
-
-const SUBJECTS = {
-  general: [
-    '', 'Maths', 'Physics', 'Chemistry',
-    'Physics Practicals', 'Chemistry Practicals',
-    'Botany', 'Botany Practicals', 'Zoology', 'Zoology Practicals',
-    'Civics', 'Economics', 'History', 'Commerce',
-    'English', 'Telugu', 'Sanskrit', 'Hindi', 'Study Hour',
-  ],
-  vocational: [
-    '', 
-    'English', 
-    'GFC',
-    'V1', 
-    'V1 Practicals',
-    'V2', 
-    'V2 Practicals', 
-    'V3', 
-    'V3 Practicals',
-    'V4', 
-    'V4 Practicals', 
-    'V5', 
-    'V5 Practicals',
-    'V6', 
-    'V6 Practicals', 
-    'Study Hour', 
-    'Bridge Course',
-  ],
-}
-
-const SUBJECT_COLORS = {
-  'Maths':               'bg-blue-100 text-blue-800',
-  'Physics':             'bg-yellow-100 text-yellow-800',
-  'Chemistry':           'bg-emerald-100 text-emerald-800',
-  'Physics Practicals':  'bg-yellow-200 text-yellow-900',
-  'Chemistry Practicals':'bg-emerald-200 text-emerald-900',
-  'Botany':              'bg-green-100 text-green-800',
-  'Botany Practicals':   'bg-green-200 text-green-900',
-  'Zoology':             'bg-teal-100 text-teal-800',
-  'Zoology Practicals':  'bg-teal-200 text-teal-900',
-  'Civics':              'bg-purple-100 text-purple-800',
-  'Economics':           'bg-rose-100 text-rose-800',
-  'History':             'bg-orange-100 text-orange-800',
-  'Commerce':            'bg-amber-100 text-amber-800',
-  'English':             'bg-sky-100 text-sky-800',
-  'Telugu':              'bg-violet-100 text-violet-800',
-  'Sanskrit':            'bg-pink-100 text-pink-800',
-  'Hindi':               'bg-fuchsia-100 text-fuchsia-800',
-  'Study Hour':          'bg-slate-100 text-slate-600',
-  'GFC':                 'bg-lime-100 text-lime-800',
-  'Bridge Course':       'bg-indigo-100 text-indigo-800',
-}
-
-const SUBJECT_LECTURERS = {
-  //General Stream
-  'Maths':               'K.Seenaiah',
-  'Physics':             'G.Sujatha',
-  'Chemistry':           'K.Sailaja',
-  'Physics Practicals':  'G.Sujatha',
-  'Chemistry Practicals':'K.Sailaja',
-  'Botany':              'A.Munikrishnaiah',
-  'Botany Practicals':   'A.Munikrishnaiah',
-  'Zoology':             'A.Sujathamma',
-  'Zoology Practicals':  'A.Sujathamma',
-  'English General':             'Ch.Kesava Prasad',
-  'Telugu':              'R.B.Penchal Singh',
-  'Sanskrit':            'No lecturer found',
-  'Hindi':               'K.Salajakumari',
-  'Civics':              'S.Sudhakar Rao',
-  'Economics':           'Balli.Venkataiah',
-  'History':             'Bandi Venkataiah',
-  'Commerce':            'M.Sumalatha',
-  'Study Hour General':          '',
-  //vocational stream
-  'GFC':                 'P.Ramesh',
-  'English Vocational':  'K.Sudheer',
-  'Bridge Course':       'Bridge Course Lecturer',
-  'V1':             'E.V/K.B.R/R.G',
-  'V1 Practicals':  'E.V/K.B.R/R.G',
-  'V2':             'G.K/K.B.R/B.V',
-  'V2 Practicals':  'G.K/K.B.R/B.V',
-  'V3':             'G.K/K.B.R/R.G',
-  'V3 Practicals':  'G.K/K.B.R/R.G',
-  'V4':             'E.V/K.B.R/R.G',
-  'V4 Practicals':  'E.V/K.B.R/R.G',
-  'V5':             'G.K/K.B.R/R.G',
-  'V5 Practicals':  'G.K/K.B.R/R.G',
-  'V6':             'G.K/K.B.R/R.G',
-  'V6 Practicals':  'G.K/K.B.R/R.G',
-
-
-}
-
 const MIN_PERIODS = 16
 const MAX_PERIODS = 24
-
 // ── WORKLOAD ─────────────────────────────────────────────────────────
 function calculateWorkload(table) {
   const workload = {}
+
   table.forEach(dayRow => {
     dayRow.forEach(cell => {
-      if (!cell?.subject) return
-      const lecturer = SUBJECT_LECTURERS[cell.subject]
-      if (!lecturer) return
+      if (!cell?.subject || cell.periodType !== 'period') return
+
+      // ✅ DB లో save అయిన lecturerName వాడండి
+      // లేకపోతే SUBJECT_LECTURERS నుండి fallback
+      const lecturer =
+        cell.lecturerName ||
+        SUBJECT_LECTURERS[cell.subject] ||
+        'Unknown'
+
+      if (!lecturer || lecturer === 'Unknown') return
+
       if (!workload[lecturer]) {
-        workload[lecturer] = { lecturer, subjects: [], theory: 0, practical: 0, total: 0 }
+        workload[lecturer] = {
+          lecturer,
+          subjects:  [],
+          theory:    0,
+          practical: 0,
+          total:     0,
+        }
       }
+
+      // Subject list (duplicate లేకుండా)
       if (!workload[lecturer].subjects.includes(cell.subject)) {
         workload[lecturer].subjects.push(cell.subject)
       }
-      if (cell.subject.toLowerCase().includes('practical')) workload[lecturer].practical++
-      else workload[lecturer].theory++
+
+      // Theory vs Practical
+      if (cell.isPractical || cell.subject.toLowerCase().includes('practical')) {
+        workload[lecturer].practical++
+      } else {
+        workload[lecturer].theory++
+      }
+
       workload[lecturer].total++
     })
   })
-  return Object.values(workload)
+
+  return Object.values(workload).sort((a, b) => b.total - a.total)
 }
+
 
 // ── WORKLOAD TABLE ────────────────────────────────────────────────────
 function WorkloadReport({ data }) {
   if (!data.length) return null
+
   return (
     <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <h3 className="mb-4 text-center text-sm font-bold text-slate-700">
@@ -156,24 +83,110 @@ function WorkloadReport({ data }) {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-slate-800 text-white">
-              {['Lecturer', 'Theory', 'Practical', 'Total / Week', 'Status'].map(h => (
-                <th key={h} className="px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide">{h}</th>
+              {['Lecturer', 'Subjects', 'Theory', 'Practical', 'Total / Week', 'Target', 'Status'].map(h => (
+                <th key={h} className="px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide">
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {data.map(row => {
-              const status = row.total < MIN_PERIODS ? 'Underload' : row.total > MAX_PERIODS ? 'Overload' : 'Normal'
+              // ✅ Subject-wise target sum
+              const subjects    = row.subjects || []
+              const targetTotal = subjects.reduce(
+                (sum, sub) => sum + (SUBJECT_TARGETS[sub] || 0), 0
+              )
+
+              const status = targetTotal === 0
+                ? (row.total < MIN_PERIODS ? 'Underload' : row.total > MAX_PERIODS ? 'Overload' : 'Normal')
+                : row.total < targetTotal  ? 'Underload'
+                : row.total > targetTotal  ? 'Overload'
+                : 'Normal'
+
+              // ✅ Each subject — assigned vs target
+              const subjectDetails = subjects.map(sub => ({
+                name:     sub,
+                target:   SUBJECT_TARGETS[sub] || 0,
+                isPractical: sub.toLowerCase().includes('practical'),
+              }))
+
               return (
-                <tr key={row.lecturer} className={status === 'Normal' ? 'bg-emerald-50' : 'bg-rose-50'}>
-                  <td className="px-4 py-2 font-semibold text-slate-800">{row.lecturer}</td>
+                <tr
+                  key={row.lecturer}
+                  className={status === 'Normal' ? 'bg-emerald-50' : 'bg-rose-50'}
+                >
+                  {/* Lecturer */}
+                  <td className="px-4 py-2 font-semibold text-slate-800 whitespace-nowrap">
+                    {row.lecturer}
+                  </td>
+
+                  {/* ✅ Subject + target badges */}
+                  <td className="px-4 py-2">
+                    <div className="flex flex-wrap gap-1">
+                      {subjectDetails.map((s, i) => (
+                        <span
+                          key={i}
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
+                            s.isPractical
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}
+                        >
+                          {s.name}
+                          {s.target > 0 && (
+                            <span className="rounded-full bg-white px-1 font-black">
+                              {s.target}
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+
+                  {/* Theory */}
                   <td className="px-4 py-2 text-center">{row.theory}</td>
+
+                  {/* Practical */}
                   <td className="px-4 py-2 text-center">{row.practical}</td>
-                  <td className="px-4 py-2 text-center font-bold">{row.total}</td>
+
+                  {/* Total */}
+                  <td className="px-4 py-2 text-center font-black text-slate-800">
+                    {row.total}
+                  </td>
+
+                  {/* ✅ Target */}
                   <td className="px-4 py-2 text-center">
-                    {status === 'Normal'    && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700"><CheckCircle2 size={11}/> Normal</span>}
-                    {status === 'Underload' && <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-700"><AlertCircle size={11}/> Underload</span>}
-                    {status === 'Overload'  && <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700"><AlertCircle size={11}/> Overload</span>}
+                    {targetTotal > 0 ? (
+                      <span className={`font-bold ${
+                        row.total === targetTotal ? 'text-emerald-600'
+                        : row.total < targetTotal  ? 'text-rose-600'
+                        : 'text-red-700'
+                      }`}>
+                        {row.total}/{targetTotal}
+                      </span>
+                    ) : (
+                      <span className="text-slate-300">—</span>
+                    )}
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-4 py-2 text-center">
+                    {status === 'Normal' && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">
+                        <CheckCircle2 size={11}/> Normal
+                      </span>
+                    )}
+                    {status === 'Underload' && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-700">
+                        <AlertCircle size={11}/> Underload
+                      </span>
+                    )}
+                    {status === 'Overload' && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700">
+                        <AlertCircle size={11}/> Overload
+                      </span>
+                    )}
                   </td>
                 </tr>
               )
@@ -181,14 +194,18 @@ function WorkloadReport({ data }) {
           </tbody>
         </table>
       </div>
-      <div className="mt-3 flex justify-center gap-6 text-xs font-semibold">
-        <span className="text-emerald-700">🟢 16–24 : Normal</span>
-        <span className="text-rose-700">🔴 &lt;16 or &gt;24 : Under/Over Load</span>
+
+      {/* Legend */}
+      <div className="mt-3 flex flex-wrap justify-center gap-4 text-xs font-semibold">
+        <span className="text-emerald-700">🟢 Normal range</span>
+        <span className="text-rose-700">🔴 Under/Over Load</span>
+        <span className="text-blue-600">
+          🔢 Subject badge = weekly target periods
+        </span>
       </div>
     </div>
   )
 }
-
 // ── SAVE STATUS ───────────────────────────────────────────────────────
 function SaveStatus({ status }) {
   if (status === 'saving')  return <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-400"><Loader2 size={12} className="animate-spin"/> Saving...</span>
@@ -680,7 +697,7 @@ export default function EditableTimeTable({
 
       {/* ── Timetable Grid ── */}
       <div ref={printRef} className="overflow-x-auto p-4">
-        <table className="w-full min-w-[1000px] border-collapse text-sm">
+        <table className="w-full min-w-[1000px] border-3 text-sm">
           <thead>
             <tr className="bg-slate-800 text-white">
               <th className="w-24 border border-slate-600 px-3 py-2.5 text-left text-xs font-bold tracking-wide uppercase">
@@ -709,7 +726,7 @@ export default function EditableTimeTable({
           <tbody>
             {DAYS.map((day, dIndex) => (
               <tr key={day} className={dIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
-                <td className="border border-slate-200 px-3 py-2 text-xs font-bold whitespace-nowrap text-slate-700">
+                <td className="border border-slate-300 px-3 py-2 text-xs font-bold whitespace-nowrap text-slate-700">
                   <div className="flex flex-col">
                     <span>{day}</span>
                     <span className="font-normal text-slate-400">
@@ -807,7 +824,7 @@ export default function EditableTimeTable({
                                 style={{ fontSize: '10px' }}
                               >
                                 {cell.subject || (
-                                  <span className="font-normal text-slate-300">Click to add</span>
+                                  <span className="font-normal text-slate-500">Click to add</span>
                                 )}
                               </span>
                               {cell.lecturerName && (
@@ -858,6 +875,7 @@ export default function EditableTimeTable({
           </tbody>
         </table>
         <WorkloadReport data={workloadData} />
+        {/* <LecturerWorkloadReport data={workloadData} yearType="both" /> */}
       </div>
 
       {showAutoModal && (
@@ -866,8 +884,8 @@ export default function EditableTimeTable({
           stream={stream}
           academicYear={academicYear}
           onClose={() => setShowAutoModal(false)}
-          onGenerated={() => {
-            setShowAutoModal(false)
+          onGenerated={(result) => {
+            if (!result?.unallocated?.length) setShowAutoModal(false)
             fetchTimetable().then(fetchConflicts)
           }}
         />

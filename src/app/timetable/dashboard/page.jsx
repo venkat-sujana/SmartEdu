@@ -8,20 +8,11 @@ import {
   ChevronRight, FlaskConical, ShieldAlert, BarChart3,
   CalendarDays, Layers, GraduationCap, ArrowRight
 } from 'lucide-react'
-
-// ── Config ───────────────────────────────────────────────────────────
-const ACADEMIC_YEAR = '2026-2027'
-
-const CLASSES = [
-  { title: 'FIRST YEAR SCIENCE - GENERAL',  stream: 'general',    color: 'blue'   },
-  { title: 'SECOND YEAR SCIENCE - GENERAL', stream: 'general',    color: 'indigo' },
-  { title: 'FIRST YEAR ARTS - GENERAL',     stream: 'general',    color: 'violet' },
-  { title: 'SECOND YEAR ARTS - GENERAL',    stream: 'general',    color: 'purple' },
-  { title: 'FIRST YEAR VOCATIONAL',         stream: 'vocational', color: 'emerald'},
-  { title: 'SECOND YEAR VOCATIONAL',        stream: 'vocational', color: 'teal'   },
-]
-
-const TOTAL_PERIODS_PER_CLASS = 48  // 6 days × 8 periods
+import {
+  TIMETABLE_ACADEMIC_YEAR as ACADEMIC_YEAR,
+  TIMETABLE_CLASSES as CLASSES,
+  TIMETABLE_TOTAL_PERIODS_PER_CLASS as TOTAL_PERIODS_PER_CLASS,
+} from '@/lib/timetable-config'
 
 const COLOR_MAP = {
   blue:   { bg: 'bg-blue-50',    border: 'border-blue-200',   text: 'text-blue-700',   badge: 'bg-blue-100 text-blue-700',   bar: 'bg-blue-500',   icon: 'bg-blue-100 text-blue-600'   },

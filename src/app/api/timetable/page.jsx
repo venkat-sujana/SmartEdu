@@ -3,17 +3,10 @@
 import { useState, useCallback } from 'react'
 import EditableTimeTable from '@/components/EditableTimeTable'
 import { LayoutGrid, AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react'
-
-const ACADEMIC_YEAR = '2026-2027'
-
-const CLASSES = [
-  { title: 'FIRST YEAR SCIENCE - GENERAL',  stream: 'general'    },
-  { title: 'SECOND YEAR SCIENCE - GENERAL', stream: 'general'    },
-  { title: 'FIRST YEAR ARTS - GENERAL',     stream: 'general'    },
-  { title: 'SECOND YEAR ARTS - GENERAL',    stream: 'general'    },
-  { title: 'FIRST YEAR VOCATIONAL',         stream: 'vocational' },
-  { title: 'SECOND YEAR VOCATIONAL',        stream: 'vocational' },
-]
+import {
+  TIMETABLE_ACADEMIC_YEAR as ACADEMIC_YEAR,
+  TIMETABLE_CLASSES as CLASSES,
+} from '@/lib/timetable-config'
 
 export default function TimeTablePage() {
   // ✅ Per-class conflict counts — { classLabel: count }
