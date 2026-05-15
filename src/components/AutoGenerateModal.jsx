@@ -1,3 +1,4 @@
+//src/components/AutoGenerateModal.jsx
 'use client'
 import { useState, useMemo } from 'react'
 import {

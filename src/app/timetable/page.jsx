@@ -10,7 +10,7 @@ export default function TimeTablePage() {
     <div className="p-4 md:p-8">
       
       <h1 className="mb-2 text-center text-3xl font-extrabold text-blue-900">
-        S.K.R.GOVERNMENT JUNIOR COLLEGE,GUDUR
+        S.K.R.GJC,GUDUR
         TIME TABLE FOR THE YEAR {TIMETABLE_ACADEMIC_YEAR}
       </h1>
 
