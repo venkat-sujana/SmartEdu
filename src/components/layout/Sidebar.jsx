@@ -61,9 +61,11 @@ export default function Sidebar({ onClose }) {
         { href: "/timetable/dashboard", label: "Time Table Dashboard", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
         { href: "/timetable/lecturer", label: "Lecturer Time Table", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
         { href: "/timetable/student", label: "Time Table student", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
-        { href: "/exams-form", label: "Marks Posting", icon: <ClipboardDocumentListIcon className="h-5 w-5 text-indigo-500" /> },
+        { href: "/exams-form", label: "Marks Posting", icon: <PencilSquareIcon className="h-5 w-5 text-indigo-500" /> },
+        { href: "/exams", label: "Exam Dashboard", icon: <CalendarDaysIcon className="h-5 w-5 text-blue-500" /> },
         { href: "/attendance-records/monthly-summary", label: "CAR", icon: <UserGroupIcon className="h-5 w-5 text-violet-500" /> },
         { href: "/attendance-records/attendance-calendar", label: "Calendar View", icon: <CalendarDaysIcon className="h-5 w-5 text-blue-500" /> },
+        
         { href: "/attendance-records/individual", label: "Update Attendance", icon: <PencilSquareIcon className="h-5 w-5 text-blue-500" /> },
         { href: "/absentees-table", label: "Today's Absentees", icon: <XCircleIcon className="h-5 w-5 text-rose-500" /> },
         { href: "/attendance-form", label: "Take Attendance", icon: <PencilSquareIcon className="h-5 w-5 text-emerald-500" /> },

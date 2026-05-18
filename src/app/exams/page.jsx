@@ -1,7 +1,8 @@
 // This is a client-side rendered page for displaying exam reports and analytics.
 //src/app/exams/page.jsx
 'use client'
-import { useEffect, useMemo, useState, useCallback } from 'react'
+
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import {
   ChevronDown,
   FileText,
@@ -11,24 +12,19 @@ import {
   ClipboardCheck,
   ChartColumn,
   CalendarClock,
+  Layers3,
+  GraduationCap,
+  BriefcaseBusiness,
 } from 'lucide-react'
 import EditExamForm from '../edit-exam-form/page'
-const sidebarMenu = [
-  { label: 'Dashboard', icon: LayoutDashboard },
-  { label: 'Unit - 1', icon: ClipboardCheck },
-  { label: 'Unit - 2', icon: ClipboardCheck },
-  { label: 'Unit - 3', icon: ClipboardCheck },
-  { label: 'Unit - 4', icon: ClipboardCheck },
-  { label: 'Quarterly', icon: CalendarClock },
-  { label: 'Half Yearly', icon: CalendarClock },
-  { label: 'Pre-Public - 1', icon: CalendarClock },
-  { label: 'Pre-Public - 2', icon: CalendarClock },
-  { label: 'Reports', icon: FileText },
-]
 
 const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
+
+const GENERAL_STREAMS = ['MPC', 'BIPC', 'CEC', 'HEC']
+
+const VOCATIONAL_STREAMS = ['M&AT', 'CET', 'MLT']
 
 function isUnitExam(examType) {
   return UNIT_EXAMS.includes(examType)
@@ -36,6 +32,30 @@ function isUnitExam(examType) {
 
 function isPublicExam(examType) {
   return PUBLIC_EXAMS.includes(examType)
+}
+
+function normalizeStreamValue(value) {
+  const normalized = String(value || '')
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, '')
+
+  if (!normalized) return ''
+  if (normalized === 'BIPC') return 'BIPC'
+  if (normalized === 'MPC') return 'MPC'
+  if (normalized === 'CEC') return 'CEC'
+  if (normalized === 'HEC') return 'HEC'
+  if (normalized === 'CET') return 'CET'
+  if (normalized === 'MLT') return 'MLT'
+  if (normalized === 'M&AT' || normalized === 'M@AT' || normalized === 'MANDAT') return 'M&AT'
+  return String(value || '').trim()
+}
+
+function getStreamCategory(stream) {
+  const normalized = normalizeStreamValue(stream)
+  if (GENERAL_STREAMS.includes(normalized)) return 'general'
+  if (VOCATIONAL_STREAMS.includes(normalized)) return 'vocational'
+  return 'other'
 }
 
 function formatDate(dateValue) {
@@ -151,7 +171,85 @@ function isReportPass(report) {
   return true
 }
 
-function Sidebar({ collapsed, mobileOpen, onToggleCollapsed, onCloseMobile }) {
+
+
+
+
+
+
+function SidebarSection({ title, items, collapsed, activeKey, onSelect, icon: Icon }) {
+  if (!items.length) return null
+
+  return (
+    <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-2">
+      <div className="mb-2 flex items-center gap-2 px-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+        <Icon className="h-3.5 w-3.5" />
+        <span className={collapsed ? 'hidden' : 'inline'}>{title}</span>
+      </div>
+
+      <div className="space-y-1">
+        {items.map(item => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => onSelect(item)}
+            className={[
+              'flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition',
+              activeKey === item.key
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-700 hover:bg-white hover:text-blue-700',
+            ].join(' ')}
+          >
+            <span className={collapsed ? 'hidden' : 'inline'}>{item.label}</span>
+            <span
+              className={[
+                'rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                activeKey === item.key ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600',
+                collapsed ? 'hidden' : 'inline-flex',
+              ].join(' ')}
+            >
+              {item.count}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Sidebar({
+  collapsed,
+  mobileOpen,
+  onToggleCollapsed,
+  onCloseMobile,
+  activeKey,
+  onSelectFilter,
+  generalSections,
+  vocationalSections,
+}) {
+  const streamBlocks = [
+    {
+      title: 'General Stream',
+      icon: GraduationCap,
+      sections: generalSections,
+      key: 'general-stream',
+      filter: {
+        streamCategory: 'general',
+        title: 'General Stream',
+      },
+    },
+    {
+      title: 'Vocational Stream',
+      icon: BriefcaseBusiness,
+      sections: vocationalSections,
+      key: 'vocational-stream',
+      filter: {
+        streamCategory: 'vocational',
+        title: 'Vocational Stream',
+      },
+    },
+  ]
+
   return (
     <>
       {mobileOpen ? (
@@ -185,18 +283,61 @@ function Sidebar({ collapsed, mobileOpen, onToggleCollapsed, onCloseMobile }) {
           </button>
         </div>
 
-        <nav className="space-y-1 px-3 py-3">
-          {sidebarMenu.map(item => {
-            const Icon = item.icon
+        <nav className="space-y-3 overflow-y-auto px-3 py-3">
+          <button
+            type="button"
+            onClick={() =>
+              onSelectFilter({
+                key: 'dashboard',
+                title: 'Complete Exam Dashboard',
+              })
+            }
+            className={[
+              'flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition',
+              activeKey === 'dashboard'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700',
+            ].join(' ')}
+          >
+            <LayoutDashboard className="h-4 w-4 shrink-0" />
+            <span className={collapsed ? 'hidden' : 'inline'}>Dashboard</span>
+          </button>
+
+          {streamBlocks.map(block => {
+            const BlockIcon = block.icon
             return (
-              <button
-                key={item.label}
-                type="button"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className={collapsed ? 'hidden' : 'inline'}>{item.label}</span>
-              </button>
+              <div key={block.title} className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    onSelectFilter({
+                      key: block.key,
+                      filter: block.filter,
+                    })
+                  }
+                  className={[
+                    'flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] font-semibold uppercase tracking-wide transition',
+                    activeKey === block.key
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700',
+                  ].join(' ')}
+                >
+                  <BlockIcon className="h-3.5 w-3.5" />
+                  <span className={collapsed ? 'hidden' : 'inline'}>{block.title}</span>
+                </button>
+
+                {block.sections.map(section => (
+                  <SidebarSection
+                    key={section.title}
+                    title={section.title}
+                    items={section.items}
+                    collapsed={collapsed}
+                    activeKey={activeKey}
+                    onSelect={onSelectFilter}
+                    icon={section.icon}
+                  />
+                ))}
+              </div>
             )
           })}
         </nav>
@@ -204,6 +345,11 @@ function Sidebar({ collapsed, mobileOpen, onToggleCollapsed, onCloseMobile }) {
     </>
   )
 }
+
+
+
+
+
 
 function SummaryCard({ title, value, hint, icon: Icon }) {
   return (
@@ -215,6 +361,37 @@ function SummaryCard({ title, value, hint, icon: Icon }) {
       <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
       <p className="mt-1 text-xs text-slate-500">{hint}</p>
     </article>
+  )
+}
+
+function StreamSummaryPanel({ title, accentClass, cards, onViewDetails }) {
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+          <p className="text-xs text-slate-500">Stream-specific exam performance snapshot</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={['rounded-full px-2.5 py-1 text-[11px] font-semibold', accentClass].join(' ')}>
+            Summary
+          </span>
+          <button
+            type="button"
+            onClick={onViewDetails}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {cards.map(card => (
+          <SummaryCard key={`${title}-${card.title}`} {...card} />
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -282,51 +459,41 @@ export default function ExamReportPage() {
   const [loading, setLoading] = useState(true)
   const [academicYear, setAcademicYear] = useState('all')
   const [detailsFilter, setDetailsFilter] = useState(null)
+  const [activeSidebarKey, setActiveSidebarKey] = useState('dashboard')
+  const detailsSectionRef = useRef(null)
 
   const loadReports = useCallback(async () => {
-  try {
-    setLoading(true)
-    const res = await fetch('/api/exams', { cache: 'no-store' })
-    const data = await res.json()
-    if (data?.success) {
-      setReports(Array.isArray(data.data) ? data.data : [])
-    } else {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/exams', { cache: 'no-store' })
+      const data = await res.json()
+      if (data?.success) {
+        setReports(Array.isArray(data.data) ? data.data : [])
+      } else {
+        setReports([])
+      }
+    } catch (error) {
+      console.error('Failed to load exam reports', error)
       setReports([])
+    } finally {
+      setLoading(false)
     }
-  } catch (error) {
-    console.error('Failed to load exam reports', error)
-    setReports([])
-  } finally {
-    setLoading(false)
-  }
-}, [])
+  }, [])
 
 // 3. useEffect లో call మాత్రమే
-useEffect(() => {
-  loadReports()
-}, [loadReports])
+  useEffect(() => {
+    loadReports()
+  }, [loadReports])
 
   useEffect(() => {
-    const loadReports = async () => {
-      try {
-        setLoading(true)
-        const res = await fetch('/api/exams', { cache: 'no-store' })
-        const data = await res.json()
-        if (data?.success) {
-          setReports(Array.isArray(data.data) ? data.data : [])
-        } else {
-          setReports([])
-        }
-      } catch (error) {
-        console.error('Failed to load exam reports', error)
-        setReports([])
-      } finally {
-        setLoading(false)
-      }
-    }
+    if (!detailsFilter || !detailsSectionRef.current) return
 
-    loadReports()
-  }, [])
+    detailsSectionRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }, [detailsFilter])
+
 
   const handleDelete = async examId => {
     if (!confirm('ఈ exam record delete చేయాలా?')) return
@@ -363,16 +530,33 @@ useEffect(() => {
     return reports.filter(report => report.academicYear === academicYear)
   }, [reports, academicYear])
 
+  const handleSidebarFilterSelect = useCallback(item => {
+    setActiveSidebarKey(item.key || 'dashboard')
+    setIsMobileSidebarOpen(false)
+    setDetailsFilter(item.filter || null)
+  }, [])
+
   const detailRows = useMemo(() => {
     if (!detailsFilter) return []
 
     return filteredReports
       .filter(report => {
+        const streamCategory = getStreamCategory(
+          report.stream || report.student?.group || report.studentId?.group
+        )
+        const normalizedGroup = normalizeStreamValue(
+          report.stream || report.student?.group || report.studentId?.group
+        )
         const sameType = detailsFilter.examTypes
           ? detailsFilter.examTypes.includes(report.examType)
           : !detailsFilter.examType || report.examType === detailsFilter.examType
         const sameDate = !detailsFilter.date || formatDate(report.examDate) === detailsFilter.date
-        return sameType && sameDate
+        const sameGroup = !detailsFilter.group || normalizedGroup === detailsFilter.group
+        const sameYear = !detailsFilter.yearOfStudy || report.yearOfStudy === detailsFilter.yearOfStudy
+        const sameStreamCategory =
+          !detailsFilter.streamCategory || streamCategory === detailsFilter.streamCategory
+
+        return sameType && sameDate && sameGroup && sameYear && sameStreamCategory
       })
       .sort((a, b) => getStudentName(a).localeCompare(getStudentName(b)))
   }, [detailsFilter, filteredReports])
@@ -440,6 +624,53 @@ useEffect(() => {
     ],
     [summaryStats]
   )
+
+  const streamSummarySections = useMemo(() => {
+    const buildStreamSummary = streamCategory => {
+      const streamRows = filteredReports.filter(report => {
+        const category = getStreamCategory(report.stream || report.student?.group || report.studentId?.group)
+        return category === streamCategory
+      })
+
+      const uniqueExamEvents = new Set(
+        streamRows.map(report => `${report.examType}_${formatDate(report.examDate)}_${report.yearOfStudy || ''}`)
+      )
+      const passCount = streamRows.filter(isReportPass).length
+      const avgPass = streamRows.length > 0 ? ((passCount / streamRows.length) * 100).toFixed(1) : '0.0'
+
+      return [
+        {
+          title: 'Total Records',
+          value: streamRows.length,
+          hint: 'Student exam entries in this stream',
+          icon: Users,
+        },
+        {
+          title: 'Exam Events',
+          value: uniqueExamEvents.size,
+          hint: 'Unique exam/date/year combinations',
+          icon: ChartColumn,
+        },
+        {
+          title: 'Average Pass %',
+          value: `${avgPass}%`,
+          hint: 'Pass percentage inside this stream',
+          icon: ClipboardCheck,
+        },
+        {
+          title: 'Average Marks %',
+          value: `${getAverageReportPercentage(streamRows).toFixed(1)}%`,
+          hint: 'Overall marks average for this stream',
+          icon: CalendarClock,
+        },
+      ]
+    }
+
+    return {
+      general: buildStreamSummary('general'),
+      vocational: buildStreamSummary('vocational'),
+    }
+  }, [filteredReports])
 
   const unitPerformance = useMemo(() => {
     return UNIT_EXAMS.map(unit => {
@@ -546,6 +777,89 @@ useEffect(() => {
       .slice(0, 12)
   }, [filteredReports])
 
+  const streamSidebarSections = useMemo(() => {
+    const buildItems = streamCategory => {
+      const streamReports = filteredReports.filter(report => {
+        const category = getStreamCategory(report.stream || report.student?.group || report.studentId?.group)
+        return category === streamCategory
+      })
+
+      const yearOrder = { 'First Year': 1, 'Second Year': 2 }
+
+      const yearWiseItems = Object.values(
+        streamReports.reduce((acc, report) => {
+          const key = report.yearOfStudy || 'Unknown Year'
+          if (!acc[key]) {
+            acc[key] = {
+              key: `${streamCategory}-year-${key}`,
+              label: key,
+              count: 0,
+              filter: {
+                streamCategory,
+                yearOfStudy: key,
+                title: `${streamCategory === 'general' ? 'General' : 'Vocational'} Stream - ${key}`,
+              },
+            }
+          }
+          acc[key].count += 1
+          return acc
+        }, {})
+      ).sort((a, b) => (yearOrder[a.label] || 99) - (yearOrder[b.label] || 99))
+
+      const groupWiseItems = Object.values(
+        streamReports.reduce((acc, report) => {
+          const key = normalizeStreamValue(report.stream || report.student?.group || report.studentId?.group)
+          if (!key) return acc
+          if (!acc[key]) {
+            acc[key] = {
+              key: `${streamCategory}-group-${key}`,
+              label: key,
+              count: 0,
+              filter: {
+                streamCategory,
+                group: key,
+                title: `${key} - ${streamCategory === 'general' ? 'General' : 'Vocational'} Stream`,
+              },
+            }
+          }
+          acc[key].count += 1
+          return acc
+        }, {})
+      ).sort((a, b) => a.label.localeCompare(b.label))
+
+      const examWiseItems = Object.values(
+        streamReports.reduce((acc, report) => {
+          const key = report.examType || 'UNKNOWN'
+          if (!acc[key]) {
+            acc[key] = {
+              key: `${streamCategory}-exam-${key}`,
+              label: formatExamLabel(key),
+              count: 0,
+              filter: {
+                streamCategory,
+                examType: key,
+                title: `${streamCategory === 'general' ? 'General' : 'Vocational'} Stream - ${formatExamLabel(key)}`,
+              },
+            }
+          }
+          acc[key].count += 1
+          return acc
+        }, {})
+      ).sort((a, b) => a.label.localeCompare(b.label))
+
+      return [
+        { title: 'Year Wise', icon: CalendarClock, items: yearWiseItems },
+        { title: 'Group Wise', icon: Layers3, items: groupWiseItems },
+        { title: 'Exam Wise', icon: FileText, items: examWiseItems },
+      ]
+    }
+
+    return {
+      general: buildItems('general'),
+      vocational: buildItems('vocational'),
+    }
+  }, [filteredReports])
+
   const contentPadding = isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
 
   return (
@@ -555,6 +869,10 @@ useEffect(() => {
         mobileOpen={isMobileSidebarOpen}
         onToggleCollapsed={() => setIsSidebarCollapsed(prev => !prev)}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        activeKey={activeSidebarKey}
+        onSelectFilter={handleSidebarFilterSelect}
+        generalSections={streamSidebarSections.general}
+        vocationalSections={streamSidebarSections.vocational}
       />
 
       <div
@@ -589,6 +907,11 @@ useEffect(() => {
                   </option>
                 ))}
               </select>
+            </div>
+            <div>
+              <button type="button" className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
+                <a href="/exams-form">MARKS POST HERE</a>
+              </button>
             </div>
 
             <div className="relative ml-auto">
@@ -635,14 +958,46 @@ useEffect(() => {
               </div>
             </section>
 
+            <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              <StreamSummaryPanel
+                title="General Stream Summary"
+                accentClass="bg-blue-100 text-blue-700"
+                cards={streamSummarySections.general}
+                onViewDetails={() =>
+                  handleSidebarFilterSelect({
+                    key: 'general-stream',
+                    filter: {
+                      streamCategory: 'general',
+                      title: 'General Stream',
+                    },
+                  })
+                }
+              />
+              <StreamSummaryPanel
+                title="Vocational Stream Summary"
+                accentClass="bg-emerald-100 text-emerald-700"
+                cards={streamSummarySections.vocational}
+                onViewDetails={() =>
+                  handleSidebarFilterSelect({
+                    key: 'vocational-stream',
+                    filter: {
+                      streamCategory: 'vocational',
+                      title: 'Vocational Stream',
+                    },
+                  })
+                }
+              />
+            </section>
+
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-base font-semibold text-slate-900">Unit-Wise Performance</h2>
                 <button
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
+                    setActiveSidebarKey('dashboard')
                     setDetailsFilter({ examTypes: UNIT_EXAMS, title: 'All Unit Exams' })
-                  }
+                  }}
                   className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                 >
                   View All Units
@@ -665,7 +1020,10 @@ useEffect(() => {
             </section>
 
             {detailsFilter ? (
-              <section className="rounded-lg border border-blue-200 bg-white px-4 py-3 shadow-sm">
+              <section
+                ref={detailsSectionRef}
+                className="rounded-lg border border-blue-200 bg-white px-4 py-3 shadow-sm"
+              >
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h2 className="text-base font-semibold text-slate-900">
@@ -705,7 +1063,7 @@ useEffect(() => {
                     <tbody>
                       {detailRows.length === 0 ? (
                         <tr>
-                          <td colSpan={10} className="px-3 py-6 text-center text-sm text-slate-500">
+                          <td colSpan={11} className="px-3 py-6 text-center text-sm text-slate-500">
                             No student records found for this selection.
                           </td>
                         </tr>
@@ -816,11 +1174,14 @@ useEffect(() => {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  setDetailsFilter({
-                                    examType: row.examType,
-                                    date: row.date,
-                                    title: `${row.examName} - ${row.date}`,
-                                  })
+                                  {
+                                    setActiveSidebarKey('dashboard')
+                                    setDetailsFilter({
+                                      examType: row.examType,
+                                      date: row.date,
+                                      title: `${row.examName} - ${row.date}`,
+                                    })
+                                  }
                                 }
                                 className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
                               >
