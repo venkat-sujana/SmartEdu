@@ -96,7 +96,7 @@ export default function StudentsPage() {
       startY: 25,
       head: [
         [
-          "S.No", "Name", "Mobile", "Parent Mobile", "Group", "Caste", "Gender", "Year of Study", "Admission Year", "Date Of Joining", "Address"
+          "S.No", "Name", "Mobile",dob, "Parent Mobile", "Group", "Caste", "Gender", "Year of Study", "Admission Year", "Date Of Joining", "Address"
         ],
       ],
       body: filteredStudents.map((s, idx) => [
@@ -300,7 +300,8 @@ export default function StudentsPage() {
             <tr>
               <th className="px-4 py-2 border-r border-gray-300 w-12 text-center">S.No</th>
               <th className="px-4 py-2 border-r border-gray-300 w-36">Name</th>
-<th className="px-4 py-2 border-r border-gray-300 w-28">Mobile</th>
+              <th className="px-4 py-2 border-r border-gray-300 w-28">Mobile</th>
+              <th className="px-4 py-2 border-r border-gray-300 w-28">DOB</th>
               <th className="px-4 py-2 border-r border-gray-300 w-24">Group</th>
               <th className="px-4 py-2 border-r border-gray-300 w-24">Caste</th>
               <th className="px-4 py-2 border-r border-gray-300 w-20">Gender</th>
@@ -308,7 +309,7 @@ export default function StudentsPage() {
               <th className="px-4 py-2 border-r border-gray-300 w-32">Year of Study</th>
               <th className="px-4 py-2 border-r border-gray-300 w-28">Admission Year</th>
               <th className="px-4 py-2 border-r border-gray-300 w-28">Date of Joining</th>
-<th className="px-4 py-2 border-r border-gray-300">Address</th>
+              <th className="px-4 py-2 border-r border-gray-300">Address</th>
               <th className="px-3 py-2 border border-gray-300 w-16 text-center">Photo</th>
               <th className="px-4 py-2 border border-gray-300 w-28 text-center">Admission Certificate</th>
               <th className="px-4 py-2 border border-gray-300 w-28 text-center">Study Certificate</th>
@@ -336,7 +337,8 @@ export default function StudentsPage() {
               <tr key={s._id} className="hover:bg-green-50 transition-colors">
                 <td className="px-4 py-2 border-r border-gray-300 text-center">{offset + idx + 1}</td>
                 <td className="px-4 py-2 border-r border-gray-300 font-medium text-gray-900">{s.name}</td>
-<td className="px-4 py-2 border-r border-gray-300">{s.mobile}</td>
+                <td className="px-4 py-2 border-r border-gray-300">{s.mobile}</td>
+                <td className="px-4 py-2 border-r border-gray-300">{s.dob}</td>
                 <td className="px-4 py-2 border-r border-gray-300">{s.group}</td>
                 <td className="px-4 py-2 border-r border-gray-300">{s.caste}</td>
                 <td className="px-4 py-2 border-r border-gray-300">{s.gender}</td>

@@ -50,6 +50,35 @@ export async function POST(req) {
       return NextResponse.json({ success: false, message: "College mismatch" }, { status: 403 });
     }
 
+    // Check for duplicate entry
+    const existingExam = await Exam.findOne({
+      studentId: data.studentId,
+      collegeId: data.collegeId,
+      examType: data.examType,
+      academicYear: data.academicYear,
+    });
+
+    if (existingExam) {
+      // Update existing record or insert new one
+      const updatedExam = await Exam.findOneAndUpdate(
+        {
+          studentId: data.studentId,
+          collegeId: data.collegeId,
+          examType: data.examType,
+          academicYear: data.academicYear,
+        },
+        {
+          $set: {
+            ...data,
+            examDate: new Date(data.examDate),
+          },
+        },
+        { new: true, upsert: true } // Create a new document if none exists
+      );
+
+      return NextResponse.json({ success: true, data: updatedExam });
+    }
+
     // Use model hook for total/percentage
     const examData = {
       ...data,

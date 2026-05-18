@@ -29,7 +29,8 @@ export async function GET(req, context) {
     const collegeId = await getCollegeIdFromSession();
     if (!collegeId) return unauthorized();
 
-    const { id } = context.params;
+    // ✅ FIX: Next.js 15 లో params await చేయాలి
+    const { id } = await context.params;
     if (!mongoose.Types.ObjectId.isValid(id)) return invalidId();
 
     const exam = await Exam.findOne({ _id: id, collegeId });
@@ -56,7 +57,8 @@ export async function PUT(req, context) {
     const collegeId = await getCollegeIdFromSession();
     if (!collegeId) return unauthorized();
 
-    const { id } = context.params;
+    // ✅ FIX: Next.js 15 లో params await చేయాలి
+    const { id } = await context.params;
     if (!mongoose.Types.ObjectId.isValid(id)) return invalidId();
 
     const body = await req.json();
@@ -64,30 +66,25 @@ export async function PUT(req, context) {
       return invalidId("Invalid student ID");
     }
 
-    const updateData = {
-      studentId: body.studentId,
-      stream: body.stream,
-      examType: body.examType,
-      examDate: body.examDate,
-      academicYear: body.academicYear,
-      yearOfStudy: body.yearOfStudy,
-      total: body.total,
-      percentage: body.percentage,
-    };
-
-    if (body.generalSubjects) {
-      updateData.generalSubjects = body.generalSubjects;
-      updateData.vocationalSubjects = undefined;
-    }
-    if (body.vocationalSubjects) {
-      updateData.vocationalSubjects = body.vocationalSubjects;
-      updateData.generalSubjects = undefined;
-    }
-
+    // ✅ FIX: $set తో update చేయాలి — లేకపోతే subjects సరిగ్గా save కావు
     const updated = await Exam.findOneAndUpdate(
       { _id: id, collegeId },
-      updateData,
-      { new: true }
+      {
+        $set: {
+          studentId: body.studentId,
+          stream: body.stream,
+          examType: body.examType,
+          examDate: body.examDate,
+          academicYear: body.academicYear,
+          yearOfStudy: body.yearOfStudy,
+          total: body.total,
+          percentage: body.percentage,
+          // ✅ FIX: generalSubjects & vocationalSubjects రెండూ explicitly set చేయాలి
+          generalSubjects: body.generalSubjects ?? [],
+          vocationalSubjects: body.vocationalSubjects ?? [],
+        },
+      },
+      { new: true,runValidators: true } // Validate data before updating}
     );
 
     if (!updated) {
@@ -117,8 +114,14 @@ export async function DELETE(req, context) {
     const collegeId = await getCollegeIdFromSession();
     if (!collegeId) return unauthorized();
 
-    const { id } = context.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) return invalidId();
+    // Debugging the id parameter
+    console.log("Received id:", context.params?.id);
+
+    // Ensure id is defined and valid
+    const { id } = await context.params || {};
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return invalidId("Invalid or missing exam ID");
+    }
 
     const deleted = await Exam.findOneAndDelete({ _id: id, collegeId });
     if (!deleted) {

@@ -108,7 +108,7 @@ export default function ExamsFormPage() {
 
       if (res.ok) {
         toast.success("✅ Exam saved successfully!");
-        router.push("/exams-form");
+        router.push("/exam-report");
         setFormData({
           yearOfStudy: "",
           academicYear: "",

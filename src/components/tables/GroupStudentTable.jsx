@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import StudentCard from "@/components/tables/StudentCard";
 import { useSession } from "next-auth/react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -27,7 +28,7 @@ const casteOptions = ["OC", "OBC", "BC-A", "BC-B", "BC-C", "BC-D", "BC-E", "SC",
 const genderOptions = ["Male", "Female", "Other"];
 const yearOptions = ["First Year", "Second Year"];
 const statusOptions = ["Active", "Terminated"];
-const inputClass = "rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none";
+const inputClass = "rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-200";
 
 const normalizeDate = value => {
   if (!value) return "";
@@ -332,6 +333,7 @@ export default function GroupStudentTable({ groupName }) {
                 value={search}
                 onChange={event => setSearch(event.target.value)}
                 placeholder="Search name, father name, parent mobile, admission no"
+                aria-label="Search students"
                 className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
               />
             </label>
@@ -383,21 +385,21 @@ export default function GroupStudentTable({ groupName }) {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleExportPDF}
-                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
+                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-rose-200"
               >
                 <Download className="h-4 w-4" />
                 PDF
               </button>
               <button
                 onClick={handleExportExcel}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-emerald-200"
               >
                 <FileSpreadsheet className="h-4 w-4" />
                 Excel
               </button>
               <button
                 onClick={handlePrint}
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-200"
               >
                 <Printer className="h-4 w-4" />
                 Print
@@ -427,70 +429,15 @@ export default function GroupStudentTable({ groupName }) {
             <>
               <div className="grid gap-3 lg:hidden">
                 {paginatedStudents.map((student, index) => (
-                  <article
+                  <StudentCard
                     key={student._id}
-                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                          #{offset + index + 1}
-                        </p>
-                        <h3 className="truncate text-base font-bold text-slate-900">
-                          {student.name}
-                        </h3>
-                        <p className="truncate text-sm text-slate-500">
-                          Father: {student.fatherName}
-                        </p>
-                      </div>
-                      <div className="h-14 w-14 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                        {student.photo ? (
-                          <Image
-                            src={student.photo}
-                            alt={student.name}
-                            width={56}
-                            height={56}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-slate-400">
-                            N/A
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                      <InfoChip label="Admission" value={student.admissionNo} />
-                      <InfoChip label="Mobile" value={student.mobile} />
-                      <InfoChip label="Parent Mobile" value={student.parentMobile} />
-                      <InfoChip label="Caste" value={student.caste} />
-                      <InfoChip label="Gender" value={student.gender} />
-                      <InfoChip label="Year" value={student.yearOfStudy} />
-                      <InfoChip label="Group" value={student.group} />
-                    </div>
-
-                    <div className="mt-4 flex gap-2">
-                      <button
-                        onClick={() => setEditingStudent(student)}
-                        className="flex-1 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          <Pencil className="h-4 w-4" />
-                          Edit
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(student._id)}
-                        className="flex-1 rounded-xl bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </span>
-                      </button>
-                    </div>
-                  </article>
+                    student={student}
+                    index={index}
+                    offset={offset}
+                    onEdit={() => setEditingStudent(student)}
+                    onDelete={() => handleDelete(student._id)}
+                    normalizeDate={normalizeDate}
+                  />
                 ))}
               </div>
 
@@ -499,25 +446,36 @@ export default function GroupStudentTable({ groupName }) {
                 className="hidden overflow-hidden rounded-2xl border border-slate-200 lg:block"
               >
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-slate-200 bg-white">
+                  <table role="table" aria-label={`${groupName} students table`} className="min-w-full min-w-[1100px] divide-y divide-slate-200 bg-white">
+                    <caption className="sr-only">{collegeName} — {groupName} students</caption>
                     <thead className="bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-white">
                       <tr>
-                        <th className="px-4 py-3 text-center">No</th>
-                        <th className="px-4 py-3">Student</th>
-                        <th className="px-4 py-3">Father Name</th>
-                        <th className="px-4 py-3">Mobile</th>
-                        <th className="px-4 py-3">Parent Mobile</th>
-                        <th className="px-4 py-3">Caste</th>
-                        <th className="px-4 py-3">Gender</th>
-                        <th className="px-4 py-3">Year</th>
-                        <th className="px-4 py-3">Admission No</th>
-                        <th className="px-4 py-3 text-center">Photo</th>
-                        <th className="px-4 py-3 text-center">Actions</th>
+                        <th scope="col" className="px-4 py-3 text-center">No</th>
+                        <th scope="col" className="px-4 py-3">Student</th>
+                        <th scope="col" className="px-4 py-3">Father Name</th>
+                        <th scope="col" className="px-4 py-3">Mobile</th>
+                        <th scope="col" className="px-4 py-3">Parent Mobile</th>
+                        <th scope="col" className="px-4 py-3">Caste</th>
+                        <th scope="col" className="px-4 py-3">Gender</th>
+                        <th scope="col" className="px-4 py-3">Year</th>
+                        <th scope="col" className="px-4 py-3">Admission No</th>
+                        <th scope="col" className="px-4 py-3">DOB</th>
+                        <th scope="col" className="px-4 py-3">Date of Joining</th>
+                        <th scope="col" className="px-4 py-3 text-center">Photo</th>
+                        <th scope="col" className="px-4 py-3 text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
                       {paginatedStudents.map((student, index) => (
-                        <tr key={student._id} className="odd:bg-white even:bg-slate-50">
+                        <tr
+                          key={student._id}
+                          className="odd:bg-white even:bg-slate-50 hover:bg-slate-50"
+                          tabIndex={0}
+                          onKeyDown={event => {
+                            if (event.key === "Enter") setEditingStudent(student);
+                            if (event.key === "Delete") handleDelete(student._id);
+                          }}
+                        >
                           <td className="px-4 py-3 text-center font-semibold">
                             {offset + index + 1}
                           </td>
@@ -531,6 +489,10 @@ export default function GroupStudentTable({ groupName }) {
                           <td className="px-4 py-3">{student.gender}</td>
                           <td className="px-4 py-3">{student.yearOfStudy}</td>
                           <td className="px-4 py-3">{student.admissionNo}</td>
+
+                          <td className="px-4 py-3">{student.dob ? new Date(student.dob).toLocaleDateString() : "-"}</td>
+                          <td className="px-4 py-3">{student.dateOfJoining ? new Date(student.dateOfJoining).toLocaleDateString() : "-"}</td>
+                          
                           <td className="px-4 py-3">
                             <div className="flex justify-center">
                               <div className="h-10 w-10 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
@@ -554,13 +516,15 @@ export default function GroupStudentTable({ groupName }) {
                             <div className="flex justify-center gap-2">
                               <button
                                 onClick={() => setEditingStudent(student)}
-                                className="rounded-lg bg-amber-50 p-2 text-amber-700 transition hover:bg-amber-100"
+                                aria-label={`Edit ${student.name}`}
+                                className="rounded-lg bg-amber-50 p-2 text-amber-700 transition hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-amber-200"
                               >
                                 <Pencil className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleDelete(student._id)}
-                                className="rounded-lg bg-rose-50 p-2 text-rose-700 transition hover:bg-rose-100"
+                                aria-label={`Delete ${student.name}`}
+                                className="rounded-lg bg-rose-50 p-2 text-rose-700 transition hover:bg-rose-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-rose-200"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </button>
@@ -575,8 +539,8 @@ export default function GroupStudentTable({ groupName }) {
             </>
           )}
 
-          <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
-            <p className="text-sm text-slate-600">
+            <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+            <p aria-live="polite" className="text-sm text-slate-600">
               Showing{" "}
               <span className="font-semibold text-slate-900">
                 {filteredStudents.length === 0 ? 0 : offset + 1}
@@ -785,9 +749,12 @@ export default function GroupStudentTable({ groupName }) {
                   className={`${inputClass} w-full cursor-pointer border-dashed bg-slate-50 file:mr-3 file:rounded-lg file:border-0 file:bg-cyan-700 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white`}
                 />
                 {editingStudent.photo && (
-                  <img
+                  <Image
                     src={editingStudent.photo}
                     alt="Student preview"
+                    width={96}
+                    height={96}
+                    unoptimized
                     className="h-24 w-24 rounded-2xl border border-slate-200 object-cover"
                   />
                 )}

@@ -1,6 +1,5 @@
 // src/components/tables/GroupStudentTable.optimized.jsx
 "use client";
-
 import { useEffect, useMemo, useRef, useState, useCallback, memo } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -44,6 +43,7 @@ const FilterSelect = memo(function FilterSelect({ label, name, value, onChange, 
   );
 });
 
+// ✅ 2. StudentRow లో parentMobile column add చేయండి
 const StudentRow = memo(function StudentRow({ student, index, onEdit, onDelete, theme }) {
   return (
     <tr className="hover:bg-slate-50 transition-colors">
@@ -66,17 +66,21 @@ const StudentRow = memo(function StudentRow({ student, index, onEdit, onDelete, 
           )}
           <div>
             <p className="font-semibold text-slate-900">{student.name}</p>
-            <p className="text-xs text-slate-500">{student.admissionNo}</p>
+            {/* ✅ admissionNo — projection fix తర్వాత ఇప్పుడు display అవుతుంది */}
+            <p className="text-xs text-slate-500">{student.admissionNo || "—"}</p>
           </div>
         </div>
       </td>
-      <td className="px-4 py-3 text-sm text-slate-700">{student.fatherName}</td>
+      {/* ✅ fatherName — projection fix తర్వాత display అవుతుంది */}
+      <td className="px-4 py-3 text-sm text-slate-700">{student.fatherName || "—"}</td>
       <td className="px-4 py-3 text-sm text-slate-700">{student.mobile}</td>
+      {/* ✅ parentMobile — కొత్త column */}
+      <td className="px-4 py-3 text-sm text-slate-700">{student.parentMobile || "—"}</td>
       <td className="px-4 py-3 text-sm">
         <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-          student.status === 'Active' 
-            ? 'bg-green-100 text-green-700' 
-            : 'bg-red-100 text-red-700'
+          student.status === "Active"
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700"
         }`}>
           {student.status}
         </span>
@@ -116,6 +120,7 @@ export default function GroupStudentTable({ groupName }) {
   const theme = useMemo(() => getGroupTheme(groupName), [groupName]);
   
   // State management
+  const [editingStudent, setEditingStudent] = useState(null);
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ caste: "", gender: "", yearOfStudy: "" });
@@ -377,6 +382,8 @@ export default function GroupStudentTable({ groupName }) {
                 <th className="px-4 py-3">Student</th>
                 <th className="px-4 py-3">Father Name</th>
                 <th className="px-4 py-3">Mobile</th>
+                <th className="px-4 py-3">Parent Mobile</th> {/* ✅ కొత్తది */}
+
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Caste</th>
                 <th className="px-4 py-3">Gender</th>

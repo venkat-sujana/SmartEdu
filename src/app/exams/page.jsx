@@ -1,6 +1,7 @@
+// This is a client-side rendered page for displaying exam reports and analytics.
+//src/app/exams/page.jsx
 'use client'
-
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import {
   ChevronDown,
   FileText,
@@ -11,7 +12,7 @@ import {
   ChartColumn,
   CalendarClock,
 } from 'lucide-react'
-
+import EditExamForm from '../edit-exam-form/page'
 const sidebarMenu = [
   { label: 'Dashboard', icon: LayoutDashboard },
   { label: 'Unit - 1', icon: ClipboardCheck },
@@ -26,6 +27,7 @@ const sidebarMenu = [
 ]
 
 const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
+
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
 
 function isUnitExam(examType) {
@@ -170,7 +172,7 @@ function Sidebar({ collapsed, mobileOpen, onToggleCollapsed, onCloseMobile }) {
       >
         <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
           <div className={collapsed ? 'hidden' : 'block'}>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Academic</p>
+            <p className="text-xs font-medium tracking-wide text-slate-500 uppercase">Academic</p>
             <h1 className="text-base font-semibold text-slate-900">Exam Module</h1>
           </div>
           <button
@@ -281,6 +283,29 @@ export default function ExamReportPage() {
   const [academicYear, setAcademicYear] = useState('all')
   const [detailsFilter, setDetailsFilter] = useState(null)
 
+  const loadReports = useCallback(async () => {
+  try {
+    setLoading(true)
+    const res = await fetch('/api/exams', { cache: 'no-store' })
+    const data = await res.json()
+    if (data?.success) {
+      setReports(Array.isArray(data.data) ? data.data : [])
+    } else {
+      setReports([])
+    }
+  } catch (error) {
+    console.error('Failed to load exam reports', error)
+    setReports([])
+  } finally {
+    setLoading(false)
+  }
+}, [])
+
+// 3. useEffect లో call మాత్రమే
+useEffect(() => {
+  loadReports()
+}, [loadReports])
+
   useEffect(() => {
     const loadReports = async () => {
       try {
@@ -303,9 +328,32 @@ export default function ExamReportPage() {
     loadReports()
   }, [])
 
+  const handleDelete = async examId => {
+    if (!confirm('ఈ exam record delete చేయాలా?')) return
+
+    try {
+      const res = await fetch(`/api/exams/${examId}`, {
+        method: 'DELETE',
+      })
+      const result = await res.json()
+
+      if (!res.ok || result.success === false) {
+        alert(result.message || 'Delete failed')
+        return
+      }
+
+      alert('✅ Deleted successfully!')
+      loadReports()
+    } catch (error) {
+      alert('❌ Delete error: ' + error.message)
+    }
+  }
+
+  const [editExamData, setEditExamData] = useState(null)
+
   const academicYearOptions = useMemo(() => {
-    const options = Array.from(new Set(reports.map(r => r.academicYear).filter(Boolean))).sort((a, b) =>
-      b.localeCompare(a)
+    const options = Array.from(new Set(reports.map(r => r.academicYear).filter(Boolean))).sort(
+      (a, b) => b.localeCompare(a)
     )
     return ['all', ...options]
   }, [reports])
@@ -400,7 +448,8 @@ export default function ExamReportPage() {
       const passStudents = unitReports.filter(isReportPass).length
       const highestMarks = unitReports.reduce((max, row) => Math.max(max, getSubjectTotal(row)), 0)
       const maxMarksLabel = unitReports.length > 0 ? `${highestMarks}` : '-'
-      const passPercent = totalStudents > 0 ? `${((passStudents / totalStudents) * 100).toFixed(1)}%` : '0.0%'
+      const passPercent =
+        totalStudents > 0 ? `${((passStudents / totalStudents) * 100).toFixed(1)}%` : '0.0%'
 
       return {
         examType: unit,
@@ -488,7 +537,9 @@ export default function ExamReportPage() {
         date: row.date,
         totalStudents: row.totalStudents,
         passPercent:
-          row.totalStudents > 0 ? `${((row.passCount / row.totalStudents) * 100).toFixed(1)}%` : '0.0%',
+          row.totalStudents > 0
+            ? `${((row.passCount / row.totalStudents) * 100).toFixed(1)}%`
+            : '0.0%',
         sortDate: row.lastCreatedAt,
       }))
       .sort((a, b) => b.sortDate - a.sortDate)
@@ -506,7 +557,9 @@ export default function ExamReportPage() {
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
       />
 
-      <div className={[contentPadding, 'flex h-full flex-col transition-all duration-300'].join(' ')}>
+      <div
+        className={[contentPadding, 'flex h-full flex-col transition-all duration-300'].join(' ')}
+      >
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
           <div className="flex flex-wrap items-center gap-3">
             <button
@@ -519,7 +572,7 @@ export default function ExamReportPage() {
             </button>
 
             <div className="min-w-[220px]">
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+              <label className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
                 Academic Year
               </label>
               <select
@@ -528,7 +581,7 @@ export default function ExamReportPage() {
                   setAcademicYear(e.target.value)
                   setDetailsFilter(null)
                 }}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-500"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition outline-none focus:border-blue-500"
               >
                 {academicYearOptions.map(year => (
                   <option key={year} value={year}>
@@ -587,7 +640,9 @@ export default function ExamReportPage() {
                 <h2 className="text-base font-semibold text-slate-900">Unit-Wise Performance</h2>
                 <button
                   type="button"
-                  onClick={() => setDetailsFilter({ examTypes: UNIT_EXAMS, title: 'All Unit Exams' })}
+                  onClick={() =>
+                    setDetailsFilter({ examTypes: UNIT_EXAMS, title: 'All Unit Exams' })
+                  }
                   className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                 >
                   View All Units
@@ -644,6 +699,7 @@ export default function ExamReportPage() {
                         <th className="px-3 py-2 text-left font-medium">Total</th>
                         <th className="px-3 py-2 text-left font-medium">%</th>
                         <th className="px-3 py-2 text-left font-medium">Result</th>
+                        <th className="px-3 py-2 text-left font-medium">Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -662,7 +718,9 @@ export default function ExamReportPage() {
                               className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                             >
                               <td className="px-3 py-2">{index + 1}</td>
-                              <td className="px-3 py-2 font-medium text-slate-900">{getStudentName(row)}</td>
+                              <td className="px-3 py-2 font-medium text-slate-900">
+                                {getStudentName(row)}
+                              </td>
                               <td className="px-3 py-2">{getStudentGroup(row)}</td>
                               <td className="px-3 py-2">{row.yearOfStudy || '-'}</td>
                               <td className="px-3 py-2">{formatExamLabel(row.examType)}</td>
@@ -680,11 +738,30 @@ export default function ExamReportPage() {
                                 <span
                                   className={[
                                     'rounded-full px-2 py-1 text-xs font-semibold',
-                                    passed ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
+                                    passed
+                                      ? 'bg-emerald-100 text-emerald-700'
+                                      : 'bg-rose-100 text-rose-700',
                                   ].join(' ')}
                                 >
                                   {passed ? 'Pass' : 'Fail'}
                                 </span>
+                              </td>
+                              <td className="px-3 py-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditExamData(row)}
+                                  className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-blue-700"
+                                >
+                                  Edit
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(row._id)}
+                                  className="rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-red-700"
+                                >
+                                  Delete
+                                </button>
                               </td>
                             </tr>
                           )
@@ -749,12 +826,6 @@ export default function ExamReportPage() {
                               >
                                 View
                               </button>
-                              <button
-                                type="button"
-                                className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-blue-700"
-                              >
-                                Edit
-                              </button>
                             </div>
                           </td>
                         </tr>
@@ -765,6 +836,27 @@ export default function ExamReportPage() {
               </div>
             </section>
           </div>
+          {editExamData && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
+              <div className="max-h-screen w-full max-w-xl overflow-y-auto rounded-xl">
+                <EditExamForm
+                  examData={editExamData}
+                  onClose={() => setEditExamData(null)}
+                  onUpdated={() => {
+                    setEditExamData(null)
+                    loadReports()
+                    setLoading(true)
+                    fetch('/api/exams', { cache: 'no-store' })
+                      .then(r => r.json())
+                      .then(data => {
+                        if (data?.success) setReports(data.data || [])
+                      })
+                      .finally(() => setLoading(false))
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

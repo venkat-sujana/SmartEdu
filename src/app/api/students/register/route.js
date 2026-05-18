@@ -1,4 +1,5 @@
-//src/app/api/students/register/route.js
+// src/app/api/students/register/route.js
+
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectMongoDB from "@/lib/mongodb";
@@ -7,13 +8,11 @@ import mongoose from "mongoose";
 
 function normalizeGroupValue(group) {
   if (!group) return group;
-
   return group === "BIPC" ? "BiPC" : group;
 }
 
 function normalizeAdmissionNo(value) {
   if (value == null) return "";
-
   return String(value).trim().toUpperCase();
 }
 
@@ -39,34 +38,63 @@ export async function POST(req) {
     const address = formData.get("address");
     const collegeId = formData.get("collegeId");
     const photoUrl = formData.get("photoUrl") || "";
-    const normalizedDateOfJoining = dateOfJoining ? new Date(dateOfJoining) : new Date();
 
-    if (!name || !fatherName || !mobile || !parentMobile || !admissionNo || !group || !address || !collegeId) {
+    const normalizedDateOfJoining = dateOfJoining
+      ? new Date(dateOfJoining)
+      : new Date();
+
+    // ✅ Bug 1 Fix — yearOfStudy based గా admissionNo check
+    const isSecondYear = yearOfStudy === "Second Year";
+
+    // Common required fields
+    if (!name || !fatherName || !mobile || !parentMobile || !group || !address || !collegeId) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Duplicate check
-    const existing = await Student.findOne({ admissionNo });
-    if (existing) {
+    // First Year మాత్రమే admissionNo required
+    if (!isSecondYear && !admissionNo) {
       return NextResponse.json(
-        { message: "Admission No already exists" },
+        { message: "Admission No is required for First Year students" },
         { status: 400 }
       );
+    }
+
+    // Duplicate check — First Year మాత్రమే
+    if (!isSecondYear) {
+      const existing = await Student.findOne({ admissionNo });
+      if (existing) {
+        return NextResponse.json(
+          { message: "Admission No already exists" },
+          { status: 400 }
+        );
+      }
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create student
+    // ✅ Bug 2 Fix — dob తీసేశాం, dateOfJoining మాత్రమే
     const student = new Student({
-      name, fatherName, mobile, parentMobile, admissionNo, group, caste, gender,
-      yearOfStudy, admissionYear, dateOfJoining: normalizedDateOfJoining,
-      dob: normalizedDateOfJoining,
-      address, collegeId: new mongoose.Types.ObjectId(collegeId),
-      password: hashedPassword, status: "Active", photo: photoUrl
+      name,
+      fatherName,
+      mobile,
+      parentMobile,
+      admissionNo,
+      group,
+      caste,
+      gender,
+      yearOfStudy,
+      admissionYear,
+      dateOfJoining: normalizedDateOfJoining,
+      // ❌ dob: normalizedDateOfJoining  — తీసేశాం
+      address,
+      collegeId: new mongoose.Types.ObjectId(collegeId),
+      password: hashedPassword,
+      status: "Active",
+      photo: photoUrl,
     });
 
     await student.save();
@@ -90,7 +118,7 @@ export async function POST(req) {
           {
             message:
               duplicateValue == null
-                ? "Admission No is required and cannot be empty. Existing null admission records may need cleanup."
+                ? "Admission No is required and cannot be empty."
                 : `Admission No ${duplicateValue} already exists`,
           },
           { status: 400 }
@@ -104,4 +132,3 @@ export async function POST(req) {
     );
   }
 }
-

@@ -50,12 +50,28 @@ const examSchema = new Schema({
   },
   generalSubjects: [{
     subject: { type: String, required: true, trim: true },
-    marks: { type: Number, required: true, min: 0, max: 100 },
-    maxMarks: { type: Number, default: 100, min: 1 }
+    marks: {
+  type: Schema.Types.Mixed,
+  required: true,
+  validate: {
+    validator: function (v) {
+      if (typeof v === 'string') return v === 'A' || v === 'AB'
+      return typeof v === 'number' && v >= 0 && v <= 100
+    },
+    message: 'Marks must be 0-100 or "A"/"AB" for absent'
+  }
+}
+    
   }],
   vocationalSubjects: [{
     subject: { type: String, required: true, trim: true },
-    marks: { type: Number, required: true, min: 0, max: 100 },
+    marks: { type: Schema.Types.Mixed, required: true, validate: {
+      validator: function (v) {
+        if (typeof v === 'string') return v === 'A' || v === 'AB'
+        return typeof v === 'number' && v >= 0 && v <= 100
+      },
+      message: 'Marks must be 0-100 or "A"/"AB" for absent'
+    }},
     maxMarks: { type: Number, default: 100, min: 1 }
   }],
 
@@ -102,7 +118,11 @@ const streamToSubjectType = {
     return next(new Error('Subjects required for the stream'));
   }
   
-  this.total = subjects.reduce((sum, s) => sum + (s.marks || 0), 0);
+  this.total = subjects.reduce((sum, s) => {
+  const mark = s.marks
+  return typeof mark === 'number' && !isNaN(mark) ? sum + mark : sum
+}, 0)
+
   this.percentage = computePercentage(subjects);
   next();
 });
