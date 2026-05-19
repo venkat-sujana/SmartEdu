@@ -2,7 +2,10 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
+  ArrowLeft,
   CalendarDays,
   ClipboardCheck,
   FileText,
@@ -12,6 +15,7 @@ import {
   Settings,
   Users,
 } from 'lucide-react'
+import { getDashboardRouteForLecturerSubject } from '@/utils/lecturerDashboardRoute'
 
 const sidebarLinks = [
   { label: 'Dashboard', icon: LayoutDashboard },
@@ -101,7 +105,8 @@ function ToggleSwitch({ checked, onChange, color = 'green' }) {
 }
 
 export default function AttendanceFormPage() {
-  useSession()
+  const { data: session } = useSession()
+  const searchParams = useSearchParams()
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
@@ -128,6 +133,15 @@ export default function AttendanceFormPage() {
       }),
     []
   )
+
+  const dashboardReturnUrl = useMemo(() => {
+    const returnUrl = searchParams.get('returnUrl')
+    if (returnUrl) return returnUrl
+    if (session?.user?.role === 'lecturer') {
+      return getDashboardRouteForLecturerSubject(session.user.subject)
+    }
+    return '/dashboards'
+  }, [searchParams, session?.user?.role, session?.user?.subject])
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -271,6 +285,16 @@ export default function AttendanceFormPage() {
             </button>
 
             <div className="ml-auto inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700">
+              <Link
+                href={dashboardReturnUrl}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-white transition hover:bg-blue-700"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Dashboard</span>
+              </Link>
+            </div>
+
+            <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700">
               <CalendarDays className="h-4 w-4 text-blue-700" />
               <span>{todayDateLabel}</span>
             </div>

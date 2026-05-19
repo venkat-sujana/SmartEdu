@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, Sparkles } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { getDashboardRouteForLecturerSubject } from "@/utils/lecturerDashboardRoute";
 import {
   AcademicCapIcon,
   CalendarDaysIcon,
@@ -46,6 +47,10 @@ export default function Sidebar({ onClose }) {
   const user = session.data?.user || {};
   const isAdmin = user.role === "admin";
   const canAccessAiAttendance = user.role === "lecturer" || user.role === "principal";
+  const lecturerDashboardUrl = getDashboardRouteForLecturerSubject(user.subject);
+  const attendanceFormHref = `${"/attendance-form"}?returnUrl=${encodeURIComponent(lecturerDashboardUrl)}`;
+  const examsFormHref = `${"/exams-form"}?returnUrl=${encodeURIComponent(lecturerDashboardUrl)}`;
+  const examsDashboardHref = `${"/exams"}?returnUrl=${encodeURIComponent(lecturerDashboardUrl)}`;
 
   const links = isAdmin
     ? [
@@ -61,14 +66,14 @@ export default function Sidebar({ onClose }) {
         { href: "/timetable/dashboard", label: "Time Table Dashboard", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
         { href: "/timetable/lecturer", label: "Lecturer Time Table", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
         { href: "/timetable/student", label: "Time Table student", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
-        { href: "/exams-form", label: "Marks Posting", icon: <PencilSquareIcon className="h-5 w-5 text-indigo-500" /> },
-        { href: "/exams", label: "Exam Dashboard", icon: <CalendarDaysIcon className="h-5 w-5 text-blue-500" /> },
+        { href: examsFormHref, label: "Marks Posting", icon: <PencilSquareIcon className="h-5 w-5 text-indigo-500" /> },
+        { href: examsDashboardHref, label: "Exam Dashboard", icon: <CalendarDaysIcon className="h-5 w-5 text-blue-500" /> },
         { href: "/attendance-records/monthly-summary", label: "CAR", icon: <UserGroupIcon className="h-5 w-5 text-violet-500" /> },
         { href: "/attendance-records/attendance-calendar", label: "Calendar View", icon: <CalendarDaysIcon className="h-5 w-5 text-blue-500" /> },
         
         { href: "/attendance-records/individual", label: "Update Attendance", icon: <PencilSquareIcon className="h-5 w-5 text-blue-500" /> },
         { href: "/absentees-table", label: "Today's Absentees", icon: <XCircleIcon className="h-5 w-5 text-rose-500" /> },
-        { href: "/attendance-form", label: "Take Attendance", icon: <PencilSquareIcon className="h-5 w-5 text-emerald-500" /> },
+        { href: attendanceFormHref, label: "Take Attendance", icon: <PencilSquareIcon className="h-5 w-5 text-emerald-500" /> },
         ...(canAccessAiAttendance
           ? [
               {
@@ -112,10 +117,11 @@ export default function Sidebar({ onClose }) {
 
       <nav className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1">
         {links.map((link) => {
+          const activeHref = link.href.split("?")[0];
           const active =
-            link.href === "/"
-              ? pathname === link.href
-              : pathname?.startsWith(link.href);
+            activeHref === "/"
+              ? pathname === activeHref
+              : pathname?.startsWith(activeHref);
 
           return (
             <SidebarLink

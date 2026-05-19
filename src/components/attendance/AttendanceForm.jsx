@@ -295,7 +295,7 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
                   key={student._id}
                   className="bg-linear-to-br from-blue-50 to-green-50 border border-blue-200 rounded-2xl shadow p-4 flex flex-col items-center space-y-2 transition hover:shadow-2xl"
                 >
-                  <img
+                  <image
                     src={student.photo || "/default-avatar.png"}
                     alt={student.name}
                     className="w-20 h-20 object-cover rounded-full border-2 border-blue-400 shadow"

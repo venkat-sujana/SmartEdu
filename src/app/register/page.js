@@ -1,10 +1,13 @@
 //src/app/register/page.js
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 import {
+  ArrowLeft,
   Users2,
   FileInput,
   KeyRound,
@@ -52,6 +55,34 @@ const baseInputClass = `w-full rounded-3xl border border-slate-200/50 bg-white/8
   focus:shadow-xl focus:ring-4 focus:ring-cyan-500/30 focus:ring-offset-0 transition-all duration-300 
   placeholder:text-slate-400`
 
+const modernInputClass =
+  'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/15'
+
+function SectionHeader({ icon: Icon, iconClassName, title, description }) {
+  return (
+    <div className="mb-5 flex items-start gap-3">
+      <div className={['rounded-2xl p-2.5 shadow-sm', iconClassName].join(' ')}>
+        <Icon className="h-5 w-5 text-white" />
+      </div>
+      <div>
+        <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+        <p className="mt-1 text-sm text-slate-500">{description}</p>
+      </div>
+    </div>
+  )
+}
+
+function FieldLabel({ icon: Icon, iconClassName, children }) {
+  return (
+    <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+      <span className={['rounded-xl p-2 shadow-sm', iconClassName].join(' ')}>
+        <Icon className="h-4 w-4 text-white" />
+      </span>
+      <span>{children}</span>
+    </label>
+  )
+}
+
 const emptyForm = {
   name: '',
   fatherName: '',
@@ -94,16 +125,27 @@ async function parseResponseBody(res) {
 export default function RegisterPage() {
   const { data: session } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [photo, setPhoto] = useState(null)
   const [photoPreview, setPhotoPreview] = useState('')
   const [formData, setFormData] = useState(emptyForm)
   const [collegeName, setCollegeName] = useState('')
   const [availableGroups, setAvailableGroups] = useState(DEFAULT_COLLEGE_GROUPS)
+  const returnUrl = searchParams.get('returnUrl')
+  const requestedGroup = searchParams.get('group') || ''
 
   useEffect(() => {
     if (session?.user?.collegeName) setCollegeName(session.user.collegeName)
   }, [session])
+
+  useEffect(() => {
+    if (!requestedGroup) return
+    setFormData(prev => ({
+      ...prev,
+      group: prev.group || requestedGroup,
+    }))
+  }, [requestedGroup])
 
   useEffect(() => {
     const fetchCollegeGroups = async () => {
@@ -233,7 +275,7 @@ export default function RegisterPage() {
       }
 
       toast.success('Student registered successfully')
-      const redirectPath = groupDashboardRoutes[formData.group] || '/dashboards'
+      const redirectPath = returnUrl || groupDashboardRoutes[formData.group] || '/dashboards'
       setFormData(emptyForm)
       setPhoto(null)
       setPhotoPreview('')
@@ -247,7 +289,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-cyan-50/30 p-4 sm:p-6 lg:p-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.12),_transparent_28%),linear-gradient(180deg,_#f8fafc_0%,_#eef6ff_52%,_#f8fafc_100%)] p-4 sm:p-6 lg:p-8">
       {/* Enhanced Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -261,125 +303,153 @@ export default function RegisterPage() {
         </div>
       )}
 
-      <div className="mx-auto max-w-md sm:max-w-2xl lg:max-w-6xl">
+      <div className="mx-auto max-w-md sm:max-w-3xl lg:max-w-6xl">
         {/* Premium Header Card */}
-        <div className="mx-auto mb-8 max-w-2xl rounded-3xl bg-white/70 p-6 shadow-xl backdrop-blur-md md:p-8 lg:max-w-3xl ring-1 ring-white/50">
-          <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 p-3 shadow-lg">
-              <School className="h-7 w-7 text-white" />
+        <div className="mx-auto mb-8 max-w-5xl rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur md:p-8 ring-1 ring-slate-200/60">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="rounded-3xl bg-gradient-to-br from-cyan-500 to-blue-600 p-3 shadow-lg">
+                <School className="h-7 w-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Student Registration
+                </p>
+                <h1 className="text-2xl font-black text-slate-900 sm:text-3xl lg:text-4xl">
+                  Create Student Profile
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                  Add admission details, academic information, and parent contact data in one clean workflow.
+                </p>
+                <p className="mt-3 text-sm font-semibold text-cyan-700">
+                  {collegeName || 'Loading college...'}
+                </p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="mb-1 text-xs uppercase tracking-wider text-slate-500">Student Management System</p>
-              <h1 className="text-2xl font-black text-slate-900 sm:text-3xl lg:text-4xl">Register New Student</h1>
-              <p className="mt-1 text-sm font-medium text-slate-600">{collegeName || 'Loading college...'}</p>
+
+            <div className="grid min-w-[240px] grid-cols-1 gap-3 sm:grid-cols-2 lg:w-[340px]">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Flow
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">Admissions Desk</p>
+              </div>
+              <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-700">
+                  Status
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">Ready for new entry</p>
+              </div>
             </div>
           </div>
+
+          {returnUrl ? (
+            <div className="mt-6 border-t border-slate-200 pt-5">
+              <Link
+                href={returnUrl}
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-700"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Link>
+            </div>
+          ) : null}
         </div>
 
         {/* Main Form Card */}
-        <div className="mx-auto max-w-4xl rounded-3xl bg-white/80 p-8 shadow-2xl backdrop-blur-xl sm:p-10 lg:p-12 ring-1 ring-slate-200/50">
+        <div className="mx-auto max-w-5xl rounded-[30px] border border-white/70 bg-white/92 p-6 shadow-2xl backdrop-blur-xl ring-1 ring-slate-200/60 sm:p-8 lg:p-10">
           {/* Header Badge & Title */}
-          <div className="mb-10 border-b border-slate-200/50 pb-8">
-            <div className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-500 px-4 py-2.5 text-sm font-black text-white shadow-lg">
+          <div className="mb-8 border-b border-slate-200 pb-6">
+            <div className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-md">
               <PlusCircle className="h-5 w-5" />
               New Student Registration
             </div>
-            <h2 className="mt-6 text-3xl font-black text-slate-900 sm:text-4xl">Create Profile</h2>
-            <p className="mt-3 text-lg text-slate-600">
-              Fill out all required information. Password is optional (uses server default if empty).
+            <h2 className="mt-5 text-3xl font-black text-slate-900 sm:text-[2rem]">Student Information Form</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+              Fill the core identity, academic data, and optional profile assets. Password can be left empty to use the server default.
             </p>
           </div>
 
           {/* Form Grid */}
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Personal Info Section */}
-            <div className="space-y-6">
+            <section className="rounded-[26px] border border-slate-200 bg-slate-50/80 p-5 md:p-6">
+              <SectionHeader
+                icon={User}
+                iconClassName="bg-gradient-to-br from-cyan-500 to-blue-600"
+                title="Personal Details"
+                description="Capture the student identity and parent contact details."
+              />
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 p-2 shadow-md">
-                    <User className="h-5 w-5 text-white" />
-                  </div>
-                  Full Name *
-                </label>
+                <FieldLabel icon={User} iconClassName="bg-gradient-to-r from-cyan-500 to-blue-500">Full Name *</FieldLabel>
                 <input
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter full name"
-                  className={baseInputClass}
+                  className={modernInputClass}
                   required
                 />
               </div>
 
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-emerald-400 to-green-500 p-2 shadow-md">
-                    <Pencil className="h-5 w-5 text-white" />
-                  </div>
-                  Father&apos;s Name *
-                </label>
+                <FieldLabel icon={Pencil} iconClassName="bg-gradient-to-r from-emerald-500 to-green-500">Father&apos;s Name *</FieldLabel>
                 <input
                   name="fatherName"
                   value={formData.fatherName}
                   onChange={handleChange}
                   placeholder="Enter father&apos;s name"
-                  className={baseInputClass}
+                  className={modernInputClass}
                   required
                 />
               </div>
 
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-indigo-400 to-purple-500 p-2 shadow-md">
-                    <Phone className="h-5 w-5 text-white" />
-                  </div>
-                  Mobile Number *
-                </label>
+                <FieldLabel icon={Phone} iconClassName="bg-gradient-to-r from-indigo-500 to-violet-500">Mobile Number *</FieldLabel>
                 <input
                   name="mobile"
                   type="tel"
                   value={formData.mobile}
                   onChange={handleChange}
                   placeholder="10-digit mobile number"
-                  className={baseInputClass}
+                  className={modernInputClass}
                   required
                 />
               </div>
 
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 p-2 shadow-md">
-                    <Phone className="h-5 w-5 text-white" />
-                  </div>
-                  Parent Mobile Number *
-                </label>
+                <FieldLabel icon={Phone} iconClassName="bg-gradient-to-r from-sky-500 to-cyan-500">Parent Mobile Number *</FieldLabel>
                 <input
                   name="parentMobile"
                   type="tel"
                   value={formData.parentMobile}
                   onChange={handleChange}
                   placeholder="10-digit parent mobile number"
-                  className={baseInputClass}
+                  className={modernInputClass}
                   required
                 />
               </div>
-            </div>
+              </div>
+            </section>
 
-            <div className="space-y-6">
+            <section className="rounded-[26px] border border-slate-200 bg-white p-5 md:p-6">
+              <SectionHeader
+                icon={IdCard}
+                iconClassName="bg-gradient-to-br from-amber-500 to-orange-500"
+                title="Admission Details"
+                description="Choose the academic group and supporting registration information."
+              />
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 p-2 shadow-md">
-                    <IdCard className="h-5 w-5 text-white" />
-                  </div>
-                  Admission Number *
-                </label>
+                <FieldLabel icon={IdCard} iconClassName="bg-gradient-to-r from-amber-500 to-orange-500">Admission Number *</FieldLabel>
                 <input
                   name="admissionNo"
                   value={formData.admissionNo}
                   onChange={handleChange}
                   placeholder="e.g., 24MPC018"
                   disabled={isSecondYear}
-                  className={`${baseInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500 opacity-80' : ''}`}
+                  className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
                   required={!isSecondYear}
                 />
                 {isSecondYear ? (
@@ -390,13 +460,8 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-purple-400 to-violet-500 p-2 shadow-md">
-                    <Users2 className="h-5 w-5 text-white" />
-                  </div>
-                  Group *
-                </label>
-                <select name="group" value={formData.group} onChange={handleChange} className={baseInputClass} required>
+                <FieldLabel icon={Users2} iconClassName="bg-gradient-to-r from-violet-500 to-purple-500">Group *</FieldLabel>
+                <select name="group" value={formData.group} onChange={handleChange} className={modernInputClass} required>
                   <option value="">Select Academic Group</option>
                   {availableGroups.map(group => (
                     <option key={group} value={group}>{group}</option>
@@ -405,33 +470,29 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-rose-400 to-pink-500 p-2 shadow-md">
-                    <IdCard className="h-5 w-5 text-white" />
-                  </div>
-                  Caste *
-                </label>
-                <select name="caste" value={formData.caste} onChange={handleChange} className={baseInputClass} required>
+                <FieldLabel icon={IdCard} iconClassName="bg-gradient-to-r from-rose-500 to-pink-500">Caste *</FieldLabel>
+                <select name="caste" value={formData.caste} onChange={handleChange} className={modernInputClass} required>
                   <option value="">Select Caste Category</option>
                   {castes.map(caste => (
                     <option key={caste} value={caste}>{caste}</option>
                   ))}
                 </select>
               </div>
-            </div>
+              </div>
+            </section>
 
             {/* Academic Info */}
-            <div className="space-y-6 md:col-span-2">
-              <h3 className="mb-2 text-xl font-black text-slate-900">Academic Details</h3>
+            <section className="rounded-[26px] border border-slate-200 bg-slate-50/80 p-5 md:p-6">
+              <SectionHeader
+                icon={CalendarCheck2}
+                iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500"
+                title="Academic Details"
+                description="Map the student to the correct study year and joining cycle."
+              />
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <div>
-                  <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                    <div className="rounded-xl bg-gradient-to-r from-lime-400 to-emerald-500 p-2 shadow-md">
-                      <Users2 className="h-5 w-5 text-white" />
-                    </div>
-                    Gender *
-                  </label>
-                  <select name="gender" value={formData.gender} onChange={handleChange} className={baseInputClass} required>
+                  <FieldLabel icon={Users2} iconClassName="bg-gradient-to-r from-lime-500 to-emerald-500">Gender *</FieldLabel>
+                  <select name="gender" value={formData.gender} onChange={handleChange} className={modernInputClass} required>
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -440,13 +501,8 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                    <div className="rounded-xl bg-gradient-to-r from-green-400 to-teal-500 p-2 shadow-md">
-                      <CalendarCheck2 className="h-5 w-5 text-white" />
-                    </div>
-                    Year of Study *
-                  </label>
-                  <select name="yearOfStudy" value={formData.yearOfStudy} onChange={handleChange} className={baseInputClass} required>
+                  <FieldLabel icon={CalendarCheck2} iconClassName="bg-gradient-to-r from-green-500 to-teal-500">Year of Study *</FieldLabel>
+                  <select name="yearOfStudy" value={formData.yearOfStudy} onChange={handleChange} className={modernInputClass} required>
                     <option value="">Select Year</option>
                     <option value="First Year">First Year</option>
                     <option value="Second Year">Second Year</option>
@@ -454,12 +510,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                    <div className="rounded-xl bg-gradient-to-r from-teal-400 to-cyan-500 p-2 shadow-md">
-                      <CalendarCheck2 className="h-5 w-5 text-white" />
-                    </div>
-                    Admission Year *
-                  </label>
+                  <FieldLabel icon={CalendarCheck2} iconClassName="bg-gradient-to-r from-teal-500 to-cyan-500">Admission Year *</FieldLabel>
                   <input
                     type="number"
                     name="admissionYear"
@@ -468,25 +519,20 @@ export default function RegisterPage() {
                     value={formData.admissionYear}
                     onChange={handleChange}
                     placeholder="YYYY"
-                    className={baseInputClass}
+                    className={modernInputClass}
                     required
                   />
                 </div>
 
                 <div className="lg:col-span-2">
-                  <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                    <div className="rounded-xl bg-gradient-to-r from-sky-400 to-blue-500 p-2 shadow-md">
-                      <CalendarCheck2 className="h-5 w-5 text-white" />
-                    </div>
-                    Date of Joining *
-                  </label>
+                  <FieldLabel icon={CalendarCheck2} iconClassName="bg-gradient-to-r from-sky-500 to-blue-500">Date of Joining *</FieldLabel>
                   <input
                     type="date"
                     name="dateOfJoining"
                     value={effectiveDateOfJoining}
                     onChange={handleChange}
                     disabled={isSecondYear}
-                    className={`${baseInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500 opacity-80' : ''}`}
+                    className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
                     required={!isSecondYear}
                   />
                   {isSecondYear ? (
@@ -496,52 +542,44 @@ export default function RegisterPage() {
                   ) : null}
                 </div>
               </div>
-            </div>
+            </section>
 
             {/* Full Width Fields */}
-            <div className="md:col-span-2 space-y-6">
+            <section className="rounded-[26px] border border-slate-200 bg-white p-5 md:p-6">
+              <SectionHeader
+                icon={FileInput}
+                iconClassName="bg-gradient-to-br from-indigo-500 to-cyan-500"
+                title="Credentials and Assets"
+                description="Optionally set login credentials and attach a profile image."
+              />
+              <div className="space-y-6">
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-sky-400 to-indigo-500 p-2 shadow-md">
-                    <KeyRound className="h-5 w-5 text-white" />
-                  </div>
-                  Password (Optional)
-                </label>
+                <FieldLabel icon={KeyRound} iconClassName="bg-gradient-to-r from-sky-500 to-indigo-500">Password (Optional)</FieldLabel>
                 <input
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Leave empty for server default password"
-                  className={baseInputClass}
+                  className={modernInputClass}
                 />
               </div>
 
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-red-400 to-rose-500 p-2 shadow-md">
-                    <MapPin className="h-5 w-5 text-white" />
-                  </div>
-                  Complete Address *
-                </label>
+                <FieldLabel icon={MapPin} iconClassName="bg-gradient-to-r from-rose-500 to-red-500">Complete Address *</FieldLabel>
                 <textarea
                   name="address"
                   rows={4}
                   value={formData.address}
                   onChange={handleChange}
                   placeholder="Enter complete residential address"
-                  className={`${baseInputClass} min-h-[120px] resize-vertical`}
+                  className={`${modernInputClass} min-h-[120px] resize-vertical`}
                   required
                 />
               </div>
 
               <div>
-                <label className="mb-3 flex items-center gap-3 text-sm font-black text-slate-800">
-                  <div className="rounded-xl bg-gradient-to-r from-blue-400 to-purple-500 p-2 shadow-md">
-                    <ImageUp className="h-5 w-5 text-white" />
-                  </div>
-                  Profile Photo (Optional)
-                </label>
+                <FieldLabel icon={ImageUp} iconClassName="bg-gradient-to-r from-blue-500 to-purple-500">Profile Photo (Optional)</FieldLabel>
                 <div className="group">
                   <input
                     id="photo"
@@ -549,17 +587,15 @@ export default function RegisterPage() {
                     type="file"
                     accept="image/*"
                     onChange={e => setPhoto(e.target.files?.[0] || null)}
-                    className="block w-full cursor-pointer rounded-3xl border-2 border-dashed border-slate-200/50 bg-gradient-to-r from-slate-50 to-indigo-50/30 
-                      px-6 py-8 text-sm font-medium text-slate-700 backdrop-blur-sm shadow-sm hover:shadow-md hover:border-cyan-400/50 
-                      hover:bg-gradient-to-r hover:from-cyan-50 hover:to-emerald-50/50 focus:shadow-xl focus:border-cyan-500/70 
-                      transition-all duration-300 file:hidden file:mr-4 file:py-2.5 file:px-4 file:rounded-2xl file:border-0 
-                      file:bg-gradient-to-r file:from-cyan-500 file:to-emerald-500 file:text-sm file:font-black file:text-white 
-                      file:shadow-lg file:hover:brightness-105 file:hover:scale-105"
+                    className="block w-full cursor-pointer rounded-[24px] border-2 border-dashed border-slate-200 bg-slate-50
+                      px-6 py-8 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300
+                      hover:border-cyan-400 hover:bg-cyan-50/50 hover:shadow-md
+                      file:hidden"
                   />
                   <label htmlFor="photo" className="cursor-pointer">
-                    <div className="flex flex-col items-center justify-center p-4 transition-all group-hover:scale-105">
+                    <div className="flex flex-col items-center justify-center p-4 transition-all group-hover:scale-[1.02]">
                       <ImageUp className="h-8 w-8 text-slate-400 group-hover:text-cyan-600" />
-                      <p className="mt-2 text-sm font-medium text-slate-600 group-hover:text-slate-800">
+                      <p className="mt-2 text-sm font-medium text-slate-700 group-hover:text-slate-900">
                         Click to upload student photo
                       </p>
                       <p className="text-xs text-slate-400">PNG, JPG up to 5MB</p>
@@ -567,12 +603,14 @@ export default function RegisterPage() {
                   </label>
                 </div>
                 {photoPreview && (
-                  <div className="mt-4 flex items-center gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <image
+                  <div className="mt-4 flex items-center gap-4 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                    <Image
                       src={photoPreview}
                       alt="Student preview"
+                      width={96}
+                      height={96}
                       className="h-24 w-24 rounded-2xl object-cover shadow-sm"
-                    image/>
+                    />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-slate-800">{photo?.name}</p>
                       <p className="text-xs text-slate-500">Preview ready for upload</p>
@@ -580,17 +618,18 @@ export default function RegisterPage() {
                   </div>
                 )}
               </div>
-            </div>
+              </div>
+            </section>
 
             {/* Submit Button */}
-            <div className="pt-4 md:col-span-2">
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-3xl bg-gradient-to-r 
-                  from-cyan-600 via-blue-600 to-emerald-600 px-8 py-5 text-lg font-black text-white shadow-2xl 
+                className="group relative flex w-full items-center justify-center gap-3 rounded-[24px] bg-gradient-to-r 
+                  from-cyan-600 via-blue-600 to-emerald-600 px-8 py-4 text-base font-bold text-white shadow-xl 
                   transition-all duration-300 hover:from-cyan-700 hover:via-blue-700 hover:to-emerald-700 
-                  hover:shadow-3xl hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed 
+                  hover:shadow-2xl active:scale-[0.99] disabled:cursor-not-allowed 
                   disabled:from-slate-400 disabled:to-slate-500 disabled:shadow-none disabled:scale-100"
               >
                 {isLoading ? (

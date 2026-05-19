@@ -2,9 +2,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import ExamsForm from "@/components/exams/ExamsForm";
+import { getDashboardRouteForLecturerSubject } from "@/utils/lecturerDashboardRoute";
 
 const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
 const unitExams = ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"];
@@ -30,6 +31,7 @@ function buildSubjectPayload(subjects, examType) {
 export default function ExamsFormPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [students, setStudents] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +48,11 @@ export default function ExamsFormPage() {
   });
 
   const collegeName = session?.user?.collegeName || "";
+  const dashboardReturnUrl =
+    searchParams.get("returnUrl") ||
+    (session?.user?.role === "lecturer"
+      ? getDashboardRouteForLecturerSubject(session.user.subject)
+      : "/exam-report");
 
   // Fetch students based on selected stream/year
   useEffect(() => {
@@ -108,7 +115,7 @@ export default function ExamsFormPage() {
 
       if (res.ok) {
         toast.success("✅ Exam saved successfully!");
-        router.push("/exam-report");
+        router.push(dashboardReturnUrl);
         setFormData({
           yearOfStudy: "",
           academicYear: "",
@@ -140,6 +147,7 @@ export default function ExamsFormPage() {
         setFormData={setFormData}
         isSubmitting={isSubmitting}
         onSubmit={handleSubmit}
+        dashboardReturnUrl={dashboardReturnUrl}
       />
     </>
   );

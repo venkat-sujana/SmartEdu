@@ -3,7 +3,10 @@
 'use client'
 
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
+  ArrowLeft,
   ChevronDown,
   FileText,
   LayoutDashboard,
@@ -80,6 +83,47 @@ function formatExamLabel(value) {
     .replace('PRE-PUBLIC-1', 'Pre-Public - 1')
     .replace('PRE-PUBLIC-2', 'Pre-Public - 2')
     .replace('UNIT-', 'Unit - ')
+}
+
+function getDetailsFilterBadge(detailsFilter) {
+  if (!detailsFilter) return null
+
+  if (detailsFilter.streamCategory === 'general') {
+    return {
+      label: 'General Stream',
+      className: 'bg-blue-100 text-blue-700',
+    }
+  }
+
+  if (detailsFilter.streamCategory === 'vocational') {
+    return {
+      label: 'Vocational Stream',
+      className: 'bg-emerald-100 text-emerald-700',
+    }
+  }
+
+  if (detailsFilter.group) {
+    return {
+      label: detailsFilter.group,
+      className: 'bg-violet-100 text-violet-700',
+    }
+  }
+
+  if (detailsFilter.yearOfStudy) {
+    return {
+      label: detailsFilter.yearOfStudy,
+      className: 'bg-amber-100 text-amber-700',
+    }
+  }
+
+  if (detailsFilter.examType || detailsFilter.examTypes) {
+    return {
+      label: detailsFilter.examType ? formatExamLabel(detailsFilter.examType) : 'Multiple Exams',
+      className: 'bg-cyan-100 text-cyan-700',
+    }
+  }
+
+  return null
 }
 
 function getSubjectEntries(report) {
@@ -174,15 +218,12 @@ function isReportPass(report) {
 
 
 
-
-
-
 function SidebarSection({ title, items, collapsed, activeKey, onSelect, icon: Icon }) {
   if (!items.length) return null
 
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-2">
-      <div className="mb-2 flex items-center gap-2 px-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+    <div className="rounded-xl border border-white/10 bg-white/8 p-2 backdrop-blur-sm">
+      <div className="mb-2 flex items-center gap-2 px-2 text-[11px] font-semibold uppercase tracking-wide text-cyan-100/75">
         <Icon className="h-3.5 w-3.5" />
         <span className={collapsed ? 'hidden' : 'inline'}>{title}</span>
       </div>
@@ -196,15 +237,15 @@ function SidebarSection({ title, items, collapsed, activeKey, onSelect, icon: Ic
             className={[
               'flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition',
               activeKey === item.key
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-700 hover:bg-white hover:text-blue-700',
+                ? 'bg-cyan-400/20 text-white shadow-sm ring-1 ring-cyan-200/20'
+                : 'text-slate-100 hover:bg-white/10 hover:text-white',
             ].join(' ')}
           >
             <span className={collapsed ? 'hidden' : 'inline'}>{item.label}</span>
             <span
               className={[
                 'rounded-full px-2 py-0.5 text-[10px] font-semibold',
-                activeKey === item.key ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600',
+                activeKey === item.key ? 'bg-white/20 text-white' : 'bg-white/12 text-cyan-100/80',
                 collapsed ? 'hidden' : 'inline-flex',
               ].join(' ')}
             >
@@ -263,20 +304,20 @@ function Sidebar({
 
       <aside
         className={[
-          'fixed top-0 left-0 z-40 h-screen border-r border-slate-200 bg-white transition-all duration-300',
+          'fixed top-0 left-0 z-40 h-screen border-r border-white/60 bg-gradient-to-b from-slate-950 via-sky-950 to-cyan-900 text-white transition-all duration-300',
           collapsed ? 'w-20' : 'w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         ].join(' ')}
       >
-        <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
+        <div className="flex h-16 items-center justify-between border-b border-white/10 px-4">
           <div className={collapsed ? 'hidden' : 'block'}>
-            <p className="text-xs font-medium tracking-wide text-slate-500 uppercase">Academic</p>
-            <h1 className="text-base font-semibold text-slate-900">Exam Module</h1>
+            <p className="text-xs font-medium tracking-wide text-cyan-200/80 uppercase">Academic</p>
+            <h1 className="text-base font-semibold text-white">Exam Module</h1>
           </div>
           <button
             type="button"
             onClick={onToggleCollapsed}
-            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+            className="rounded-lg p-2 text-cyan-100 transition hover:bg-white/10"
             aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
@@ -295,8 +336,8 @@ function Sidebar({
             className={[
               'flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition',
               activeKey === 'dashboard'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700',
+                ? 'bg-white/18 text-white shadow-sm ring-1 ring-white/15'
+                : 'bg-white/8 text-slate-100 hover:bg-white/12 hover:text-white',
             ].join(' ')}
           >
             <LayoutDashboard className="h-4 w-4 shrink-0" />
@@ -318,8 +359,8 @@ function Sidebar({
                   className={[
                     'flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] font-semibold uppercase tracking-wide transition',
                     activeKey === block.key
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700',
+                      ? 'bg-white/15 text-cyan-100'
+                      : 'text-cyan-100/75 hover:bg-white/10 hover:text-white',
                   ].join(' ')}
                 >
                   <BlockIcon className="h-3.5 w-3.5" />
@@ -351,12 +392,30 @@ function Sidebar({
 
 
 
-function SummaryCard({ title, value, hint, icon: Icon }) {
+function SummaryCard({
+  title,
+  value,
+  hint,
+  icon: Icon,
+  iconClassName = 'text-blue-700',
+  iconWrapClassName = 'bg-blue-100',
+  titleClassName = 'text-slate-600',
+  borderClassName = 'border-white/60 hover:border-blue-200',
+  gradientClassName = 'from-white via-sky-50 to-blue-100/70',
+}) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200">
+    <article
+      className={[
+        'rounded-lg border bg-gradient-to-br px-4 py-3 shadow-sm transition hover:-translate-y-0.5',
+        borderClassName,
+        gradientClassName,
+      ].join(' ')}
+    >
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-600">{title}</p>
-        <Icon className="h-4 w-4 text-blue-700" />
+        <p className={['text-sm font-medium', titleClassName].join(' ')}>{title}</p>
+        <span className={['inline-flex rounded-full p-2 shadow-sm', iconWrapClassName].join(' ')}>
+          <Icon className={['h-4 w-4', iconClassName].join(' ')} />
+        </span>
       </div>
       <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
       <p className="mt-1 text-xs text-slate-500">{hint}</p>
@@ -366,7 +425,7 @@ function SummaryCard({ title, value, hint, icon: Icon }) {
 
 function StreamSummaryPanel({ title, accentClass, cards, onViewDetails }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+    <section className="rounded-xl border border-white/60 bg-gradient-to-br from-white via-slate-50 to-sky-100/70 px-4 py-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
@@ -397,7 +456,7 @@ function StreamSummaryPanel({ title, accentClass, cards, onViewDetails }) {
 
 function UnitCard({ item, onViewDetails }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/30">
+    <article className="rounded-lg border border-blue-100 bg-gradient-to-br from-white via-sky-50 to-blue-100/80 px-4 py-3 shadow-sm transition hover:border-blue-300 hover:bg-blue-50/30">
       <h3 className="text-sm font-semibold text-slate-900">{item.unit}</h3>
       <div className="mt-3 space-y-1 text-xs text-slate-600">
         <p>
@@ -413,7 +472,7 @@ function UnitCard({ item, onViewDetails }) {
       <button
         type="button"
         onClick={() => onViewDetails({ examType: item.examType, title: item.unit })}
-        className="mt-3 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-700"
+        className="mt-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:from-blue-700 hover:to-cyan-700"
       >
         View Details
       </button>
@@ -426,7 +485,7 @@ function PublicExamCard({ item, onViewDetails }) {
     item.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm transition hover:border-blue-200">
+    <article className="rounded-lg border border-violet-100 bg-gradient-to-br from-white via-violet-50 to-cyan-100/80 px-4 py-3 shadow-sm transition hover:border-violet-300">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-900">{item.name}</h3>
         <span className={['rounded-full px-2 py-1 text-[11px] font-medium', badgeClass].join(' ')}>
@@ -442,7 +501,7 @@ function PublicExamCard({ item, onViewDetails }) {
       <button
         type="button"
         onClick={() => onViewDetails({ examType: item.examType, title: item.name })}
-        className="mt-3 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-700"
+        className="mt-3 rounded-lg bg-gradient-to-r from-violet-600 to-cyan-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:from-violet-700 hover:to-cyan-700"
       >
         View Details
       </button>
@@ -451,6 +510,7 @@ function PublicExamCard({ item, onViewDetails }) {
 }
 
 export default function ExamReportPage() {
+  const searchParams = useSearchParams()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -461,6 +521,7 @@ export default function ExamReportPage() {
   const [detailsFilter, setDetailsFilter] = useState(null)
   const [activeSidebarKey, setActiveSidebarKey] = useState('dashboard')
   const detailsSectionRef = useRef(null)
+  const dashboardReturnUrl = searchParams.get('returnUrl')
 
   const loadReports = useCallback(async () => {
     try {
@@ -561,6 +622,8 @@ export default function ExamReportPage() {
       .sort((a, b) => getStudentName(a).localeCompare(getStudentName(b)))
   }, [detailsFilter, filteredReports])
 
+  const detailsFilterBadge = useMemo(() => getDetailsFilterBadge(detailsFilter), [detailsFilter])
+
   const summaryStats = useMemo(() => {
     const uniqueExamEvents = new Set()
     let upcoming = 0
@@ -602,24 +665,44 @@ export default function ExamReportPage() {
         value: summaryStats.totalExamsConducted,
         hint: 'Unique exam sessions',
         icon: ChartColumn,
+        iconClassName: 'text-blue-700',
+        iconWrapClassName: 'bg-blue-100',
+        titleClassName: 'text-blue-700',
+        borderClassName: 'border-blue-100 hover:border-blue-300',
+        gradientClassName: 'from-white via-sky-50 to-blue-100/80',
       },
       {
         title: 'Upcoming Exams',
         value: summaryStats.upcomingExams,
         hint: 'Based on exam dates',
         icon: CalendarClock,
+        iconClassName: 'text-cyan-700',
+        iconWrapClassName: 'bg-cyan-100',
+        titleClassName: 'text-cyan-700',
+        borderClassName: 'border-cyan-100 hover:border-cyan-300',
+        gradientClassName: 'from-white via-cyan-50 to-sky-100/80',
       },
       {
         title: 'Completed Exams',
         value: summaryStats.completedExams,
         hint: 'Published schedule entries',
         icon: ClipboardCheck,
+        iconClassName: 'text-emerald-700',
+        iconWrapClassName: 'bg-emerald-100',
+        titleClassName: 'text-emerald-700',
+        borderClassName: 'border-emerald-100 hover:border-emerald-300',
+        gradientClassName: 'from-white via-emerald-50 to-teal-100/80',
       },
       {
         title: 'Average Pass Percentage',
         value: summaryStats.averagePassPercentage,
         hint: 'Across filtered records',
         icon: Users,
+        iconClassName: 'text-violet-700',
+        iconWrapClassName: 'bg-violet-100',
+        titleClassName: 'text-violet-700',
+        borderClassName: 'border-violet-100 hover:border-violet-300',
+        gradientClassName: 'from-white via-violet-50 to-fuchsia-100/70',
       },
     ],
     [summaryStats]
@@ -631,6 +714,23 @@ export default function ExamReportPage() {
         const category = getStreamCategory(report.stream || report.student?.group || report.studentId?.group)
         return category === streamCategory
       })
+
+      const isGeneral = streamCategory === 'general'
+      const theme = isGeneral
+        ? {
+            titleClassName: 'text-blue-700',
+            borderClassName: 'border-blue-100 hover:border-blue-300',
+            gradientClassName: 'from-white via-sky-50 to-blue-100/80',
+            iconClassName: 'text-blue-700',
+            iconWrapClassName: 'bg-blue-100',
+          }
+        : {
+            titleClassName: 'text-emerald-700',
+            borderClassName: 'border-emerald-100 hover:border-emerald-300',
+            gradientClassName: 'from-white via-emerald-50 to-teal-100/80',
+            iconClassName: 'text-emerald-700',
+            iconWrapClassName: 'bg-emerald-100',
+          }
 
       const uniqueExamEvents = new Set(
         streamRows.map(report => `${report.examType}_${formatDate(report.examDate)}_${report.yearOfStudy || ''}`)
@@ -644,24 +744,28 @@ export default function ExamReportPage() {
           value: streamRows.length,
           hint: 'Student exam entries in this stream',
           icon: Users,
+          ...theme,
         },
         {
           title: 'Exam Events',
           value: uniqueExamEvents.size,
           hint: 'Unique exam/date/year combinations',
           icon: ChartColumn,
+          ...theme,
         },
         {
           title: 'Average Pass %',
           value: `${avgPass}%`,
           hint: 'Pass percentage inside this stream',
           icon: ClipboardCheck,
+          ...theme,
         },
         {
           title: 'Average Marks %',
           value: `${getAverageReportPercentage(streamRows).toFixed(1)}%`,
           hint: 'Overall marks average for this stream',
           icon: CalendarClock,
+          ...theme,
         },
       ]
     }
@@ -863,7 +967,7 @@ export default function ExamReportPage() {
   const contentPadding = isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-100">
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-sky-100 via-slate-100 to-cyan-100">
       <Sidebar
         collapsed={isSidebarCollapsed}
         mobileOpen={isMobileSidebarOpen}
@@ -878,7 +982,7 @@ export default function ExamReportPage() {
       <div
         className={[contentPadding, 'flex h-full flex-col transition-all duration-300'].join(' ')}
       >
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <header className="sticky top-0 z-20 border-b border-white/60 bg-gradient-to-r from-white via-sky-50 to-cyan-50 px-4 py-3 shadow-sm backdrop-blur">
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
@@ -909,16 +1013,54 @@ export default function ExamReportPage() {
               </select>
             </div>
             <div>
-              <button type="button" className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
-                <a href="/exams-form">MARKS POST HERE</a>
-              </button>
+              {dashboardReturnUrl ? (
+                <Link
+                  href={dashboardReturnUrl}
+                  className="mr-2 inline-flex rounded-lg border border-blue-300 bg-gradient-to-r from-white to-blue-50 px-3 py-2 text-sm font-medium text-blue-700 shadow-sm transition hover:from-blue-50 hover:to-blue-100"
+                >
+                  <span className="flex items-center gap-2">
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Dashboard
+                  </span>
+                </Link>
+              ) : null}
+              <Link
+                href={
+                  dashboardReturnUrl
+                    ? `/exams-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
+                    : '/exams-form'
+                }
+                className="mr-2 inline-flex rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:from-blue-700 hover:to-cyan-700"
+              >
+                Marks Post Here
+              </Link>
+              <Link
+                href={
+                  dashboardReturnUrl
+                    ? `/register?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
+                    : '/register'
+                }
+                className="mr-2 inline-flex rounded-lg border border-emerald-300 bg-gradient-to-r from-white to-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 shadow-sm transition hover:from-emerald-50 hover:to-emerald-100"
+              >
+                Add Student
+              </Link>
+              <Link
+                href={
+                  dashboardReturnUrl
+                    ? `/attendance-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
+                    : '/attendance-form'
+                }
+                className="mr-2 inline-flex rounded-lg border border-indigo-300 bg-gradient-to-r from-white to-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm transition hover:from-indigo-50 hover:to-indigo-100"
+              >
+                Mark Attendance
+              </Link>
             </div>
 
             <div className="relative ml-auto">
               <button
                 type="button"
                 onClick={() => setIsProfileOpen(prev => !prev)}
-                className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm"
+                className="flex items-center gap-2 rounded-lg border border-white/70 bg-gradient-to-r from-white to-sky-50 px-3 py-2 text-sm text-slate-700 shadow-sm"
               >
                 <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">
                   AD
@@ -928,7 +1070,7 @@ export default function ExamReportPage() {
               </button>
 
               {isProfileOpen ? (
-                <div className="absolute right-0 mt-2 w-44 rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+                <div className="absolute right-0 mt-2 w-44 rounded-lg border border-white/70 bg-gradient-to-br from-white to-sky-50 p-2 shadow-sm">
                   <button
                     type="button"
                     className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
@@ -989,16 +1131,16 @@ export default function ExamReportPage() {
               />
             </section>
 
-            <section>
+            <section className="rounded-xl border border-blue-100/70 bg-gradient-to-br from-white/70 via-sky-50/80 to-blue-100/50 px-3 py-3 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-base font-semibold text-slate-900">Unit-Wise Performance</h2>
+                <h2 className="text-base font-semibold text-blue-900">Unit-Wise Performance</h2>
                 <button
                   type="button"
                   onClick={() => {
                     setActiveSidebarKey('dashboard')
                     setDetailsFilter({ examTypes: UNIT_EXAMS, title: 'All Unit Exams' })
                   }}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-lg border border-blue-200 bg-white/90 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-50"
                 >
                   View All Units
                 </button>
@@ -1010,8 +1152,8 @@ export default function ExamReportPage() {
               </div>
             </section>
 
-            <section>
-              <h2 className="mb-3 text-base font-semibold text-slate-900">Public Exams</h2>
+            <section className="rounded-xl border border-violet-100/70 bg-gradient-to-br from-white/70 via-violet-50/80 to-cyan-100/50 px-3 py-3 shadow-sm">
+              <h2 className="mb-3 text-base font-semibold text-violet-900">Public Exams</h2>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
                 {publicExamCards.map(item => (
                   <PublicExamCard key={item.name} item={item} onViewDetails={setDetailsFilter} />
@@ -1022,13 +1164,25 @@ export default function ExamReportPage() {
             {detailsFilter ? (
               <section
                 ref={detailsSectionRef}
-                className="rounded-lg border border-blue-200 bg-white px-4 py-3 shadow-sm"
+                className="rounded-lg border border-blue-200/70 bg-gradient-to-br from-white via-blue-50 to-cyan-50 px-4 py-3 shadow-sm"
               >
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-base font-semibold text-slate-900">
-                      {detailsFilter.title || 'Exam Details'}
-                    </h2>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-base font-semibold text-slate-900">
+                        {detailsFilter.title || 'Exam Details'}
+                      </h2>
+                      {detailsFilterBadge ? (
+                        <span
+                          className={[
+                            'rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                            detailsFilterBadge.className,
+                          ].join(' ')}
+                        >
+                          {detailsFilterBadge.label}
+                        </span>
+                      ) : null}
+                    </div>
                     <p className="text-xs text-slate-500">
                       {detailRows.length} student records
                       {academicYear !== 'all' ? ` - ${formatAcademicYearLabel(academicYear)}` : ''}
@@ -1131,7 +1285,7 @@ export default function ExamReportPage() {
               </section>
             ) : null}
 
-            <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <section className="rounded-lg border border-white/70 bg-gradient-to-br from-white via-slate-50 to-indigo-100/60 px-4 py-3 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-base font-semibold text-slate-900">Recent Exam Results</h2>
                 <span className="text-xs text-slate-500">

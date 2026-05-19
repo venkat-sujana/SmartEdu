@@ -59,10 +59,13 @@ export default function GroupDashboardPage({
   const footerEmail = collegeDetails?.email || "";
   const years = ["First Year", "Second Year"];
   const theme = getGroupTheme(groupName);
+  const dashboardReturnUrl = returnUrl || `/dashboards/${routeSegment}`;
   const defaultOverview =
     overviewDescription ||
     `Monitor attendance, absentees, and shortage analytics for ${groupName} batches.`;
-  const addStudentHref = `/register?group=${encodeURIComponent(groupName)}`;
+  const addStudentHref = `/register?group=${encodeURIComponent(groupName)}&returnUrl=${encodeURIComponent(dashboardReturnUrl)}`;
+  const marksPostingHref = `/exams-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`;
+  const examDashboardHref = `/exams?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`;
 
   const editProps = includeEditAttendance
     ? {
@@ -162,11 +165,18 @@ export default function GroupDashboardPage({
                 Add Student
               </Link>
               <Link
-                href={"/exams-form"}
+                href={marksPostingHref}
                 className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
               >
                 <UserPlus className="h-4 w-4" />
-                Add exam
+                Post Marks
+              </Link>
+              <Link
+                href={examDashboardHref}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+              >
+                <UserPlus className="h-4 w-4" />
+                Exam Dashboard
               </Link>
             </div>
 
@@ -183,7 +193,7 @@ export default function GroupDashboardPage({
               attendanceContent={
                 <AttendanceForm
                   defaultGroup={groupName}
-                  returnUrl={returnUrl || `/dashboards/${routeSegment}`}
+                  returnUrl={dashboardReturnUrl}
                 />
               }
               studentTableContent={<GroupStudentTable groupName={groupName} />}
@@ -280,7 +290,6 @@ export default function GroupDashboardPage({
     </div>
   );
 }
-
 
 
 
