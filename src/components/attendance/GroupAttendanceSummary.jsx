@@ -6,28 +6,30 @@ import { getGroupTheme } from "@/components/dashboard/groupTheme";
 import { useSession } from "next-auth/react";
 
 const months = [
-  { label: "JUN", year: "2025" },
-  { label: "JUL", year: "2025" },
-  { label: "AUG", year: "2025" },
-  { label: "SEP", year: "2025" },
-  { label: "OCT", year: "2025" },
-  { label: "NOV", year: "2025" },
-  { label: "DEC", year: "2025" },
-  { label: "JAN", year: "2026" },
-  { label: "FEB", year: "2026" },
-  { label: "MAR", year: "2026" },
+  { label: "JUN", year: "2026" },
+  { label: "JUL", year: "2026" },
+  { label: "AUG", year: "2026" },
+  { label: "SEP", year: "2026" },
+  { label: "OCT", year: "2026" },
+  { label: "NOV", year: "2026" },
+  { label: "DEC", year: "2026" },
+  { label: "JAN", year: "2027" },
+  { label: "FEB", year: "2027" },
+  { label: "MAR", year: "2027" },
 ];
+
 
 export default function GroupAttendanceSummary({
   group,
   yearOfStudy,
   collegeName,
+  refreshKey,
 }) {
   const theme = getGroupTheme(group);
   const [summaryData, setSummaryData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { data: session } = useSession();
-
+const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
   useEffect(() => {
     if (!group || !yearOfStudy) return;
     if (!session?.user?.collegeId) return;
@@ -58,7 +60,7 @@ export default function GroupAttendanceSummary({
     };
 
     fetchData();
-  }, [group, yearOfStudy, session]);
+  }, [group, yearOfStudy, session, refreshKey]);
 
   const filteredData = useMemo(
     () =>

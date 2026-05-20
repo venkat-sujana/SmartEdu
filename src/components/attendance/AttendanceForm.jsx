@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter} from "next/navigation";
 import { DEFAULT_COLLEGE_GROUPS } from "@/utils/collegeGroups";
 import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
+import Image from 'next/image';
 
 const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const yearsList = ["First Year", "Second Year"];
@@ -295,9 +296,11 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
                   key={student._id}
                   className="bg-linear-to-br from-blue-50 to-green-50 border border-blue-200 rounded-2xl shadow p-4 flex flex-col items-center space-y-2 transition hover:shadow-2xl"
                 >
-                  <image
-                    src={student.photo || "/default-avatar.png"}
+                  <Image
+                    src={student.photo || '/default-avatar.png'}
                     alt={student.name}
+                    width={80}
+                    height={80}
                     className="w-20 h-20 object-cover rounded-full border-2 border-blue-400 shadow"
                   />
                   <h4 className="text-lg font-bold text-gray-700 text-center">{student.name}</h4>

@@ -1,5 +1,6 @@
 //src/app/attendance-form/page.jsx
 'use client'
+import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
@@ -105,6 +106,8 @@ function ToggleSwitch({ checked, onChange, color = 'green' }) {
 }
 
 export default function AttendanceFormPage() {
+  const router = useRouter() 
+
   const { data: session } = useSession()
   const searchParams = useSearchParams()
 
@@ -251,6 +254,7 @@ export default function AttendanceFormPage() {
           type: 'success',
           message: json.message || 'Attendance submitted successfully. Unselected students remain N/A.',
         })
+        router.refresh()
       } else {
         setFeedback({ type: 'error', message: json?.message || 'Failed to submit attendance.' })
       }

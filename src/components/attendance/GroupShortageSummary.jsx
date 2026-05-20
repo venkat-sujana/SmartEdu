@@ -5,16 +5,16 @@ import { useEffect, useState } from "react";
 import { Printer } from "lucide-react";
 
 const months = [
-  { label: "JUN", year: "2025" },
-  { label: "JUL", year: "2025" },
-  { label: "AUG", year: "2025" },
-  { label: "SEP", year: "2025" },
-  { label: "OCT", year: "2025" },
-  { label: "NOV", year: "2025" },
-  { label: "DEC", year: "2025" },
-  { label: "JAN", year: "2026" },
-  { label: "FEB", year: "2026" },
-  { label: "MAR", year: "2026" },
+  { label: "JUN", year: "2026" },
+  { label: "JUL", year: "2026" },
+  { label: "AUG", year: "2026" },
+  { label: "SEP", year: "2026" },
+  { label: "OCT", year: "2026" },
+  { label: "NOV", year: "2026" },
+  { label: "DEC", year: "2026" },
+  { label: "JAN", year: "2027" },
+  { label: "FEB", year: "2027" },
+  { label: "MAR", year: "2027" },
 ];
 
 export default function GroupShortageSummary({

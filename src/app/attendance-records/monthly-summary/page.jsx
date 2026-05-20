@@ -1,6 +1,6 @@
+//src/app/attendance-records/monthly-summary/page.jsx
 'use client'
-
-import { useMemo, useState } from 'react'
+import { useMemo, useState,useEffect} from 'react'
 import {
   CalendarDays,
   ClipboardCheck,
@@ -173,9 +173,18 @@ export default function MonthlySummaryPage() {
   const [selectedGroup, setSelectedGroup] = useState(groupOptions[0])
   const [selectedDate, setSelectedDate] = useState(null)
 
+  const [attendanceUpdated, setAttendanceUpdated] = useState(false);
+
+  useEffect(() => {
+    if (attendanceUpdated) {
+      // Trigger re-computation of calendarData
+      setAttendanceUpdated(false);
+    }
+  }, [attendanceUpdated]);
+
   const calendarData = useMemo(
     () => buildCalendarData(selectedMonth, selectedYear, selectedGroup),
-    [selectedMonth, selectedYear, selectedGroup]
+    [selectedMonth, selectedYear, selectedGroup] // Removed attendanceUpdated
   )
 
   const filledDays = calendarData.filter(item => !item.empty && item.hasData)
