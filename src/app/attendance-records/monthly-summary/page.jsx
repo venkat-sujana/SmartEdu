@@ -1,6 +1,6 @@
 //src/app/attendance-records/monthly-summary/page.jsx
 'use client'
-import { useMemo, useState,useEffect} from 'react'
+import {useState,useEffect} from 'react'
 import {
   CalendarDays,
   ClipboardCheck,
@@ -99,69 +99,22 @@ function getAttendanceColor(percent, hasData) {
   return 'bg-rose-50 border-rose-200 text-rose-800'
 }
 
-function createDummyStudents(day, group) {
-  const names = [
-    'Aarav',
-    'Nitya',
-    'Harsha',
-    'Keerthi',
-    'Charan',
-    'Meghana',
-    'Rahul',
-    'Pranav',
-    'Divya',
-    'Sanjay',
-  ]
+const fetchMonthlyData = async () => {
+  try {
+    const month = monthOptions.indexOf(selectedMonth) + 1;
 
-  return names.slice(0, 8).map((name, index) => {
-    const present = (day + index) % 3 !== 0
-    return {
-      id: `${day}-${index + 1}`,
-      name: `${name} ${group}`,
-      rollNo: `${group}-${String(index + 1).padStart(3, '0')}`,
-      status: present ? 'Present' : 'Absent',
-    }
-  })
-}
+    const res = await fetch(
+      `/api/attendance/monthly-summary?month=${month}&year=${selectedYear}&group=${selectedGroup}`
+    );
 
-function buildCalendarData(monthName, year, group) {
-  const monthIndex = monthOptions.indexOf(monthName)
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
-  const firstDay = new Date(year, monthIndex, 1).getDay()
+    const data = await res.json();
 
-  const cells = []
-
-  for (let i = 0; i < firstDay; i += 1) {
-    cells.push({ empty: true, id: `empty-start-${i}` })
+    setCalendarData(data.data || []);
+  } catch (err) {
+    console.error("Monthly fetch error:", err);
+    setCalendarData([]);
   }
-
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const noData = day % 9 === 0
-    const totalStudents = noData ? 0 : 56 + (day % 8)
-    const presentCount = noData ? 0 : Math.max(0, totalStudents - ((day * 3) % 20))
-    const absentCount = noData ? 0 : totalStudents - presentCount
-    const percent = totalStudents > 0 ? Number(((presentCount / totalStudents) * 100).toFixed(1)) : 0
-    const students = noData ? [] : createDummyStudents(day, group)
-
-    cells.push({
-      id: `day-${day}`,
-      day,
-      dateLabel: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-      presentCount,
-      absentCount,
-      percent,
-      totalStudents,
-      hasData: !noData,
-      students,
-    })
-  }
-
-  while (cells.length % 7 !== 0) {
-    cells.push({ empty: true, id: `empty-end-${cells.length}` })
-  }
-
-  return cells
-}
+};
 
 export default function MonthlySummaryPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -175,6 +128,9 @@ export default function MonthlySummaryPage() {
 
   const [attendanceUpdated, setAttendanceUpdated] = useState(false);
 
+
+  
+
   useEffect(() => {
     if (attendanceUpdated) {
       // Trigger re-computation of calendarData
@@ -182,10 +138,18 @@ export default function MonthlySummaryPage() {
     }
   }, [attendanceUpdated]);
 
-  const calendarData = useMemo(
-    () => buildCalendarData(selectedMonth, selectedYear, selectedGroup),
-    [selectedMonth, selectedYear, selectedGroup] // Removed attendanceUpdated
-  )
+useEffect(() => {
+  fetchMonthlyData();
+}, [selectedMonth, selectedYear, selectedGroup]);
+
+
+
+useEffect(() => {
+  fetchMonthlySummary();
+}, [selectedGroup, selectedYear]);
+
+
+const [calendarData, setCalendarData] = useState([]);
 
   const filledDays = calendarData.filter(item => !item.empty && item.hasData)
   const monthAverage =
@@ -197,6 +161,9 @@ export default function MonthlySummaryPage() {
   const lowestDay = filledDays.reduce((low, day) => (day.percent < (low?.percent ?? 101) ? day : low), null)
 
   const contentPadding = sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+
+
+  
 
   return (
     <div className="h-screen overflow-hidden bg-slate-100 text-sm">
