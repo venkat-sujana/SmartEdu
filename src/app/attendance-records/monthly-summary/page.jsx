@@ -139,18 +139,34 @@ export default function MonthlySummaryPage() {
   }, [attendanceUpdated]);
 
 useEffect(() => {
+  const fetchMonthlyData = async () => {
+    try {
+      const month = monthOptions.indexOf(selectedMonth) + 1;
+
+      const res = await fetch(
+        `/api/attendance/monthly-summary?month=${month}&year=${selectedYear}&group=${selectedGroup}`
+      );
+
+      const data = await res.json();
+
+      console.log("Monthly API:", data);
+
+      setCalendarData(data.data || []);
+    } catch (err) {
+      console.error("Monthly fetch error:", err);
+      setCalendarData([]);
+    }
+  };
+
   fetchMonthlyData();
 }, [selectedMonth, selectedYear, selectedGroup]);
 
 
 
-useEffect(() => {
-  fetchMonthlySummary();
-}, [selectedGroup, selectedYear]);
 
 
 const [calendarData, setCalendarData] = useState([]);
-
+console.log("calendarData:", calendarData);
   const filledDays = calendarData.filter(item => !item.empty && item.hasData)
   const monthAverage =
     filledDays.length > 0
@@ -161,7 +177,6 @@ const [calendarData, setCalendarData] = useState([]);
   const lowestDay = filledDays.reduce((low, day) => (day.percent < (low?.percent ?? 101) ? day : low), null)
 
   const contentPadding = sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
-
 
   
 
