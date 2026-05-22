@@ -99,22 +99,6 @@ function getAttendanceColor(percent, hasData) {
   return 'bg-rose-50 border-rose-200 text-rose-800'
 }
 
-const fetchMonthlyData = async () => {
-  try {
-    const month = monthOptions.indexOf(selectedMonth) + 1;
-
-    const res = await fetch(
-      `/api/attendance/monthly-summary?month=${month}&year=${selectedYear}&group=${selectedGroup}`
-    );
-
-    const data = await res.json();
-
-    setCalendarData(data.data || []);
-  } catch (err) {
-    console.error("Monthly fetch error:", err);
-    setCalendarData([]);
-  }
-};
 
 export default function MonthlySummaryPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -353,7 +337,7 @@ console.log("calendarData:", calendarData);
             </div>
 
             <div className="max-h-80 overflow-y-auto px-4 py-3">
-              {selectedDate.students.length === 0 ? (
+              {!selectedDate.students || selectedDate.students.length === 0 ? (
                 <p className="text-xs text-slate-500">No student-wise data for this date.</p>
               ) : (
                 <table className="min-w-full text-xs">
@@ -366,7 +350,7 @@ console.log("calendarData:", calendarData);
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedDate.students.map((student, index) => (
+                    {selectedDate.students?.map((student, index) =>(
                       <tr key={student.id} className="border-b border-slate-100">
                         <td className="px-2 py-2">{index + 1}</td>
                         <td className="px-2 py-2">{student.name}</td>
