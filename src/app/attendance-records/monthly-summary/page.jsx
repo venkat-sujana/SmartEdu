@@ -34,7 +34,7 @@ const monthOptions = [
   'November',
   'December',
 ]
-const yearOptions = [2025, 2026, 2027]
+const yearOptions = ["First Year", "Second Year"]
 const groupOptions = ['MPC', 'BiPC', 'CEC', 'HEC', 'MLT', 'CET', 'M&AT']
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -106,7 +106,7 @@ export default function MonthlySummaryPage() {
 
   const now = new Date()
   const [selectedMonth, setSelectedMonth] = useState(monthOptions[now.getMonth()])
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear())
+  const [selectedYear, setSelectedYear] = useState("First Year")
   const [selectedGroup, setSelectedGroup] = useState(groupOptions[0])
   const [selectedDate, setSelectedDate] = useState(null)
 
@@ -205,7 +205,7 @@ console.log("calendarData:", calendarData);
 
               <select
                 value={selectedYear}
-                onChange={e => setSelectedYear(Number(e.target.value))}
+                onChange={e => setSelectedYear(e.target.value)}
                 className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
               >
                 {yearOptions.map(year => (
