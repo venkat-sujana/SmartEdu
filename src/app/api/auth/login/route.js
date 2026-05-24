@@ -48,7 +48,13 @@ export async function POST(req) {
 
     const response = NextResponse.json({
       message: "Login successful",
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        collegeId: user.collegeId || null,
+      },
     });
     setInvigilationAuthCookie(response, token);
     return response;

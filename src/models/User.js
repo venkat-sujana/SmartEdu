@@ -6,9 +6,10 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["admin", "lecturer"], required: true, default: "lecturer" },
+    collegeId: { type: mongoose.Schema.Types.ObjectId, ref: "College", index: true },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }
 );
 
 export default mongoose.models.User || mongoose.model("User", userSchema);
-

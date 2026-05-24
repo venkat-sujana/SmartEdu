@@ -6,11 +6,16 @@ import { hashPassword } from "@/lib/invigilation-auth";
 import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
 
 export async function GET(req) {
-  const { error } = await requireInvigilationAuth(req, ["admin"]);
+  const { user: admin, error } = await requireInvigilationAuth(req, ["admin"]);
   if (error) return error;
 
   await connectInvigilationDB();
-  const lecturers = await User.find({ role: "lecturer" }).sort({ createdAt: -1 }).lean();
+  const lecturerFilter = { role: "lecturer" };
+  if (admin?.collegeId) {
+    lecturerFilter.collegeId = admin.collegeId;
+  }
+
+  const lecturers = await User.find(lecturerFilter).sort({ createdAt: -1 }).lean();
   const profiles = await LecturerProfile.find({
     userId: { $in: lecturers.map((l) => l._id) },
   }).lean();
@@ -67,6 +72,7 @@ export async function POST(req) {
       email: loginId,
       password: await hashPassword(rawPassword),
       role: "lecturer",
+      ...(admin?.collegeId ? { collegeId: admin.collegeId } : {}),
       createdBy: admin._id,
     });
 

@@ -9,6 +9,17 @@ function toDateKey(value) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
+function hasDateClash(existingSlots, exam, sameDayNoRepeat) {
+  const examDateKey = toDateKey(exam.date);
+  const examSlotKey = `${examDateKey}|${exam.session}`;
+
+  if (sameDayNoRepeat) {
+    return existingSlots?.has(examDateKey);
+  }
+
+  return existingSlots?.has(examSlotKey);
+}
+
 export async function POST(req) {
   const { user, error } = await requireInvigilationAuth(req, ["admin"]);
   if (error) return error;
@@ -17,22 +28,45 @@ export async function POST(req) {
     await connectInvigilationDB();
     const body = await req.json().catch(() => ({}));
     const date = body?.date || "";
+    const fromDate = body?.fromDate || "";
+    const toDate = body?.toDate || "";
     const session = body?.session || "";
+    const examType = body?.examType || "";
+    const maxDutiesPerLecturer = Number(body?.maxDutiesPerLecturer || 0);
+    const sameDayNoRepeat = body?.sameDayNoRepeat !== false;
 
     const examFilter = {};
+    if (user.collegeId) {
+      examFilter.collegeId = user.collegeId;
+    }
     if (date) {
       const start = new Date(date);
       const end = new Date(date);
       end.setDate(end.getDate() + 1);
       examFilter.date = { $gte: start, $lt: end };
     }
+    if (!date && fromDate && toDate) {
+      const start = new Date(fromDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(toDate);
+      end.setHours(23, 59, 59, 999);
+      examFilter.date = { $gte: start, $lte: end };
+    }
     if (session) {
       examFilter.session = session;
+    }
+    if (examType) {
+      examFilter.examType = examType;
     }
 
     const [allExams, lecturers, existingDuties] = await Promise.all([
       ExamSchedule.find(examFilter).sort({ date: 1, session: 1 }).lean(),
-      User.find({ role: "lecturer" }).select("_id name").lean(),
+      User.find({
+        role: "lecturer",
+        ...(user.collegeId ? { collegeId: user.collegeId } : {}),
+      })
+        .select("_id name")
+        .lean(),
       DutyAssignment.find({})
         .populate("examScheduleId", "date session")
         .select("examScheduleId lecturerId")
@@ -59,14 +93,16 @@ export async function POST(req) {
     }
 
     const loadByLecturer = new Map(lecturers.map((l) => [String(l._id), 0]));
-    const clashMap = new Map(); // lecturerId -> Set(`${date}|${session}`)
+    const clashMap = new Map(); // lecturerId -> Set(date or date|session)
 
     for (const d of existingDuties) {
       const lId = String(d.lecturerId);
       const exam = d.examScheduleId;
       if (!exam?.date || !exam?.session) continue;
       loadByLecturer.set(lId, (loadByLecturer.get(lId) || 0) + 1);
-      const key = `${toDateKey(exam.date)}|${exam.session}`;
+      const key = sameDayNoRepeat
+        ? toDateKey(exam.date)
+        : `${toDateKey(exam.date)}|${exam.session}`;
       if (!clashMap.has(lId)) clashMap.set(lId, new Set());
       clashMap.get(lId).add(key);
     }
@@ -75,13 +111,25 @@ export async function POST(req) {
     const skippedExams = [];
 
     for (const exam of targetExams) {
-      const slotKey = `${toDateKey(exam.date)}|${exam.session}`;
+      const examDateKey = toDateKey(exam.date);
+      const slotKey = `${examDateKey}|${exam.session}`;
 
-      const candidates = lecturers.filter((l) => !clashMap.get(String(l._id))?.has(slotKey));
+      const candidates = lecturers.filter((l) => {
+        const lecturerId = String(l._id);
+        const currentLoad = loadByLecturer.get(lecturerId) || 0;
+
+        if (maxDutiesPerLecturer > 0 && currentLoad >= maxDutiesPerLecturer) {
+          return false;
+        }
+
+        return !hasDateClash(clashMap.get(lecturerId), exam, sameDayNoRepeat);
+      });
       if (candidates.length === 0) {
         skippedExams.push({
           examScheduleId: exam._id,
-          reason: "No free lecturer for this date/session",
+          reason: sameDayNoRepeat
+            ? "No free lecturer available for this date"
+            : "No free lecturer for this date/session",
         });
         continue;
       }
@@ -105,7 +153,7 @@ export async function POST(req) {
       const selectedId = String(selected._id);
       loadByLecturer.set(selectedId, (loadByLecturer.get(selectedId) || 0) + 1);
       if (!clashMap.has(selectedId)) clashMap.set(selectedId, new Set());
-      clashMap.get(selectedId).add(slotKey);
+      clashMap.get(selectedId).add(sameDayNoRepeat ? examDateKey : slotKey);
     }
 
     return NextResponse.json({
@@ -113,9 +161,12 @@ export async function POST(req) {
       assigned: createdAssignments.length,
       skipped: skippedExams.length,
       skippedExams,
+      rules: {
+        sameDayNoRepeat,
+        maxDutiesPerLecturer,
+      },
     });
   } catch (err) {
     return NextResponse.json({ message: err.message || "Auto allocation failed" }, { status: 500 });
   }
 }
-
