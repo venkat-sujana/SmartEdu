@@ -1,3 +1,4 @@
+//src/app/api/invigilation/rooms/[id]/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import InvigilationRoom from "@/models/InvigilationRoom";
@@ -23,91 +24,240 @@ function buildScheduleScopeFilter(user) {
   };
 }
 
-export async function PUT(req, { params }) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin"]);
+export async function PUT(
+  req,
+  context
+) {
+  const { id } =
+    await context.params;
+
+  const { user, error } =
+    await requireInvigilationAuth(
+      req,
+      ["admin"]
+    );
+
   if (error) return error;
 
   try {
     await connectInvigilationDB();
-    const { id } = params;
-    const body = await req.json();
-    const existingRoom = await InvigilationRoom.findById(id);
 
-    if (!existingRoom || !canAccessByCollege(existingRoom, user)) {
-      return NextResponse.json({ message: "Room not found" }, { status: 404 });
+    const body =
+      await req.json();
+
+    const existingRoom =
+      await InvigilationRoom.findById(id);
+
+    if (
+      !existingRoom ||
+      !canAccessByCollege(
+        existingRoom,
+        user
+      )
+    ) {
+      return NextResponse.json(
+        {
+          message: "Room not found",
+        },
+        { status: 404 }
+      );
     }
 
-    const previousName = existingRoom.name;
+    const previousName =
+      existingRoom.name;
+
     const update = {
-      name: body.name?.trim()?.toUpperCase(),
-      block: body.block?.trim() || "",
-      capacity: body.capacity ? Number(body.capacity) : undefined,
+      name: body.name
+        ?.trim()
+        ?.toUpperCase(),
+
+      block:
+        body.block?.trim() || "",
+
+      capacity: body.capacity
+        ? Number(body.capacity)
+        : undefined,
     };
 
     if (!update.name) {
-      return NextResponse.json({ message: "Room name is required" }, { status: 400 });
+      return NextResponse.json(
+        {
+          message:
+            "Room name is required",
+        },
+        { status: 400 }
+      );
     }
 
-    existingRoom.name = update.name;
-    existingRoom.block = update.block;
-    existingRoom.capacity = update.capacity;
+    existingRoom.name =
+      update.name;
+
+    existingRoom.block =
+      update.block;
+
+    existingRoom.capacity =
+      update.capacity;
+
     await existingRoom.save();
 
     await ExamSchedule.updateMany(
       {
         $and: [
-          { $or: [{ roomId: existingRoom._id }, { hallNo: previousName }, { hallNo: update.name }] },
-          buildScheduleScopeFilter(user),
+          {
+            $or: [
+              {
+                roomId:
+                  existingRoom._id,
+              },
+              {
+                hallNo:
+                  previousName,
+              },
+              {
+                hallNo:
+                  update.name,
+              },
+            ],
+          },
+
+          buildScheduleScopeFilter(
+            user
+          ),
         ],
       },
-      { $set: { hallNo: update.name, roomId: existingRoom._id } }
+
+      {
+        $set: {
+          hallNo: update.name,
+          roomId:
+            existingRoom._id,
+        },
+      }
     );
 
-    return NextResponse.json({ message: "Room updated", data: existingRoom });
+    return NextResponse.json({
+      message: "Room updated",
+      data: existingRoom,
+    });
+
   } catch (err) {
-    return NextResponse.json({ message: err.message || "Failed to update room" }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        message:
+          err.message ||
+          "Failed to update room",
+      },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(req, { params }) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin"]);
+
+
+
+
+export async function DELETE(
+  req,
+  context
+) {
+
+  const { id } =
+    await context.params;
+
+  const { user, error } =
+    await requireInvigilationAuth(
+      req,
+      ["admin"]
+    );
+
   if (error) return error;
 
   try {
+
     await connectInvigilationDB();
-    const { id } = params;
-    const room = await InvigilationRoom.findById(id).lean();
 
-    if (!room || !canAccessByCollege(room, user)) {
-      return NextResponse.json({ message: "Room not found" }, { status: 404 });
+    const room =
+      await InvigilationRoom.findById(id)
+        .lean();
+
+    if (
+      !room ||
+      !canAccessByCollege(
+        room,
+        user
+      )
+    ) {
+      return NextResponse.json(
+        {
+          message: "Room not found",
+        },
+        { status: 404 }
+      );
     }
 
-    const linkedSchedules = await ExamSchedule.find(
-      {
+    const linkedSchedules =
+      await ExamSchedule.find({
         $and: [
-          { $or: [{ roomId: id }, { hallNo: room.name }] },
-          buildScheduleScopeFilter(user),
-        ],
-      }
-    )
-      .select("_id")
-      .lean();
+          {
+            $or: [
+              { roomId: id },
+              { hallNo: room.name },
+            ],
+          },
 
-    const scheduleIds = linkedSchedules.map((item) => item._id);
+          buildScheduleScopeFilter(
+            user
+          ),
+        ],
+      })
+        .select("_id")
+        .lean();
+
+    const scheduleIds =
+      linkedSchedules.map(
+        (item) => item._id
+      );
+
+    // delete linked duties
     if (scheduleIds.length > 0) {
-      await DutyAssignment.deleteMany({ examScheduleId: { $in: scheduleIds } });
-      await ExamSchedule.deleteMany({ _id: { $in: scheduleIds } });
+
+      await DutyAssignment.deleteMany({
+        examScheduleId: {
+          $in: scheduleIds,
+        },
+      });
+
+      // delete linked schedules
+      await ExamSchedule.deleteMany({
+        _id: {
+          $in: scheduleIds,
+        },
+      });
     }
 
+    // delete room
     await InvigilationRoom.deleteOne({
       _id: id,
     });
 
     return NextResponse.json({
+      success: true,
       message: "Room deleted",
-      deletedSchedules: scheduleIds.length,
+      deletedSchedules:
+        scheduleIds.length,
     });
+
   } catch (err) {
-    return NextResponse.json({ message: err.message || "Failed to delete room" }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          err.message ||
+          "Failed to delete room",
+      },
+      { status: 500 }
+    );
   }
 }

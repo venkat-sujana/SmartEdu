@@ -1,3 +1,4 @@
+//src/app/invigilation/lecturer/dashboard/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,6 +11,19 @@ function formatDate(date) {
 }
 
 export default function LecturerInvigilationDashboardPage() {
+
+const [availabilityDate,
+  setAvailabilityDate] =
+  useState("")
+
+const [availabilitySession,
+  setAvailabilitySession] =
+  useState("FN")
+
+const [availabilityReason,
+  setAvailabilityReason] =
+  useState("")
+
   const [duties, setDuties] = useState([]);
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,11 +68,174 @@ export default function LecturerInvigilationDashboardPage() {
     }
   };
 
+
+  const saveAvailability =
+  async () => {
+
+    try {
+
+      if (!availabilityDate) {
+        toast.error(
+          "Select date"
+        )
+        return
+      }
+
+      const res =
+        await fetch(
+          "/api/invigilation/availability",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              date:
+                availabilityDate,
+
+              session:
+                availabilitySession,
+
+              status:
+                "NOT_AVAILABLE",
+
+              reason:
+                availabilityReason,
+            }),
+          }
+        )
+
+      const data =
+        await res.json()
+
+      if (!res.ok) {
+        throw new Error(
+          data.message ||
+          "Failed"
+        )
+      }
+
+      toast.success(
+        "Availability saved"
+      )
+
+      setAvailabilityDate("")
+      setAvailabilitySession(
+        "FN"
+      )
+      setAvailabilityReason("")
+
+    } catch (err) {
+
+      toast.error(
+        err.message ||
+        "Failed"
+      )
+    }
+  }
+
   return (
     <InvigilationGuard allowRoles={["lecturer"]}>
       {(user) => (
         <InvigilationShell user={user} title="Lecturer - Invigilation Duties">
           <div className="space-y-5">
+          <section className="rounded-lg border p-4">
+
+  <h3 className="mb-4 text-sm font-semibold">
+    Manage Availability
+  </h3>
+
+  <div className="grid gap-3 md:grid-cols-4">
+
+    <div>
+      <label className="mb-1 block text-xs font-medium">
+        Date
+      </label>
+
+      <input
+        type="date"
+        value={availabilityDate}
+        onChange={(e) =>
+          setAvailabilityDate(
+            e.target.value
+          )
+        }
+        className="w-full rounded border px-3 py-2 text-sm"
+      />
+    </div>
+
+
+    <div>
+      <label className="mb-1 block text-xs font-medium">
+        Session
+      </label>
+
+      <select
+        value={availabilitySession}
+        onChange={(e) =>
+          setAvailabilitySession(
+            e.target.value
+          )
+        }
+        className="w-full rounded border px-3 py-2 text-sm"
+      >
+        <option value="FN">
+          FN
+        </option>
+
+        <option value="AN">
+          AN
+        </option>
+
+        <option value="EN">
+          EN
+        </option>
+
+        <option value="FULLDAY">
+          FULLDAY
+        </option>
+      </select>
+    </div>
+
+
+    <div>
+      <label className="mb-1 block text-xs font-medium">
+        Reason
+      </label>
+
+      <input
+        type="text"
+        placeholder="Optional"
+
+        value={availabilityReason}
+
+        onChange={(e) =>
+          setAvailabilityReason(
+            e.target.value
+          )
+        }
+
+        className="w-full rounded border px-3 py-2 text-sm"
+      />
+    </div>
+
+
+    <div className="flex items-end">
+
+      <button
+        onClick={saveAvailability}
+
+        className="w-full rounded bg-rose-600 px-3 py-2 text-sm text-white"
+      >
+        Mark Not Available
+      </button>
+
+    </div>
+  </div>
+</section>
             <section className="rounded-lg border p-3">
               <h3 className="mb-3 text-sm font-semibold">Assigned Duties</h3>
               <div className="overflow-auto">

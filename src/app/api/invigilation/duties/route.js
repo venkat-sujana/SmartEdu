@@ -1,5 +1,4 @@
 //src/app/api/invigilation/duties/route.js
-
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 
 import {

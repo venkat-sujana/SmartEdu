@@ -1,3 +1,4 @@
+//src/app/api/invigilation/rooms/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import InvigilationRoom from "@/models/InvigilationRoom";
