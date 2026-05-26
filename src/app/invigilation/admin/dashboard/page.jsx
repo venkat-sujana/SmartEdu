@@ -18,7 +18,15 @@ import {
 const EXAM_TYPES = ['UNIT-1','UNIT-2','UNIT-3','UNIT-4','QUARTERLY','HALFYEARLY','PRE-PUBLIC-1','PRE-PUBLIC-2']
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-function formatDate(date) { return new Date(date).toISOString().slice(0, 10) }
+function formatDate(date) {
+  if (!date) return ''
+  const d = new Date(date)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 function formatExamType(examType) {
   return String(examType || '').replace(/HALFYEARLY/g,'HALF YEARLY').replace(/PRE-PUBLIC/g,'PRE PUBLIC').replace(/-/g,' ')
 }
@@ -508,8 +516,7 @@ export default function AdminInvigilationDashboardPage() {
     { id: 'lecturers', label: 'Lecturers',      icon: <UserSquare2 size={15} /> },
   ]
 
-  const exportLecturerWisePdf = () => {
-  // Unique sorted dates from duties
+ const exportLecturerWisePdf = () => {
   const uniqueDates = [
     ...new Set(
       duties
@@ -518,15 +525,24 @@ export default function AdminInvigilationDashboardPage() {
     ),
   ].sort()
 
+  if (uniqueDates.length === 0) {
+    toast.error('No duty data available to export')
+    return
+  }
+
+  // From - To date range
+  const fromDate = uniqueDates[0]
+  const toDate   = uniqueDates[uniqueDates.length - 1]
+
   const sessions = ['FN', 'AN']
 
   // Lookup: lecturerId → date → session → hallNo
   const lookup = {}
   duties.forEach(d => {
-    const lid = String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId)
-    const date = d.examScheduleId?.date ? formatDate(d.examScheduleId.date) : null
+    const lid     = String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId)
+    const date    = d.examScheduleId?.date ? formatDate(d.examScheduleId.date) : null
     const session = d.examScheduleId?.session
-    const hall = d.examScheduleId?.hallNo || '✓'
+    const hall    = d.examScheduleId?.hallNo || '✓'
     if (!lid || !date || !session) return
     if (!lookup[lid]) lookup[lid] = {}
     if (!lookup[lid][date]) lookup[lid][date] = {}
@@ -535,103 +551,142 @@ export default function AdminInvigilationDashboardPage() {
 
   const doc = new jsPDF({ orientation: 'landscape' })
 
-  // Title
+  // ── Title block ──────────────────────────────────────────────
   doc.setFontSize(14)
   doc.setFont('helvetica', 'bold')
-  doc.text('Lecturer-Wise Invigilation Duty Register', 14, 14)
+  doc.text('Lecturer-Wise Invigilation Duty Register', 14, 13)
+
   doc.setFontSize(9)
   doc.setFont('helvetica', 'normal')
-  doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 21)
+  doc.setTextColor(80)
+  doc.text(`Exam Period : ${fromDate}  to  ${toDate}`, 14, 21)
   doc.text(
-    `Total Lecturers: ${lecturers.length}  |  Total Duties: ${duties.length}  |  Exam Dates: ${uniqueDates.length}`,
+    `Total Lecturers: ${lecturers.length}   |   Total Duties: ${duties.length}   |   Exam Days: ${uniqueDates.length}`,
     14, 27
   )
+  doc.setTextColor(0)
 
-  // Header Row 1 — S.No, Name, Desig, [Date colSpan=2 each], Total
+  // ── Header Row 1 ─────────────────────────────────────────────
+  // Each date gets 4 columns: FN | Sig | AN | Sig
   const headerRow1 = [
     { content: 'S.No',        rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
     { content: 'Lecturer',    rowSpan: 2, styles: { valign: 'middle' } },
     { content: 'Designation', rowSpan: 2, styles: { valign: 'middle' } },
     ...uniqueDates.map(date => ({
       content: date,
-      colSpan: 2,
+      colSpan: 4,                        // FN + Sig + AN + Sig
       styles: { halign: 'center' },
     })),
     { content: 'Total', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
   ]
 
-  // Header Row 2 — FN, AN for each date
-  const headerRow2 = uniqueDates.flatMap(() =>
-    sessions.map(s => ({ content: s, styles: { halign: 'center' } }))
-  )
+  // ── Header Row 2 ─────────────────────────────────────────────
+  // FN | Sig | AN | Sig  — per date
+  const headerRow2 = uniqueDates.flatMap(() => [
+    { content: 'FN',  styles: { halign: 'center' } },
+    { content: 'Sig', styles: { halign: 'center', textColor: [120, 120, 120] } },
+    { content: 'AN',  styles: { halign: 'center' } },
+    { content: 'Sig', styles: { halign: 'center', textColor: [120, 120, 120] } },
+  ])
 
-  // Body rows
+  // ── Body ─────────────────────────────────────────────────────
   const body = lecturers.map((l, i) => {
-    const lid = String(l.id || l._id)
+    const lid     = String(l.id || l._id)
     const dutyMap = lookup[lid] || {}
-    let total = 0
+    let total     = 0
 
-    const cells = uniqueDates.flatMap(date =>
-      sessions.map(session => {
-        const hall = dutyMap[date]?.[session] || '—'
-        if (hall !== '—') total++
-        return {
-          content: hall,
+    const cells = uniqueDates.flatMap(date => {
+      const fn = dutyMap[date]?.FN || '—'
+      const an = dutyMap[date]?.AN || '—'
+      if (fn !== '—') total++
+      if (an !== '—') total++
+      return [
+        // FN cell
+        {
+          content: fn,
           styles: {
             halign: 'center',
-            textColor: hall !== '—' ? [30, 64, 175] : [180, 180, 180],
-            fontStyle: hall !== '—' ? 'bold' : 'normal',
+            fontStyle: fn !== '—' ? 'bold' : 'normal',
+            textColor: fn !== '—' ? [30, 64, 175] : [200, 200, 200],
           },
-        }
-      })
-    )
+        },
+        // Sig blank (FN)
+        {
+          content: '',
+          styles: { fillColor: fn !== '—' ? [239, 246, 255] : [250, 250, 250] },
+        },
+        // AN cell
+        {
+          content: an,
+          styles: {
+            halign: 'center',
+            fontStyle: an !== '—' ? 'bold' : 'normal',
+            textColor: an !== '—' ? [5, 150, 105] : [200, 200, 200],
+          },
+        },
+        // Sig blank (AN)
+        {
+          content: '',
+          styles: { fillColor: an !== '—' ? [240, 253, 244] : [250, 250, 250] },
+        },
+      ]
+    })
 
     return [
-      { content: i + 1,                    styles: { halign: 'center' } },
+      { content: i + 1, styles: { halign: 'center' } },
       { content: l.name },
       { content: l.designation || 'Lecturer' },
       ...cells,
-      { content: total || '—',             styles: { halign: 'center', fontStyle: 'bold', textColor: total > 0 ? [30, 64, 175] : [180, 180, 180] } },
+      {
+        content: total || '—',
+        styles: {
+          halign: 'center',
+          fontStyle: 'bold',
+          textColor: total > 0 ? [30, 64, 175] : [180, 180, 180],
+        },
+      },
     ]
   })
 
+  // ── Table ────────────────────────────────────────────────────
   autoTable(doc, {
     startY: 33,
     head: [headerRow1, headerRow2],
     body,
-    styles: { fontSize: 7.5, cellPadding: 2.5 },
+    styles: { fontSize: 7, cellPadding: 2.5, lineColor: [220, 220, 220], lineWidth: 0.2 },
     headStyles: {
       fillColor: [30, 64, 175],
       textColor: 255,
       fontStyle: 'bold',
       halign: 'center',
-      fontSize: 8,
+      fontSize: 7.5,
     },
     alternateRowStyles: { fillColor: [248, 250, 252] },
     columnStyles: {
-      0: { cellWidth: 10 },   // S.No
-      1: { cellWidth: 38 },   // Name
-      2: { cellWidth: 28 },   // Designation
+      0: { cellWidth: 9  },    // S.No
+      1: { cellWidth: 36 },    // Lecturer
+      2: { cellWidth: 26 },    // Designation
     },
-    margin: { left: 8, right: 8 },
+    margin: { left: 7, right: 7 },
     tableWidth: 'auto',
+    rowPageBreak: 'avoid',
   })
 
-  // Page numbers
+  // ── Page numbers ─────────────────────────────────────────────
   const pages = doc.getNumberOfPages()
   for (let i = 1; i <= pages; i++) {
     doc.setPage(i)
     doc.setFontSize(8)
-    doc.setTextColor(150)
+    doc.setTextColor(160)
     doc.text(
       `Page ${i} of ${pages}`,
       doc.internal.pageSize.width - 10,
-      doc.internal.pageSize.height - 6,
+      doc.internal.pageSize.height - 5,
       { align: 'right' }
     )
   }
 
-  doc.save(`lecturer-wise-duty-register-${Date.now()}.pdf`)
+  doc.save(`lecturer-wise-duty-register-${fromDate}-to-${toDate}.pdf`)
 }
 
   // ── Render ────────────────────────────────────────────────────────────────
