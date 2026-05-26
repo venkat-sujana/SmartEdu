@@ -1,39 +1,28 @@
 //src/app/invigilation/admin/rooms/page.jsx
 
 'use client'
-
 import { useCallback, useEffect, useState } from 'react'
-
 import toast from 'react-hot-toast'
-
 import { Pencil, Trash2 } from 'lucide-react'
-
 import InvigilationGuard from '@/app/invigilation/components/InvigilationGuard'
-
 import InvigilationShell from '@/app/invigilation/components/InvigilationShell'
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState([])
-
   const [roomForm, setRoomForm] = useState({
     name: '',
     block: '',
     capacity: '',
   })
-
   const [editingRoomId, setEditingRoomId] = useState('')
-
   const [roomLoading, setRoomLoading] = useState(false)
-
   const [actionLoading, setActionLoading] = useState('')
-
   const loadRooms = useCallback(async () => {
     try {
       const res = await fetch('/api/invigilation/rooms', {
         cache: 'no-store',
       })
-
-      const data = await res.json()
+  const data = await res.json()
 
       if (!res.ok) {
         throw new Error(data.message)

@@ -20,7 +20,7 @@ const dutyAssignmentSchema = new mongoose.Schema(
     availability: {
       type: String,
       enum: ["Pending", "Available", "Not Available"],
-      default: "Pending",
+      default: "Available",
     },
   },
   { timestamps: true }
