@@ -1,216 +1,81 @@
-import { NextResponse }
-from "next/server";
+// src/app/api/invigilation/availability/route.js
+import { NextResponse } from 'next/server'
+import { connectInvigilationDB } from '@/lib/mongodb-invigilation'
+import LecturerAvailability from '@/models/LecturerAvailability'
+import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
 
-import {
-  connectInvigilationDB,
-} from "@/lib/mongodb-invigilation";
-
-import LecturerAvailability
-from "@/models/LecturerAvailability";
-
-import {
-  requireInvigilationAuth,
-} from "@/lib/invigilation-api-guard";
-
-
-// GET availability
 export async function GET(req) {
-
-  const { user, error } =
-    await requireInvigilationAuth(
-      req,
-      ["lecturer", "admin"]
-    );
-
-  if (error) return error;
+  const { user, error } = await requireInvigilationAuth(req, ['admin', 'lecturer'])
+  if (error) return error
 
   try {
+    await connectInvigilationDB()
 
-    await connectInvigilationDB();
+    const filter = {}
 
-    const { searchParams } =
-      new URL(req.url);
-
-    const date =
-      searchParams.get("date");
-
-    const session =
-      searchParams.get("session");
-
-    const lecturerId =
-      user.role === "lecturer"
-        ? user._id
-        : searchParams.get(
-            "lecturerId"
-          );
-
-    const filter = {
-      lecturerId,
-    };
-
-    if (user.collegeId) {
-      filter.collegeId =
-        user.collegeId;
+    if (user.role === 'lecturer') {
+      filter.lecturerId = user._id
+    } else {
+      if (user.collegeId) filter.collegeId = user.collegeId
+      const { searchParams } = new URL(req.url)
+      if (searchParams.get('lecturerId')) filter.lecturerId = searchParams.get('lecturerId')
+      if (searchParams.get('session'))    filter.session    = searchParams.get('session')
+      if (searchParams.get('status'))     filter.status     = searchParams.get('status')
+      if (searchParams.get('date')) {
+        const d = new Date(searchParams.get('date'))
+        d.setHours(0, 0, 0, 0)
+        const end = new Date(d)
+        end.setHours(23, 59, 59, 999)
+        filter.date = { $gte: d, $lte: end }
+      }
     }
 
-    if (date) {
+    const records = await LecturerAvailability.find(filter)
+      .populate('lecturerId', 'name')
+      .sort({ date: 1, session: 1 })
+      .lean()
 
-      const start =
-        new Date(date);
-
-      const end =
-        new Date(date);
-
-      end.setDate(
-        end.getDate() + 1
-      );
-
-      filter.date = {
-        $gte: start,
-        $lt: end,
-      };
-    }
-
-    if (session) {
-      filter.session =
-        session;
-    }
-
-    const data =
-      await LecturerAvailability
-        .find(filter)
-        .sort({
-          date: 1,
-        })
-        .lean();
-
-    return NextResponse.json({
-      data,
-    });
+    return NextResponse.json({ data: records })
 
   } catch (err) {
-
     return NextResponse.json(
-      {
-        message:
-          err.message ||
-          "Failed to load availability",
-      },
-
-      {
-        status: 500,
-      }
-    );
+      { message: err.message || 'Failed to fetch availability' },
+      { status: 500 }
+    )
   }
 }
 
-
-
-// CREATE / UPDATE availability
 export async function POST(req) {
-
-  const { user, error } =
-    await requireInvigilationAuth(
-      req,
-      ["lecturer"]
-    );
-
-  if (error) return error;
+  const { user, error } = await requireInvigilationAuth(req, ['admin', 'lecturer'])
+  if (error) return error
 
   try {
+    await connectInvigilationDB()
+    const { date, session, status, reason, lecturerId: bodyLid } = await req.json()
 
-    await connectInvigilationDB();
-
-    const body =
-      await req.json();
-
-    const {
-      date,
-      session,
-      status,
-      reason,
-    } = body;
-
-    if (
-      !date ||
-      !session
-    ) {
+    if (!date || !session || !status) {
       return NextResponse.json(
-        {
-          message:
-            "Date and session are required",
-        },
-
-        {
-          status: 400,
-        }
-      );
+        { message: 'date, session, status are required' },
+        { status: 400 }
+      )
     }
 
-    const updated =
-      await LecturerAvailability
-        .findOneAndUpdate(
+    const lecturerId = user.role === 'admin'
+      ? (bodyLid || user._id)
+      : user._id
 
-          {
-            lecturerId:
-              user._id,
+    const record = await LecturerAvailability.findOneAndUpdate(
+      { lecturerId, date: new Date(date), session },
+      { lecturerId, date: new Date(date), session, status, reason: reason || '' },
+      { upsert: true, new: true }
+    )
 
-            date:
-              new Date(date),
-
-            session,
-          },
-
-          {
-            lecturerId:
-              user._id,
-
-            date:
-              new Date(date),
-
-            session,
-
-            status:
-              status ||
-              "NOT_AVAILABLE",
-
-            reason:
-              reason?.trim() ||
-              "",
-
-            collegeId:
-              user.collegeId,
-
-            createdBy:
-              user._id,
-          },
-
-          {
-            upsert: true,
-            new: true,
-            setDefaultsOnInsert: true,
-          }
-        );
-
-    return NextResponse.json({
-      message:
-        "Availability updated",
-
-      data: updated,
-    });
+    return NextResponse.json({ message: 'Saved', data: record })
 
   } catch (err) {
-
     return NextResponse.json(
-      {
-        message:
-          err.message ||
-          "Failed to update availability",
-      },
-
-      {
-        status: 500,
-      }
-    );
+      { message: err.message || 'Failed to save' },
+      { status: 500 }
+    )
   }
 }

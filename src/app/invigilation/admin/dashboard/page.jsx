@@ -1,3 +1,5 @@
+//src/app/invigilation/admin/dashboard/page.jsx
+
 'use client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -7,15 +9,47 @@ import autoTable from 'jspdf-autotable'
 import InvigilationGuard from '@/app/invigilation/components/InvigilationGuard'
 import InvigilationShell from '@/app/invigilation/components/InvigilationShell'
 import {
-  CalendarRange, ClipboardCheck, Zap, FileSpreadsheet, FileText,
-  Users, Shield, Clock, CheckCircle2, XCircle, AlertCircle,
-  ChevronDown, RefreshCw, Calendar, Hash, GraduationCap, Search,
-  School, Layers3, BookOpen, Pencil, Trash2, LayoutDashboard,
-  ListChecks, MapPin, UserSquare2, Settings2,
+  CalendarRange,
+  ClipboardCheck,
+  Zap,
+  FileSpreadsheet,
+  FileText,
+  Users,
+  Shield,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  ChevronDown,
+  RefreshCw,
+  Calendar,
+  Hash,
+  GraduationCap,
+  Search,
+  School,
+  Layers3,
+  BookOpen,
+  Pencil,
+  Trash2,
+  LayoutDashboard,
+  ListChecks,
+  MapPin,
+  UserSquare2,
+  Settings2,
+  CalendarCheck,
 } from 'lucide-react'
-
+import AvailabilityTab from './AvailabilityTab'
 // ─── Constants ───────────────────────────────────────────────────────────────
-const EXAM_TYPES = ['UNIT-1','UNIT-2','UNIT-3','UNIT-4','QUARTERLY','HALFYEARLY','PRE-PUBLIC-1','PRE-PUBLIC-2']
+const EXAM_TYPES = [
+  'UNIT-1',
+  'UNIT-2',
+  'UNIT-3',
+  'UNIT-4',
+  'QUARTERLY',
+  'HALFYEARLY',
+  'PRE-PUBLIC-1',
+  'PRE-PUBLIC-2',
+]
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function formatDate(date) {
@@ -28,11 +62,15 @@ function formatDate(date) {
 }
 
 function formatExamType(examType) {
-  return String(examType || '').replace(/HALFYEARLY/g,'HALF YEARLY').replace(/PRE-PUBLIC/g,'PRE PUBLIC').replace(/-/g,' ')
+  return String(examType || '')
+    .replace(/HALFYEARLY/g, 'HALF YEARLY')
+    .replace(/PRE-PUBLIC/g, 'PRE PUBLIC')
+    .replace(/-/g, ' ')
 }
 function getDayCount(fromDate, toDate) {
   if (!fromDate || !toDate) return 0
-  const start = new Date(fromDate), end = new Date(toDate)
+  const start = new Date(fromDate),
+    end = new Date(toDate)
   if (isNaN(start) || isNaN(end) || start > end) return 0
   return Math.floor((end - start) / 86400000) + 1
 }
@@ -40,7 +78,7 @@ function getDayCount(fromDate, toDate) {
 // ─── Design System ────────────────────────────────────────────────────────────
 function Card({ children, className = '' }) {
   return (
-    <div className={`rounded-2xl bg-white border border-slate-100 shadow-sm ${className}`}>
+    <div className={`rounded-2xl border border-slate-100 bg-white shadow-sm ${className}`}>
       {children}
     </div>
   )
@@ -48,14 +86,14 @@ function Card({ children, className = '' }) {
 
 function SectionHeader({ icon, title, subtitle, action }) {
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+    <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
       <div className="flex items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
           {icon}
         </div>
         <div>
           <h3 className="text-sm font-bold text-slate-800">{title}</h3>
-          {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+          {subtitle && <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>}
         </div>
       </div>
       {action && <div>{action}</div>}
@@ -65,17 +103,23 @@ function SectionHeader({ icon, title, subtitle, action }) {
 
 function StatCard({ icon, label, value, color }) {
   const palette = {
-    blue:   { bg: 'bg-blue-50',   icon: 'bg-blue-100 text-blue-600',   val: 'text-blue-700' },
+    blue: { bg: 'bg-blue-50', icon: 'bg-blue-100 text-blue-600', val: 'text-blue-700' },
     indigo: { bg: 'bg-indigo-50', icon: 'bg-indigo-100 text-indigo-600', val: 'text-indigo-700' },
-    emerald:{ bg: 'bg-emerald-50',icon: 'bg-emerald-100 text-emerald-600',val: 'text-emerald-700' },
+    emerald: {
+      bg: 'bg-emerald-50',
+      icon: 'bg-emerald-100 text-emerald-600',
+      val: 'text-emerald-700',
+    },
     violet: { bg: 'bg-violet-50', icon: 'bg-violet-100 text-violet-600', val: 'text-violet-700' },
   }
   const p = palette[color] || palette.blue
   return (
     <div className={`rounded-2xl p-5 ${p.bg} border border-white`}>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</p>
-        <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${p.icon}`}>{icon}</div>
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">{label}</p>
+        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${p.icon}`}>
+          {icon}
+        </div>
       </div>
       <p className={`text-3xl font-black ${p.val}`}>{value}</p>
     </div>
@@ -94,7 +138,9 @@ function Field({ label, children }) {
 function Input({ icon, ...props }) {
   return (
     <div className="relative">
-      {icon && <span className="pointer-events-none absolute top-2.5 left-3 text-slate-400">{icon}</span>}
+      {icon && (
+        <span className="pointer-events-none absolute top-2.5 left-3 text-slate-400">{icon}</span>
+      )}
       <input
         className={`w-full rounded-xl border border-slate-200 bg-white py-2.5 pr-3 text-sm text-slate-700 placeholder-slate-400 transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none ${icon ? 'pl-9' : 'pl-3.5'}`}
         {...props}
@@ -106,26 +152,40 @@ function Input({ icon, ...props }) {
 function Select({ icon, children, ...props }) {
   return (
     <div className="relative">
-      {icon && <span className="pointer-events-none absolute top-2.5 left-3 text-slate-400">{icon}</span>}
+      {icon && (
+        <span className="pointer-events-none absolute top-2.5 left-3 text-slate-400">{icon}</span>
+      )}
       <select
         className={`w-full appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pr-8 text-sm text-slate-700 transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none ${icon ? 'pl-9' : 'pl-3.5'}`}
         {...props}
       >
         {children}
       </select>
-      <ChevronDown size={13} className="pointer-events-none absolute top-3 right-3 text-slate-400" />
+      <ChevronDown
+        size={13}
+        className="pointer-events-none absolute top-3 right-3 text-slate-400"
+      />
     </div>
   )
 }
 
-function Btn({ children, onClick, disabled, loading, variant = 'primary', size = 'md', className = '', type = 'button' }) {
+function Btn({
+  children,
+  onClick,
+  disabled,
+  loading,
+  variant = 'primary',
+  size = 'md',
+  className = '',
+  type = 'button',
+}) {
   const variants = {
-    primary:  'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm',
-    emerald:  'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm',
-    violet:   'bg-violet-600 hover:bg-violet-700 text-white shadow-sm',
-    danger:   'bg-rose-600 hover:bg-rose-700 text-white shadow-sm',
-    outline:  'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700',
-    ghost:    'bg-slate-100 hover:bg-slate-200 text-slate-700',
+    primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm',
+    emerald: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm',
+    violet: 'bg-violet-600 hover:bg-violet-700 text-white shadow-sm',
+    danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm',
+    outline: 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700',
+    ghost: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
   }
   const sizes = { sm: 'px-3 py-1.5 text-xs', md: 'px-4 py-2.5 text-sm', lg: 'px-5 py-3 text-sm' }
   return (
@@ -133,11 +193,13 @@ function Btn({ children, onClick, disabled, loading, variant = 'primary', size =
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`inline-flex items-center gap-2 rounded-xl font-semibold transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-xl font-semibold transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
     >
-      {loading
-        ? <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-        : children}
+      {loading ? (
+        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+      ) : (
+        children
+      )}
     </button>
   )
 }
@@ -145,15 +207,17 @@ function Btn({ children, onClick, disabled, loading, variant = 'primary', size =
 function Chip({ children, color = 'slate' }) {
   const map = {
     emerald: 'bg-emerald-100 text-emerald-700',
-    rose:    'bg-rose-100 text-rose-700',
-    amber:   'bg-amber-100 text-amber-700',
-    blue:    'bg-blue-100 text-blue-700',
-    indigo:  'bg-indigo-100 text-indigo-700',
-    violet:  'bg-violet-100 text-violet-700',
-    slate:   'bg-slate-100 text-slate-600',
+    rose: 'bg-rose-100 text-rose-700',
+    amber: 'bg-amber-100 text-amber-700',
+    blue: 'bg-blue-100 text-blue-700',
+    indigo: 'bg-indigo-100 text-indigo-700',
+    violet: 'bg-violet-100 text-violet-700',
+    slate: 'bg-slate-100 text-slate-600',
   }
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${map[color]}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${map[color]}`}
+    >
       {children}
     </span>
   )
@@ -167,9 +231,26 @@ function SessionChip({ session }) {
 function AvailChip({ value }) {
   if (!value) return <Chip color="slate">—</Chip>
   const low = value.toLowerCase()
-  if (low === 'available') return <Chip color="emerald"><CheckCircle2 size={10} />Available</Chip>
-  if (low === 'unavailable' || low === 'not available') return <Chip color="rose"><XCircle size={10} />Unavailable</Chip>
-  return <Chip color="amber"><AlertCircle size={10} />{value}</Chip>
+  if (low === 'available')
+    return (
+      <Chip color="emerald">
+        <CheckCircle2 size={10} />
+        Available
+      </Chip>
+    )
+  if (low === 'unavailable' || low === 'not available')
+    return (
+      <Chip color="rose">
+        <XCircle size={10} />
+        Unavailable
+      </Chip>
+    )
+  return (
+    <Chip color="amber">
+      <AlertCircle size={10} />
+      {value}
+    </Chip>
+  )
 }
 
 function EmptyRow({ cols, icon, message, sub }) {
@@ -191,7 +272,10 @@ function TableHead({ cols }) {
     <thead>
       <tr className="border-b border-slate-100 bg-slate-50/80">
         {cols.map(c => (
-          <th key={c} className="px-5 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">
+          <th
+            key={c}
+            className="px-5 py-3 text-left text-xs font-bold tracking-wide whitespace-nowrap text-slate-400 uppercase"
+          >
             {c}
           </th>
         ))}
@@ -203,11 +287,13 @@ function TableHead({ cols }) {
 // ─── Room Picker ──────────────────────────────────────────────────────────────
 function RoomPicker({ rooms, selectedRoomIds, onToggleRoom, onSelectAll }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+    <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold text-slate-700">Select Rooms</p>
-          <p className="text-xs text-slate-400 mt-0.5">All selected rooms get schedules for every day in the range</p>
+          <p className="mt-0.5 text-xs text-slate-400">
+            All selected rooms get schedules for every day in the range
+          </p>
         </div>
         <Btn variant="outline" size="sm" onClick={onSelectAll}>
           {selectedRoomIds.length === rooms.length && rooms.length > 0 ? 'Clear All' : 'Select All'}
@@ -222,11 +308,22 @@ function RoomPicker({ rooms, selectedRoomIds, onToggleRoom, onSelectAll }) {
           {rooms.map(room => {
             const on = selectedRoomIds.includes(room._id)
             return (
-              <label key={room._id} className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${on ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}>
-                <input type="checkbox" checked={on} onChange={() => onToggleRoom(room._id)} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+              <label
+                key={room._id}
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${on ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={on}
+                  onChange={() => onToggleRoom(room._id)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
                 <span className="min-w-0">
                   <span className="block font-semibold">{room.name}</span>
-                  <span className="block text-xs text-slate-400">{room.block || 'Main Block'}{room.capacity ? ` · ${room.capacity} seats` : ''}</span>
+                  <span className="block text-xs text-slate-400">
+                    {room.block || 'Main Block'}
+                    {room.capacity ? ` · ${room.capacity} seats` : ''}
+                  </span>
                 </span>
               </label>
             )
@@ -249,76 +346,119 @@ export default function AdminInvigilationDashboardPage() {
   const [scheduleLoading, setScheduleLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState('')
   const [activeTab, setActiveTab] = useState('overview')
+  const [unavailCount, setUnavailCount] = useState(0)
 
   const [roomForm, setRoomForm] = useState({ name: '', block: '', capacity: '' })
   const [scheduleForm, setScheduleForm] = useState({
-    fromDate: '', toDate: '', session: 'FN', examType: 'UNIT-1',
-    roomIds: [], maxDutiesPerLecturer: '2', sameDayNoRepeat: true,
+    fromDate: '',
+    toDate: '',
+    session: 'FN',
+    examType: 'UNIT-1',
+    roomIds: [],
+    maxDutiesPerLecturer: '2',
+    sameDayNoRepeat: true,
   })
   const [editingRoomId, setEditingRoomId] = useState('')
   const [editingScheduleId, setEditingScheduleId] = useState('')
-  const [singleScheduleForm, setSingleScheduleForm] = useState({ date: '', session: 'FN', examType: 'UNIT-1', roomId: '' })
+  const [singleScheduleForm, setSingleScheduleForm] = useState({
+    date: '',
+    session: 'FN',
+    examType: 'UNIT-1',
+    roomId: '',
+  })
   const [dutyForm, setDutyForm] = useState({ examScheduleId: '', lecturerId: '' })
   const [filters, setFilters] = useState({ date: '', lecturerId: '', session: '' })
 
   // ── Data fetching (unchanged) ─────────────────────────────────────────────
-  const fetchAll = useCallback(async (activeFilters = { date: '', lecturerId: '', session: '' }) => {
-    setLoading(true)
-    try {
-      const qp = new URLSearchParams()
-      if (activeFilters.date) qp.set('date', activeFilters.date)
-      if (activeFilters.lecturerId) qp.set('lecturerId', activeFilters.lecturerId)
-      if (activeFilters.session) qp.set('session', activeFilters.session)
-      const [lRes, rRes, eRes, dRes] = await Promise.all([
-        fetch('/api/invigilation/lecturers', { cache: 'no-store' }),
-        fetch('/api/invigilation/rooms', { cache: 'no-store' }),
-        fetch('/api/invigilation/exams', { cache: 'no-store' }),
-        fetch(`/api/invigilation/duties?${qp}`, { cache: 'no-store' }),
-      ])
-      const [lData, rData, eData, dData] = await Promise.all([lRes.json(), rRes.json(), eRes.json(), dRes.json()])
-      if (!lRes.ok || !rRes.ok || !eRes.ok || !dRes.ok) throw new Error(lData.message || rData.message || eData.message || dData.message || 'Failed')
-      setLecturers(lData.data || [])
-      setRooms(rData.data || [])
-      setExams(eData.data || [])
-      setDuties(dData.data || [])
-    } catch (err) { toast.error(err.message || 'Failed to load') }
-    finally { setLoading(false) }
-  }, [])
-  useEffect(() => { fetchAll() }, [fetchAll])
+  const fetchAll = useCallback(
+    async (activeFilters = { date: '', lecturerId: '', session: '' }) => {
+      setLoading(true)
+      try {
+        const qp = new URLSearchParams()
+        if (activeFilters.date) qp.set('date', activeFilters.date)
+        if (activeFilters.lecturerId) qp.set('lecturerId', activeFilters.lecturerId)
+        if (activeFilters.session) qp.set('session', activeFilters.session)
+        const [lRes, rRes, eRes, dRes] = await Promise.all([
+          fetch('/api/invigilation/lecturers', { cache: 'no-store' }),
+          fetch('/api/invigilation/rooms', { cache: 'no-store' }),
+          fetch('/api/invigilation/exams', { cache: 'no-store' }),
+          fetch(`/api/invigilation/duties?${qp}`, { cache: 'no-store' }),
+        ])
+        const [lData, rData, eData, dData] = await Promise.all([
+          lRes.json(),
+          rRes.json(),
+          eRes.json(),
+          dRes.json(),
+        ])
+        if (!lRes.ok || !rRes.ok || !eRes.ok || !dRes.ok)
+          throw new Error(
+            lData.message || rData.message || eData.message || dData.message || 'Failed'
+          )
+        setLecturers(lData.data || [])
+        setRooms(rData.data || [])
+        setExams(eData.data || [])
+        setDuties(dData.data || [])
+      } catch (err) {
+        toast.error(err.message || 'Failed to load')
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
+  useEffect(() => {
+    fetchAll()
+  }, [fetchAll])
 
   // ── Handlers (unchanged logic) ────────────────────────────────────────────
   const onCreateRoom = async e => {
     e.preventDefault()
     try {
       const isEditing = Boolean(editingRoomId)
-      const res = await fetch(isEditing ? `/api/invigilation/rooms/${editingRoomId}` : '/api/invigilation/rooms', {
-        method: isEditing ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(roomForm),
-      })
+      const res = await fetch(
+        isEditing ? `/api/invigilation/rooms/${editingRoomId}` : '/api/invigilation/rooms',
+        {
+          method: isEditing ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(roomForm),
+        }
+      )
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
       toast.success(isEditing ? 'Room updated' : 'Room created')
       setRoomForm({ name: '', block: '', capacity: '' })
       setEditingRoomId('')
       fetchAll(filters)
-    } catch (err) { toast.error(err.message || 'Failed') }
+    } catch (err) {
+      toast.error(err.message || 'Failed')
+    }
   }
 
   const createScheduleBatch = async () => {
-    if (scheduleForm.roomIds.length === 0) { toast.error('Select at least one room'); return null }
+    if (scheduleForm.roomIds.length === 0) {
+      toast.error('Select at least one room')
+      return null
+    }
     setScheduleLoading(true)
     try {
       const res = await fetch('/api/invigilation/exams', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(scheduleForm),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(scheduleForm),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
-      toast.success(`${data.message} | Created: ${data.createdCount || 0} | Skipped: ${data.skippedCount || 0}`)
+      toast.success(
+        `${data.message} | Created: ${data.createdCount || 0} | Skipped: ${data.skippedCount || 0}`
+      )
       fetchAll(filters)
       return data
-    } catch (err) { toast.error(err.message || 'Failed'); return null }
-    finally { setScheduleLoading(false) }
+    } catch (err) {
+      toast.error(err.message || 'Failed')
+      return null
+    } finally {
+      setScheduleLoading(false)
+    }
   }
 
   const onCreateSchedule = async e => {
@@ -336,29 +476,42 @@ export default function AdminInvigilationDashboardPage() {
     e.preventDefault()
     try {
       const res = await fetch('/api/invigilation/duties', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dutyForm),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dutyForm),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
       toast.success('Duty assigned')
       setDutyForm({ examScheduleId: '', lecturerId: '' })
       fetchAll(filters)
-    } catch (err) { toast.error(err.message || 'Failed') }
+    } catch (err) {
+      toast.error(err.message || 'Failed')
+    }
   }
 
   const onAutoAssign = async () => {
     setAutoLoading(true)
     try {
       const res = await fetch('/api/invigilation/duties/auto-assign', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: filters.date || undefined, session: filters.session || undefined, maxDutiesPerLecturer: Number(scheduleForm.maxDutiesPerLecturer || 0) || undefined, sameDayNoRepeat: scheduleForm.sameDayNoRepeat }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: filters.date || undefined,
+          session: filters.session || undefined,
+          maxDutiesPerLecturer: Number(scheduleForm.maxDutiesPerLecturer || 0) || undefined,
+          sameDayNoRepeat: scheduleForm.sameDayNoRepeat,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
       toast.success(`${data.message} | Assigned: ${data.assigned} | Skipped: ${data.skipped}`)
       fetchAll(filters)
-    } catch (err) { toast.error(err.message || 'Auto assign failed') }
-    finally { setAutoLoading(false) }
+    } catch (err) {
+      toast.error(err.message || 'Auto assign failed')
+    } finally {
+      setAutoLoading(false)
+    }
   }
 
   const onGenerateAndAssign = async () => {
@@ -368,16 +521,27 @@ export default function AdminInvigilationDashboardPage() {
     setAutoLoading(true)
     try {
       const res = await fetch('/api/invigilation/duties/auto-assign', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fromDate: snap.fromDate, toDate: snap.toDate, session: snap.session, examType: snap.examType, maxDutiesPerLecturer: Number(snap.maxDutiesPerLecturer || 0) || undefined, sameDayNoRepeat: snap.sameDayNoRepeat }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromDate: snap.fromDate,
+          toDate: snap.toDate,
+          session: snap.session,
+          examType: snap.examType,
+          maxDutiesPerLecturer: Number(snap.maxDutiesPerLecturer || 0) || undefined,
+          sameDayNoRepeat: snap.sameDayNoRepeat,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
       toast.success(`Generated & assigned | Assigned: ${data.assigned} | Skipped: ${data.skipped}`)
       setScheduleForm(s => ({ ...s, fromDate: '', toDate: '', roomIds: [] }))
       fetchAll(filters)
-    } catch (err) { toast.error(err.message || 'Failed') }
-    finally { setAutoLoading(false) }
+    } catch (err) {
+      toast.error(err.message || 'Failed')
+    } finally {
+      setAutoLoading(false)
+    }
   }
 
   const onUpdateSingleSchedule = async e => {
@@ -386,18 +550,30 @@ export default function AdminInvigilationDashboardPage() {
     setActionLoading(`schedule-save-${editingScheduleId}`)
     try {
       const res = await fetch(`/api/invigilation/exams/${editingScheduleId}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(singleScheduleForm),
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(singleScheduleForm),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
       toast.success('Schedule updated')
       resetScheduleEditor()
       fetchAll(filters)
-    } catch (err) { toast.error(err.message || 'Failed') }
-    finally { setActionLoading('') }
+    } catch (err) {
+      toast.error(err.message || 'Failed')
+    } finally {
+      setActionLoading('')
+    }
   }
 
-  const onEditRoom = room => { setEditingRoomId(room._id); setRoomForm({ name: room.name || '', block: room.block || '', capacity: room.capacity ? String(room.capacity) : '' }) }
+  const onEditRoom = room => {
+    setEditingRoomId(room._id)
+    setRoomForm({
+      name: room.name || '',
+      block: room.block || '',
+      capacity: room.capacity ? String(room.capacity) : '',
+    })
+  }
   const onDeleteRoom = async room => {
     if (!window.confirm(`Delete room ${room.name}?`)) return
     setActionLoading(`room-delete-${room._id}`)
@@ -406,16 +582,27 @@ export default function AdminInvigilationDashboardPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
       toast.success('Room deleted')
-      if (editingRoomId === room._id) { setEditingRoomId(''); setRoomForm({ name: '', block: '', capacity: '' }) }
+      if (editingRoomId === room._id) {
+        setEditingRoomId('')
+        setRoomForm({ name: '', block: '', capacity: '' })
+      }
       fetchAll(filters)
-    } catch (err) { toast.error(err.message || 'Failed') }
-    finally { setActionLoading('') }
+    } catch (err) {
+      toast.error(err.message || 'Failed')
+    } finally {
+      setActionLoading('')
+    }
   }
 
   const onEditSchedule = plan => {
     setEditingScheduleId(plan.id)
     const room = rooms.find(r => r.name === plan.hallNo)
-    setSingleScheduleForm({ date: formatDate(plan.date), session: plan.session, examType: plan.examType, roomId: room?._id || '' })
+    setSingleScheduleForm({
+      date: formatDate(plan.date),
+      session: plan.session,
+      examType: plan.examType,
+      roomId: room?._id || '',
+    })
   }
 
   const onDeleteSchedule = async plan => {
@@ -428,67 +615,186 @@ export default function AdminInvigilationDashboardPage() {
       toast.success('Schedule deleted')
       if (editingScheduleId === plan.id) resetScheduleEditor()
       fetchAll(filters)
-    } catch (err) { toast.error(err.message || 'Failed') }
-    finally { setActionLoading('') }
+    } catch (err) {
+      toast.error(err.message || 'Failed')
+    } finally {
+      setActionLoading('')
+    }
   }
 
   const onDeleteAllSchedules = async () => {
-    if (roomSeatingPlan.length === 0) { toast.error('No schedules to delete'); return }
-    if (!window.confirm(`Delete ${roomSeatingPlan.length} schedules? Linked duties will also be removed.`)) return
+    if (roomSeatingPlan.length === 0) {
+      toast.error('No schedules to delete')
+      return
+    }
+    if (
+      !window.confirm(
+        `Delete ${roomSeatingPlan.length} schedules? Linked duties will also be removed.`
+      )
+    )
+      return
     setActionLoading('schedule-delete-all')
     try {
-      const res = await fetch('/api/invigilation/exams', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: roomSeatingPlan.map(i => i.id) }) })
+      const res = await fetch('/api/invigilation/exams', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: roomSeatingPlan.map(i => i.id) }),
+      })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
       toast.success(`Deleted ${data.deletedCount || 0} schedules`)
       if (editingScheduleId) resetScheduleEditor()
       fetchAll(filters)
-    } catch (err) { toast.error(err.message || 'Failed') }
-    finally { setActionLoading('') }
+    } catch (err) {
+      toast.error(err.message || 'Failed')
+    } finally {
+      setActionLoading('')
+    }
   }
 
-  const toggleRoom = id => setScheduleForm(s => ({ ...s, roomIds: s.roomIds.includes(id) ? s.roomIds.filter(r => r !== id) : [...s.roomIds, id] }))
-  const toggleAllRooms = () => setScheduleForm(s => ({ ...s, roomIds: s.roomIds.length === rooms.length ? [] : rooms.map(r => r._id) }))
+  const toggleRoom = id =>
+    setScheduleForm(s => ({
+      ...s,
+      roomIds: s.roomIds.includes(id) ? s.roomIds.filter(r => r !== id) : [...s.roomIds, id],
+    }))
+  const toggleAllRooms = () =>
+    setScheduleForm(s => ({
+      ...s,
+      roomIds: s.roomIds.length === rooms.length ? [] : rooms.map(r => r._id),
+    }))
 
   // ── Derived (unchanged) ───────────────────────────────────────────────────
-  const totalDays = useMemo(() => getDayCount(scheduleForm.fromDate, scheduleForm.toDate), [scheduleForm.fromDate, scheduleForm.toDate])
+  const totalDays = useMemo(
+    () => getDayCount(scheduleForm.fromDate, scheduleForm.toDate),
+    [scheduleForm.fromDate, scheduleForm.toDate]
+  )
   const schedulePreviewCount = totalDays * scheduleForm.roomIds.length
-  const selectedRooms = useMemo(() => rooms.filter(r => scheduleForm.roomIds.includes(r._id)), [rooms, scheduleForm.roomIds])
-  const totalSelectedCapacity = useMemo(() => selectedRooms.reduce((s, r) => s + (Number(r.capacity) || 0), 0), [selectedRooms])
+  const selectedRooms = useMemo(
+    () => rooms.filter(r => scheduleForm.roomIds.includes(r._id)),
+    [rooms, scheduleForm.roomIds]
+  )
+  const totalSelectedCapacity = useMemo(
+    () => selectedRooms.reduce((s, r) => s + (Number(r.capacity) || 0), 0),
+    [selectedRooms]
+  )
   const dailySeatCapacity = totalSelectedCapacity
   const rangeSeatCapacity = dailySeatCapacity * totalDays
   const workloadLimit = Number(scheduleForm.maxDutiesPerLecturer || 0)
-  const effectiveLecturerLimit = scheduleForm.sameDayNoRepeat ? Math.min(workloadLimit || totalDays, totalDays) : workloadLimit
+  const effectiveLecturerLimit = scheduleForm.sameDayNoRepeat
+    ? Math.min(workloadLimit || totalDays, totalDays)
+    : workloadLimit
   const lecturerCoverage = lecturers.length * (effectiveLecturerLimit || 0)
   const hasCoverageGap = workloadLimit > 0 && lecturerCoverage < schedulePreviewCount
 
-  const exportRows = useMemo(() => duties.map((d, i) => ({ SNo: i+1, Date: d.examScheduleId?.date ? formatDate(d.examScheduleId.date) : '', Session: d.examScheduleId?.session || '', ExamType: d.examScheduleId?.examType || d.examScheduleId?.subject || '', HallNo: d.examScheduleId?.hallNo || '', Lecturer: d.lecturerId?.name || '', Availability: d.availability })), [duties])
+  const exportRows = useMemo(
+    () =>
+      duties.map((d, i) => ({
+        SNo: i + 1,
+        Date: d.examScheduleId?.date ? formatDate(d.examScheduleId.date) : '',
+        Session: d.examScheduleId?.session || '',
+        ExamType: d.examScheduleId?.examType || d.examScheduleId?.subject || '',
+        HallNo: d.examScheduleId?.hallNo || '',
+        Lecturer: d.lecturerId?.name || '',
+        Availability: d.availability,
+      })),
+    [duties]
+  )
 
-  const exportExcel = () => { const ws = utils.json_to_sheet(exportRows); const wb = utils.book_new(); utils.book_append_sheet(wb, ws, 'Duties'); writeFile(wb, `invigilation-duties-${Date.now()}.xlsx`) }
+  const exportExcel = () => {
+    const ws = utils.json_to_sheet(exportRows)
+    const wb = utils.book_new()
+    utils.book_append_sheet(wb, ws, 'Duties')
+    writeFile(wb, `invigilation-duties-${Date.now()}.xlsx`)
+  }
   const exportPdf = () => {
     const doc = new jsPDF()
-    doc.setFontSize(15); doc.text('Invigilation Duty Assignment Report', 14, 14)
-    doc.setFontSize(9); doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 20)
-    autoTable(doc, { startY: 26, head: [['Date','Session','Exam Type','Hall','Lecturer','Availability']], body: exportRows.map(r => [r.Date, r.Session, r.ExamType, r.HallNo, r.Lecturer, r.Availability]), styles: { fontSize: 9, cellPadding: 2 }, headStyles: { fillColor: [79, 70, 229], textColor: 255 }, alternateRowStyles: { fillColor: [248, 250, 252] }, margin: { left: 10, right: 10 } })
+    doc.setFontSize(15)
+    doc.text('Invigilation Duty Assignment Report', 14, 14)
+    doc.setFontSize(9)
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 20)
+    autoTable(doc, {
+      startY: 26,
+      head: [['Date', 'Session', 'Exam Type', 'Hall', 'Lecturer', 'Availability']],
+      body: exportRows.map(r => [
+        r.Date,
+        r.Session,
+        r.ExamType,
+        r.HallNo,
+        r.Lecturer,
+        r.Availability,
+      ]),
+      styles: { fontSize: 9, cellPadding: 2 },
+      headStyles: { fillColor: [79, 70, 229], textColor: 255 },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      margin: { left: 10, right: 10 },
+    })
     doc.save(`invigilation-duties-${Date.now()}.pdf`)
   }
 
   const roomMap = useMemo(() => new Map(rooms.map(r => [String(r._id), r])), [rooms])
-  const dutyByExamId = useMemo(() => new Map(duties.map(d => [String(d.examScheduleId?._id || ''), d])), [duties])
-  const filteredScheduleExams = useMemo(() => exams.filter(e => (!filters.date || formatDate(e.date) === filters.date) && (!filters.session || e.session === filters.session)), [exams, filters.date, filters.session])
-  const roomSeatingPlan = useMemo(() => filteredScheduleExams.map(exam => {
-    const room = exam.roomId ? roomMap.get(String(exam.roomId._id || exam.roomId)) : rooms.find(r => r.name === exam.hallNo)
-    const duty = dutyByExamId.get(String(exam._id))
-    return { id: exam._id, date: exam.date, session: exam.session, examType: exam.examType || exam.subject, hallNo: exam.hallNo, block: room?.block || '-', capacity: Number(room?.capacity) || 0, lecturerName: duty?.lecturerId?.name || '', assigned: Boolean(duty), availability: duty?.availability || '' }
-  }).sort((a, b) => new Date(a.date) - new Date(b.date) || a.hallNo.localeCompare(b.hallNo)), [dutyByExamId, filteredScheduleExams, roomMap, rooms])
+  const dutyByExamId = useMemo(
+    () => new Map(duties.map(d => [String(d.examScheduleId?._id || ''), d])),
+    [duties]
+  )
+  const filteredScheduleExams = useMemo(
+    () =>
+      exams.filter(
+        e =>
+          (!filters.date || formatDate(e.date) === filters.date) &&
+          (!filters.session || e.session === filters.session)
+      ),
+    [exams, filters.date, filters.session]
+  )
+  const roomSeatingPlan = useMemo(
+    () =>
+      filteredScheduleExams
+        .map(exam => {
+          const room = exam.roomId
+            ? roomMap.get(String(exam.roomId._id || exam.roomId))
+            : rooms.find(r => r.name === exam.hallNo)
+          const duty = dutyByExamId.get(String(exam._id))
+          return {
+            id: exam._id,
+            date: exam.date,
+            session: exam.session,
+            examType: exam.examType || exam.subject,
+            hallNo: exam.hallNo,
+            block: room?.block || '-',
+            capacity: Number(room?.capacity) || 0,
+            lecturerName: duty?.lecturerId?.name || '',
+            assigned: Boolean(duty),
+            availability: duty?.availability || '',
+          }
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date) || a.hallNo.localeCompare(b.hallNo)),
+    [dutyByExamId, filteredScheduleExams, roomMap, rooms]
+  )
 
   const lecturerDutySummary = useMemo(() => {
     const vis = filters.lecturerId ? lecturers.filter(l => l.id === filters.lecturerId) : lecturers
-    return vis.map(l => {
-      const ld = duties.filter(d => String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId) === String(l.id))
-      const dates = new Set(ld.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date)))
-      return { id: l.id, name: l.name, designation: l.designation, totalDuties: ld.length, pending: ld.filter(d => d.availability === 'Pending').length, available: ld.filter(d => d.availability === 'Available').length, unavailable: ld.filter(d => d.availability === 'Not Available').length, activeDays: dates.size, rooms: [...new Set(ld.map(d => d.examScheduleId?.hallNo).filter(Boolean))].slice(0, 4) }
-    }).sort((a, b) => b.totalDuties - a.totalDuties || a.name.localeCompare(b.name))
+    return vis
+      .map(l => {
+        const ld = duties.filter(
+          d =>
+            String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId) === String(l._id || l.id)
+        )
+
+        const dates = new Set(
+          ld.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
+        )
+        return {
+          id: l._id || l.id,
+          name: l.name,
+          designation: l.designation,
+          totalDuties: ld.length,
+          pending: ld.filter(d => d.availability === 'Pending').length,
+          available: ld.filter(d => d.availability === 'Available').length,
+          unavailable: ld.filter(d => d.availability === 'Not Available').length,
+          activeDays: dates.size,
+          rooms: [...new Set(ld.map(d => d.examScheduleId?.hallNo).filter(Boolean))].slice(0, 4),
+        }
+      })
+      .sort((a, b) => b.totalDuties - a.totalDuties || a.name.localeCompare(b.name))
   }, [duties, filters.lecturerId, lecturers])
 
   const assignedCount = roomSeatingPlan.filter(i => i.assigned).length
@@ -496,198 +802,480 @@ export default function AdminInvigilationDashboardPage() {
 
   const exportSeatingPlanPdf = () => {
     const doc = new jsPDF()
-    doc.setFontSize(15); doc.text('Room Wise Seating Plan', 14, 14)
-    doc.setFontSize(9); doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 20)
-    autoTable(doc, { startY: 26, head: [['Date','Session','Exam Type','Room','Block','Capacity','Invigilator','Status']], body: roomSeatingPlan.map(i => [formatDate(i.date), i.session, formatExamType(i.examType), i.hallNo, i.block, i.capacity || '-', i.lecturerName || '-', i.assigned ? i.availability || 'Pending' : 'Unassigned']), styles: { fontSize: 8, cellPadding: 2 }, headStyles: { fillColor: [5, 150, 105], textColor: 255 }, alternateRowStyles: { fillColor: [240, 253, 250] }, margin: { left: 10, right: 10 } })
+    doc.setFontSize(15)
+    doc.text('Room Wise Seating Plan', 14, 14)
+    doc.setFontSize(9)
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 20)
+    autoTable(doc, {
+      startY: 26,
+      head: [
+        ['Date', 'Session', 'Exam Type', 'Room', 'Block', 'Capacity', 'Invigilator', 'Status'],
+      ],
+      body: roomSeatingPlan.map(i => [
+        formatDate(i.date),
+        i.session,
+        formatExamType(i.examType),
+        i.hallNo,
+        i.block,
+        i.capacity || '-',
+        i.lecturerName || '-',
+        i.assigned ? i.availability || 'Pending' : 'Unassigned',
+      ]),
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [5, 150, 105], textColor: 255 },
+      alternateRowStyles: { fillColor: [240, 253, 250] },
+      margin: { left: 10, right: 10 },
+    })
     doc.save(`seating-plan-${Date.now()}.pdf`)
   }
 
   const exportLecturerRegisterExcel = () => {
-    const ws = utils.json_to_sheet(lecturerDutySummary.map((i, idx) => ({ SNo: idx+1, Lecturer: i.name, Designation: i.designation || 'Lecturer', TotalDuties: i.totalDuties, ActiveDays: i.activeDays, Pending: i.pending, Available: i.available, Unavailable: i.unavailable, Rooms: i.rooms.join(', ') })))
-    const wb = utils.book_new(); utils.book_append_sheet(wb, ws, 'Lecturer Register'); writeFile(wb, `lecturer-duty-register-${Date.now()}.xlsx`)
+    const ws = utils.json_to_sheet(
+      lecturerDutySummary.map((i, idx) => ({
+        SNo: idx + 1,
+        Lecturer: i.name,
+        Designation: i.designation || 'Lecturer',
+        TotalDuties: i.totalDuties,
+        ActiveDays: i.activeDays,
+        Pending: i.pending,
+        Available: i.available,
+        Unavailable: i.unavailable,
+        Rooms: i.rooms.join(', '),
+      }))
+    )
+    const wb = utils.book_new()
+    utils.book_append_sheet(wb, ws, 'Lecturer Register')
+    writeFile(wb, `lecturer-duty-register-${Date.now()}.xlsx`)
   }
 
   // ── Tabs config ───────────────────────────────────────────────────────────
   const tabs = [
-    { id: 'overview',  label: 'Overview',      icon: <LayoutDashboard size={15} /> },
-    { id: 'schedule',  label: 'Schedule',       icon: <CalendarRange size={15} /> },
-    { id: 'duties',    label: 'Duties',         icon: <ListChecks size={15} />, badge: duties.length },
-    { id: 'seating',   label: 'Seating Plan',   icon: <MapPin size={15} />, badge: unassignedCount || null },
-    { id: 'lecturers', label: 'Lecturers',      icon: <UserSquare2 size={15} /> },
+    { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={15} /> },
+    { id: 'schedule', label: 'Schedule', icon: <CalendarRange size={15} /> },
+    { id: 'duties', label: 'Duties', icon: <ListChecks size={15} />, badge: duties.length },
+    {
+      id: 'seating',
+      label: 'Seating Plan',
+      icon: <MapPin size={15} />,
+      badge: unassignedCount || null,
+    },
+    {
+      id: 'availability',
+      label: 'Availability',
+      icon: <CalendarCheck size={15} />,
+      badge: unavailCount,
+    },
+    { id: 'lecturers', label: 'Lecturers', icon: <UserSquare2 size={15} /> },
   ]
 
- const exportLecturerWisePdf = () => {
-  const uniqueDates = [
-    ...new Set(
-      duties
-        .filter(d => d.examScheduleId?.date)
-        .map(d => formatDate(d.examScheduleId.date))
-    ),
-  ].sort()
+  const exportLecturerWisePdf = () => {
+    const uniqueDates = [
+      ...new Set(
+        duties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
+      ),
+    ].sort()
 
-  if (uniqueDates.length === 0) {
-    toast.error('No duty data available to export')
-    return
-  }
+    if (uniqueDates.length === 0) {
+      toast.error('No duty data available to export')
+      return
+    }
 
-  // From - To date range
-  const fromDate = uniqueDates[0]
-  const toDate   = uniqueDates[uniqueDates.length - 1]
+    // From - To date range
+    const fromDate = uniqueDates[0]
+    const toDate = uniqueDates[uniqueDates.length - 1]
 
-  const sessions = ['FN', 'AN']
+    // Lookup: lecturerId → date → session → hallNo
+    const lookup = {}
+    duties.forEach(d => {
+      const lid = String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId)
+      const date = d.examScheduleId?.date ? formatDate(d.examScheduleId.date) : null
+      const session = d.examScheduleId?.session
+      const hall = d.examScheduleId?.hallNo || '✓'
 
-  // Lookup: lecturerId → date → session → hallNo
-  const lookup = {}
-  duties.forEach(d => {
-    const lid     = String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId)
-    const date    = d.examScheduleId?.date ? formatDate(d.examScheduleId.date) : null
-    const session = d.examScheduleId?.session
-    const hall    = d.examScheduleId?.hallNo || '✓'
-    if (!lid || !date || !session) return
-    if (!lookup[lid]) lookup[lid] = {}
-    if (!lookup[lid][date]) lookup[lid][date] = {}
-    lookup[lid][date][session] = hall
-  })
+      if (!lid || !date || !session) return
 
-  const doc = new jsPDF({ orientation: 'landscape' })
+      if (!lookup[lid]) lookup[lid] = {}
+      if (!lookup[lid][date]) lookup[lid][date] = {}
 
-  // ── Title block ──────────────────────────────────────────────
-  doc.setFontSize(14)
-  doc.setFont('helvetica', 'bold')
-  doc.text('Lecturer-Wise Invigilation Duty Register', 14, 13)
+      lookup[lid][date][session] = hall
+    })
 
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(80)
-  doc.text(`Exam Period : ${fromDate}  to  ${toDate}`, 14, 21)
-  doc.text(
-    `Total Lecturers: ${lecturers.length}   |   Total Duties: ${duties.length}   |   Exam Days: ${uniqueDates.length}`,
-    14, 27
-  )
-  doc.setTextColor(0)
+    const doc = new jsPDF({ orientation: 'landscape' })
 
-  // ── Header Row 1 ─────────────────────────────────────────────
-  // Each date gets 4 columns: FN | Sig | AN | Sig
-  const headerRow1 = [
-    { content: 'S.No',        rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-    { content: 'Lecturer',    rowSpan: 2, styles: { valign: 'middle' } },
-    { content: 'Designation', rowSpan: 2, styles: { valign: 'middle' } },
-    ...uniqueDates.map(date => ({
-      content: date,
-      colSpan: 4,                        // FN + Sig + AN + Sig
-      styles: { halign: 'center' },
-    })),
-    { content: 'Total', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
-  ]
+    // ── Title block ──────────────────────────────────────────────
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Lecturer-Wise Invigilation Duty Register', 14, 13)
 
-  // ── Header Row 2 ─────────────────────────────────────────────
-  // FN | Sig | AN | Sig  — per date
-  const headerRow2 = uniqueDates.flatMap(() => [
-    { content: 'FN',  styles: { halign: 'center' } },
-    { content: 'Sig', styles: { halign: 'center', textColor: [120, 120, 120] } },
-    { content: 'AN',  styles: { halign: 'center' } },
-    { content: 'Sig', styles: { halign: 'center', textColor: [120, 120, 120] } },
-  ])
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(80)
 
-  // ── Body ─────────────────────────────────────────────────────
-  const body = lecturers.map((l, i) => {
-    const lid     = String(l.id || l._id)
-    const dutyMap = lookup[lid] || {}
-    let total     = 0
+    doc.text(`Exam Period : ${fromDate}  to  ${toDate}`, 14, 21)
 
-    const cells = uniqueDates.flatMap(date => {
-      const fn = dutyMap[date]?.FN || '—'
-      const an = dutyMap[date]?.AN || '—'
-      if (fn !== '—') total++
-      if (an !== '—') total++
+    doc.text(
+      `Total Lecturers: ${lecturers.length}   |   Total Duties: ${duties.length}   |   Exam Days: ${uniqueDates.length}`,
+      14,
+      27
+    )
+
+    doc.setTextColor(0)
+
+    // ── Header Row 1 ─────────────────────────────────────────────
+    // Removed "Designation" column
+    const headerRow1 = [
+      {
+        content: 'S.No',
+        rowSpan: 2,
+        styles: { halign: 'center', valign: 'middle' },
+      },
+      {
+        content: 'Lecturer',
+        rowSpan: 2,
+        styles: { valign: 'middle' },
+      },
+
+      ...uniqueDates.map(date => ({
+        content: date,
+        colSpan: 4,
+        styles: { halign: 'center' },
+      })),
+
+      {
+        content: 'Total',
+        rowSpan: 2,
+        styles: { halign: 'center', valign: 'middle' },
+      },
+    ]
+
+    // ── Header Row 2 ─────────────────────────────────────────────
+    const headerRow2 = uniqueDates.flatMap(() => [
+      { content: 'FN', styles: { halign: 'center' } },
+      { content: 'Sig', styles: { halign: 'center', textColor: [120, 120, 120] } },
+      { content: 'AN', styles: { halign: 'center' } },
+      { content: 'Sig', styles: { halign: 'center', textColor: [120, 120, 120] } },
+    ])
+
+    // ── Body ─────────────────────────────────────────────────────
+    const body = lecturers.map((l, i) => {
+      const lid = String(l.id || l._id)
+      const dutyMap = lookup[lid] || {}
+
+      let total = 0
+
+      const cells = uniqueDates.flatMap(date => {
+        const fn = dutyMap[date]?.FN || '—'
+        const an = dutyMap[date]?.AN || '—'
+
+        if (fn !== '—') total++
+        if (an !== '—') total++
+
+        return [
+          {
+            content: fn,
+            styles: {
+              halign: 'center',
+              fontStyle: fn !== '—' ? 'bold' : 'normal',
+              textColor: fn !== '—' ? [30, 64, 175] : [200, 200, 200],
+            },
+          },
+          {
+            content: '',
+            styles: {
+              fillColor: fn !== '—' ? [239, 246, 255] : [250, 250, 250],
+            },
+          },
+          {
+            content: an,
+            styles: {
+              halign: 'center',
+              fontStyle: an !== '—' ? 'bold' : 'normal',
+              textColor: an !== '—' ? [5, 150, 105] : [200, 200, 200],
+            },
+          },
+          {
+            content: '',
+            styles: {
+              fillColor: an !== '—' ? [240, 253, 244] : [250, 250, 250],
+            },
+          },
+        ]
+      })
+
       return [
-        // FN cell
         {
-          content: fn,
+          content: i + 1,
+          styles: { halign: 'center' },
+        },
+
+        {
+          content: l.name,
+        },
+
+        ...cells,
+
+        {
+          content: total || '—',
           styles: {
             halign: 'center',
-            fontStyle: fn !== '—' ? 'bold' : 'normal',
-            textColor: fn !== '—' ? [30, 64, 175] : [200, 200, 200],
+            fontStyle: 'bold',
+            textColor: total > 0 ? [30, 64, 175] : [180, 180, 180],
           },
-        },
-        // Sig blank (FN)
-        {
-          content: '',
-          styles: { fillColor: fn !== '—' ? [239, 246, 255] : [250, 250, 250] },
-        },
-        // AN cell
-        {
-          content: an,
-          styles: {
-            halign: 'center',
-            fontStyle: an !== '—' ? 'bold' : 'normal',
-            textColor: an !== '—' ? [5, 150, 105] : [200, 200, 200],
-          },
-        },
-        // Sig blank (AN)
-        {
-          content: '',
-          styles: { fillColor: an !== '—' ? [240, 253, 244] : [250, 250, 250] },
         },
       ]
     })
 
-    return [
-      { content: i + 1, styles: { halign: 'center' } },
-      { content: l.name },
-      { content: l.designation || 'Lecturer' },
-      ...cells,
-      {
-        content: total || '—',
-        styles: {
-          halign: 'center',
-          fontStyle: 'bold',
-          textColor: total > 0 ? [30, 64, 175] : [180, 180, 180],
-        },
+    // ── Table ────────────────────────────────────────────────────
+    autoTable(doc, {
+      startY: 33,
+      head: [headerRow1, headerRow2],
+      body,
+
+      styles: {
+        fontSize: 7,
+        cellPadding: 2.5,
+        lineColor: [220, 220, 220],
+        lineWidth: 0.2,
       },
-    ]
-  })
 
-  // ── Table ────────────────────────────────────────────────────
-  autoTable(doc, {
-    startY: 33,
-    head: [headerRow1, headerRow2],
-    body,
-    styles: { fontSize: 7, cellPadding: 2.5, lineColor: [220, 220, 220], lineWidth: 0.2 },
-    headStyles: {
-      fillColor: [30, 64, 175],
-      textColor: 255,
-      fontStyle: 'bold',
-      halign: 'center',
-      fontSize: 7.5,
-    },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
-    columnStyles: {
-      0: { cellWidth: 9  },    // S.No
-      1: { cellWidth: 36 },    // Lecturer
-      2: { cellWidth: 26 },    // Designation
-    },
-    margin: { left: 7, right: 7 },
-    tableWidth: 'auto',
-    rowPageBreak: 'avoid',
-  })
+      headStyles: {
+        fillColor: [30, 64, 175],
+        textColor: 255,
+        fontStyle: 'bold',
+        halign: 'center',
+        fontSize: 7.5,
+      },
 
-  // ── Page numbers ─────────────────────────────────────────────
-  const pages = doc.getNumberOfPages()
-  for (let i = 1; i <= pages; i++) {
-    doc.setPage(i)
-    doc.setFontSize(8)
-    doc.setTextColor(160)
-    doc.text(
-      `Page ${i} of ${pages}`,
-      doc.internal.pageSize.width - 10,
-      doc.internal.pageSize.height - 5,
-      { align: 'right' }
-    )
+      alternateRowStyles: {
+        fillColor: [248, 250, 252],
+      },
+
+      // Adjusted column widths after removing Designation
+      columnStyles: {
+        0: { cellWidth: 10 }, // S.No
+        1: { cellWidth: 42 }, // Lecturer
+      },
+
+      margin: { left: 7, right: 7 },
+      tableWidth: 'auto',
+      rowPageBreak: 'avoid',
+    })
+
+    // ── Page numbers ─────────────────────────────────────────────
+    const pages = doc.getNumberOfPages()
+
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i)
+
+      doc.setFontSize(8)
+      doc.setTextColor(160)
+
+      doc.text(
+        `Page ${i} of ${pages}`,
+        doc.internal.pageSize.width - 10,
+        doc.internal.pageSize.height - 5,
+        { align: 'right' }
+      )
+    }
+
+    doc.save(`lecturer-wise-duty-register-${fromDate}-to-${toDate}.pdf`)
   }
 
-  doc.save(`lecturer-wise-duty-register-${fromDate}-to-${toDate}.pdf`)
-}
+  // ──────────────────────────────────────────────────────────────
+  // Lecturer Individual Duty PDF
+  // Updated Header with:
+  // 1. Dynamic Exam Type
+  // 2. Dynamic Date Range
+  // 3. Fully Centered Header
+  // ──────────────────────────────────────────────────────────────
+
+  const exportLecturerIndividualPdf = () => {
+    if (duties.length === 0) {
+      toast.error('No duty data available to export')
+      return
+    }
+
+    // ── Dynamic Exam Type ─────────────────────────────
+    const examTypes = [
+      ...new Set(
+        duties.map(d => d.examScheduleId?.examType || d.examScheduleId?.subject).filter(Boolean)
+      ),
+    ]
+
+    const examTypeText =
+      examTypes.length === 1
+        ? formatExamType(examTypes[0])
+        : examTypes.map(t => formatExamType(t)).join(', ')
+
+    // ── Dynamic Date Range ────────────────────────────
+    const uniqueDates = [
+      ...new Set(
+        duties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
+      ),
+    ].sort()
+
+    const fromDate = uniqueDates[0] || '—'
+    const toDate = uniqueDates[uniqueDates.length - 1] || '—'
+
+    const doc = new jsPDF()
+
+    const pageWidth = doc.internal.pageSize.getWidth()
+
+    // ── Main Title ────────────────────────────────────
+    doc.setFontSize(17)
+    doc.setFont('helvetica', 'bold')
+
+    doc.text('Lecturer Individual Duty Report', pageWidth / 2, 16, { align: 'center' })
+
+    // ── Exam Type ─────────────────────────────────────
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+
+    doc.text(`Exam Type : ${examTypeText}`, pageWidth / 2, 25, { align: 'center' })
+
+    // ── Date Range ────────────────────────────────────
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(80)
+
+    doc.text(`Exam Period : ${fromDate}  to  ${toDate}`, pageWidth / 2, 32, { align: 'center' })
+
+    // ── Generated Time ────────────────────────────────
+    doc.text(`Generated : ${new Date().toLocaleString()}`, pageWidth / 2, 38, { align: 'center' })
+
+    doc.setTextColor(0)
+
+    let startY = 48
+
+    lecturers.forEach((lecturer, index) => {
+      const lecturerDuties = duties.filter(
+        d =>
+          String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId) ===
+          String(lecturer.id || lecturer._id)
+      )
+
+      // Skip lecturers without duties
+      if (lecturerDuties.length === 0) return
+
+      // ── Page Break ─────────────────────────────────
+      if (startY > 240) {
+        doc.addPage()
+        startY = 20
+      }
+
+      // ── Lecturer Header ───────────────────────────
+      doc.setFillColor(30, 64, 175)
+
+      doc.roundedRect(14, startY - 6, 182, 10, 2, 2, 'F')
+
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(255)
+
+      doc.text(
+        `${index + 1}. ${lecturer.name} ${lecturer.designation ? `(${lecturer.designation})` : ''}`,
+        18,
+        startY
+      )
+
+      doc.setTextColor(0)
+
+      // ── Lecturer Duties Table ─────────────────────
+      autoTable(doc, {
+        startY: startY + 8,
+
+        head: [['S.No', 'Date', 'Session', 'Exam Type', 'Hall', 'Availability']],
+
+        body: lecturerDuties.map((duty, i) => [
+          i + 1,
+
+          duty.examScheduleId?.date ? formatDate(duty.examScheduleId.date) : '—',
+
+          duty.examScheduleId?.session || '—',
+
+          formatExamType(duty.examScheduleId?.examType || duty.examScheduleId?.subject || '—'),
+
+          duty.examScheduleId?.hallNo || '—',
+
+          duty.availability || 'Available',
+        ]),
+
+        styles: {
+          fontSize: 8,
+          cellPadding: 2.5,
+          lineColor: [220, 220, 220],
+          lineWidth: 0.2,
+          valign: 'middle',
+        },
+
+        headStyles: {
+          fillColor: [79, 70, 229],
+          textColor: 255,
+          fontStyle: 'bold',
+          halign: 'center',
+        },
+
+        alternateRowStyles: {
+          fillColor: [248, 250, 252],
+        },
+
+        columnStyles: {
+          0: {
+            cellWidth: 12,
+            halign: 'center',
+          },
+
+          1: {
+            cellWidth: 28,
+            halign: 'center',
+          },
+
+          2: {
+            cellWidth: 20,
+            halign: 'center',
+          },
+
+          3: {
+            cellWidth: 55,
+          },
+
+          4: {
+            cellWidth: 28,
+            halign: 'center',
+          },
+
+          5: {
+            cellWidth: 35,
+            halign: 'center',
+          },
+        },
+
+        margin: {
+          left: 14,
+          right: 14,
+        },
+
+        didDrawPage: () => {
+          const pageCount = doc.getNumberOfPages()
+
+          doc.setFontSize(8)
+          doc.setTextColor(150)
+
+          doc.text(
+            `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`,
+            doc.internal.pageSize.width - 14,
+            doc.internal.pageSize.height - 6,
+            { align: 'right' }
+          )
+        },
+      })
+
+      // ── Next Section Position ─────────────────────
+      startY = doc.lastAutoTable.finalY + 14
+    })
+
+    doc.save(`lecturer-individual-duty-report-${Date.now()}.pdf`)
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -806,9 +1394,10 @@ export default function AdminInvigilationDashboardPage() {
                             onChange={e => setDutyForm(s => ({ ...s, lecturerId: e.target.value }))}
                           >
                             <option value="">Choose lecturer…</option>
-                            {lecturers.map(l => (
-                              <option key={l.id} value={l.id}>
-                                {l.name} · {l.designation}
+
+                            {lecturers.map((l, i) => (
+                              <option key={l._id || l.id || i} value={l._id || l.id}>
+                                {l.name}
                               </option>
                             ))}
                           </Select>
@@ -1453,6 +2042,10 @@ export default function AdminInvigilationDashboardPage() {
                       <Btn variant="outline" onClick={exportLecturerWisePdf}>
                         <FileText size={14} />
                         Lecturer-Wise PDF
+                      </Btn>
+                      <Btn variant="outline" onClick={exportLecturerIndividualPdf}>
+                        <FileText size={14} />
+                        Individual Lecturer PDF
                       </Btn>
                     </div>
                   </div>
