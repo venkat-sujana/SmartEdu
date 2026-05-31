@@ -1,5 +1,4 @@
 // src/app/api/invigilation/duties/auto-assign/route.js
-
 import { NextResponse } from 'next/server'
 import { connectInvigilationDB } from '@/lib/mongodb-invigilation'
 import DutyAssignment from '@/models/DutyAssignment'
@@ -9,7 +8,16 @@ import LecturerAvailability from '@/models/LecturerAvailability'
 import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
 
 function toDateKey(value) {
-  return new Date(value).toISOString().slice(0, 10)
+  if (!value) return ''
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value
+  }
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(value))
 }
 
 function hasDateClash(existingSlots, exam, sameDayNoRepeat) {
@@ -58,38 +66,41 @@ export async function POST(req) {
     if (session)  examFilter.session  = session
     if (examType) examFilter.examType = examType
 
+
+
+
     // ── Parallel fetch ─────────────────────────────────────────────────────────
-    const [allExams, lecturers, existingDuties, unavailabilityList] = await Promise.all([
-      ExamSchedule.find(examFilter)
-        .sort({ date: 1, session: 1 })
-        .lean(),
+    // ✅ ఇలా మార్చండి
+const [allExams, lecturers, existingDuties, availabilityList, historicalAssignments] = await Promise.all([
+  
+  ExamSchedule.find(examFilter).sort({ date: 1, session: 1 }).lean(),
 
-      User.find({
-        role: 'lecturer',
-        ...(user.collegeId ? { collegeId: user.collegeId } : {}),
-      })
-        .select('_id name')
-        .lean(),
+  User.find({
+    role: 'lecturer',
+    ...(user.collegeId ? { collegeId: user.collegeId } : {}),
+  }).select('_id name').lean(),
 
-      DutyAssignment.find({
-        ...(user.collegeId ? { collegeId: user.collegeId } : {}),
-      })
-        .populate('examScheduleId', 'date session')
-        .select('examScheduleId lecturerId')
-        .lean(),
+  DutyAssignment.find({
+    ...(user.collegeId ? { collegeId: user.collegeId } : {}),
+  }).populate('examScheduleId', 'date session').select('examScheduleId lecturerId').lean(),
 
-      // ✅ FIX: 'NOT_AVAILABLE' → 'unavailable' (model enum తో match)
-      LecturerAvailability.find({
-        status: 'unavailable',
-        ...(user.collegeId ? { collegeId: user.collegeId } : {}),
-      })
-        .select('lecturerId date session')
-        .lean(),
-    ])
+  LecturerAvailability.find({
+    status: 'available',
+    ...(user.collegeId ? { collegeId: user.collegeId } : {}),
+  }).select('lecturerId date session status').lean(),
+
+  // ✅ historicalAssignments.find → DutyAssignment.find గా మార్చండి
+  DutyAssignment.find({
+    ...(user.collegeId ? { collegeId: user.collegeId } : {}),
+  }).select('examScheduleId lecturerId').lean(),
+])
 
     if (lecturers.length === 0) {
       return NextResponse.json({ message: 'No lecturers available', assigned: 0, skipped: 0 })
     }
+
+
+
 
     // ── Already assigned exam IDs ──────────────────────────────────────────────
     const assignedExamIds = new Set(existingDuties.map(d => String(d.examScheduleId?._id)))
@@ -104,25 +115,37 @@ export async function POST(req) {
     const clashMap       = new Map()
 
     // ── ✅ Unavailability map: lecturerId → Set of 'dateKey|session' ───────────
-    const unavailMap = new Map()
+    const availMap = new Map()
 
-    for (const item of unavailabilityList) {
-      const lid     = String(item.lecturerId)
-      const dateKey = toDateKey(item.date)
+for (const item of availabilityList) {
 
-      if (!unavailMap.has(lid)) unavailMap.set(lid, new Set())
+  const lid = String(item.lecturerId)
 
-      // Specific session
-      unavailMap.get(lid).add(`${dateKey}|${item.session}`)
+  const dateKey = toDateKey(item.date)
 
-      // FULLDAY → block all sessions
-      if (item.session &&
-        item.session.toUpperCase() === 'FULLDAY') {
-        unavailMap.get(lid).add(`${dateKey}|FN`)
-        unavailMap.get(lid).add(`${dateKey}|AN`)
-        unavailMap.get(lid).add(`${dateKey}|EN`)
-      }
-    }
+  const slotKey = `${dateKey}|${item.session}`
+
+  if (!availMap.has(lid)) {
+    availMap.set(lid, new Set())
+  }
+
+  availMap.get(lid).add(slotKey)
+}
+
+
+// ── Historical Load Tracker ─────────────────────────
+
+const historicalLoadMap = new Map()
+
+historicalAssignments.forEach(d => {
+
+  const lid = String(d.lecturerId)
+
+  historicalLoadMap.set(
+    lid,
+    (historicalLoadMap.get(lid) || 0) + 1
+  )
+})
 
     // ── Existing duty load & clash tracking ────────────────────────────────────
     for (const d of existingDuties) {
@@ -156,7 +179,8 @@ export async function POST(req) {
         if (maxDutiesPerLecturer > 0 && currentLoad >= maxDutiesPerLecturer) return false
 
         // 2. ✅ Unavailability check — lecturer ఈ date/session కి unavailable గా mark చేశారా?
-        if (unavailMap.get(lid)?.has(slotKey)) return false
+        if (!availMap.get(lid)?.has(slotKey)) {return false
+}
 
         // 3. Same-day / same-slot clash check
         if (hasDateClash(clashMap.get(lid), exam, sameDayNoRepeat)) return false
@@ -176,11 +200,33 @@ export async function POST(req) {
         continue
       }
 
+      console.log(
+        candidates.map(c => ({
+          name: c.name,
+          historical: historicalLoadMap.get(String(c._id)) || 0,
+        }))
+      )
+
       // Fair distribution — fewest duties first
       candidates.sort((a, b) => {
+        const ha = historicalLoadMap.get(String(a._id)) || 0
+
+        const hb = historicalLoadMap.get(String(b._id)) || 0
+
+        // Historical Load Priority
+        if (ha !== hb) {
+          return ha - hb
+        }
+
         const la = loadByLecturer.get(String(a._id)) || 0
+
         const lb = loadByLecturer.get(String(b._id)) || 0
-        if (la !== lb) return la - lb
+
+        // Current Load Priority
+        if (la !== lb) {
+          return la - lb
+        }
+
         return String(a._id).localeCompare(String(b._id))
       })
 

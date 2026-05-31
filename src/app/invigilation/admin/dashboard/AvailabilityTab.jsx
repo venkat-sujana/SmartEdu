@@ -66,21 +66,48 @@ function StatusCell({ status, onClick, loading }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function AvailabilityTab() {
+
   const [lecturers, setLecturers]       = useState([])  // ✅ internal fetch
   const [examSlots, setExamSlots]       = useState([])
   const [availMap, setAvailMap]         = useState({})
   const [loading, setLoading]           = useState(false)
   const [cellLoading, setCellLoading]   = useState('')
   const [filterSession, setFilterSession] = useState('')
+  const [examType, setExamType] = useState('')
+
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
+  const [bulkStatus, setBulkStatus] = useState('available')
+  const [selectedLecturer, setSelectedLecturer] = useState('')
+  const [previewMap, setPreviewMap] = useState({})
+
 
   // ── Load all data internally ──────────────────────────────────────────────────
   const loadAll = useCallback(async () => {
+    console.log(
+  'loadAll examType =',
+  examType
+)
     setLoading(true)
     try {
       const [lecRes, examRes, availRes] = await Promise.all([
+
         fetch('/api/invigilation/lecturers', { cache: 'no-store' }),
-        fetch('/api/invigilation/exams',     { cache: 'no-store' }),
-        fetch('/api/invigilation/availability', { cache: 'no-store' }),
+
+        fetch(
+          examType ? `/api/invigilation/exams?examType=${examType}` : '/api/invigilation/exams',
+          {
+            cache: 'no-store',
+          }
+        ),
+
+        fetch(
+  selectedLecturer && selectedLecturer !== 'ALL'
+    ? `/api/invigilation/availability?lecturerId=${selectedLecturer}`
+    : '/api/invigilation/availability',
+  { cache: 'no-store' }
+),
+
       ])
       const [lecData, examData, availData] = await Promise.all([
         lecRes.json(), examRes.json(), availRes.json(),
@@ -103,20 +130,24 @@ export default function AvailabilityTab() {
       })
       slots.sort((a, b) => a.date.localeCompare(b.date) || a.session.localeCompare(b.session))
       setExamSlots(slots)
-      if (slots.length === 0) {
 
-  setExamSlots([
-    {
-      date: formatDate(new Date()),
-      session: 'FN',
-    },
+      console.log('Exam Type:', examType)
+console.log('Exam Data:', examData.data)
+console.log('Slots:', slots)
 
-    {
-      date: formatDate(new Date()),
-      session: 'AN',
-    },
-  ])
-}
+      // if (slots.length === 0) {
+      //   setExamSlots([
+      //     {
+      //       date: formatDate(new Date()),
+      //       session: 'FN',
+      //     },
+
+      //     {
+      //       date: formatDate(new Date()),
+      //       session: 'AN',
+      //     },
+      //   ])
+      // }
 
       // Build availability map: 'lecturerId_date_session' → { status, _id }
       const map = {}
@@ -132,7 +163,7 @@ export default function AvailabilityTab() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [examType,selectedLecturer])
 
   useEffect(() => { loadAll() }, [loadAll])
 
@@ -140,7 +171,8 @@ export default function AvailabilityTab() {
   const onCellClick = useCallback(async (lecturer, date, session) => {
     const lid      = String(lecturer._id || lecturer.id)
     const cellKey  = `${lid}_${date}_${session}`
-    const current  = availMap[cellKey]?.status
+
+    const current = previewMap[cellKey] ?? availMap[cellKey]?.status
 
     const nextStatus = !current
       ? 'available'
@@ -182,8 +214,74 @@ export default function AvailabilityTab() {
       toast.error(err.message || 'Failed to update')
     } finally {
       setCellLoading('')
+      setPreviewMap(s => {
+    const next = { ...s }
+    if (nextStatus === null) {
+      delete next[cellKey]
+    } else {
+      next[cellKey] = nextStatus
     }
-  }, [availMap])
+    return next
+  })
+    }
+  }, [availMap,previewMap])
+
+
+
+const applyBulkAvailability = async () => {
+  if (!selectedLecturer) { toast.error('Select lecturer'); return }
+  if (!examType) { toast.error('Select exam type'); return }
+  if (!fromDate || !toDate) { toast.error('Select date range'); return }
+let totalSaved = 0
+
+  try {
+    const targetLecturers = selectedLecturer === 'ALL'
+      ? lecturers
+      : lecturers.filter(l => String(l.id || l._id) === selectedLecturer)
+
+    const start = new Date(fromDate)
+    const end = new Date(toDate)
+    
+
+    for (let current = new Date(start); current <= end; current.setDate(current.getDate() + 1)) {
+      const dateStr = formatDate(current)
+      const sessions = ['FN', 'AN']
+
+      for (const [key, status] of Object.entries(previewMap)) {
+  const [lid, date, session] = key.split('_')
+  const res = await fetch('/api/invigilation/availability', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      lecturerId: lid,
+      date,
+      session,
+      status,
+      reason: '',
+    }),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.message)
+  totalSaved++
+}
+
+ 
+    }
+toast.success(`${totalSaved} availability records saved`)
+    loadAll()
+  } catch (err) {
+    toast.error(err.message || 'Bulk update failed')
+  }
+  toast.success(`${totalSaved} availability records saved`)
+setPreviewMap({})  // ← clear చేయండి
+loadAll()
+   
+}
+
+
+
+
+
 
   // ── Derived stats ─────────────────────────────────────────────────────────────
     // Filter slots by session
@@ -236,23 +334,26 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
-
       {/* ── Stats ── */}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Lecturers</p>
+          <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">Lecturers</p>
           <p className="mt-1 text-3xl font-black text-slate-700">{lecturers.length}</p>
         </div>
         <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-400">Exam Slots</p>
+          <p className="text-xs font-semibold tracking-wide text-indigo-400 uppercase">
+            Exam Slots
+          </p>
           <p className="mt-1 text-3xl font-black text-indigo-700">{examSlots.length}</p>
         </div>
         <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-500">Available</p>
+          <p className="text-xs font-semibold tracking-wide text-emerald-500 uppercase">
+            Available
+          </p>
           <p className="mt-1 text-3xl font-black text-emerald-700">{availCount}</p>
         </div>
         <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">Unavailable</p>
+          <p className="text-xs font-semibold tracking-wide text-rose-500 uppercase">Unavailable</p>
           <p className="mt-1 text-3xl font-black text-rose-700">{unavailCount}</p>
         </div>
       </div>
@@ -275,7 +376,8 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <select value={filterSession}
+            <select
+              value={filterSession}
               onChange={e => setFilterSession(e.target.value)}
               className="appearance-none rounded-xl border border-slate-200 bg-white px-3 py-1.5 pr-7 text-sm focus:border-indigo-400 focus:outline-none"
             >
@@ -284,12 +386,106 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
               <option value="AN">AN Only</option>
               <option value="EN">EN Only</option>
             </select>
-            <ChevronDown size={12} className="pointer-events-none absolute right-2 top-2.5 text-slate-400" />
+            <ChevronDown
+              size={12}
+              className="pointer-events-none absolute top-2.5 right-2 text-slate-400"
+            />
           </div>
-          <button onClick={loadAll} disabled={loading}
+          <button
+            onClick={loadAll}
+            disabled={loading}
             className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
           >
             <RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+        <h3 className="mb-4 text-sm font-bold text-slate-700">Bulk Availability Update</h3>
+
+        <div className="grid gap-3 md:grid-cols-4">
+          <select
+            value={selectedLecturer}
+            onChange={e => setSelectedLecturer(e.target.value)}
+            className="rounded-xl border border-slate-200 px-3 py-2"
+          >
+            <option value="">Select Lecturer</option>
+            <option value="ALL">All Lecturers</option>
+            {lecturers.map(l => (
+              <option key={l.id || l._id} value={l.id || l._id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={examType}
+            onChange={e => setExamType(e.target.value)}
+            className="rounded-xl border border-slate-200 px-3 py-2"
+          >
+            <option value="">Select Exam Type</option>
+
+            <option value="UNIT-1">UNIT-1</option>
+
+            <option value="UNIT-2">UNIT-2</option>
+
+            <option value="UNIT-3">UNIT-3</option>
+
+            <option value="UNIT-4">UNIT-4</option>
+
+            <option value="QUARTERLY">QUARTERLY</option>
+
+            <option value="HALFYEARLY">HALFYEARLY</option>
+
+            <option value="PRE-PUBLIC-1">PRE-PUBLIC-1</option>
+
+            <option value="PRE-PUBLIC-2">PRE-PUBLIC-2</option>
+          </select>
+
+          <input
+            type="date"
+            value={fromDate}
+            onChange={e => setFromDate(e.target.value)}
+            className="rounded-xl border border-slate-200 px-3 py-2"
+          />
+
+          <input
+            type="date"
+            value={toDate}
+            onChange={e => setToDate(e.target.value)}
+            className="rounded-xl border border-slate-200 px-3 py-2"
+          />
+
+          <select
+            value={bulkStatus}
+            onChange={e => {
+              const status = e.target.value
+              setBulkStatus(status)
+
+              // అన్ని lecturer + slot combinations కి preview set చేయండి
+              const preview = {}
+              lecturers.forEach(l => {
+                const lid = String(l._id || l.id)
+                visibleSlots.forEach(slot => {
+                  const key = `${lid}_${slot.date}_${slot.session}`
+                  preview[key] = status
+                })
+              })
+              setPreviewMap(preview)
+            }}
+            className="rounded-xl border border-slate-200 px-3 py-2"
+          >
+            <option value="available">Available</option>
+
+            <option value="unavailable">Unavailable</option>
+          </select>
+
+          <button
+            onClick={applyBulkAvailability}
+            className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            Apply
           </button>
         </div>
       </div>
@@ -315,41 +511,45 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
             <Users size={32} className="mx-auto mb-3 text-slate-300" />
             <p className="text-sm font-medium text-slate-500">No lecturers found</p>
           </div>
-          
-        
-          
-          
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm border-collapse">
+            <table className="min-w-full border-collapse text-sm">
               <thead>
                 {/* Row 1 — Dates */}
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="sticky left-0 z-10 bg-slate-50 px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase tracking-wide min-w-40 border-r border-slate-200">
+                  <th className="sticky left-0 z-10 min-w-40 border-r border-slate-200 bg-slate-50 px-4 py-2 text-left text-xs font-bold tracking-wide text-slate-500 uppercase">
                     Lecturer
                   </th>
                   {dateGroups.map(({ date, count }) => (
-                    <th key={date}
+                    <th
+                      key={date}
                       colSpan={count}
-                      className="px-2 py-2 text-center text-xs font-bold text-slate-700 border-r border-slate-200 last:border-r-0"
+                      className="border-r border-slate-200 px-2 py-2 text-center text-xs font-bold text-slate-700 last:border-r-0"
                     >
-                      <div className="text-[11px] font-semibold text-slate-400">{weekDay(date)}</div>
+                      <div className="text-[11px] font-semibold text-slate-400">
+                        {weekDay(date)}
+                      </div>
                       <div>{shortDate(date)}</div>
                     </th>
                   ))}
                 </tr>
                 {/* Row 2 — Sessions */}
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="sticky left-0 z-10 bg-slate-50 border-r border-slate-200" />
+                  <th className="sticky left-0 z-10 border-r border-slate-200 bg-slate-50" />
                   {visibleSlots.map(({ date, session }) => (
-                    <th key={`${date}_${session}`}
-                      className="px-2 py-1.5 text-center border-r border-slate-100 last:border-r-0"
+                    <th
+                      key={`${date}_${session}`}
+                      className="border-r border-slate-100 px-2 py-1.5 text-center last:border-r-0"
                     >
-                      <span className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold ${
-                        session === 'FN' ? 'bg-amber-100 text-amber-700' :
-                        session === 'AN' ? 'bg-blue-100 text-blue-700' :
-                        'bg-violet-100 text-violet-700'
-                      }`}>
+                      <span
+                        className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold ${
+                          session === 'FN'
+                            ? 'bg-amber-100 text-amber-700'
+                            : session === 'AN'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-violet-100 text-violet-700'
+                        }`}
+                      >
                         {session}
                       </span>
                     </th>
@@ -361,16 +561,23 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
                 {lecturers.map((lecturer, li) => {
                   const lid = String(lecturer._id || lecturer.id)
                   return (
-                    <tr key={`${lid}_${li}`} className={`hover:bg-slate-50/60 transition-colors ${li % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
+                    <tr
+                      key={`${lid}_${li}`}
+                      className={`transition-colors hover:bg-slate-50/60 ${li % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
+                    >
                       {/* Lecturer name — sticky */}
-                      <td className="sticky left-0 z-10 border-r border-slate-200 bg-inherit px-4 py-2.5 min-w-40">
+                      <td className="sticky left-0 z-10 min-w-40 border-r border-slate-200 bg-inherit px-4 py-2.5">
                         <div className="flex items-center gap-2">
                           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-black text-indigo-700">
                             {lecturer.name?.[0]?.toUpperCase() || '?'}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate text-xs font-bold text-slate-700">{lecturer.name}</p>
-                            <p className="truncate text-[10px] text-slate-400">{lecturer.designation || 'Lecturer'}</p>
+                            <p className="truncate text-xs font-bold text-slate-700">
+                              {lecturer.name}
+                            </p>
+                            <p className="truncate text-[10px] text-slate-400">
+                              {lecturer.designation || 'Lecturer'}
+                            </p>
                           </div>
                         </div>
                       </td>
@@ -379,9 +586,13 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
                       {visibleSlots.map(({ date, session }) => {
                         console.log(visibleSlots)
                         const cellKey = `${lid}_${date}_${session}`
-                        const status  = availMap[cellKey]?.status || null
+
+                        const status = previewMap[cellKey] ?? availMap[cellKey]?.status ?? null
                         return (
-                          <td key={cellKey} className="px-1.5 py-1.5 border-r border-slate-100 last:border-r-0 min-w-[90px]">
+                          <td
+                            key={cellKey}
+                            className="min-w-[90px] border-r border-slate-100 px-1.5 py-1.5 last:border-r-0"
+                          >
                             <StatusCell
                               status={status}
                               loading={cellLoading === cellKey}
@@ -401,10 +612,13 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
         {/* Footer summary */}
         {!loading && lecturers.length > 0 && examSlots.length > 0 && (
           <div className="flex flex-wrap items-center gap-4 border-t border-slate-100 bg-slate-50/60 px-5 py-3 text-xs text-slate-500">
-            <span>{lecturers.length} lecturers × {visibleSlots.length} slots = {lecturers.length * visibleSlots.length} cells</span>
-            <span className="text-emerald-600 font-semibold">✓ {availCount} available</span>
-            <span className="text-rose-600 font-semibold">✗ {unavailCount} unavailable</span>
-            <span className="text-amber-600 font-semibold">? {notSetCount} not set</span>
+            <span>
+              {lecturers.length} lecturers × {visibleSlots.length} slots ={' '}
+              {lecturers.length * visibleSlots.length} cells
+            </span>
+            <span className="font-semibold text-emerald-600">✓ {availCount} available</span>
+            <span className="font-semibold text-rose-600">✗ {unavailCount} unavailable</span>
+            <span className="font-semibold text-amber-600">? {notSetCount} not set</span>
           </div>
         )}
       </div>

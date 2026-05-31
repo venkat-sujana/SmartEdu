@@ -6,7 +6,6 @@ import toast from 'react-hot-toast'
 import {
   UserPlus,
   GraduationCap,
-  Building2,
   Phone,
   Shield,
   Plus,
@@ -20,7 +19,6 @@ import InvigilationShell from '@/app/invigilation/components/InvigilationShell'
 
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-
 
 function Card({ children, className = '' }) {
   return (
@@ -86,8 +84,7 @@ export default function LecturersPage() {
 
   const [lecturerForm, setLecturerForm] = useState({
     name: '',
-    designation: '',
-    institutionName: '',
+    subject: '',
     phone: '',
     password: '',
   })
@@ -130,8 +127,7 @@ Pass: ${data.tempPassword}`
 
       setLecturerForm({
         name: '',
-        designation: '',
-        institutionName: '',
+        subject: '',
         phone: '',
         password: '',
       })
@@ -150,9 +146,7 @@ Pass: ${data.tempPassword}`
     setLecturerForm({
       name: lecturer.name || '',
 
-      designation: lecturer.designation || '',
-
-      institutionName: lecturer.institutionName || '',
+      subject: lecturer.subject || lecturer.designation || '',
 
       phone: lecturer.phone || '',
 
@@ -212,30 +206,28 @@ Pass: ${data.tempPassword}`
     loadLecturers()
   }, [loadLecturers])
 
-
   // exportPdf function — LecturersPage లో add చేయండి
-const exportPdf = () => {
-  const doc = new jsPDF()
+  const exportPdf = () => {
+    const doc = new jsPDF()
 
-  doc.setFontSize(14)
-  doc.text('Invigilators List', 14, 15)
+    doc.setFontSize(14)
+    doc.text('Invigilators List', 14, 15)
 
-  autoTable(doc, {
-    startY: 22,
-    head: [['S.No', 'Name', 'Designation', 'Phone', 'Institution']],
-    body: lecturers.map((item, index) => [
-      index + 1,
-      item.name,
-      item.designation,
-      item.phone,
-      item.institutionName,
-    ]),
-    headStyles: { fillColor: [59, 130, 246] }, // blue-500
-    styles: { fontSize: 10 },
-  })
+    autoTable(doc, {
+      startY: 22,
+      head: [['S.No', 'Name', 'Subject', 'Phone']],
+      body: lecturers.map((item, index) => [
+        index + 1,
+        item.name,
+        item.subject || item.designation,
+        item.phone,
+      ]),
+      headStyles: { fillColor: [59, 130, 246] }, // blue-500
+      styles: { fontSize: 10 },
+    })
 
-  doc.save('lecturers.pdf')
-}
+    doc.save('lecturers.pdf')
+  }
 
   return (
     <InvigilationGuard allowRoles={['admin']}>
@@ -267,29 +259,15 @@ const exportPdf = () => {
                   />
 
                   <FormInput
-                    label="Designation"
+                    label="Subject"
                     icon={<Shield size={14} />}
-                    placeholder="e.g. Lecturer"
+                    placeholder="e.g. Mathematics"
                     required
-                    value={lecturerForm.designation}
+                    value={lecturerForm.subject}
                     onChange={e =>
                       setLecturerForm(s => ({
                         ...s,
-                        designation: e.target.value,
-                      }))
-                    }
-                  />
-
-                  <FormInput
-                    label="Institution"
-                    icon={<Building2 size={14} />}
-                    placeholder="College name"
-                    required
-                    value={lecturerForm.institutionName}
-                    onChange={e =>
-                      setLecturerForm(s => ({
-                        ...s,
-                        institutionName: e.target.value,
+                        subject: e.target.value,
                       }))
                     }
                   />
@@ -338,28 +316,23 @@ const exportPdf = () => {
                   color="indigo"
                 />
 
-                 <button
-      type="button"
-      onClick={exportPdf}
-      className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700"
-    >
-      <FileDown size={15} />
-      Export PDF
-    </button>
-
-
-                
+                <button
+                  type="button"
+                  onClick={exportPdf}
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700"
+                >
+                  <FileDown size={15} />
+                  Export PDF
+                </button>
 
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-sm">
                     <thead>
                       <tr className="border-b border-slate-100 bg-slate-50">
-
                         <th className="px-5 py-3 text-left">S.No</th>
                         <th className="px-5 py-3 text-left">Name</th>
-                        <th className="px-5 py-3 text-left">Designation</th>
+                        <th className="px-5 py-3 text-left">Subject</th>
                         <th className="px-5 py-3 text-left">Phone</th>
-                        <th className="px-5 py-3 text-left">Institution</th>
                         <th className="px-5 py-3 text-left">Actions</th>
                       </tr>
                     </thead>
@@ -369,9 +342,8 @@ const exportPdf = () => {
                         <tr key={item.id} className="border-b">
                           <td className="px-5 py-3 text-slate-500">{index + 1}</td>
                           <td className="px-5 py-3">{item.name}</td>
-                          <td className="px-5 py-3">{item.designation}</td>
+                          <td className="px-5 py-3">{item.subject || item.designation}</td>
                           <td className="px-5 py-3">{item.phone}</td>
-                          <td className="px-5 py-3">{item.institutionName}</td>
 
                           <td className="px-5 py-3">
                             <div className="flex gap-2">

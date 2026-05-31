@@ -1,9 +1,17 @@
+//src/app/api/invigilation/exams/[id]/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import ExamSchedule from "@/models/ExamSchedule";
 import DutyAssignment from "@/models/DutyAssignment";
 import InvigilationRoom from "@/models/InvigilationRoom";
 import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+
+function parseDateOnly(value) {
+  if (!value) return null;
+  const [year, month, day] = String(value).split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
 
 export async function PUT(req, { params }) {
   const { user, error } = await requireInvigilationAuth(req, ["admin"]);
@@ -22,7 +30,7 @@ export async function PUT(req, { params }) {
       : null;
 
     const update = {
-      date: body.date ? new Date(body.date) : undefined,
+      date: body.date ? parseDateOnly(body.date) : undefined,
       session: body.session,
       examType: body.examType,
       subject: body.subject?.trim() || body.examType || "",

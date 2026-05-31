@@ -24,20 +24,21 @@ export async function GET(req) {
     }).lean()
 
     const profileMap = {}
-    profiles.forEach(p => { profileMap[String(p.userId)] = p })
+    profiles.forEach(p => {
+      profileMap[String(p.userId)] = p
+    })
 
     const data = lecturers.map(l => ({
-      id:              String(l._id),
-      _id:             String(l._id),
-      name:            l.name,
-      loginId:         l.loginId,
-      designation:     profileMap[String(l._id)]?.designation  || '',
-      institutionName: profileMap[String(l._id)]?.institutionName || '',
-      phone:           profileMap[String(l._id)]?.phone || '',
+      id: String(l._id),
+      _id: String(l._id),
+      name: l.name,
+      loginId: l.loginId,
+      subject: profileMap[String(l._id)]?.designation || '',
+      designation: profileMap[String(l._id)]?.designation || '',
+      phone: profileMap[String(l._id)]?.phone || '',
     }))
 
     return NextResponse.json({ data })
-
   } catch (err) {
     return NextResponse.json(
       { message: err.message || 'Failed to fetch lecturers' },

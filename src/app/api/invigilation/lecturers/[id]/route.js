@@ -7,14 +7,13 @@ import LecturerProfile from '@/models/LecturerProfile'
 import { hashPassword } from '@/lib/invigilation-auth'
 import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
 
-
 export async function PUT(req, { params }) {
   const { user: admin, error } = await requireInvigilationAuth(req, ['admin'])
 
   if (error) return error
   try {
     await connectInvigilationDB()
-    const { id } = await  params
+    const { id } = await params
     const body = await req.json()
     const lecturer = await User.findById(id)
     if (!lecturer) {
@@ -33,8 +32,7 @@ export async function PUT(req, { params }) {
     })
 
     if (profile) {
-      profile.designation = body.designation?.trim()
-      profile.institutionName = body.institutionName?.trim()
+      profile.designation = body.subject?.trim() || body.designation?.trim() || ''
       profile.phone = body.phone?.trim()
       await profile.save()
     }
@@ -62,7 +60,7 @@ export async function DELETE(req, { params }) {
 
   try {
     await connectInvigilationDB()
-    const { id } = await  params
+    const { id } = await params
     const lecturer = await User.findById(id)
 
     if (!lecturer) {

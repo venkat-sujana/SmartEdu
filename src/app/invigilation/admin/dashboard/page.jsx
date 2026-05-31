@@ -38,7 +38,7 @@ import {
   Settings2,
   CalendarCheck,
 } from 'lucide-react'
-import AvailabilityTab from './AvailabilityTab'
+import AvailabilityTab from '../dashboard/AvailabilityTab'
 // ─── Constants ───────────────────────────────────────────────────────────────
 const EXAM_TYPES = [
   'UNIT-1',
@@ -54,11 +54,22 @@ const EXAM_TYPES = [
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function formatDate(date) {
   if (!date) return ''
-  const d = new Date(date)
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date
+  }
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(date))
+}
+
+function parseDateKey(dateStr) {
+  if (!dateStr) return null
+  const [year, month, day] = String(dateStr).split('-').map(Number)
+  if (!year || !month || !day) return null
+  return new Date(year, month - 1, day)
 }
 
 function formatExamType(examType) {
@@ -69,8 +80,8 @@ function formatExamType(examType) {
 }
 function getDayCount(fromDate, toDate) {
   if (!fromDate || !toDate) return 0
-  const start = new Date(fromDate),
-    end = new Date(toDate)
+  const start = parseDateKey(fromDate)
+  const end = parseDateKey(toDate)
   if (isNaN(start) || isNaN(end) || start > end) return 0
   return Math.floor((end - start) / 86400000) + 1
 }
@@ -366,8 +377,10 @@ export default function AdminInvigilationDashboardPage() {
     examType: 'UNIT-1',
     roomId: '',
   })
+  const [seatingDeleteExamType, setSeatingDeleteExamType] = useState('')
   const [dutyForm, setDutyForm] = useState({ examScheduleId: '', lecturerId: '' })
-  const [filters, setFilters] = useState({ date: '', lecturerId: '', session: '' })
+  const [filters, setFilters] = useState({ fromDate: '', toDate: '', lecturerId: '', session: '' })
+  const [allDuties, setAllDuties] = useState([])
 
   // ── Data fetching (unchanged) ─────────────────────────────────────────────
   const fetchAll = useCallback(
@@ -375,21 +388,28 @@ export default function AdminInvigilationDashboardPage() {
       setLoading(true)
       try {
         const qp = new URLSearchParams()
-        if (activeFilters.date) qp.set('date', activeFilters.date)
+        if (activeFilters.fromDate) qp.set('fromDate', activeFilters.fromDate)
+        if (activeFilters.toDate) qp.set('toDate', activeFilters.toDate)
         if (activeFilters.lecturerId) qp.set('lecturerId', activeFilters.lecturerId)
         if (activeFilters.session) qp.set('session', activeFilters.session)
-        const [lRes, rRes, eRes, dRes] = await Promise.all([
+
+        const [lRes, rRes, eRes, dRes, allDRes] = await Promise.all([
           fetch('/api/invigilation/lecturers', { cache: 'no-store' }),
           fetch('/api/invigilation/rooms', { cache: 'no-store' }),
           fetch('/api/invigilation/exams', { cache: 'no-store' }),
           fetch(`/api/invigilation/duties?${qp}`, { cache: 'no-store' }),
+          fetch('/api/invigilation/duties', { cache: 'no-store' }),
         ])
-        const [lData, rData, eData, dData] = await Promise.all([
+        const [lData, rData, eData, dData, allDData] = await Promise.all([
           lRes.json(),
           rRes.json(),
           eRes.json(),
           dRes.json(),
+          allDRes.json(),
         ])
+        setAllDuties(allDData.data || [])
+        console.log('allDData:', allDData)
+
         if (!lRes.ok || !rRes.ok || !eRes.ok || !dRes.ok)
           throw new Error(
             lData.message || rData.message || eData.message || dData.message || 'Failed'
@@ -398,6 +418,7 @@ export default function AdminInvigilationDashboardPage() {
         setRooms(rData.data || [])
         setExams(eData.data || [])
         setDuties(dData.data || [])
+        setAllDuties(allDData.data || [])
       } catch (err) {
         toast.error(err.message || 'Failed to load')
       } finally {
@@ -497,7 +518,8 @@ export default function AdminInvigilationDashboardPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: filters.date || undefined,
+          fromDate: filters.fromDate || undefined,
+          toDate: filters.toDate || undefined,
           session: filters.session || undefined,
           maxDutiesPerLecturer: Number(scheduleForm.maxDutiesPerLecturer || 0) || undefined,
           sameDayNoRepeat: scheduleForm.sameDayNoRepeat,
@@ -644,6 +666,47 @@ export default function AdminInvigilationDashboardPage() {
       if (!res.ok) throw new Error(data.message)
       toast.success(`Deleted ${data.deletedCount || 0} schedules`)
       if (editingScheduleId) resetScheduleEditor()
+      fetchAll(filters)
+    } catch (err) {
+      toast.error(err.message || 'Failed')
+    } finally {
+      setActionLoading('')
+    }
+  }
+
+  const onDeleteSchedulesByExamType = async () => {
+    if (!seatingDeleteExamType) {
+      toast.error('Select exam type')
+      return
+    }
+
+    const targetPlans = roomSeatingPlan.filter(plan => plan.examType === seatingDeleteExamType)
+
+    if (targetPlans.length === 0) {
+      toast.error('No schedules found for selected exam type')
+      return
+    }
+
+    if (
+      !window.confirm(
+        `Delete ${targetPlans.length} schedules for ${formatExamType(seatingDeleteExamType)}? Linked duties will also be removed.`
+      )
+    )
+      return
+
+    setActionLoading('schedule-delete-exam-type')
+    try {
+      const res = await fetch('/api/invigilation/exams', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: targetPlans.map(plan => plan.id) }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message)
+      toast.success(`Deleted ${data.deletedCount || 0} schedules`)
+      if (editingScheduleId && targetPlans.some(plan => plan.id === editingScheduleId)) {
+        resetScheduleEditor()
+      }
       fetchAll(filters)
     } catch (err) {
       toast.error(err.message || 'Failed')
@@ -868,12 +931,18 @@ export default function AdminInvigilationDashboardPage() {
     { id: 'lecturers', label: 'Lecturers', icon: <UserSquare2 size={15} /> },
   ]
 
+  
+
   const exportLecturerWisePdf = () => {
+    console.log('allDuties at export time:', allDuties.length)
+
     const uniqueDates = [
       ...new Set(
-        duties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
+        allDuties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
       ),
     ].sort()
+    console.log('uniqueDates:', uniqueDates) 
+    console.log('allDuties sample:', allDuties[0]?.examScheduleId)
 
     if (uniqueDates.length === 0) {
       toast.error('No duty data available to export')
@@ -886,7 +955,7 @@ export default function AdminInvigilationDashboardPage() {
 
     // Lookup: lecturerId → date → session → hallNo
     const lookup = {}
-    duties.forEach(d => {
+    allDuties.forEach(d => {
       const lid = String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId)
       const date = d.examScheduleId?.date ? formatDate(d.examScheduleId.date) : null
       const session = d.examScheduleId?.session
@@ -914,7 +983,7 @@ export default function AdminInvigilationDashboardPage() {
     doc.text(`Exam Period : ${fromDate}  to  ${toDate}`, 14, 21)
 
     doc.text(
-      `Total Lecturers: ${lecturers.length}   |   Total Duties: ${duties.length}   |   Exam Days: ${uniqueDates.length}`,
+      `Total Lecturers: ${lecturers.length}   |   Total Duties: ${allDuties.length}   |   Exam Days: ${uniqueDates.length}`,
       14,
       27
     )
@@ -1090,7 +1159,7 @@ export default function AdminInvigilationDashboardPage() {
   // ──────────────────────────────────────────────────────────────
 
   const exportLecturerIndividualPdf = () => {
-    if (duties.length === 0) {
+    if (allDuties.length === 0) {
       toast.error('No duty data available to export')
       return
     }
@@ -1098,7 +1167,7 @@ export default function AdminInvigilationDashboardPage() {
     // ── Dynamic Exam Type ─────────────────────────────
     const examTypes = [
       ...new Set(
-        duties.map(d => d.examScheduleId?.examType || d.examScheduleId?.subject).filter(Boolean)
+        allDuties.map(d => d.examScheduleId?.examType || d.examScheduleId?.subject).filter(Boolean)
       ),
     ]
 
@@ -1110,7 +1179,7 @@ export default function AdminInvigilationDashboardPage() {
     // ── Dynamic Date Range ────────────────────────────
     const uniqueDates = [
       ...new Set(
-        duties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
+        allDuties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
       ),
     ].sort()
 
@@ -1148,7 +1217,7 @@ export default function AdminInvigilationDashboardPage() {
     let startY = 48
 
     lecturers.forEach((lecturer, index) => {
-      const lecturerDuties = duties.filter(
+      const lecturerDuties = allDuties.filter(
         d =>
           String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId) ===
           String(lecturer.id || lecturer._id)
@@ -1649,16 +1718,6 @@ export default function AdminInvigilationDashboardPage() {
                         <Layers3 size={15} />
                         Generate Schedule
                       </Btn>
-                      <Btn
-                        type="button"
-                        variant="violet"
-                        loading={scheduleLoading || autoLoading}
-                        onClick={onGenerateAndAssign}
-                        size="lg"
-                      >
-                        <Zap size={15} />
-                        Generate + Auto Assign
-                      </Btn>
                     </div>
                   </form>
                 </Card>
@@ -1669,14 +1728,23 @@ export default function AdminInvigilationDashboardPage() {
                 <Card>
                   {/* Filters bar */}
                   <div className="flex flex-wrap items-end gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-4">
-                    <Field label="Date">
+                    <Field label="From Date">
                       <Input
                         icon={<Calendar size={13} />}
                         type="date"
-                        value={filters.date}
-                        onChange={e => setFilters(s => ({ ...s, date: e.target.value }))}
+                        value={filters.fromDate}
+                        onChange={e => setFilters(s => ({ ...s, fromDate: e.target.value }))}
                       />
                     </Field>
+                    <Field label="To Date">
+                      <Input
+                        icon={<Calendar size={13} />}
+                        type="date"
+                        value={filters.toDate}
+                        onChange={e => setFilters(s => ({ ...s, toDate: e.target.value }))}
+                      />
+                    </Field>
+
                     <Field label="Lecturer">
                       <Select
                         icon={<Users size={13} />}
@@ -1839,6 +1907,32 @@ export default function AdminInvigilationDashboardPage() {
                     </Chip>
                     {filters.date && <Chip color="amber">{filters.date}</Chip>}
                     {filters.session && <SessionChip session={filters.session} />}
+                  </div>
+
+                  <div className="flex flex-wrap items-end gap-3 border-b border-slate-100 bg-white px-5 py-4">
+                    <Field label="Delete By Exam Type">
+                      <Select
+                        icon={<BookOpen size={13} />}
+                        value={seatingDeleteExamType}
+                        onChange={e => setSeatingDeleteExamType(e.target.value)}
+                      >
+                        <option value="">Select Exam Type</option>
+                        {EXAM_TYPES.map(t => (
+                          <option key={t} value={t}>
+                            {formatExamType(t)}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                    <Btn
+                      variant="danger"
+                      size="sm"
+                      onClick={onDeleteSchedulesByExamType}
+                      loading={actionLoading === 'schedule-delete-exam-type'}
+                    >
+                      <Trash2 size={13} />
+                      Delete Exam Type
+                    </Btn>
                   </div>
 
                   {/* Inline edit form */}

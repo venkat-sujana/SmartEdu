@@ -8,6 +8,25 @@ import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
 
 const EXAM_TYPES = ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4", "QUARTERLY", "HALFYEARLY", "PRE-PUBLIC-1", "PRE-PUBLIC-2"];
 
+function parseDateOnly(value) {
+  if (!value) return null;
+  const [year, month, day] = String(value).split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+function toDateKey(value) {
+  if (!value) return "";
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+  const date = value instanceof Date ? value : new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function normalizeExamType(value) {
   const normalized = String(value || "").trim().toUpperCase().replace(/\s+/g, "");
   const aliases = {
@@ -21,6 +40,10 @@ function normalizeExamType(value) {
     "PREPUBLIC2": "PRE-PUBLIC-2",
     "PRE-PUBLIC-2": "PRE-PUBLIC-2",
   };
+
+  const [examType] = EXAM_TYPES.filter(type => type.replace(/-/g, "") === normalized);
+if (examType) return examType;
+
 
   if (aliases[normalized]) return aliases[normalized];
   return normalized;
@@ -45,6 +68,10 @@ function getDateRange(fromDate, toDate) {
   return dates;
 }
 
+
+
+
+
 export async function GET(req) {
   const { user, error } = await requireInvigilationAuth(req, ["admin", "lecturer"]);
   if (error) return error;
@@ -53,18 +80,28 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date");
   const session = searchParams.get("session");
+  const examType = searchParams.get("examType");
 
   const filter = {};
   if (user.collegeId) {
     filter.collegeId = user.collegeId;
   }
   if (date) {
-    const start = new Date(date);
-    const end = new Date(date);
+    const start = parseDateOnly(date);
+    const end = parseDateOnly(date);
+    if (!start || !end) {
+      return NextResponse.json({ message: "Invalid date" }, { status: 400 });
+    }
     end.setDate(end.getDate() + 1);
     filter.date = { $gte: start, $lt: end };
   }
   if (session) filter.session = session;
+
+if (examType) {
+  filter.examType = examType
+}
+
+console.log('Exam Filter:', filter)
 
   const exams = await ExamSchedule.find(filter)
     .sort({ date: 1, session: 1 })
@@ -74,6 +111,8 @@ export async function GET(req) {
 
   return NextResponse.json({ role: user.role, data: exams });
 }
+
+
 
 export async function POST(req) {
   const { user, error } = await requireInvigilationAuth(req, ["admin"]);
@@ -91,10 +130,10 @@ export async function POST(req) {
     }
 
     if (Array.isArray(roomIds) && roomIds.length > 0 && fromDate && toDate) {
-      const startDate = new Date(fromDate);
-      const endDate = new Date(toDate);
+      const startDate = parseDateOnly(fromDate);
+      const endDate = parseDateOnly(toDate);
 
-      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate > endDate) {
+      if (!startDate || !endDate || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate > endDate) {
         return NextResponse.json({ message: "Invalid date range" }, { status: 400 });
       }
 
@@ -119,13 +158,13 @@ export async function POST(req) {
         .lean();
 
       const existingKeys = new Set(
-        existingSchedules.map((item) => `${new Date(item.date).toISOString().slice(0, 10)}::${item.hallNo}`)
+        existingSchedules.map((item) => `${toDateKey(item.date)}::${item.hallNo}`)
       );
 
       const docs = [];
       for (const room of rooms) {
         for (const scheduleDate of dates) {
-          const dateKey = scheduleDate.toISOString().slice(0, 10);
+          const dateKey = toDateKey(scheduleDate);
           const compositeKey = `${dateKey}::${room.name}`;
 
           if (existingKeys.has(compositeKey)) {
@@ -168,7 +207,7 @@ export async function POST(req) {
     }
 
     const created = await ExamSchedule.create({
-      date: new Date(date),
+      date: parseDateOnly(date),
       session,
       examType: normalizedExamType,
       subject: subject?.trim() || formatExamLabel(normalizedExamType),
@@ -193,6 +232,7 @@ export async function DELETE(req) {
     const ids = Array.isArray(body?.ids) ? body.ids.filter(Boolean) : [];
     const date = body?.date || "";
     const session = body?.session || "";
+    const examType = body?.examType ? normalizeExamType(body.examType) : "";
 
     const filter = {};
     if (user.collegeId) {
@@ -202,16 +242,26 @@ export async function DELETE(req) {
       filter._id = { $in: ids };
     }
     if (date) {
-      const start = new Date(date);
-      const end = new Date(date);
+      const start = parseDateOnly(date);
+      const end = parseDateOnly(date);
+      if (!start || !end) {
+        return NextResponse.json({ message: "Invalid date" }, { status: 400 });
+      }
       end.setDate(end.getDate() + 1);
       filter.date = { $gte: start, $lt: end };
     }
     if (session) {
       filter.session = session;
     }
+    if (examType) {
+      filter.examType = examType;
+    }
 
     const schedules = await ExamSchedule.find(filter).select("_id").lean();
+    console.log(
+  'schedules count =',
+  schedules.length
+)
     if (schedules.length === 0) {
       return NextResponse.json({ message: "No exam schedules found to delete", deletedCount: 0 });
     }
