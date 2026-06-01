@@ -1,5 +1,4 @@
 //src/app/invigilation/admin/dashboard/page.jsx
-
 'use client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -8,6 +7,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import InvigilationGuard from '@/app/invigilation/components/InvigilationGuard'
 import InvigilationShell from '@/app/invigilation/components/InvigilationShell'
+
 import {
   CalendarRange,
   ClipboardCheck,
@@ -51,6 +51,7 @@ const EXAM_TYPES = [
   'PRE-PUBLIC-2',
 ]
 
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function formatDate(date) {
   if (!date) return ''
@@ -78,6 +79,13 @@ function formatExamType(examType) {
     .replace(/PRE-PUBLIC/g, 'PRE PUBLIC')
     .replace(/-/g, ' ')
 }
+
+function normalizeDutyAvailability(value) {
+  const low = String(value || '').trim().toLowerCase()
+  if (low === 'available') return 'available'
+  return 'unavailable'
+}
+
 function getDayCount(fromDate, toDate) {
   if (!fromDate || !toDate) return 0
   const start = parseDateKey(fromDate)
@@ -358,7 +366,7 @@ export default function AdminInvigilationDashboardPage() {
   const [actionLoading, setActionLoading] = useState('')
   const [activeTab, setActiveTab] = useState('overview')
   const [unavailCount, setUnavailCount] = useState(0)
-
+  const [dutyLoadData, setDutyLoadData] = useState([])
   const [roomForm, setRoomForm] = useState({ name: '', block: '', capacity: '' })
   const [scheduleForm, setScheduleForm] = useState({
     fromDate: '',
@@ -381,7 +389,8 @@ export default function AdminInvigilationDashboardPage() {
   const [dutyForm, setDutyForm] = useState({ examScheduleId: '', lecturerId: '' })
   const [filters, setFilters] = useState({ fromDate: '', toDate: '', lecturerId: '', session: '' })
   const [allDuties, setAllDuties] = useState([])
-
+  const [selectedPdfExam, setSelectedPdfExam] =
+  useState('ALL')
   // ── Data fetching (unchanged) ─────────────────────────────────────────────
   const fetchAll = useCallback(
     async (activeFilters = { date: '', lecturerId: '', session: '' }) => {
@@ -393,34 +402,50 @@ export default function AdminInvigilationDashboardPage() {
         if (activeFilters.lecturerId) qp.set('lecturerId', activeFilters.lecturerId)
         if (activeFilters.session) qp.set('session', activeFilters.session)
 
-        const [lRes, rRes, eRes, dRes] = await Promise.all([
+        const requests = [
           fetch('/api/invigilation/lecturers', { cache: 'no-store' }),
           fetch('/api/invigilation/rooms', { cache: 'no-store' }),
           fetch('/api/invigilation/exams', { cache: 'no-store' }),
           fetch(`/api/invigilation/duties?${qp}`, { cache: 'no-store' }),
-        ])
-        const [lData, rData, eData, dData] = await Promise.all([
+        ]
+
+        if (activeTab === 'lecturers') {
+          requests.push(fetch('/api/invigilation/duties', { cache: 'no-store' }))
+        }
+
+        const responses = await Promise.all(requests)
+        const [lRes, rRes, eRes, dRes, allDRes] = responses
+        const [lData, rData, eData, dData, allDData] = await Promise.all([
           lRes.json(),
           rRes.json(),
           eRes.json(),
           dRes.json(),
+          allDRes ? allDRes.json() : Promise.resolve(null),
         ])
 
         if (!lRes.ok || !rRes.ok || !eRes.ok || !dRes.ok)
           throw new Error(
             lData.message || rData.message || eData.message || dData.message || 'Failed'
           )
+
+        if (allDRes && !allDRes.ok) {
+          throw new Error(allDData?.message || 'Failed to load lecturer duty data')
+        }
+
         setLecturers(lData.data || [])
         setRooms(rData.data || [])
         setExams(eData.data || [])
         setDuties(dData.data || [])
+        if (allDData?.data) {
+          setAllDuties(allDData.data)
+        }
       } catch (err) {
         toast.error(err.message || 'Failed to load')
       } finally {
         setLoading(false)
       }
     },
-    []
+    [activeTab]
   )
   useEffect(() => {
     fetchAll()
@@ -522,6 +547,29 @@ export default function AdminInvigilationDashboardPage() {
       toast.error(err.message || 'Failed')
     }
   }
+
+  const loadDutyLoadData = async () => {
+  try {
+    const res = await fetch(
+      '/api/invigilation/reports/duty-load',
+      {
+        cache: 'no-store',
+      }
+    )
+
+    const data = await res.json()
+
+    if (res.ok) {
+      setDutyLoadData(data.data || [])
+    }
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+useEffect(() => {
+  loadDutyLoadData()
+}, [])
 
   const onAutoAssign = async () => {
     setAutoLoading(true)
@@ -812,15 +860,21 @@ export default function AdminInvigilationDashboardPage() {
     () => new Map(duties.map(d => [String(d.examScheduleId?._id || ''), d])),
     [duties]
   )
+
+
+  const lecturerSummarySource = useMemo(
+    () => (activeTab === 'lecturers' && allDuties.length > 0 ? allDuties : duties),
+    [activeTab, allDuties, duties]
+  )
+
   const dutiesByLecturer = useMemo(() => {
     const map = new Map()
 
-    duties.forEach(duty => {
+    lecturerSummarySource.forEach(duty => {
       const lid = String(duty.lecturerId?._id || duty.lecturerId?.id || duty.lecturerId)
       if (!map.has(lid)) {
         map.set(lid, {
           totalDuties: 0,
-          pending: 0,
           available: 0,
           unavailable: 0,
           activeDays: new Set(),
@@ -829,17 +883,25 @@ export default function AdminInvigilationDashboardPage() {
       }
 
       const summary = map.get(lid)
+
+      summary.availableSlots = 0
+      summary.unavailableSlots = 0
+      summary.notSetSlots = 0
+
       summary.totalDuties += 1
 
-      if (duty.availability === 'Pending') summary.pending += 1
-      if (duty.availability === 'Available') summary.available += 1
-      if (duty.availability === 'Not Available') summary.unavailable += 1
+      const availability = normalizeDutyAvailability(duty.availability)
+
+      if (availability === 'available') summary.available += 1
+
+      if (availability === 'unavailable') summary.unavailable += 1
+
       if (duty.examScheduleId?.date) summary.activeDays.add(formatDate(duty.examScheduleId.date))
       if (duty.examScheduleId?.hallNo) summary.rooms.add(duty.examScheduleId.hallNo)
     })
 
     return map
-  }, [duties])
+  }, [lecturerSummarySource])
   const filteredScheduleExams = useMemo(
     () =>
       exams.filter(
@@ -875,24 +937,52 @@ export default function AdminInvigilationDashboardPage() {
   )
 
   const lecturerDutySummary = useMemo(() => {
+
     const vis = filters.lecturerId ? lecturers.filter(l => l.id === filters.lecturerId) : lecturers
+
     return vis
-      .map(l => {
-        const summary = dutiesByLecturer.get(String(l._id || l.id))
-        return {
-          id: l._id || l.id,
-          name: l.name,
-          designation: l.designation,
-          totalDuties: summary?.totalDuties || 0,
-          pending: summary?.pending || 0,
-          available: summary?.available || 0,
-          unavailable: summary?.unavailable || 0,
-          activeDays: summary?.activeDays.size || 0,
-          rooms: summary ? [...summary.rooms].slice(0, 4) : [],
-        }
-      })
+     .map(l => {
+
+  const summary =
+    dutiesByLecturer.get(
+      String(l._id || l.id)
+    )
+
+  const dutyLoad =
+    dutyLoadData.find(
+      d =>
+        d.lecturerId ===
+        String(l._id || l.id)
+    )
+
+  return {
+
+    id: l._id || l.id,
+
+    name: l.name,
+
+    designation: l.designation,
+
+    totalDuties:
+      summary?.totalDuties || 0,
+
+    available:
+      dutyLoad?.availableCount || 0,
+
+    unavailable:
+      dutyLoad?.unavailableCount || 0,
+
+    activeDays:
+      summary?.activeDays.size || 0,
+
+    rooms:
+      summary
+        ? [...summary.rooms].slice(0, 4)
+        : [],
+  }
+})
       .sort((a, b) => b.totalDuties - a.totalDuties || a.name.localeCompare(b.name))
-  }, [dutiesByLecturer, filters.lecturerId, lecturers])
+  }, [dutiesByLecturer, filters.lecturerId, lecturers,dutyLoadData])
 
   const assignedCount = roomSeatingPlan.filter(i => i.assigned).length
   const unassignedCount = roomSeatingPlan.length - assignedCount
@@ -934,7 +1024,6 @@ export default function AdminInvigilationDashboardPage() {
         Designation: i.designation || 'Lecturer',
         TotalDuties: i.totalDuties,
         ActiveDays: i.activeDays,
-        Pending: i.pending,
         Available: i.available,
         Unavailable: i.unavailable,
         Rooms: i.rooms.join(', '),
@@ -968,9 +1057,21 @@ export default function AdminInvigilationDashboardPage() {
   
 
   const exportLecturerWisePdf = () => {
+
+
+    const pdfDuties =
+  selectedPdfExam === 'ALL'
+    ? allDuties
+    : allDuties.filter(
+        d =>
+          d.examScheduleId
+            ?.examType ===
+          selectedPdfExam
+      )
+    
     const uniqueDates = [
       ...new Set(
-        allDuties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
+        pdfDuties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
       ),
     ].sort()
 
@@ -985,7 +1086,7 @@ export default function AdminInvigilationDashboardPage() {
 
     // Lookup: lecturerId → date → session → hallNo
     const lookup = {}
-    allDuties.forEach(d => {
+    pdfDuties.forEach(d => {
       const lid = String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId)
       const date = d.examScheduleId?.date ? formatDate(d.examScheduleId.date) : null
       const session = d.examScheduleId?.session
@@ -999,12 +1100,20 @@ export default function AdminInvigilationDashboardPage() {
       lookup[lid][date][session] = hall
     })
 
-    const doc = new jsPDF({ orientation: 'landscape' })
+    const doc = new jsPDF({ orientation: 'landscape', format: 'legal' })
 
     // ── Title block ──────────────────────────────────────────────
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
-    doc.text('Lecturer-Wise Invigilation Duty Register', 14, 13)
+    
+    const pageWidth = doc.internal.pageSize.getWidth()
+
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+
+    doc.text('Lecturer-Wise Invigilation Duty Register', pageWidth / 2, 13, {
+      align: 'center',
+    })
 
     doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
@@ -1013,9 +1122,14 @@ export default function AdminInvigilationDashboardPage() {
     doc.text(`Exam Period : ${fromDate}  to  ${toDate}`, 14, 21)
 
     doc.text(
-      `Total Lecturers: ${lecturers.length}   |   Total Duties: ${allDuties.length}   |   Exam Days: ${uniqueDates.length}`,
+      `Total Lecturers: ${lecturers.length}   |   Total Duties: ${pdfDuties.length}   |   Exam Days: ${uniqueDates.length}`,
       14,
       27
+    )
+    
+    doc.text(`Exam Type : ${selectedPdfExam}`,
+     14,
+     32
     )
 
     doc.setTextColor(0)
@@ -1068,6 +1182,7 @@ export default function AdminInvigilationDashboardPage() {
 
         if (fn !== '—') total++
         if (an !== '—') total++
+      
 
         return [
           {
@@ -1189,7 +1304,7 @@ export default function AdminInvigilationDashboardPage() {
   // ──────────────────────────────────────────────────────────────
 
   const exportLecturerIndividualPdf = () => {
-    if (allDuties.length === 0) {
+    if (pdfDuties.length === 0) {
       toast.error('No duty data available to export')
       return
     }
@@ -1197,7 +1312,7 @@ export default function AdminInvigilationDashboardPage() {
     // ── Dynamic Exam Type ─────────────────────────────
     const examTypes = [
       ...new Set(
-        allDuties.map(d => d.examScheduleId?.examType || d.examScheduleId?.subject).filter(Boolean)
+        pdfDuties.map(d => d.examScheduleId?.examType || d.examScheduleId?.subject).filter(Boolean)
       ),
     ]
 
@@ -1209,7 +1324,7 @@ export default function AdminInvigilationDashboardPage() {
     // ── Dynamic Date Range ────────────────────────────
     const uniqueDates = [
       ...new Set(
-        allDuties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
+        pdfDuties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
       ),
     ].sort()
 
@@ -2155,12 +2270,12 @@ export default function AdminInvigilationDashboardPage() {
                         {lecturerDutySummary.reduce((s, i) => s + i.totalDuties, 0)}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-amber-100 bg-amber-50 p-5">
-                      <p className="text-xs font-semibold tracking-wide text-amber-500 uppercase">
-                        Pending
+                    <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5">
+                      <p className="text-xs font-semibold tracking-wide text-rose-500 uppercase">
+                        Unavailable
                       </p>
-                      <p className="mt-1 text-3xl font-black text-amber-700">
-                        {lecturerDutySummary.reduce((s, i) => s + i.pending, 0)}
+                      <p className="mt-1 text-3xl font-black text-rose-700">
+                        {lecturerDutySummary.reduce((s, i) => s + i.unavailable, 0)}
                       </p>
                     </div>
                   </div>
@@ -2175,6 +2290,36 @@ export default function AdminInvigilationDashboardPage() {
                         <FileSpreadsheet size={14} />
                         Export Excel
                       </Btn>
+
+<div className="flex gap-2">
+  <select
+  value={selectedPdfExam}
+  onChange={e =>
+    setSelectedPdfExam(e.target.value)
+  }
+>
+  <option value="ALL">
+    All Exams
+  </option>
+
+  {EXAM_TYPES.map(type => (
+    <option
+      key={type}
+      value={type}
+    >
+      {type}
+    </option>
+  ))}
+</select>
+
+  <button
+    onClick={exportLecturerWisePdf}
+  >
+    Export PDF
+  </button>
+</div>
+
+                      
                       <Btn variant="outline" onClick={exportLecturerWisePdf}>
                         <FileText size={14} />
                         Lecturer-Wise PDF
@@ -2211,10 +2356,9 @@ export default function AdminInvigilationDashboardPage() {
                             </Chip>
                           </div>
 
-                          <div className="mb-4 grid grid-cols-4 gap-2">
+                          <div className="mb-4 grid grid-cols-3 gap-2">
                             {[
                               { label: 'Days', value: item.activeDays, color: 'text-slate-700' },
-                              { label: 'Pending', value: item.pending, color: 'text-amber-700' },
                               {
                                 label: 'Available',
                                 value: item.available,

@@ -204,7 +204,9 @@ export default function DutyLoadDashboard() {
                   {type}
                 </th>
               ))}
+              <th className="px-4 py-3 text-center text-green-700">Available</th>
 
+              <th className="px-4 py-3 text-center text-red-700">Unavailable</th>
               <th className="px-4 py-3 text-center">Total</th>
               <th className="px-4 py-3 text-center">Load</th>
             </tr>
@@ -221,7 +223,17 @@ export default function DutyLoadDashboard() {
                   </td>
                 ))}
 
+                
+                <td className="px-4 py-3 text-center font-bold text-green-700">
+                  {row.availableCount}
+                </td>
+
+                <td className="px-4 py-3 text-center font-bold text-red-700">
+                  {row.unavailableCount}
+                </td>
                 <td className="px-4 py-3 text-center font-bold text-blue-700">{row.totalDuties}</td>
+
+
                 <td className="px-4 py-3 text-center">
                   {row.totalDuties <= 2 ? (
                     <span className="rounded bg-green-100 px-2 py-1 text-xs font-semibold text-green-700">

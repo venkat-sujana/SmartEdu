@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { connectInvigilationDB } from '@/lib/mongodb-invigilation'
 import DutyAssignment from '@/models/DutyAssignment'
+import LecturerAvailability from '@/models/LecturerAvailability'
 import User from '@/models/User'
 import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
 
@@ -39,6 +40,8 @@ export async function GET(req) {
         .select('lecturerId examScheduleId')
         .lean()
 
+const availabilities = await LecturerAvailability.find().select('lecturerId status').lean()
+
     // ──────────────────────────────
     // Collect Exam Types
     // ──────────────────────────────
@@ -63,16 +66,20 @@ export async function GET(req) {
 
     const rows = lecturers.map(l => {
 
-      const row = {
+const row = {
 
-        lecturerId:
-          String(l._id),
+  lecturerId:
+    String(l._id),
 
-        lecturerName:
-          l.name,
+  lecturerName:
+    l.name,
 
-        totalDuties: 0,
-      }
+  totalDuties: 0,
+
+  availableCount: 0,
+  unavailableCount: 0,
+}
+
 
       examTypes.forEach(type => {
         row[type] = 0
@@ -87,6 +94,9 @@ export async function GET(req) {
         r,
       ])
     )
+
+
+
 
     // ──────────────────────────────
     // Count Duties
@@ -117,6 +127,41 @@ export async function GET(req) {
 
       row.totalDuties += 1
     })
+    availabilities.forEach(a => {
+
+  const lecturerId =
+    String(a.lecturerId)
+
+  if (
+    !rowMap.has(
+      lecturerId
+    )
+  ) {
+    return
+  }
+
+  const row =
+    rowMap.get(
+      lecturerId
+    )
+
+  if (
+    a.status ===
+    'available'
+  ) {
+
+    row.availableCount += 1
+
+  } else if (
+    a.status ===
+    'unavailable'
+  ) {
+
+    row.unavailableCount += 1
+
+  }
+
+})
 
     // ──────────────────────────────
     // Sort by Total Duties
