@@ -84,10 +84,6 @@ const [applying, setApplying] = useState(false)
 
   // ── Load all data internally ──────────────────────────────────────────────────
   const loadAll = useCallback(async () => {
-    console.log(
-  'loadAll examType =',
-  examType
-)
     setLoading(true)
     try {
       const [lecRes, examRes, availRes] = await Promise.all([
@@ -118,7 +114,6 @@ const [applying, setApplying] = useState(false)
 
       // ✅ Set lecturers from API
       setLecturers(lecData.data || [])
-      console.log('Lecturers API:', lecData.data)
 
       // Unique date+session slots (sorted)
       const seen = new Set()
@@ -131,9 +126,6 @@ const [applying, setApplying] = useState(false)
       slots.sort((a, b) => a.date.localeCompare(b.date) || a.session.localeCompare(b.session))
       setExamSlots(slots)
 
-      console.log('Exam Type:', examType)
-console.log('Exam Data:', examData.data)
-console.log('Slots:', slots)
 
       // if (slots.length === 0) {
       //   setExamSlots([
@@ -233,6 +225,8 @@ const applyBulkAvailability = async () => {
   if (!selectedLecturer) { toast.error('Select lecturer'); return }
   if (!examType) { toast.error('Select exam type'); return }
   if (!fromDate || !toDate) { toast.error('Select date range'); return }
+const updates = Object.entries(previewMap)
+if (updates.length === 0) { toast.error('No availability changes to apply'); return }
 let totalSaved = 0
 
 setApplying(true)
@@ -240,19 +234,7 @@ setApplying(true)
 
 
   try {
-    const targetLecturers = selectedLecturer === 'ALL'
-      ? lecturers
-      : lecturers.filter(l => String(l.id || l._id) === selectedLecturer)
-
-    const start = new Date(fromDate)
-    const end = new Date(toDate)
-    
-
-    for (let current = new Date(start); current <= end; current.setDate(current.getDate() + 1)) {
-      const dateStr = formatDate(current)
-      const sessions = ['FN', 'AN']
-
-      for (const [key, status] of Object.entries(previewMap)) {
+      for (const [key, status] of updates) {
   const [lid, date, session] = key.split('_')
   const res = await fetch('/api/invigilation/availability', {
     method: 'POST',
@@ -273,18 +255,14 @@ setApplying(true)
 
 
 
-
- }
 toast.success(`${totalSaved} availability records saved`)
-    loadAll()
+    await loadAll()
   } catch (err) {
-    setApplying(false)
     toast.error(err.message || 'Bulk update failed')
+  } finally {
+    setApplying(false)
   }
-  setApplying(false)
-  toast.success(`${totalSaved} availability records saved`)
 setPreviewMap({})  // ← clear చేయండి
-loadAll()
    
 }
 
@@ -609,7 +587,6 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
 
                       {/* Availability cells */}
                       {visibleSlots.map(({ date, session }) => {
-                        console.log(visibleSlots)
                         const cellKey = `${lid}_${date}_${session}`
 
                         const status = previewMap[cellKey] ?? availMap[cellKey]?.status ?? null

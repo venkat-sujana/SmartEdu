@@ -393,22 +393,18 @@ export default function AdminInvigilationDashboardPage() {
         if (activeFilters.lecturerId) qp.set('lecturerId', activeFilters.lecturerId)
         if (activeFilters.session) qp.set('session', activeFilters.session)
 
-        const [lRes, rRes, eRes, dRes, allDRes] = await Promise.all([
+        const [lRes, rRes, eRes, dRes] = await Promise.all([
           fetch('/api/invigilation/lecturers', { cache: 'no-store' }),
           fetch('/api/invigilation/rooms', { cache: 'no-store' }),
           fetch('/api/invigilation/exams', { cache: 'no-store' }),
           fetch(`/api/invigilation/duties?${qp}`, { cache: 'no-store' }),
-          fetch('/api/invigilation/duties', { cache: 'no-store' }),
         ])
-        const [lData, rData, eData, dData, allDData] = await Promise.all([
+        const [lData, rData, eData, dData] = await Promise.all([
           lRes.json(),
           rRes.json(),
           eRes.json(),
           dRes.json(),
-          allDRes.json(),
         ])
-        setAllDuties(allDData.data || [])
-        console.log('allDData:', allDData)
 
         if (!lRes.ok || !rRes.ok || !eRes.ok || !dRes.ok)
           throw new Error(
@@ -418,7 +414,6 @@ export default function AdminInvigilationDashboardPage() {
         setRooms(rData.data || [])
         setExams(eData.data || [])
         setDuties(dData.data || [])
-        setAllDuties(allDData.data || [])
       } catch (err) {
         toast.error(err.message || 'Failed to load')
       } finally {
@@ -430,6 +425,23 @@ export default function AdminInvigilationDashboardPage() {
   useEffect(() => {
     fetchAll()
   }, [fetchAll])
+
+  const fetchAllDuties = useCallback(async () => {
+    try {
+      const res = await fetch('/api/invigilation/duties', { cache: 'no-store' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message)
+      setAllDuties(data.data || [])
+    } catch (err) {
+      toast.error(err.message || 'Failed to load lecturer duty data')
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeTab === 'lecturers') {
+      fetchAllDuties()
+    }
+  }, [activeTab, duties.length, exams.length, fetchAllDuties])
 
   // ── Handlers (unchanged logic) ────────────────────────────────────────────
   const onCreateRoom = async e => {
@@ -795,10 +807,39 @@ export default function AdminInvigilationDashboardPage() {
   }
 
   const roomMap = useMemo(() => new Map(rooms.map(r => [String(r._id), r])), [rooms])
+  const roomByHallNo = useMemo(() => new Map(rooms.map(r => [r.name, r])), [rooms])
   const dutyByExamId = useMemo(
     () => new Map(duties.map(d => [String(d.examScheduleId?._id || ''), d])),
     [duties]
   )
+  const dutiesByLecturer = useMemo(() => {
+    const map = new Map()
+
+    duties.forEach(duty => {
+      const lid = String(duty.lecturerId?._id || duty.lecturerId?.id || duty.lecturerId)
+      if (!map.has(lid)) {
+        map.set(lid, {
+          totalDuties: 0,
+          pending: 0,
+          available: 0,
+          unavailable: 0,
+          activeDays: new Set(),
+          rooms: new Set(),
+        })
+      }
+
+      const summary = map.get(lid)
+      summary.totalDuties += 1
+
+      if (duty.availability === 'Pending') summary.pending += 1
+      if (duty.availability === 'Available') summary.available += 1
+      if (duty.availability === 'Not Available') summary.unavailable += 1
+      if (duty.examScheduleId?.date) summary.activeDays.add(formatDate(duty.examScheduleId.date))
+      if (duty.examScheduleId?.hallNo) summary.rooms.add(duty.examScheduleId.hallNo)
+    })
+
+    return map
+  }, [duties])
   const filteredScheduleExams = useMemo(
     () =>
       exams.filter(
@@ -814,7 +855,7 @@ export default function AdminInvigilationDashboardPage() {
         .map(exam => {
           const room = exam.roomId
             ? roomMap.get(String(exam.roomId._id || exam.roomId))
-            : rooms.find(r => r.name === exam.hallNo)
+            : roomByHallNo.get(exam.hallNo)
           const duty = dutyByExamId.get(String(exam._id))
           return {
             id: exam._id,
@@ -830,35 +871,28 @@ export default function AdminInvigilationDashboardPage() {
           }
         })
         .sort((a, b) => new Date(a.date) - new Date(b.date) || a.hallNo.localeCompare(b.hallNo)),
-    [dutyByExamId, filteredScheduleExams, roomMap, rooms]
+    [dutyByExamId, filteredScheduleExams, roomByHallNo, roomMap]
   )
 
   const lecturerDutySummary = useMemo(() => {
     const vis = filters.lecturerId ? lecturers.filter(l => l.id === filters.lecturerId) : lecturers
     return vis
       .map(l => {
-        const ld = duties.filter(
-          d =>
-            String(d.lecturerId?._id || d.lecturerId?.id || d.lecturerId) === String(l._id || l.id)
-        )
-
-        const dates = new Set(
-          ld.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
-        )
+        const summary = dutiesByLecturer.get(String(l._id || l.id))
         return {
           id: l._id || l.id,
           name: l.name,
           designation: l.designation,
-          totalDuties: ld.length,
-          pending: ld.filter(d => d.availability === 'Pending').length,
-          available: ld.filter(d => d.availability === 'Available').length,
-          unavailable: ld.filter(d => d.availability === 'Not Available').length,
-          activeDays: dates.size,
-          rooms: [...new Set(ld.map(d => d.examScheduleId?.hallNo).filter(Boolean))].slice(0, 4),
+          totalDuties: summary?.totalDuties || 0,
+          pending: summary?.pending || 0,
+          available: summary?.available || 0,
+          unavailable: summary?.unavailable || 0,
+          activeDays: summary?.activeDays.size || 0,
+          rooms: summary ? [...summary.rooms].slice(0, 4) : [],
         }
       })
       .sort((a, b) => b.totalDuties - a.totalDuties || a.name.localeCompare(b.name))
-  }, [duties, filters.lecturerId, lecturers])
+  }, [dutiesByLecturer, filters.lecturerId, lecturers])
 
   const assignedCount = roomSeatingPlan.filter(i => i.assigned).length
   const unassignedCount = roomSeatingPlan.length - assignedCount
@@ -934,15 +968,11 @@ export default function AdminInvigilationDashboardPage() {
   
 
   const exportLecturerWisePdf = () => {
-    console.log('allDuties at export time:', allDuties.length)
-
     const uniqueDates = [
       ...new Set(
         allDuties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
       ),
     ].sort()
-    console.log('uniqueDates:', uniqueDates) 
-    console.log('allDuties sample:', allDuties[0]?.examScheduleId)
 
     if (uniqueDates.length === 0) {
       toast.error('No duty data available to export')

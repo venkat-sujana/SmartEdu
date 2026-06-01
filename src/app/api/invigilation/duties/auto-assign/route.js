@@ -71,7 +71,7 @@ export async function POST(req) {
 
     // ── Parallel fetch ─────────────────────────────────────────────────────────
     // ✅ ఇలా మార్చండి
-const [allExams, lecturers, existingDuties, availabilityList, historicalAssignments] = await Promise.all([
+const [allExams, lecturers, existingDuties, availabilityList] = await Promise.all([
   
   ExamSchedule.find(examFilter).sort({ date: 1, session: 1 }).lean(),
 
@@ -89,10 +89,6 @@ const [allExams, lecturers, existingDuties, availabilityList, historicalAssignme
     ...(user.collegeId ? { collegeId: user.collegeId } : {}),
   }).select('lecturerId date session status').lean(),
 
-  
-  DutyAssignment.find({
-    ...(user.collegeId ? { collegeId: user.collegeId } : {}),
-  }).select('examScheduleId lecturerId').lean(),
 ])
 
     if (lecturers.length === 0) {
@@ -137,7 +133,7 @@ for (const item of availabilityList) {
 
 const historicalLoadMap = new Map()
 
-historicalAssignments.forEach(d => {
+existingDuties.forEach(d => {
 
   const lid = String(d.lecturerId)
 

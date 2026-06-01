@@ -101,8 +101,6 @@ if (examType) {
   filter.examType = examType
 }
 
-console.log('Exam Filter:', filter)
-
   const exams = await ExamSchedule.find(filter)
     .sort({ date: 1, session: 1 })
     .populate("createdBy", "name role")
@@ -258,10 +256,6 @@ export async function DELETE(req) {
     }
 
     const schedules = await ExamSchedule.find(filter).select("_id").lean();
-    console.log(
-  'schedules count =',
-  schedules.length
-)
     if (schedules.length === 0) {
       return NextResponse.json({ message: "No exam schedules found to delete", deletedCount: 0 });
     }
