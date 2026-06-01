@@ -1775,10 +1775,22 @@ export default function AdminInvigilationDashboardPage() {
                       <Search size={14} />
                       Apply
                     </Btn>
+
+                    <Field label="Max Duties">
+                      <Input
+                        type="number"
+                        min="1"
+                        value={scheduleForm.maxDutiesPerLecturer}
+                        onChange={e => setScheduleForm(s => ({ ...s, maxDutiesPerLecturer: e.target.value }))}
+                        style={{ width: '80px' }}
+                      />
+                    </Field>
                     <Btn variant="primary" onClick={onAutoAssign} loading={autoLoading}>
                       <Zap size={14} />
                       Auto Assign
                     </Btn>
+
+
                     <div className="ml-auto flex gap-2">
                       <Btn variant="outline" size="sm" onClick={exportExcel}>
                         <FileSpreadsheet size={13} />

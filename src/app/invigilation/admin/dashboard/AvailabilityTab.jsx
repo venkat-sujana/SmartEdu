@@ -66,7 +66,7 @@ function StatusCell({ status, onClick, loading }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function AvailabilityTab() {
-
+const [applying, setApplying] = useState(false)
   const [lecturers, setLecturers]       = useState([])  // ✅ internal fetch
   const [examSlots, setExamSlots]       = useState([])
   const [availMap, setAvailMap]         = useState({})
@@ -229,10 +229,15 @@ console.log('Slots:', slots)
 
 
 const applyBulkAvailability = async () => {
+  
   if (!selectedLecturer) { toast.error('Select lecturer'); return }
   if (!examType) { toast.error('Select exam type'); return }
   if (!fromDate || !toDate) { toast.error('Select date range'); return }
 let totalSaved = 0
+
+setApplying(true)
+
+
 
   try {
     const targetLecturers = selectedLecturer === 'ALL'
@@ -265,13 +270,18 @@ let totalSaved = 0
   totalSaved++
 }
 
- 
-    }
+
+
+
+
+ }
 toast.success(`${totalSaved} availability records saved`)
     loadAll()
   } catch (err) {
+    setApplying(false)
     toast.error(err.message || 'Bulk update failed')
   }
+  setApplying(false)
   toast.success(`${totalSaved} availability records saved`)
 setPreviewMap({})  // ← clear చేయండి
 loadAll()
@@ -334,6 +344,15 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
+      {applying && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div className="flex flex-col items-center gap-4 rounded-2xl bg-white px-10 py-8 shadow-2xl">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+      <p className="text-sm font-bold text-slate-700">Applying availability...</p>
+      <p className="text-xs text-slate-400">Please wait</p>
+    </div>
+  </div>
+)}
       {/* ── Stats ── */}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
@@ -482,11 +501,17 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
           </select>
 
           <button
-            onClick={applyBulkAvailability}
-            className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-          >
-            Apply
-          </button>
+  onClick={applyBulkAvailability}
+  disabled={applying}
+  className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 flex items-center gap-2"
+>
+  {applying ? (
+    <>
+      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+      Applying...
+    </>
+  ) : 'Apply'}
+</button>
         </div>
       </div>
 

@@ -89,7 +89,7 @@ const [allExams, lecturers, existingDuties, availabilityList, historicalAssignme
     ...(user.collegeId ? { collegeId: user.collegeId } : {}),
   }).select('lecturerId date session status').lean(),
 
-  // ✅ historicalAssignments.find → DutyAssignment.find గా మార్చండి
+  
   DutyAssignment.find({
     ...(user.collegeId ? { collegeId: user.collegeId } : {}),
   }).select('examScheduleId lecturerId').lean(),
