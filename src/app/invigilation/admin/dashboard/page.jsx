@@ -51,7 +51,6 @@ const EXAM_TYPES = [
   'PRE-PUBLIC-2',
 ]
 
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function formatDate(date) {
   if (!date) return ''
@@ -81,7 +80,9 @@ function formatExamType(examType) {
 }
 
 function normalizeDutyAvailability(value) {
-  const low = String(value || '').trim().toLowerCase()
+  const low = String(value || '')
+    .trim()
+    .toLowerCase()
   if (low === 'available') return 'available'
   return 'unavailable'
 }
@@ -389,8 +390,7 @@ export default function AdminInvigilationDashboardPage() {
   const [dutyForm, setDutyForm] = useState({ examScheduleId: '', lecturerId: '' })
   const [filters, setFilters] = useState({ fromDate: '', toDate: '', lecturerId: '', session: '' })
   const [allDuties, setAllDuties] = useState([])
-  const [selectedPdfExam, setSelectedPdfExam] =
-  useState('ALL')
+  const [selectedPdfExam, setSelectedPdfExam] = useState('ALL')
   // ── Data fetching (unchanged) ─────────────────────────────────────────────
   const fetchAll = useCallback(
     async (activeFilters = { date: '', lecturerId: '', session: '' }) => {
@@ -549,27 +549,24 @@ export default function AdminInvigilationDashboardPage() {
   }
 
   const loadDutyLoadData = async () => {
-  try {
-    const res = await fetch(
-      '/api/invigilation/reports/duty-load',
-      {
+    try {
+      const res = await fetch('/api/invigilation/reports/duty-load', {
         cache: 'no-store',
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setDutyLoadData(data.data || [])
       }
-    )
-
-    const data = await res.json()
-
-    if (res.ok) {
-      setDutyLoadData(data.data || [])
+    } catch (err) {
+      console.error(err)
     }
-  } catch (err) {
-    console.error(err)
   }
-}
 
-useEffect(() => {
-  loadDutyLoadData()
-}, [])
+  useEffect(() => {
+    loadDutyLoadData()
+  }, [])
 
   const onAutoAssign = async () => {
     setAutoLoading(true)
@@ -861,7 +858,6 @@ useEffect(() => {
     [duties]
   )
 
-
   const lecturerSummarySource = useMemo(
     () => (activeTab === 'lecturers' && allDuties.length > 0 ? allDuties : duties),
     [activeTab, allDuties, duties]
@@ -937,52 +933,34 @@ useEffect(() => {
   )
 
   const lecturerDutySummary = useMemo(() => {
-
     const vis = filters.lecturerId ? lecturers.filter(l => l.id === filters.lecturerId) : lecturers
 
     return vis
-     .map(l => {
+      .map(l => {
+        const summary = dutiesByLecturer.get(String(l._id || l.id))
 
-  const summary =
-    dutiesByLecturer.get(
-      String(l._id || l.id)
-    )
+        const dutyLoad = dutyLoadData.find(d => d.lecturerId === String(l._id || l.id))
 
-  const dutyLoad =
-    dutyLoadData.find(
-      d =>
-        d.lecturerId ===
-        String(l._id || l.id)
-    )
+        return {
+          id: l._id || l.id,
 
-  return {
+          name: l.name,
 
-    id: l._id || l.id,
+          designation: l.designation,
 
-    name: l.name,
+          totalDuties: summary?.totalDuties || 0,
 
-    designation: l.designation,
+          available: dutyLoad?.availableCount || 0,
 
-    totalDuties:
-      summary?.totalDuties || 0,
+          unavailable: dutyLoad?.unavailableCount || 0,
 
-    available:
-      dutyLoad?.availableCount || 0,
+          activeDays: summary?.activeDays.size || 0,
 
-    unavailable:
-      dutyLoad?.unavailableCount || 0,
-
-    activeDays:
-      summary?.activeDays.size || 0,
-
-    rooms:
-      summary
-        ? [...summary.rooms].slice(0, 4)
-        : [],
-  }
-})
+          rooms: summary ? [...summary.rooms].slice(0, 4) : [],
+        }
+      })
       .sort((a, b) => b.totalDuties - a.totalDuties || a.name.localeCompare(b.name))
-  }, [dutiesByLecturer, filters.lecturerId, lecturers,dutyLoadData])
+  }, [dutiesByLecturer, filters.lecturerId, lecturers, dutyLoadData])
 
   const assignedCount = roomSeatingPlan.filter(i => i.assigned).length
   const unassignedCount = roomSeatingPlan.length - assignedCount
@@ -1054,21 +1032,12 @@ useEffect(() => {
     { id: 'lecturers', label: 'Lecturers', icon: <UserSquare2 size={15} /> },
   ]
 
-  
-
   const exportLecturerWisePdf = () => {
-
-
     const pdfDuties =
-  selectedPdfExam === 'ALL'
-    ? allDuties
-    : allDuties.filter(
-        d =>
-          d.examScheduleId
-            ?.examType ===
-          selectedPdfExam
-      )
-    
+      selectedPdfExam === 'ALL'
+        ? allDuties
+        : allDuties.filter(d => d.examScheduleId?.examType === selectedPdfExam)
+
     const uniqueDates = [
       ...new Set(
         pdfDuties.filter(d => d.examScheduleId?.date).map(d => formatDate(d.examScheduleId.date))
@@ -1105,7 +1074,7 @@ useEffect(() => {
     // ── Title block ──────────────────────────────────────────────
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
-    
+
     const pageWidth = doc.internal.pageSize.getWidth()
 
     doc.setFontSize(14)
@@ -1126,11 +1095,8 @@ useEffect(() => {
       14,
       27
     )
-    
-    doc.text(`Exam Type : ${selectedPdfExam}`,
-     14,
-     32
-    )
+
+    doc.text(`Exam Type : ${selectedPdfExam}`, 14, 32)
 
     doc.setTextColor(0)
 
@@ -1182,7 +1148,6 @@ useEffect(() => {
 
         if (fn !== '—') total++
         if (an !== '—') total++
-      
 
         return [
           {
@@ -1304,6 +1269,16 @@ useEffect(() => {
   // ──────────────────────────────────────────────────────────────
 
   const exportLecturerIndividualPdf = () => {
+
+    const pdfDuties =
+  selectedPdfExam === 'ALL'
+    ? allDuties
+    : allDuties.filter(
+        d =>
+          d.examScheduleId?.examType ===
+          selectedPdfExam
+      )
+
     if (pdfDuties.length === 0) {
       toast.error('No duty data available to export')
       return
@@ -1926,7 +1901,9 @@ useEffect(() => {
                         type="number"
                         min="1"
                         value={scheduleForm.maxDutiesPerLecturer}
-                        onChange={e => setScheduleForm(s => ({ ...s, maxDutiesPerLecturer: e.target.value }))}
+                        onChange={e =>
+                          setScheduleForm(s => ({ ...s, maxDutiesPerLecturer: e.target.value }))
+                        }
                         style={{ width: '80px' }}
                       />
                     </Field>
@@ -1934,7 +1911,6 @@ useEffect(() => {
                       <Zap size={14} />
                       Auto Assign
                     </Btn>
-
 
                     <div className="ml-auto flex gap-2">
                       <Btn variant="outline" size="sm" onClick={exportExcel}>
@@ -2291,35 +2267,23 @@ useEffect(() => {
                         Export Excel
                       </Btn>
 
-<div className="flex gap-2">
-  <select
-  value={selectedPdfExam}
-  onChange={e =>
-    setSelectedPdfExam(e.target.value)
-  }
->
-  <option value="ALL">
-    All Exams
-  </option>
+                      <div className="flex gap-2">
+                        <select
+                          value={selectedPdfExam}
+                          onChange={e => setSelectedPdfExam(e.target.value)}
+                        >
+                          <option value="ALL">All Exams</option>
 
-  {EXAM_TYPES.map(type => (
-    <option
-      key={type}
-      value={type}
-    >
-      {type}
-    </option>
-  ))}
-</select>
+                          {EXAM_TYPES.map(type => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
 
-  <button
-    onClick={exportLecturerWisePdf}
-  >
-    Export PDF
-  </button>
-</div>
+                        <button onClick={exportLecturerWisePdf}>Export PDF</button>
+                      </div>
 
-                      
                       <Btn variant="outline" onClick={exportLecturerWisePdf}>
                         <FileText size={14} />
                         Lecturer-Wise PDF
