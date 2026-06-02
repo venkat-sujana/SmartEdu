@@ -64,6 +64,10 @@ export default function InvigilationSidebar({ role }) {
 
       label: 'Duty Load Dashboard',
     },
+    {
+      href: '/invigilation/admin/analytics',
+     label: 'Exam Analytics',
+},
   ]
 
   
