@@ -36,13 +36,13 @@ export async function POST(req) {
 
     const body = await req.json().catch(() => ({}))
 
-    const date                 = body?.date || ''
-    const fromDate             = body?.fromDate || ''
-    const toDate               = body?.toDate || ''
-    const session              = body?.session || ''
-    const examType             = body?.examType || ''
+    const date = body?.date || ''
+    const fromDate = body?.fromDate || ''
+    const toDate = body?.toDate || ''
+    const session = body?.session || ''
+    const examType = body?.examType || ''
     const maxDutiesPerLecturer = Number(body?.maxDutiesPerLecturer || 0)
-    const sameDayNoRepeat      = body?.sameDayNoRepeat !== false
+    const sameDayNoRepeat = body?.sameDayNoRepeat !== false
 
     // ── Exam filter ────────────────────────────────────────────────────────────
     const examFilter = {}
@@ -50,7 +50,7 @@ export async function POST(req) {
 
     if (date) {
       const start = new Date(date)
-      const end   = new Date(date)
+      const end = new Date(date)
       end.setDate(end.getDate() + 1)
       examFilter.date = { $gte: start, $lt: end }
     }
@@ -63,44 +63,46 @@ export async function POST(req) {
       examFilter.date = { $gte: start, $lte: end }
     }
 
-    if (session)  examFilter.session  = session
+    if (session) examFilter.session = session
     if (examType) examFilter.examType = examType
-
-
-
 
     // ── Parallel fetch ─────────────────────────────────────────────────────────
     // ✅ ఇలా మార్చండి
-const [allExams, lecturers, existingDuties, availabilityList] = await Promise.all([
-  
-  ExamSchedule.find(examFilter).sort({ date: 1, session: 1 }).lean(),
+    const [allExams, lecturers, existingDuties, availabilityList] = await Promise.all([
+      ExamSchedule.find(examFilter).sort({ date: 1, session: 1 }).lean(),
 
-  User.find({
-    role: 'lecturer',
-    ...(user.collegeId ? { collegeId: user.collegeId } : {}),
-  }).select('_id name').lean(),
+      User.find({
+        role: 'lecturer',
+        ...(user.collegeId ? { collegeId: user.collegeId } : {}),
+      })
+        .select('_id name')
+        .lean(),
 
-  DutyAssignment.find({
-    ...(user.collegeId ? { collegeId: user.collegeId } : {}),
-  }).populate('examScheduleId', 'date session').select('examScheduleId lecturerId').lean(),
+      DutyAssignment.find({
+        ...(user.collegeId ? { collegeId: user.collegeId } : {}),
+      })
+        .populate('examScheduleId', 'date session')
+        .select('examScheduleId lecturerId')
+        .lean(),
 
-  LecturerAvailability.find({
-    status: 'available',
-    ...(user.collegeId ? { collegeId: user.collegeId } : {}),
-  }).select('lecturerId date session status').lean(),
 
-])
+        
+
+      LecturerAvailability.find({
+  status: 'unavailable',
+  ...(user.collegeId ? { collegeId: user.collegeId } : {}),
+}).select('lecturerId date session status').lean(),
+    ])
+
+
 
     if (lecturers.length === 0) {
       return NextResponse.json({ message: 'No lecturers available', assigned: 0, skipped: 0 })
     }
 
-
-
-
     // ── Already assigned exam IDs ──────────────────────────────────────────────
     const assignedExamIds = new Set(existingDuties.map(d => String(d.examScheduleId?._id)))
-    const targetExams     = allExams.filter(exam => !assignedExamIds.has(String(exam._id)))
+    const targetExams = allExams.filter(exam => !assignedExamIds.has(String(exam._id)))
 
     if (targetExams.length === 0) {
       return NextResponse.json({ message: 'All exams already assigned', assigned: 0, skipped: 0 })
@@ -108,52 +110,39 @@ const [allExams, lecturers, existingDuties, availabilityList] = await Promise.al
 
     // ── Load tracker ───────────────────────────────────────────────────────────
     const loadByLecturer = new Map(lecturers.map(l => [String(l._id), 0]))
-    const clashMap       = new Map()
+    const clashMap = new Map()
 
     // ── ✅ Unavailability map: lecturerId → Set of 'dateKey|session' ───────────
-    const availMap = new Map()
-
+    const unavailMap = new Map()
 for (const item of availabilityList) {
-
   const lid = String(item.lecturerId)
-
   const dateKey = toDateKey(item.date)
-
   const slotKey = `${dateKey}|${item.session}`
-
-  if (!availMap.has(lid)) {
-    availMap.set(lid, new Set())
+  if (!unavailMap.has(lid)) {
+    unavailMap.set(lid, new Set())
   }
-
-  availMap.get(lid).add(slotKey)
+  unavailMap.get(lid).add(slotKey)
 }
 
+    // ── Historical Load Tracker ─────────────────────────
 
-// ── Historical Load Tracker ─────────────────────────
+    const historicalLoadMap = new Map()
 
-const historicalLoadMap = new Map()
+    existingDuties.forEach(d => {
+      const lid = String(d.lecturerId)
 
-existingDuties.forEach(d => {
-
-  const lid = String(d.lecturerId)
-
-  historicalLoadMap.set(
-    lid,
-    (historicalLoadMap.get(lid) || 0) + 1
-  )
-})
+      historicalLoadMap.set(lid, (historicalLoadMap.get(lid) || 0) + 1)
+    })
 
     // ── Existing duty load & clash tracking ────────────────────────────────────
     for (const d of existingDuties) {
-      const lid  = String(d.lecturerId)
+      const lid = String(d.lecturerId)
       const exam = d.examScheduleId
       if (!exam?.date || !exam?.session) continue
 
       loadByLecturer.set(lid, (loadByLecturer.get(lid) || 0) + 1)
 
-      const key = sameDayNoRepeat
-        ? toDateKey(exam.date)
-        : `${toDateKey(exam.date)}|${exam.session}`
+      const key = sameDayNoRepeat ? toDateKey(exam.date) : `${toDateKey(exam.date)}|${exam.session}`
 
       if (!clashMap.has(lid)) clashMap.set(lid, new Set())
       clashMap.get(lid).add(key)
@@ -161,23 +150,21 @@ existingDuties.forEach(d => {
 
     // ── Main assignment loop ───────────────────────────────────────────────────
     const createdAssignments = []
-    const skippedExams       = []
+    const skippedExams = []
 
     for (const exam of targetExams) {
       const examDateKey = toDateKey(exam.date)
-      const slotKey     = `${examDateKey}|${exam.session}`
+      const slotKey = `${examDateKey}|${exam.session}`
 
       const candidates = lecturers.filter(l => {
-        const lid         = String(l._id)
+        const lid = String(l._id)
         const currentLoad = loadByLecturer.get(lid) || 0
 
         // 1. Max duties limit
         if (maxDutiesPerLecturer > 0 && currentLoad >= maxDutiesPerLecturer) return false
 
         // 2. ✅ Unavailability check — lecturer ఈ date/session కి unavailable గా mark చేశారా?
-        if (!availMap.get(lid)?.has(slotKey)) {return false
-}
-
+        if (unavailMap.get(lid)?.has(slotKey)) { return false }
         // 3. Same-day / same-slot clash check
         if (hasDateClash(clashMap.get(lid), exam, sameDayNoRepeat)) return false
 
@@ -187,7 +174,7 @@ existingDuties.forEach(d => {
       if (candidates.length === 0) {
         skippedExams.push({
           examScheduleId: exam._id,
-          date:    examDateKey,
+          date: examDateKey,
           session: exam.session,
           reason: sameDayNoRepeat
             ? 'No free lecturer available for this date'
@@ -226,14 +213,14 @@ existingDuties.forEach(d => {
         return String(a._id).localeCompare(String(b._id))
       })
 
-      const selected   = candidates[0]
+      const selected = candidates[0]
       const selectedId = String(selected._id)
 
       const created = await DutyAssignment.create({
         examScheduleId: exam._id,
-        lecturerId:     selected._id,
-        assignedBy:     user._id,
-        availability:   'Pending',
+        lecturerId: selected._id,
+        assignedBy: user._id,
+        availability: 'Pending',
       })
 
       createdAssignments.push(created)
@@ -246,16 +233,13 @@ existingDuties.forEach(d => {
     }
 
     return NextResponse.json({
-      message:  'Auto allocation completed',
+      message: 'Auto allocation completed',
       assigned: createdAssignments.length,
-      skipped:  skippedExams.length,
+      skipped: skippedExams.length,
       skippedExams,
       rules: { sameDayNoRepeat, maxDutiesPerLecturer },
     })
   } catch (err) {
-    return NextResponse.json(
-      { message: err.message || 'Auto allocation failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ message: err.message || 'Auto allocation failed' }, { status: 500 })
   }
 }

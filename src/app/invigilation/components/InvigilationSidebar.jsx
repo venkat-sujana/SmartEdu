@@ -26,42 +26,30 @@ export default function InvigilationSidebar({ role }) {
   const adminLinks = [
     {
       href: '/invigilation/admin/dashboard',
-
       label: 'Admin Dashboard',
     },
 
     {
       href: '/invigilation/admin/rooms',
-
       label: 'Room Management',
     },
 
     {
       href: '/invigilation/admin/lecturers',
-
       label: 'Lecturers',
     },
 
     {
       href: '/invigilation/admin/exams',
-
       label: 'Exam Schedule',
     },
 
     {
-      href: '/invigilation/admin/duties',
-
-      label: 'Duty Allocation',
-    },
-
-    {
       href: '/invigilation/admin/availability',
-
       label: 'Lecturer Availability',
     },
     {
       href: '/invigilation/admin/dashboard/duty-load',
-
       label: 'Duty Load Dashboard',
     },
     {
@@ -75,31 +63,26 @@ export default function InvigilationSidebar({ role }) {
   const lecturerLinks = [
     {
       href: '/invigilation/lecturer/dashboard',
-
       label: 'Lecturer Dashboard',
     },
 
     {
       href: '/invigilation/lecturer/duties',
-
       label: 'Assigned Duties',
     },
 
     {
       href: '/invigilation/lecturer/availability',
-
       label: 'Manage Availability',
     },
 
     {
       href: '/invigilation/lecturer/summary',
-
       label: 'Monthly Summary',
     },
   ]
 
   const links = role === 'admin' ? adminLinks : lecturerLinks
-
   return (
     <aside className="w-full rounded-xl border bg-white p-4 shadow-sm md:w-64">
       <div className="mb-4">

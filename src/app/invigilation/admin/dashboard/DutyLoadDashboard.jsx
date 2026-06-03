@@ -1,6 +1,5 @@
 //src/app/invigilation/admin/dashboard/DutyLoadDashboard.jsx
 'use client'
-
 import { useEffect, useState } from 'react'
 import { Users, Award } from 'lucide-react'
 import jsPDF from 'jspdf'

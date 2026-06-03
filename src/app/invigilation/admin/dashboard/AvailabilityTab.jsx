@@ -220,52 +220,44 @@ const [applying, setApplying] = useState(false)
 
 
 
+
+
+
+
+
 const applyBulkAvailability = async () => {
-  
   if (!selectedLecturer) { toast.error('Select lecturer'); return }
   if (!examType) { toast.error('Select exam type'); return }
   if (!fromDate || !toDate) { toast.error('Select date range'); return }
-const updates = Object.entries(previewMap)
-if (updates.length === 0) { toast.error('No availability changes to apply'); return }
-let totalSaved = 0
 
-setApplying(true)
+  const updates = Object.entries(previewMap)
+  if (updates.length === 0) { toast.error('No availability changes to apply'); return }
 
-
-
+  setApplying(true)
   try {
-      for (const [key, status] of updates) {
-  const [lid, date, session] = key.split('_')
-  const res = await fetch('/api/invigilation/availability', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      lecturerId: lid,
-      date,
-      session,
-      status,
-      reason: '',
-    }),
-  })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message)
-  totalSaved++
-}
+    // ✅ అన్నీ ఒకే call లో
+    const records = updates.map(([key, status]) => {
+      const [lid, date, session] = key.split('_')
+      return { lecturerId: lid, date, session, status }
+    })
 
+    const res = await fetch('/api/invigilation/availability', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ records }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.message)
 
-
-
-toast.success(`${totalSaved} availability records saved`)
+    toast.success(`${data.count} availability records saved`)
+    setPreviewMap({})
     await loadAll()
   } catch (err) {
     toast.error(err.message || 'Bulk update failed')
   } finally {
     setApplying(false)
   }
-setPreviewMap({})  // ← clear చేయండి
-   
 }
-
 
 
 

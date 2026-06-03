@@ -79,3 +79,34 @@ export async function POST(req) {
     )
   }
 }
+
+export async function PUT(req) {
+  const { user, error } = await requireInvigilationAuth(req, ['admin', 'lecturer'])
+  if (error) return error
+
+  try {
+    await connectInvigilationDB()
+    const { records } = await req.json()
+
+    if (!records?.length) {
+      return NextResponse.json({ message: 'No records', data: [] })
+    }
+
+    const ops = records.map(({ lecturerId, date, session, status }) => ({
+      updateOne: {
+        filter: { lecturerId, date: new Date(date), session },
+        update: { $set: { lecturerId, date: new Date(date), session, status, reason: '' } },
+        upsert: true,
+      },
+    }))
+
+    await LecturerAvailability.bulkWrite(ops)
+
+    return NextResponse.json({ message: 'Saved', count: ops.length })
+  } catch (err) {
+    return NextResponse.json(
+      { message: err.message || 'Failed' },
+      { status: 500 }
+    )
+  }
+}

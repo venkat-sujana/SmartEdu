@@ -268,7 +268,7 @@ function AvailChip({ value }) {
   return (
     <Chip color="amber">
       <AlertCircle size={10} />
-      {value}
+      Available
     </Chip>
   )
 }
@@ -984,7 +984,12 @@ export default function AdminInvigilationDashboardPage() {
         i.block,
         i.capacity || '-',
         i.lecturerName || '-',
-        i.assigned ? i.availability || 'Pending' : 'Unassigned',
+
+        i.assigned
+          ? i.availability === 'unavailable'
+            ? 'Unavailable'
+            : 'Available'
+          : 'Unassigned',
       ]),
       styles: { fontSize: 8, cellPadding: 2 },
       headStyles: { fillColor: [5, 150, 105], textColor: 255 },
@@ -1269,15 +1274,10 @@ export default function AdminInvigilationDashboardPage() {
   // ──────────────────────────────────────────────────────────────
 
   const exportLecturerIndividualPdf = () => {
-
     const pdfDuties =
-  selectedPdfExam === 'ALL'
-    ? allDuties
-    : allDuties.filter(
-        d =>
-          d.examScheduleId?.examType ===
-          selectedPdfExam
-      )
+      selectedPdfExam === 'ALL'
+        ? allDuties
+        : allDuties.filter(d => d.examScheduleId?.examType === selectedPdfExam)
 
     if (pdfDuties.length === 0) {
       toast.error('No duty data available to export')
@@ -2191,11 +2191,18 @@ export default function AdminInvigilationDashboardPage() {
                                 {item.lecturerName || <span className="text-slate-400">—</span>}
                               </td>
                               <td className="px-5 py-3">
-                                {item.assigned ? (
-                                  <AvailChip value={item.availability || 'Pending'} />
-                                ) : (
-                                  <Chip color="rose">Unassigned</Chip>
-                                )}
+                              {item.assigned ? (
+                                <AvailChip
+                                  value={
+                                    item.availability &&
+                                    item.availability.toLowerCase() !== 'pending'
+                                      ? item.availability
+                                      : 'available'
+                                  }
+                                />
+                              ) : (
+                                <Chip color="rose">Unassigned</Chip>
+                              )}
                               </td>
                               <td className="px-5 py-3">
                                 <div className="flex gap-1">
