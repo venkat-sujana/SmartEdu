@@ -1,34 +1,33 @@
 //src/app/dashboards/components/GroupDashboardPage.jsx
-"use client";
+'use client'
 
-import { useState } from "react";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import useSWR from "swr";
-import { CalendarCheck2, LayoutDashboard, UserPlus, Users2 } from "lucide-react";
-import TodayAbsenteesTable from "@/components/attendance/TodayAbsenteesTable";
-import AttendanceForm from "@/components/attendance/AttendanceForm";
-import IndividualReport from "@/components/attendance/IndividualReport";
-import DashboardTogglePanel from "@/components/dashboard/DashboardTogglePanel";
-import ExternalLinks from "@/components/ExternalLinks";
-import DashboardFooter from "@/components/layout/Footer";
-import GroupAttendanceSummary from "@/components/attendance/GroupAttendanceSummary";
-import GroupShortageSummary from "@/components/attendance/GroupShortageSummary";
-import LecturerInfoCard from "@/components/dashboard/LecturerInfoCard";
-import GroupAttendanceCard from "@/components/OverallAttendanceMatrixCard/GroupAttendanceCard";
-import GroupExamDashboardPanel from "@/components/exams/GroupExamDashboardPanel";
-import GroupStudentTable from "@/components/tables/GroupStudentTable";
-import { getGroupTheme } from "@/components/dashboard/groupTheme";
-import ConsecutiveAbsenteesCard from "@/components/attendance/cards/ConsecutiveAbsenteesCard";
+import { useState } from 'react'
+import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import useSWR from 'swr'
+import { CalendarCheck2, LayoutDashboard, UserPlus, Users2 } from 'lucide-react'
+import TodayAbsenteesTable from '@/components/attendance/TodayAbsenteesTable'
+import AttendanceForm from '@/components/attendance/AttendanceForm'
+import IndividualReport from '@/components/attendance/IndividualReport'
+import DashboardTogglePanel from '@/components/dashboard/DashboardTogglePanel'
+import ExternalLinks from '@/components/ExternalLinks'
+import DashboardFooter from '@/components/layout/Footer'
+import GroupAttendanceSummary from '@/components/attendance/GroupAttendanceSummary'
+import GroupShortageSummary from '@/components/attendance/GroupShortageSummary'
+import LecturerInfoCard from '@/components/dashboard/LecturerInfoCard'
+import GroupAttendanceCard from '@/components/OverallAttendanceMatrixCard/GroupAttendanceCard'
+import GroupExamDashboardPanel from '@/components/exams/GroupExamDashboardPanel'
+import GroupStudentTable from '@/components/tables/GroupStudentTable'
+import { getGroupTheme } from '@/components/dashboard/groupTheme'
+import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
 
-
-const fetcher = async (url) => {
-  const response = await fetch(url);
+const fetcher = async url => {
+  const response = await fetch(url)
   if (!response.ok) {
-    throw new Error("Failed to fetch data");
+    throw new Error('Failed to fetch data')
   }
-  return response.json();
-};
+  return response.json()
+}
 
 export default function GroupDashboardPage({
   groupName,
@@ -37,50 +36,47 @@ export default function GroupDashboardPage({
   deskLabel,
   includeExternalLinks = false,
   includeEditAttendance = false,
-  statusDescription = "Use quick actions below to mark attendance and open monthly analytics.",
+  statusDescription = 'Use quick actions below to mark attendance and open monthly analytics.',
   overviewDescription,
 }) {
-  const { data: session } = useSession();
-  const user = session?.user;
-  const [showAttendance, setShowAttendance] = useState(false);
-  const [studentTable, setStudentTable] = useState(false);
-  const [showTodayAbsentees, setShowTodayAbsentees] = useState(false);
-  const [monthlyAttendance, setMonthlyAttendance] = useState(false);
-  const [showExamResults, setShowExamResults] = useState(false);
-  const [editAttendance, setEditAttendance] = useState(false);
+  const { data: session } = useSession()
+  const user = session?.user
+  const [showAttendance, setShowAttendance] = useState(false)
+  const [studentTable, setStudentTable] = useState(false)
+  const [showTodayAbsentees, setShowTodayAbsentees] = useState(false)
+  const [monthlyAttendance, setMonthlyAttendance] = useState(false)
+  const [showExamResults, setShowExamResults] = useState(false)
+  const [editAttendance, setEditAttendance] = useState(false)
 
-  const collegeName = user?.collegeName || "College";
+  const collegeName = user?.collegeName || 'College'
   const { data: collegeDetails } = useSWR(
     user?.collegeId ? `/api/colleges/${user.collegeId}` : null,
     fetcher
-  );
+  )
   const footerAddress = [collegeDetails?.address, collegeDetails?.district]
     .filter(Boolean)
-    .join(", ");
-  const footerPhone = collegeDetails?.phone || "";
-  const footerEmail = collegeDetails?.email || "";
-  const years = ["First Year", "Second Year"];
-  const theme = getGroupTheme(groupName);
+    .join(', ')
+  const footerPhone = collegeDetails?.phone || ''
+  const footerEmail = collegeDetails?.email || ''
+  const years = ['First Year', 'Second Year']
+  const theme = getGroupTheme(groupName)
 
-const { data: consecutiveData } = useSWR(
-  user?.collegeId
-    ? `/api/attendance/consecutive-absentees?collegeId=${user.collegeId}`
-    : null,
-  fetcher
-);
+  const { data: consecutiveData } = useSWR(
+    user?.collegeId ? `/api/attendance/consecutive-absentees?collegeId=${user.collegeId}` : null,
+    fetcher
+  )
 
-const consecutiveAbsentees =
-  (consecutiveData?.absentees || []).filter(
-    (student) => student.group === groupName
-  );
+  const consecutiveAbsentees = (consecutiveData?.absentees || []).filter(
+    student => student.group === groupName
+  )
 
-  const dashboardReturnUrl = returnUrl || `/dashboards/${routeSegment}`;
+  const dashboardReturnUrl = returnUrl || `/dashboards/${routeSegment}`
   const defaultOverview =
     overviewDescription ||
-    `Monitor attendance, absentees, and shortage analytics for ${groupName} batches.`;
-  const addStudentHref = `/register?group=${encodeURIComponent(groupName)}&returnUrl=${encodeURIComponent(dashboardReturnUrl)}`;
-  const marksPostingHref = `/exams-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`;
-  const examDashboardHref = `/exams?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`;
+    `Monitor attendance, absentees, and shortage analytics for ${groupName} batches.`
+  const addStudentHref = `/register?group=${encodeURIComponent(groupName)}&returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
+  const marksPostingHref = `/exams-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
+  const examDashboardHref = `/exams?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
 
   const editProps = includeEditAttendance
     ? {
@@ -88,7 +84,7 @@ const consecutiveAbsentees =
         onToggleEditAttendance: () => setEditAttendance(v => !v),
         editAttendanceContent: <IndividualReport groupName={groupName} showTitle={false} />,
       }
-    : {};
+    : {}
 
   return (
     <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-4 md:p-6`}>
@@ -106,86 +102,22 @@ const consecutiveAbsentees =
           </span>
         </div>
 
-        <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div
-            className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
-          >
-            <p className="text-xs tracking-wide text-slate-500 uppercase">Campus</p>
-            <p className="mt-1 truncate text-sm font-semibold text-slate-900">{collegeName}</p>
-            <div
-              className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}
-            >
-              <LayoutDashboard className="h-3.5 w-3.5" />
-              {deskLabel || `${groupName} Desk`}
-            </div>
-          </div>
-
-          <div
-            className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
-          >
-            <p className="text-xs tracking-wide text-slate-500 uppercase">Group</p>
-            <p className="mt-1 text-sm font-semibold text-slate-900">{groupName}</p>
-            <div
-              className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}
-            >
-              <Users2 className="h-3.5 w-3.5" />
-              First + Second Year
-            </div>
-          </div>
-
-          <div
-            className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
-          >
-            <p className="text-xs tracking-wide text-slate-500 uppercase">Workspaces</p>
-            <p className="mt-1 text-sm font-semibold text-slate-900">Attendance + Reports</p>
-            <div
-              className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}
-            >
-              <CalendarCheck2 className="h-3.5 w-3.5" />
-              Daily Operations
-            </div>
-          </div>
-
-          <div
-            className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
-          >
-            <p className="text-xs tracking-wide text-slate-500 uppercase">Status</p>
-            <p className="mt-1 text-sm font-semibold text-slate-900">Ready for attendance cycle</p>
-            <p className="mt-3 text-xs text-slate-600">{statusDescription}</p>
-          </div>
-        </section>
-
-        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[480px_1fr] 2xl:grid-cols-[560px_1fr]">
+        <section className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[480px_1fr] 2xl:grid-cols-[560px_1fr]">
           <div className="space-y-4">
             <div
               className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
             >
-              <div
-                className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-wide uppercase ${theme.pill}`}
-              >
-                Lecturer Panel
-              </div>
               <LecturerInfoCard user={user} groupName={groupName} />
             </div>
 
             <div
               className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
             >
-              <p className="mb-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                Group Attendance Snapshot
-              </p>
               <GroupAttendanceCard groupName={groupName} />
-            </div>
-
-            <div
-              className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
-            >
-              <p className="text-sm font-semibold text-slate-900">Dashboard Overview</p>
-              <p className="mt-1 text-sm text-slate-600">{defaultOverview}</p>
             </div>
           </div>
 
-          <div className={`rounded-xl border ${theme.softBorder} bg-white p-4 shadow-sm`}>
+          <div className="self-start">
             <ConsecutiveAbsenteesCard
               data={consecutiveAbsentees}
               title={`${groupName} Consecutive Absentees`}
@@ -205,8 +137,11 @@ const consecutiveAbsentees =
               </div>
             )}
 
+
+
+
             <div className="mb-4 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-left sm:text-3xl">
+              <h3 >
                 Operations Hub
               </h3>
               <Link
@@ -231,6 +166,9 @@ const consecutiveAbsentees =
                 Exam Dashboard
               </Link>
             </div>
+
+
+
 
             <DashboardTogglePanel
               showAttendance={showAttendance}
@@ -341,7 +279,3 @@ const consecutiveAbsentees =
     </div>
   )
 }
-
-
-
-

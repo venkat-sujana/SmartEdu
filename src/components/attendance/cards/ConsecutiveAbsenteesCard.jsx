@@ -24,9 +24,9 @@ export default function ConsecutiveAbsenteesCard({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-200 p-5">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-2 flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-800">
           ⚠️ {title}
         </h2>
@@ -52,15 +52,15 @@ export default function ConsecutiveAbsenteesCard({
 
       {/* Empty State */}
       {!loading && data.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-green-600 font-medium">
-            🎉 No Consecutive Absentees
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            All students are attending regularly.
-          </p>
-        </div>
-      )}
+  <div className="py-3 text-center">
+    <p className="font-medium text-green-600">
+      🎉 No Consecutive Absentees
+    </p>
+    <p className="mt-1 text-sm text-gray-500">
+      All students are attending regularly.
+    </p>
+  </div>
+)}
 
       {/* Student List */}
       {!loading && data.length > 0 && (
