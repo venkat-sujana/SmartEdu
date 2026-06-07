@@ -102,29 +102,18 @@ export default function GroupDashboardPage({
           </span>
         </div>
 
-        <section className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[480px_1fr] 2xl:grid-cols-[560px_1fr]">
-          <div className="space-y-4">
-            <div
-              className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
-            >
-              <LecturerInfoCard user={user} groupName={groupName} />
-            </div>
+        <section className="space-y-4">
+          <LecturerInfoCard user={user} groupName={groupName} />
 
-            <div
-              className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
-            >
-              <GroupAttendanceCard groupName={groupName} />
-            </div>
-          </div>
+          
+          <ConsecutiveAbsenteesCard
+            data={consecutiveAbsentees}
+            title={`${groupName} Consecutive Absentees`}
+            loading={!consecutiveData}
+            showViewAll={false}
+          />
+          <GroupAttendanceCard groupName={groupName} />
 
-          <div className="self-start">
-            <ConsecutiveAbsenteesCard
-              data={consecutiveAbsentees}
-              title={`${groupName} Consecutive Absentees`}
-              loading={!consecutiveData}
-              showViewAll={false}
-            />
-          </div>
 
           <div
             className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm md:p-6`}
@@ -137,38 +126,32 @@ export default function GroupDashboardPage({
               </div>
             )}
 
-
-
-
-            <div className="mb-4 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
-              <h3 >
-                Operations Hub
-              </h3>
-              <Link
-                href={addStudentHref}
-                className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-              >
-                <UserPlus className="h-4 w-4" />
-                Add Student
-              </Link>
-              <Link
-                href={marksPostingHref}
-                className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-              >
-                <UserPlus className="h-4 w-4" />
-                Post Marks
-              </Link>
-              <Link
-                href={examDashboardHref}
-                className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-              >
-                <UserPlus className="h-4 w-4" />
-                Exam Dashboard
-              </Link>
+            <div className="mb-6 border-b border-slate-200 pb-4">
+              <h2 className="text-2xl font-bold text-slate-900">Operations Hub</h2>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link
+                  href={addStudentHref}
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Add Student
+                </Link>
+                <Link
+                  href={marksPostingHref}
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Post Marks
+                </Link>
+                <Link
+                  href={examDashboardHref}
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Exam Dashboard
+                </Link>
+              </div>
             </div>
-
-
-
 
             <DashboardTogglePanel
               showAttendance={showAttendance}

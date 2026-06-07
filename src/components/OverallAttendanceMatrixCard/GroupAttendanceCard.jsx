@@ -1,8 +1,6 @@
 //src/components/OverallAttendanceMatrixCard/GroupAttendanceCard.jsx
 'use client'
-
 import React from 'react'
-
 import useSWR from 'swr'
 import { Activity, CheckCircle2, Clock3, Users, XCircle } from 'lucide-react'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
@@ -13,7 +11,7 @@ const sessions = ['FN', 'AN']
 
 const fetcher = url => fetch(url).then(res => res.json())
 
-export default function GroupAttendanceCard({ groupName }) {
+export default function GroupAttendanceCard({ groupName,compact = false }) {
   const normalizedGroupName = normalizeAttendanceGroup(groupName)
   const theme = getGroupTheme(normalizedGroupName)
   const { data: absApiData } = useSWR('/api/attendance/today-absentees', fetcher)
@@ -189,6 +187,8 @@ export default function GroupAttendanceCard({ groupName }) {
     </section>
   )
 }
+  
+
 
 function TopStat({ icon, label, value }) {
   return (
