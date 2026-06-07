@@ -19,6 +19,8 @@ import GroupAttendanceCard from "@/components/OverallAttendanceMatrixCard/GroupA
 import GroupExamDashboardPanel from "@/components/exams/GroupExamDashboardPanel";
 import GroupStudentTable from "@/components/tables/GroupStudentTable";
 import { getGroupTheme } from "@/components/dashboard/groupTheme";
+import ConsecutiveAbsenteesCard from "@/components/attendance/cards/ConsecutiveAbsenteesCard";
+
 
 const fetcher = async (url) => {
   const response = await fetch(url);
@@ -59,6 +61,19 @@ export default function GroupDashboardPage({
   const footerEmail = collegeDetails?.email || "";
   const years = ["First Year", "Second Year"];
   const theme = getGroupTheme(groupName);
+
+const { data: consecutiveData } = useSWR(
+  user?.collegeId
+    ? `/api/attendance/consecutive-absentees?collegeId=${user.collegeId}`
+    : null,
+  fetcher
+);
+
+const consecutiveAbsentees =
+  (consecutiveData?.absentees || []).filter(
+    (student) => student.group === groupName
+  );
+
   const dashboardReturnUrl = returnUrl || `/dashboards/${routeSegment}`;
   const defaultOverview =
     overviewDescription ||
@@ -78,9 +93,11 @@ export default function GroupDashboardPage({
   return (
     <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-4 md:p-6`}>
       <div className="mx-auto max-w-7xl space-y-4">
-        <div className={`flex items-center justify-between rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} px-4 py-3 shadow-sm`}>
+        <div
+          className={`flex items-center justify-between rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} px-4 py-3 shadow-sm`}
+        >
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Lecturer Dashboard</p>
+            <p className="text-xs tracking-wide text-slate-500 uppercase">Lecturer Dashboard</p>
             <h1 className="text-lg font-semibold text-slate-900">{groupName} Group Operations</h1>
             <p className="text-sm text-slate-600">{collegeName}</p>
           </div>
@@ -90,35 +107,49 @@ export default function GroupDashboardPage({
         </div>
 
         <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Campus</p>
+          <div
+            className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
+          >
+            <p className="text-xs tracking-wide text-slate-500 uppercase">Campus</p>
             <p className="mt-1 truncate text-sm font-semibold text-slate-900">{collegeName}</p>
-            <div className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}>
+            <div
+              className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}
+            >
               <LayoutDashboard className="h-3.5 w-3.5" />
               {deskLabel || `${groupName} Desk`}
             </div>
           </div>
 
-          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Group</p>
+          <div
+            className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
+          >
+            <p className="text-xs tracking-wide text-slate-500 uppercase">Group</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">{groupName}</p>
-            <div className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}>
+            <div
+              className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}
+            >
               <Users2 className="h-3.5 w-3.5" />
               First + Second Year
             </div>
           </div>
 
-          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Workspaces</p>
+          <div
+            className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
+          >
+            <p className="text-xs tracking-wide text-slate-500 uppercase">Workspaces</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">Attendance + Reports</p>
-            <div className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}>
+            <div
+              className={`mt-3 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${theme.pill}`}
+            >
               <CalendarCheck2 className="h-3.5 w-3.5" />
               Daily Operations
             </div>
           </div>
 
-          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Status</p>
+          <div
+            className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
+          >
+            <p className="text-xs tracking-wide text-slate-500 uppercase">Status</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">Ready for attendance cycle</p>
             <p className="mt-3 text-xs text-slate-600">{statusDescription}</p>
           </div>
@@ -126,36 +157,57 @@ export default function GroupDashboardPage({
 
         <section className="grid grid-cols-1 gap-4 xl:grid-cols-[480px_1fr] 2xl:grid-cols-[560px_1fr]">
           <div className="space-y-4">
-            <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
-              <div className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${theme.pill}`}>
+            <div
+              className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
+            >
+              <div
+                className={`mb-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-wide uppercase ${theme.pill}`}
+              >
                 Lecturer Panel
               </div>
               <LecturerInfoCard user={user} groupName={groupName} />
             </div>
 
-            <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div
+              className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
+            >
+              <p className="mb-3 text-xs font-semibold tracking-wide text-slate-500 uppercase">
                 Group Attendance Snapshot
               </p>
               <GroupAttendanceCard groupName={groupName} />
             </div>
 
-            <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}>
+            <div
+              className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm`}
+            >
               <p className="text-sm font-semibold text-slate-900">Dashboard Overview</p>
               <p className="mt-1 text-sm text-slate-600">{defaultOverview}</p>
             </div>
           </div>
 
-          <div className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm md:p-6`}>
+          <div className={`rounded-xl border ${theme.softBorder} bg-white p-4 shadow-sm`}>
+            <ConsecutiveAbsenteesCard
+              data={consecutiveAbsentees}
+              title={`${groupName} Consecutive Absentees`}
+              loading={!consecutiveData}
+              showViewAll={false}
+            />
+          </div>
+
+          <div
+            className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm md:p-6`}
+          >
             {includeExternalLinks && (
-              <div className={`mb-4 rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-3`}>
+              <div
+                className={`mb-4 rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-3`}
+              >
                 <ExternalLinks />
               </div>
             )}
 
             <div className="mb-4 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-left sm:text-3xl">
-                 Operations Hub
+                Operations Hub
               </h3>
               <Link
                 href={addStudentHref}
@@ -191,10 +243,7 @@ export default function GroupDashboardPage({
               onToggleMonthlyAttendance={() => setMonthlyAttendance(v => !v)}
               onToggleExamResults={() => setShowExamResults(v => !v)}
               attendanceContent={
-                <AttendanceForm
-                  defaultGroup={groupName}
-                  returnUrl={dashboardReturnUrl}
-                />
+                <AttendanceForm defaultGroup={groupName} returnUrl={dashboardReturnUrl} />
               }
               studentTableContent={<GroupStudentTable groupName={groupName} />}
               todayAbsenteesContent={<TodayAbsenteesTable groupFilter={groupName} header={false} />}
@@ -217,7 +266,7 @@ export default function GroupDashboardPage({
                     <div className="space-y-5 rounded-2xl border border-slate-200 bg-linear-to-br from-slate-50 to-white p-4 md:p-6">
                       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3">
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
                             Attendance Shortage
                           </p>
                           <h2 className="mt-1 text-lg font-bold text-slate-900">
@@ -273,12 +322,14 @@ export default function GroupDashboardPage({
           </div>
         </section>
 
-        <section className={`rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} shadow-sm`}>
+        <section
+          className={`rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} shadow-sm`}
+        >
           <DashboardFooter
             collegeName={collegeDetails?.name || collegeName}
-            address={footerAddress || "Address not available"}
-            phone={footerPhone || "Phone not available"}
-            email={footerEmail || "Email not available"}
+            address={footerAddress || 'Address not available'}
+            phone={footerPhone || 'Phone not available'}
+            email={footerEmail || 'Email not available'}
             groupName={groupName}
             facebookUrl="https://facebook.com/yourcollege"
             instagramUrl="https://instagram.com/yourcollege"
@@ -288,7 +339,7 @@ export default function GroupDashboardPage({
         </section>
       </div>
     </div>
-  );
+  )
 }
 
 

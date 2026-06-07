@@ -24,12 +24,12 @@ export default function Page() {
 
   if (!mounted) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900" />
+      <main className="min-h-screen bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900" />
     )
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
+    <main className="min-h-screen overflow-hidden bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
       <Navbar />
 
       {/* ================= HERO ================= */}
@@ -52,8 +52,8 @@ export default function Page() {
 
               <h1 className="mt-6 text-5xl font-black leading-tight md:text-7xl">
                 OSRA
-                <span className="block bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
-                  Student Analytics System
+                <span className="block bg-linear-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
+                  Online Student Record Application
                 </span>
               </h1>
 
@@ -67,7 +67,7 @@ export default function Page() {
               <div className="mt-10 flex flex-wrap gap-4">
                 <Link
                   href="/auth/login"
-                  className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-sky-500 px-8 py-4 font-semibold text-white shadow-lg transition duration-300 hover:scale-105 hover:shadow-indigo-500/40"
+                  className="group flex items-center gap-2 rounded-2xl bg-linear-to-r from-indigo-500 to-sky-500 px-8 py-4 font-semibold text-white shadow-lg transition duration-300 hover:scale-105 hover:shadow-indigo-500/40"
                 >
                   Get Started
                   <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
@@ -99,9 +99,9 @@ export default function Page() {
             transition={{ duration: 0.7 }}
             className="relative"
           >
-            <div className="absolute inset-0 rounded-[32px] bg-gradient-to-r from-indigo-500 to-sky-500 blur-2xl opacity-30" />
+            <div className="absolute inset-0 rounded-4xl bg-linear-to-r from-indigo-500 to-sky-500 blur-2xl opacity-30" />
 
-            <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/10 shadow-2xl backdrop-blur-xl">
+            <div className="relative overflow-hidden rounded-4xl border border-white/10 bg-white/10 shadow-2xl backdrop-blur-xl">
               <Image
                 src="/images/students-1.jpg"
                 alt="OSRA Student Management"
@@ -155,7 +155,7 @@ export default function Page() {
           </div>
 
           {/* Showcase Image */}
-          <div className="relative mt-20 overflow-hidden rounded-[32px] border border-white/10 shadow-2xl">
+          <div className="relative mt-20 overflow-hidden rounded-4xl border border-white/10 shadow-2xl">
             <div className="absolute inset-0 bg-black/20" />
 
             <Image
@@ -188,7 +188,7 @@ export default function Page() {
 
             <Link
               href="/auth/login"
-              className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-500 px-8 py-4 font-bold text-white transition hover:scale-105"
+              className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-linear-to-r from-sky-500 to-indigo-500 px-8 py-4 font-bold text-white transition hover:scale-105"
             >
               Login Now
               <ArrowRight size={18} />
@@ -221,7 +221,7 @@ function Feature({ icon, title, desc }) {
       transition={{ duration: 0.3 }}
       className="group rounded-[28px] border border-white/10 bg-white/10 p-8 shadow-xl backdrop-blur-xl transition duration-300 hover:border-sky-400/40 hover:bg-white/15"
     >
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 to-sky-500 text-white shadow-lg">
+      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-r from-indigo-500 to-sky-500 text-white shadow-lg">
         {icon}
       </div>
 

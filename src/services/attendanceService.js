@@ -972,3 +972,62 @@ export async function handleAiQuery(query, collegeId, allowedGroup = null) {
 
 Try one of these!`;
 }
+
+
+export async function getConsecutiveAbsentees(
+  collegeId,
+  minimumDays = 2
+) {
+  await connectMongoDB();
+
+  const students = await Student.find({
+    collegeId,
+    status: "Active",
+  })
+    .select(
+      "name admissionNo group yearOfStudy parentMobile"
+    )
+    .lean();
+
+  const result = [];
+
+  for (const student of students) {
+    const records = await Attendance.find({
+      collegeId,
+      studentId: student._id,
+      ...buildAttendanceSessionReadFilter(),
+    })
+      .sort({ date: -1 })
+      .select("date status")
+      .lean();
+
+    let consecutiveDays = 0;
+
+    for (const record of records) {
+      if (record.status === "Absent") {
+        consecutiveDays++;
+      } else {
+        break;
+      }
+    }
+
+    
+
+    if (consecutiveDays >= minimumDays) {
+      result.push({
+        studentId: student._id,
+        name: student.name,
+        admissionNo: student.admissionNo,
+        group: student.group,
+        yearOfStudy: student.yearOfStudy,
+        parentMobile: student.parentMobile || "",
+        consecutiveAbsentDays: consecutiveDays,
+      });
+    }
+  }
+
+  return result.sort(
+    (a, b) => b.consecutiveAbsentDays - a.consecutiveAbsentDays
+  );
+}
+

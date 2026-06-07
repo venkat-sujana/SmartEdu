@@ -27,7 +27,14 @@ export default function AttendanceSmsCard() {
         const url = `/api/attendance/shortage-summary/notify-parents?${params.toString()}`;
         const res = await fetch(url);
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to load SMS preview");
+        if (!res.ok) {
+          if (res.status === 403) {
+            setPreview(null);
+            setLoading(false);
+            return;
+          }
+          throw new Error(data.error || "Failed to load SMS preview");
+        }
         setPreview(data.data);
       } catch (error) {
         console.error(error);
@@ -133,6 +140,8 @@ export default function AttendanceSmsCard() {
 
         {loading ? (
           <p>Loading SMS preview...</p>
+        ) : !preview ? (
+          <p className="text-amber-700">SMS notification feature is not available. Please ensure you have the required permissions.</p>
         ) : (
           <>
             <p>
@@ -178,7 +187,7 @@ export default function AttendanceSmsCard() {
       <button
         type="button"
         onClick={handleSend}
-        disabled={sending || loading || !preview?.sms?.configured}
+        disabled={sending || loading || !preview || !preview?.sms?.configured}
         className="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-3 font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Send className="h-4 w-4" />

@@ -3,8 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import {
-  CheckCircle2, XCircle, HelpCircle,
-  RefreshCw, Calendar, Users, ChevronDown,
+  CheckCircle2,
+  XCircle,
+  HelpCircle,
+  RefreshCw,
+  Calendar,
+  Users,
+  ChevronDown,
 } from 'lucide-react'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -36,8 +41,10 @@ function StatusCell({ status, onClick, loading }) {
 
   if (status === 'available') {
     return (
-      <button onClick={onClick} title="Click to change"
-        className="flex items-center justify-center gap-1 rounded-lg bg-emerald-100 px-2 py-1.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-200 w-full"
+      <button
+        onClick={onClick}
+        title="Click to change"
+        className="flex w-full items-center justify-center gap-1 rounded-lg bg-emerald-100 px-2 py-1.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-200"
       >
         <CheckCircle2 size={12} /> Available
       </button>
@@ -46,8 +53,10 @@ function StatusCell({ status, onClick, loading }) {
 
   if (status === 'unavailable') {
     return (
-      <button onClick={onClick} title="Click to change"
-        className="flex items-center justify-center gap-1 rounded-lg bg-rose-100 px-2 py-1.5 text-xs font-bold text-rose-700 transition hover:bg-rose-200 w-full"
+      <button
+        onClick={onClick}
+        title="Click to change"
+        className="flex w-full items-center justify-center gap-1 rounded-lg bg-rose-100 px-2 py-1.5 text-xs font-bold text-rose-700 transition hover:bg-rose-200"
       >
         <XCircle size={12} /> Unavail.
       </button>
@@ -56,8 +65,10 @@ function StatusCell({ status, onClick, loading }) {
 
   // Not marked
   return (
-    <button onClick={onClick} title="Click to mark"
-      className="flex items-center justify-center gap-1 rounded-lg bg-slate-100 px-2 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-amber-100 hover:text-amber-700 w-full"
+    <button
+      onClick={onClick}
+      title="Click to mark"
+      className="flex w-full items-center justify-center gap-1 rounded-lg bg-slate-100 px-2 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-amber-100 hover:text-amber-700"
     >
       <HelpCircle size={12} /> Not Set
     </button>
@@ -66,12 +77,12 @@ function StatusCell({ status, onClick, loading }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function AvailabilityTab() {
-const [applying, setApplying] = useState(false)
-  const [lecturers, setLecturers]       = useState([])  // ✅ internal fetch
-  const [examSlots, setExamSlots]       = useState([])
-  const [availMap, setAvailMap]         = useState({})
-  const [loading, setLoading]           = useState(false)
-  const [cellLoading, setCellLoading]   = useState('')
+  const [applying, setApplying] = useState(false)
+  const [lecturers, setLecturers] = useState([]) // ✅ internal fetch
+  const [examSlots, setExamSlots] = useState([])
+  const [availMap, setAvailMap] = useState({})
+  const [loading, setLoading] = useState(false)
+  const [cellLoading, setCellLoading] = useState('')
   const [filterSession, setFilterSession] = useState('')
   const [examType, setExamType] = useState('')
 
@@ -81,13 +92,11 @@ const [applying, setApplying] = useState(false)
   const [selectedLecturer, setSelectedLecturer] = useState('')
   const [previewMap, setPreviewMap] = useState({})
 
-
   // ── Load all data internally ──────────────────────────────────────────────────
   const loadAll = useCallback(async () => {
     setLoading(true)
     try {
       const [lecRes, examRes, availRes] = await Promise.all([
-
         fetch('/api/invigilation/lecturers', { cache: 'no-store' }),
 
         fetch(
@@ -98,17 +107,18 @@ const [applying, setApplying] = useState(false)
         ),
 
         fetch(
-  selectedLecturer && selectedLecturer !== 'ALL'
-    ? `/api/invigilation/availability?lecturerId=${selectedLecturer}`
-    : '/api/invigilation/availability',
-  { cache: 'no-store' }
-),
-
+          selectedLecturer && selectedLecturer !== 'ALL'
+            ? `/api/invigilation/availability?lecturerId=${selectedLecturer}`
+            : '/api/invigilation/availability',
+          { cache: 'no-store' }
+        ),
       ])
       const [lecData, examData, availData] = await Promise.all([
-        lecRes.json(), examRes.json(), availRes.json(),
+        lecRes.json(),
+        examRes.json(),
+        availRes.json(),
       ])
-      if (!lecRes.ok)  throw new Error(lecData.message)
+      if (!lecRes.ok) throw new Error(lecData.message)
       if (!examRes.ok) throw new Error(examData.message)
       if (!availRes.ok) throw new Error(availData.message)
 
@@ -121,11 +131,13 @@ const [applying, setApplying] = useState(false)
       ;(examData.data || []).forEach(e => {
         const dateStr = formatDate(e.date)
         const key = `${dateStr}_${e.session}`
-        if (!seen.has(key)) { seen.add(key); slots.push({ date: dateStr, session: e.session }) }
+        if (!seen.has(key)) {
+          seen.add(key)
+          slots.push({ date: dateStr, session: e.session })
+        }
       })
       slots.sort((a, b) => a.date.localeCompare(b.date) || a.session.localeCompare(b.session))
       setExamSlots(slots)
-
 
       // if (slots.length === 0) {
       //   setExamSlots([
@@ -144,10 +156,10 @@ const [applying, setApplying] = useState(false)
       // Build availability map: 'lecturerId_date_session' → { status, _id }
       const map = {}
       ;(availData.data || []).forEach(r => {
-        const lid  = String(r.lecturerId?._id || r.lecturerId)
+        const lid = String(r.lecturerId?._id || r.lecturerId)
         const date = formatDate(r.date)
-        const key  = `${lid}_${date}_${r.session}`
-        map[key]   = { status: r.status, _id: r._id }
+        const key = `${lid}_${date}_${r.session}`
+        map[key] = { status: r.status, _id: r._id }
       })
       setAvailMap(map)
     } catch (err) {
@@ -155,151 +167,157 @@ const [applying, setApplying] = useState(false)
     } finally {
       setLoading(false)
     }
-  }, [examType,selectedLecturer])
+  }, [examType, selectedLecturer])
 
-  useEffect(() => { loadAll() }, [loadAll])
+  useEffect(() => {
+    loadAll()
+  }, [loadAll])
 
   // ── Admin click → cycle through: not-set → available → unavailable → not-set
-  const onCellClick = useCallback(async (lecturer, date, session) => {
-    const lid      = String(lecturer._id || lecturer.id)
-    const cellKey  = `${lid}_${date}_${session}`
+  const onCellClick = useCallback(
+    async (lecturer, date, session) => {
+      const lid = String(lecturer._id || lecturer.id)
+      const cellKey = `${lid}_${date}_${session}`
 
-    const current = previewMap[cellKey] ?? availMap[cellKey]?.status
+      const current = previewMap[cellKey] ?? availMap[cellKey]?.status
 
-    const nextStatus = !current
-      ? 'available'
-      : current === 'available'
-        ? 'unavailable'
-        : null  // null = delete / reset
+      const nextStatus = !current ? 'available' : current === 'available' ? 'unavailable' : null // null = delete / reset
 
-    setCellLoading(cellKey)
-    try {
-      if (nextStatus === null) {
-        // Reset — delete record if exists
-        const existingId = availMap[cellKey]?._id
-        if (existingId) {
-          const res = await fetch(`/api/invigilation/availability/${existingId}`, { method: 'DELETE' })
-          if (!res.ok) { const d = await res.json(); throw new Error(d.message) }
+      setCellLoading(cellKey)
+      try {
+        if (nextStatus === null) {
+          // Reset — delete record if exists
+          const existingId = availMap[cellKey]?._id
+          if (existingId) {
+            const res = await fetch(`/api/invigilation/availability/${existingId}`, {
+              method: 'DELETE',
+            })
+            if (!res.ok) {
+              const d = await res.json()
+              throw new Error(d.message)
+            }
+          }
+          setAvailMap(s => {
+            const next = { ...s }
+            delete next[cellKey]
+            return next
+          })
+        } else {
+          // Upsert
+          const res = await fetch('/api/invigilation/availability', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lecturerId: lid,
+              date,
+              session,
+              status: nextStatus,
+              reason: '',
+            }),
+          })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.message)
+          setAvailMap(s => ({ ...s, [cellKey]: { status: nextStatus, _id: data.data?._id } }))
         }
-        setAvailMap(s => {
+      } catch (err) {
+        toast.error(err.message || 'Failed to update')
+      } finally {
+        setCellLoading('')
+        setPreviewMap(s => {
           const next = { ...s }
-          delete next[cellKey]
+          if (nextStatus === null) {
+            delete next[cellKey]
+          } else {
+            next[cellKey] = nextStatus
+          }
           return next
         })
-      } else {
-        // Upsert
-        const res = await fetch('/api/invigilation/availability', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lecturerId: lid,
-            date, session,
-            status: nextStatus,
-            reason: '',
-          }),
-        })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.message)
-        setAvailMap(s => ({ ...s, [cellKey]: { status: nextStatus, _id: data.data?._id } }))
       }
+    },
+    [availMap, previewMap]
+  )
+
+  const applyBulkAvailability = async () => {
+    if (!selectedLecturer) {
+      toast.error('Select lecturer')
+      return
+    }
+    if (!examType) {
+      toast.error('Select exam type')
+      return
+    }
+    if (!fromDate || !toDate) {
+      toast.error('Select date range')
+      return
+    }
+
+    const updates = Object.entries(previewMap)
+    if (updates.length === 0) {
+      toast.error('No availability changes to apply')
+      return
+    }
+
+    setApplying(true)
+    try {
+      // ✅ అన్నీ ఒకే call లో
+      const records = updates.map(([key, status]) => {
+        const [lid, date, session] = key.split('_')
+        return { lecturerId: lid, date, session, status }
+      })
+
+      const res = await fetch('/api/invigilation/availability', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ records }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message)
+
+      toast.success(`${data.count} availability records saved`)
+      setPreviewMap({})
+      await loadAll()
     } catch (err) {
-      toast.error(err.message || 'Failed to update')
+      toast.error(err.message || 'Bulk update failed')
     } finally {
-      setCellLoading('')
-      setPreviewMap(s => {
-    const next = { ...s }
-    if (nextStatus === null) {
-      delete next[cellKey]
-    } else {
-      next[cellKey] = nextStatus
+      setApplying(false)
     }
-    return next
-  })
-    }
-  }, [availMap,previewMap])
-
-
-
-
-
-
-
-
-const applyBulkAvailability = async () => {
-  if (!selectedLecturer) { toast.error('Select lecturer'); return }
-  if (!examType) { toast.error('Select exam type'); return }
-  if (!fromDate || !toDate) { toast.error('Select date range'); return }
-
-  const updates = Object.entries(previewMap)
-  if (updates.length === 0) { toast.error('No availability changes to apply'); return }
-
-  setApplying(true)
-  try {
-    // ✅ అన్నీ ఒకే call లో
-    const records = updates.map(([key, status]) => {
-      const [lid, date, session] = key.split('_')
-      return { lecturerId: lid, date, session, status }
-    })
-
-    const res = await fetch('/api/invigilation/availability', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ records }),
-    })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.message)
-
-    toast.success(`${data.count} availability records saved`)
-    setPreviewMap({})
-    await loadAll()
-  } catch (err) {
-    toast.error(err.message || 'Bulk update failed')
-  } finally {
-    setApplying(false)
   }
-}
-
-
-
-
 
   // ── Derived stats ─────────────────────────────────────────────────────────────
-    // Filter slots by session
-  const visibleSlots = useMemo(() =>
-    filterSession ? examSlots.filter(s => s.session === filterSession) : examSlots,
+  // Filter slots by session
+  const visibleSlots = useMemo(
+    () => (filterSession ? examSlots.filter(s => s.session === filterSession) : examSlots),
     [examSlots, filterSession]
   )
-const { availCount, unavailCount, notSetCount } = useMemo(() => {
-  let avail = 0
-  let unavail = 0
-  let notSet = 0
+  const { availCount, unavailCount, notSetCount } = useMemo(() => {
+    let avail = 0
+    let unavail = 0
+    let notSet = 0
 
-  lecturers.forEach(lecturer => {
-    const lid = String(lecturer._id || lecturer.id)
+    lecturers.forEach(lecturer => {
+      const lid = String(lecturer._id || lecturer.id)
 
-    visibleSlots.forEach(slot => {
-      const key = `${lid}_${slot.date}_${slot.session}`
+      visibleSlots.forEach(slot => {
+        const key = `${lid}_${slot.date}_${slot.session}`
 
-      const status = availMap[key]?.status
+        const status = availMap[key]?.status
 
-      if (status === 'available') {
-        avail += 1
-      } else if (status === 'unavailable') {
-        unavail += 1
-      } else {
-        notSet += 1
-      }
+        if (status === 'available') {
+          avail += 1
+        } else if (status === 'unavailable') {
+          unavail += 1
+        } else {
+          notSet += 1
+        }
+      })
     })
-  })
 
-  return {
-    availCount: avail,
-    unavailCount: unavail,
-    notSetCount: notSet,
-  }
-}, [lecturers, visibleSlots, availMap])
-
-
+    return {
+      availCount: avail,
+      unavailCount: unavail,
+      notSetCount: notSet,
+    }
+  }, [lecturers, visibleSlots, availMap])
 
   // Group slots by date for header
   const dateGroups = useMemo(() => {
@@ -308,21 +326,25 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
       if (!map[s.date]) map[s.date] = []
       map[s.date].push(s.session)
     })
-    return Object.entries(map).map(([date, sessions]) => ({ date, sessions, count: sessions.length }))
+    return Object.entries(map).map(([date, sessions]) => ({
+      date,
+      sessions,
+      count: sessions.length,
+    }))
   }, [visibleSlots])
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
       {applying && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-    <div className="flex flex-col items-center gap-4 rounded-2xl bg-white px-10 py-8 shadow-2xl">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
-      <p className="text-sm font-bold text-slate-700">Applying availability...</p>
-      <p className="text-xs text-slate-400">Please wait</p>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 rounded-2xl bg-white px-10 py-8 shadow-2xl">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+            <p className="text-sm font-bold text-slate-700">Applying availability...</p>
+            <p className="text-xs text-slate-400">Please wait</p>
+          </div>
+        </div>
+      )}
       {/* ── Stats ── */}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
@@ -471,17 +493,19 @@ const { availCount, unavailCount, notSetCount } = useMemo(() => {
           </select>
 
           <button
-  onClick={applyBulkAvailability}
-  disabled={applying}
-  className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 flex items-center gap-2"
->
-  {applying ? (
-    <>
-      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-      Applying...
-    </>
-  ) : 'Apply'}
-</button>
+            onClick={applyBulkAvailability}
+            disabled={applying}
+            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          >
+            {applying ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                Applying...
+              </>
+            ) : (
+              'Apply'
+            )}
+          </button>
         </div>
       </div>
 

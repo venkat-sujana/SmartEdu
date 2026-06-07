@@ -8,7 +8,7 @@ import User from '@/models/User'
 import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
 
 export async function GET(req) {
-  const { user, error } = await requireInvigilationAuth(req, ['admin'])
+  const { user, error } = await requireInvigilationAuth(req, ['admin', 'principal'])
 
   if (error) return error
 
@@ -95,6 +95,7 @@ export async function GET(req) {
     const topLecturers = Object.values(lecturerMap)
       .sort((a, b) => b.duties - a.duties)
       .slice(0, 5)
+
     const examSummary = Object.values(examSummaryMap)
 
     console.log({

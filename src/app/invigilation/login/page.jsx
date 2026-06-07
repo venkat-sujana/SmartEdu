@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -9,10 +9,38 @@ export default function InvigilationLoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+
+  useEffect(() => {
+    const checkLoggedInUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const role = data?.user?.role;
+
+        if (role === "admin") {
+          router.replace("/invigilation/admin/dashboard");
+          return;
+        }
+
+        if (role === "lecturer") {
+          router.replace("/invigilation/lecturer/dashboard");
+          return;
+        }
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+
+    checkLoggedInUser();
+  }, [router]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -21,6 +49,7 @@ export default function InvigilationLoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
+
       toast.success("Login successful");
       if (data.user.role === "admin") router.replace("/invigilation/admin/dashboard");
       else router.replace("/invigilation/lecturer/dashboard");
@@ -30,6 +59,16 @@ export default function InvigilationLoginPage() {
       setLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-100 to-blue-100 p-4">
+        <div className="rounded-xl border bg-white px-6 py-5 text-sm font-medium text-slate-600 shadow-lg">
+          Checking session...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-100 to-blue-100 p-4">
