@@ -153,7 +153,7 @@ export default function AttendanceFormPage() {
         setLoadingStudents(true)
         setFeedback({ type: '', message: '' })
 
-        const res = await fetch(`/api/students?group=${encodeURIComponent(selectedGroup)}`, {
+        const res = await fetch(`/api/students?group=${encodeURIComponent(selectedGroup)}&status=all&limit=100`, {
           cache: 'no-store',
         })
         const json = await res.json()

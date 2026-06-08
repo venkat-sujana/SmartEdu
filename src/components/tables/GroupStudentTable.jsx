@@ -48,6 +48,7 @@ export default function GroupStudentTable({ groupName }) {
     caste: "",
     gender: "",
     yearOfStudy: "",
+    status: "",
   });
   const [currentPage, setCurrentPage] = useState(0);
   const [editingStudent, setEditingStudent] = useState(null);
@@ -65,7 +66,7 @@ export default function GroupStudentTable({ groupName }) {
       setIsLoading(true);
 
       try {
-        const url = `/api/students?group=${encodeURIComponent(groupName)}`;
+        const url = `/api/students?group=${encodeURIComponent(groupName)}&status=all&limit=100`;
         const res = await fetch(url, { credentials: "include" });
         const result = await res.json();
 
@@ -112,6 +113,10 @@ export default function GroupStudentTable({ groupName }) {
       );
     }
 
+    if (filters.status) {
+      nextStudents = nextStudents.filter(student => student.status === filters.status);
+    }
+
     return nextStudents;
   }, [filters, search, students]);
 
@@ -130,7 +135,7 @@ export default function GroupStudentTable({ groupName }) {
 
   const handleClearFilters = () => {
     setSearch("");
-    setFilters({ caste: "", gender: "", yearOfStudy: "" });
+    setFilters({ caste: "", gender: "", yearOfStudy: "", status: "" });
   };
 
   const handleExportPDF = () => {
@@ -326,7 +331,7 @@ export default function GroupStudentTable({ groupName }) {
         </div>
 
         <div className={`space-y-4 bg-linear-to-br ${theme.soft} p-4 md:p-5`}>
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,0.8fr))]">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,0.8fr))]">
             <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
               <Search className="h-4 w-4 text-slate-400" />
               <input
@@ -374,6 +379,20 @@ export default function GroupStudentTable({ groupName }) {
             >
               <option value="">All Years</option>
               {yearOptions.map(option => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="status"
+              value={filters.status}
+              onChange={handleFilterChange}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none"
+            >
+              <option value="">All Status</option>
+              {statusOptions.map(option => (
                 <option key={option} value={option}>
                   {option}
                 </option>
@@ -446,7 +465,7 @@ export default function GroupStudentTable({ groupName }) {
                 className="hidden overflow-hidden rounded-2xl border border-slate-200 lg:block"
               >
                 <div className="overflow-x-auto">
-                  <table role="table" aria-label={`${groupName} students table`} className="min-w-full min-w-[1100px] divide-y divide-slate-200 bg-white">
+                  <table role="table" aria-label={`${groupName} students table`} className="min-w-full  divide-y divide-slate-200 bg-white">
                     <caption className="sr-only">{collegeName} — {groupName} students</caption>
                     <thead className="bg-slate-900 text-left text-xs font-semibold uppercase tracking-wide text-white">
                       <tr>
@@ -458,6 +477,7 @@ export default function GroupStudentTable({ groupName }) {
                         <th scope="col" className="px-4 py-3">Caste</th>
                         <th scope="col" className="px-4 py-3">Gender</th>
                         <th scope="col" className="px-4 py-3">Year</th>
+                        <th scope="col" className="px-4 py-3">Status</th>
                         <th scope="col" className="px-4 py-3">Admission No</th>
                         <th scope="col" className="px-4 py-3">DOB</th>
                         <th scope="col" className="px-4 py-3">Date of Joining</th>
@@ -488,6 +508,7 @@ export default function GroupStudentTable({ groupName }) {
                           <td className="px-4 py-3">{student.caste}</td>
                           <td className="px-4 py-3">{student.gender}</td>
                           <td className="px-4 py-3">{student.yearOfStudy}</td>
+                          <td className="px-4 py-3">{student.status || "Active"}</td>
                           <td className="px-4 py-3">{student.admissionNo}</td>
 
                           <td className="px-4 py-3">{student.dob ? new Date(student.dob).toLocaleDateString() : "-"}</td>
@@ -794,7 +815,6 @@ function InfoChip({ label, value }) {
     </div>
   );
 }
-
 
 
 

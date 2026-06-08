@@ -77,7 +77,9 @@ export default function AttendanceForm({ defaultGroup = "", returnUrl = "/lectur
         setStudents([]);
         return;
       }
-      const res = await fetch(`/api/students?collegeId=${session.user.collegeId}&group=${encodeURIComponent(selectedGroup)}`);
+      const res = await fetch(
+        `/api/students?collegeId=${session.user.collegeId}&group=${encodeURIComponent(selectedGroup)}&status=all&limit=100`
+      );
       const json = await res.json();
       if (json.status === "success") setStudents(json.data);
     };

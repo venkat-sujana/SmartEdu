@@ -101,12 +101,6 @@ export default function Sidebar({ onClose }) {
         
       </div>
 
-      {/* 
-        ✅ Key fixes:
-        - min-h-0        → flex child scroll పని చేయడానికి
-        - overflow-y-auto → links scroll అవుతాయి
-        - overscroll-contain → page కి scroll pass కాదు
-      */}
       <nav
         className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain pr-1"
         style={{ WebkitOverflowScrolling: "touch" }}

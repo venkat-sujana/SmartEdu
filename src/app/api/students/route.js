@@ -28,6 +28,7 @@ export async function GET(req) {
     const groupParam = searchParams.get("group");
     const yearParam =
       searchParams.get("year") || searchParams.get("yearOfStudy");
+    const statusParam = searchParams.get("status") || "Active";
 
     const searchParam = (searchParams.get("search") || "").trim();
 
@@ -43,6 +44,7 @@ export async function GET(req) {
       groupParam,
       yearParam,
       searchParam,
+      statusParam,
       page,
       limit,
       session,

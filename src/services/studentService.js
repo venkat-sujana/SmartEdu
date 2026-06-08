@@ -15,6 +15,7 @@ export async function getStudentsService({
   groupParam,
   yearParam,
   searchParam,
+  statusParam,
   page,
   limit,
   session
@@ -28,8 +29,13 @@ export async function getStudentsService({
 
   const filter = {
     collegeId: collegeObjectId,
-    status: "Active"
   };
+
+  if (statusParam === "Active" || statusParam === "Terminated") {
+    filter.status = statusParam;
+  } else if (!statusParam) {
+    filter.status = "Active";
+  }
 
   if (session?.user?.role === "lecturer") {
     const allowedGroup = getLecturerGroupFromSubject(session.user.subject);
