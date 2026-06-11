@@ -29,12 +29,11 @@ import AttendanceSmsCard from './AttendanceSmsCard'
 import PromotionCard from './PromotionCard'
 import OverviewStatCard from './OverviewStatCard'
 import AttendanceOverviewTable from './AttendanceOverviewTable'
-import ConsecutiveAbsenteesCard from "@/components/attendance/cards/ConsecutiveAbsenteesCard";
+import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
 
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function PrincipalDashboard() {
-  
   const { data: session } = useSession()
   const principal = session?.user
 
@@ -108,18 +107,17 @@ export default function PrincipalDashboard() {
   })
 
   const { data: consecutiveData } = useSWR(
-  principal?.collegeId
-    ? `/api/attendance/consecutive-absentees?collegeId=${principal.collegeId}`
-    : null,
-  fetcher,
-  {
-    refreshInterval: 60000,
-    revalidateOnFocus: true,
-  }
-)
+    principal?.collegeId
+      ? `/api/attendance/consecutive-absentees?collegeId=${principal.collegeId}`
+      : null,
+    fetcher,
+    {
+      refreshInterval: 60000,
+      revalidateOnFocus: true,
+    }
+  )
 
-const consecutiveAbsentees =
-  consecutiveData?.absentees || []
+  const consecutiveAbsentees = consecutiveData?.absentees || []
 
   const summary = dashboardOverview?.summary
   const attendanceOverview = dashboardOverview?.attendanceOverview
@@ -245,7 +243,7 @@ const consecutiveAbsentees =
                 <div className="rounded-3xl bg-linear-to-br from-blue-400 to-indigo-500 p-4 text-white shadow-lg transition-all duration-300 hover:rotate-6">
                   <Building2 className="h-7 w-7" />
                 </div>
-                
+
                 <div>
                   <p className="text-sm font-bold tracking-widest text-blue-700 uppercase">
                     Institution
@@ -260,8 +258,6 @@ const consecutiveAbsentees =
         </section>
 
         <section className="space-y-4">
-          
-
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {summaryCards.map(card => (
               <OverviewStatCard key={card.title} {...card} loading={overviewLoading} />
@@ -270,8 +266,6 @@ const consecutiveAbsentees =
         </section>
 
         <section className="space-y-4">
-          
-
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {sessionSummaryCards.map(card => (
               <div

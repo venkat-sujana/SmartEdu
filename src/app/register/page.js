@@ -289,12 +289,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.12),_transparent_28%),linear-gradient(180deg,_#f8fafc_0%,_#eef6ff_52%,_#f8fafc_100%)] p-4 sm:p-6 lg:p-8">
+    <main className="min-h-screen bg-[radial-linear(circle_at_top,_rgba(14,165,233,0.12),_transparent_28%),linear-linear(180deg,_#f8fafc_0%,_#eef6ff_52%,_#f8fafc_100%)] p-4 sm:p-6 lg:p-8">
       {/* Enhanced Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-3xl bg-white/95 p-8 shadow-2xl backdrop-blur-xl ring-1 ring-white/50 animate-in fade-in zoom-in duration-300">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 shadow-lg">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-r from-cyan-500 to-emerald-500 shadow-lg">
               <Loader2 className="h-6 w-6 animate-spin text-white" />
             </div>
             <p className="mt-4 text-center text-lg font-black text-slate-800">Registering Student</p>
@@ -308,7 +308,7 @@ export default function RegisterPage() {
         <div className="mx-auto mb-8 max-w-5xl rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur md:p-8 ring-1 ring-slate-200/60">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex items-start gap-4">
-              <div className="rounded-3xl bg-gradient-to-br from-cyan-500 to-blue-600 p-3 shadow-lg">
+              <div className="rounded-3xl bg-linear-to-r from-cyan-500 to-blue-600 p-3 shadow-lg">
                 <School className="h-7 w-7 text-white" />
               </div>
               <div className="flex-1">
@@ -318,29 +318,14 @@ export default function RegisterPage() {
                 <h1 className="text-2xl font-black text-slate-900 sm:text-3xl lg:text-4xl">
                   Create Student Profile
                 </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                  Add admission details, academic information, and parent contact data in one clean workflow.
-                </p>
+                
                 <p className="mt-3 text-sm font-semibold text-cyan-700">
                   {collegeName || 'Loading college...'}
                 </p>
               </div>
             </div>
 
-            <div className="grid min-w-[240px] grid-cols-1 gap-3 sm:grid-cols-2 lg:w-[340px]">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Flow
-                </p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">Admissions Desk</p>
-              </div>
-              <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-700">
-                  Status
-                </p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">Ready for new entry</p>
-              </div>
-            </div>
+            
           </div>
 
           {returnUrl ? (
@@ -360,14 +345,12 @@ export default function RegisterPage() {
         <div className="mx-auto max-w-5xl rounded-[30px] border border-white/70 bg-white/92 p-6 shadow-2xl backdrop-blur-xl ring-1 ring-slate-200/60 sm:p-8 lg:p-10">
           {/* Header Badge & Title */}
           <div className="mb-8 border-b border-slate-200 pb-6">
-            <div className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-md">
+            <div className="inline-flex items-center gap-2 rounded-2xl bg-linear-to-r from-cyan-600 via-blue-600 to-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-md">
               <PlusCircle className="h-5 w-5" />
               New Student Registration
             </div>
             <h2 className="mt-5 text-3xl font-black text-slate-900 sm:text-[2rem]">Student Information Form</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Fill the core identity, academic data, and optional profile assets. Password can be left empty to use the server default.
-            </p>
+            
           </div>
 
           {/* Form Grid */}
@@ -378,7 +361,7 @@ export default function RegisterPage() {
                 icon={User}
                 iconClassName="bg-gradient-to-br from-cyan-500 to-blue-600"
                 title="Personal Details"
-                description="Capture the student identity and parent contact details."
+                
               />
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div>
@@ -438,7 +421,7 @@ export default function RegisterPage() {
                 icon={IdCard}
                 iconClassName="bg-gradient-to-br from-amber-500 to-orange-500"
                 title="Admission Details"
-                description="Choose the academic group and supporting registration information."
+                
               />
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
               <div>
@@ -487,7 +470,7 @@ export default function RegisterPage() {
                 icon={CalendarCheck2}
                 iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500"
                 title="Academic Details"
-                description="Map the student to the correct study year and joining cycle."
+                
               />
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <div>
@@ -546,14 +529,14 @@ export default function RegisterPage() {
 
             {/* Full Width Fields */}
             <section className="rounded-[26px] border border-slate-200 bg-white p-5 md:p-6">
-              <SectionHeader
+              {/* <SectionHeader
                 icon={FileInput}
                 iconClassName="bg-gradient-to-br from-indigo-500 to-cyan-500"
                 title="Credentials and Assets"
                 description="Optionally set login credentials and attach a profile image."
-              />
+              /> */}
               <div className="space-y-6">
-              <div>
+              {/* <div>
                 <FieldLabel icon={KeyRound} iconClassName="bg-gradient-to-r from-sky-500 to-indigo-500">Password (Optional)</FieldLabel>
                 <input
                   type="password"
@@ -563,7 +546,7 @@ export default function RegisterPage() {
                   placeholder="Leave empty for server default password"
                   className={modernInputClass}
                 />
-              </div>
+              </div> */}
 
               <div>
                 <FieldLabel icon={MapPin} iconClassName="bg-gradient-to-r from-rose-500 to-red-500">Complete Address *</FieldLabel>
