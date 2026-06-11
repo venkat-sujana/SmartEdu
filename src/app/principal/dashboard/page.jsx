@@ -245,6 +245,7 @@ const consecutiveAbsentees =
                 <div className="rounded-3xl bg-linear-to-br from-blue-400 to-indigo-500 p-4 text-white shadow-lg transition-all duration-300 hover:rotate-6">
                   <Building2 className="h-7 w-7" />
                 </div>
+                
                 <div>
                   <p className="text-sm font-bold tracking-widest text-blue-700 uppercase">
                     Institution
@@ -259,20 +260,7 @@ const consecutiveAbsentees =
         </section>
 
         <section className="space-y-4">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="inline-block rounded-full bg-emerald-100/50 px-3 py-1 text-sm font-bold tracking-wider text-emerald-600 uppercase">
-                College Status Overview
-              </p>
-              <h2 className="mt-3 bg-linear-to-r from-slate-900 via-gray-900 to-slate-800 bg-clip-text text-4xl font-black tracking-tighter text-transparent lg:text-5xl">
-                Real-time Metrics
-              </h2>
-              <p className="mt-2 max-w-md text-lg font-medium text-slate-500">
-                Instant insights into student strength, lecturer availability, and today&apos;s
-                attendance trends.
-              </p>
-            </div>
-          </div>
+          
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {summaryCards.map(card => (
@@ -282,17 +270,7 @@ const consecutiveAbsentees =
         </section>
 
         <section className="space-y-4">
-          <div>
-            <p className="inline-block rounded-full bg-amber-100/50 px-3 py-1 text-sm font-bold tracking-wider text-amber-600 uppercase">
-              Today&apos;s Attendance Overview
-            </p>
-            <h2 className="mt-3 bg-linear-to-r from-slate-900 via-amber-900 to-slate-800 bg-clip-text text-4xl font-black tracking-tighter text-transparent lg:text-5xl">
-              Session-wise Breakdown
-            </h2>
-            <p className="mt-2 max-w-2xl text-lg font-medium text-slate-500">
-              Detailed group-wise attendance distribution across first and second year students.
-            </p>
-          </div>
+          
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {sessionSummaryCards.map(card => (

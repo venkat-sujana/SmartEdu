@@ -71,52 +71,8 @@ export default function LecturerLogin() {
         transition={{ duration: 0.45 }}
         className="relative mx-auto flex min-h-screen max-w-7xl items-center px-4 py-10 sm:px-6 lg:px-8"
       >
-        <div className="grid w-full overflow-hidden rounded-[32px] border border-white/10 bg-white/6 shadow-[0_24px_80px_-36px_rgba(8,145,178,0.55)] backdrop-blur-xl lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="relative flex flex-col justify-between border-b border-white/10 p-7 text-white sm:p-10 lg:border-b-0 lg:border-r">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
-                <Sparkles className="h-3.5 w-3.5" />
-                Lecturer Access
-              </div>
-
-              <h1 className="mt-6 max-w-xl text-3xl font-black leading-tight sm:text-4xl">
-                Welcome back to your academic control desk.
-              </h1>
-              <p className="mt-4 max-w-lg text-sm leading-6 text-slate-300 sm:text-base">
-                Sign in to manage attendance, review student insights, and stay on top of your daily classroom workflow with a cleaner, more focused workspace.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
-              {LOGIN_HIGHLIGHTS.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-white/10 bg-white/8 p-4 shadow-lg shadow-slate-950/10"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-xl bg-cyan-400/10 p-2 text-cyan-200">
-                      <ShieldCheck className="h-4 w-4" />
-                    </span>
-                    <p className="text-sm font-medium text-slate-100">{item}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-10 rounded-3xl border border-white/10 bg-slate-950/30 p-5">
-              <div className="flex items-start gap-4">
-                <div className="rounded-2xl bg-cyan-400/10 p-3 text-cyan-200">
-                  <BookOpenCheck className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">Built for lecturers</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-300">
-                    Fast access to attendance, daily absentees, monthly summaries, and AI-powered attendance insights from one place.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
+        <div className="grid w-full overflow-hidden rounded-4xl border border-white/10 bg-white/6 shadow-[0_24px_80px_-36px_rgba(8,145,178,0.55)] backdrop-blur-xl lg:grid-cols-[1.05fr_0.95fr]">
+          
 
           <section className="bg-white/92 p-7 sm:p-10">
             <div className="mx-auto max-w-md">
