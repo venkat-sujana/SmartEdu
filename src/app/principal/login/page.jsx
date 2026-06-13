@@ -43,7 +43,7 @@ export default function PrincipalLogin() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.14),_transparent_26%),linear-gradient(135deg,_#052e16_0%,_#0f172a_45%,_#111827_100%)]">
+      <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.14),transparent_26%),linear-gradient(135deg,#052e16_0%,#0f172a_45%,#111827_100%)]">
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
           <div className="rounded-3xl border border-emerald-300/20 bg-slate-900/90 px-8 py-6 text-center shadow-2xl">

@@ -19,7 +19,7 @@ import GroupAttendanceCard from '@/components/OverallAttendanceMatrixCard/GroupA
 import GroupExamDashboardPanel from '@/components/exams/GroupExamDashboardPanel'
 import GroupStudentTable from '@/components/tables/GroupStudentTable'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
-import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
+// import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
 
 const fetcher = async url => {
   const response = await fetch(url)
@@ -94,26 +94,31 @@ export default function GroupDashboardPage({
         >
           <div>
             <p className="text-xs tracking-wide text-slate-500 uppercase">Lecturer Dashboard</p>
-            <h1 className="text-lg font-semibold text-slate-900">{groupName} Group Operations</h1>
+            <h1 className="text-lg font-semibold text-slate-900">{groupName} Group</h1>
             <p className="text-sm text-slate-600">{collegeName}</p>
           </div>
-          <span className={`rounded-md px-3 py-1 text-xs font-semibold ${theme.badge}`}>
-            Group: {groupName}
-          </span>
+
+          <Link
+            href={addStudentHref}
+            className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+          >
+            <UserPlus className="h-4 w-4" />
+            Add Student
+          </Link>
         </div>
 
         <section className="space-y-4">
           <LecturerInfoCard user={user} groupName={groupName} />
 
-          
-          <ConsecutiveAbsenteesCard
+          {/* <ConsecutiveAbsenteesCard
             data={consecutiveAbsentees}
             title={`${groupName} Consecutive Absentees`}
             loading={!consecutiveData}
             showViewAll={false}
-          />
-          <GroupAttendanceCard groupName={groupName} />
+          /> */}
 
+
+          <GroupAttendanceCard groupName={groupName} />
 
           <div
             className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm md:p-6`}

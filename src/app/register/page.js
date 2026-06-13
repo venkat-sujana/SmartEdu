@@ -289,7 +289,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-linear(circle_at_top,_rgba(14,165,233,0.12),_transparent_28%),linear-linear(180deg,_#f8fafc_0%,_#eef6ff_52%,_#f8fafc_100%)] p-4 sm:p-6 lg:p-8">
+    <main className="min-h-screen bg-[radial-linear(circle_at_top,rgba(14,165,233,0.12),transparent_28%),linear-linear(180deg,#f8fafc_0%,#eef6ff_52%,#f8fafc_100%)] p-4 sm:p-6 lg:p-8">
       {/* Enhanced Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -570,7 +570,7 @@ export default function RegisterPage() {
                     type="file"
                     accept="image/*"
                     onChange={e => setPhoto(e.target.files?.[0] || null)}
-                    className="block w-full cursor-pointer rounded-[24px] border-2 border-dashed border-slate-200 bg-slate-50
+                    className="block w-full cursor-pointer rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50
                       px-6 py-8 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300
                       hover:border-cyan-400 hover:bg-cyan-50/50 hover:shadow-md
                       file:hidden"
@@ -586,7 +586,7 @@ export default function RegisterPage() {
                   </label>
                 </div>
                 {photoPreview && (
-                  <div className="mt-4 flex items-center gap-4 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                  <div className="mt-4 flex items-center gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
                     <Image
                       src={photoPreview}
                       alt="Student preview"
@@ -609,7 +609,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-[24px] bg-gradient-to-r 
+                className="group relative flex w-full items-center justify-center gap-3 rounded-3xl bg-linear-to-r 
                   from-cyan-600 via-blue-600 to-emerald-600 px-8 py-4 text-base font-bold text-white shadow-xl 
                   transition-all duration-300 hover:from-cyan-700 hover:via-blue-700 hover:to-emerald-700 
                   hover:shadow-2xl active:scale-[0.99] disabled:cursor-not-allowed 

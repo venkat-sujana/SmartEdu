@@ -22,7 +22,17 @@ export default function GroupAttendanceCard({ groupName,compact = false }) {
     `/api/students?group=${encodeURIComponent(normalizedGroupName)}&limit=1`,
     fetcher
   )
+  const { data: firstYearStudentsData } = useSWR(
+    `/api/students?group=${encodeURIComponent(normalizedGroupName)}&yearOfStudy=${encodeURIComponent('First Year')}&limit=1`,
+    fetcher
+  )
+  const { data: secondYearStudentsData } = useSWR(
+    `/api/students?group=${encodeURIComponent(normalizedGroupName)}&yearOfStudy=${encodeURIComponent('Second Year')}&limit=1`,
+    fetcher
+  )
   const groupStrength = studentsData?.totalStudents || 0
+  const firstYearStrength = firstYearStudentsData?.totalStudents || 0
+  const secondYearStrength = secondYearStudentsData?.totalStudents || 0
 
   function stats(year, session) {
     const present =
@@ -63,20 +73,25 @@ export default function GroupAttendanceCard({ groupName,compact = false }) {
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div className={`bg-linear-to-r ${theme.header} px-5 py-5 text-white`}>
         <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-2 2xl:grid-cols-4">
-            <TopStat icon={<Users className="h-4 w-4" />} label="S" value={groupStrength} />
-            <TopStat icon={<CheckCircle2 className="h-4 w-4" />} label="P" value={overallPresent} />
-            <TopStat icon={<XCircle className="h-4 w-4" />} label="A" value={overallAbsent} />
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-6">
+
+            <TopStat icon={<Users className="h-4 w-4" />} label="Strength" value={groupStrength} />
+            <TopStat icon={<Activity className="h-4 w-4" />} label="First Year" value={firstYearStrength} />
+            <TopStat icon={<Activity className="h-4 w-4" />} label="Second Year" value={secondYearStrength} />
+            <TopStat icon={<CheckCircle2 className="h-4 w-4" />} label="Present" value={overallPresent} />
+            <TopStat icon={<XCircle className="h-4 w-4" />} label="Absent" value={overallAbsent} />
             <TopStat
               icon={<Clock3 className="h-4 w-4" />}
               label="Average"
               value={`${overallPercent}%`}
             />
+
+
           </div>
         </div>
       </div>
 
-      <div className="grid gap-4 p-4 2xl:hidden">
+      <div className="grid gap-4 p-4">
         {years.map(year => (
           <article key={year} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <h5 className="text-base font-bold text-slate-900">{year}</h5>
@@ -108,82 +123,6 @@ export default function GroupAttendanceCard({ groupName,compact = false }) {
           </article>
         ))}
       </div>
-
-      <table className="min-w-full border-collapse text-sm">
-        <thead className="bg-slate-900 text-white">
-          <tr>
-            <th className="border border-slate-700 px-2 py-3 text-left">Year</th>
-            <th className="border border-slate-700 px-4 py-3 text-left">Metric</th>
-            {sessions.map(session => (
-              <th key={session} className="border border-slate-700 px-4 py-3 text-center">
-                {session}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {years.map(year => (
-            <React.Fragment key={year}>
-              <tr key={`${year}-present`} className="bg-white">
-                <td
-                  rowSpan={4}
-                  className="border border-slate-200 px-2 py-3 align-top font-bold text-slate-900"
-                >
-                  {year}
-                </td>
-                <td className="border border-slate-200 px-4 py-3 font-medium text-emerald-700">
-                  P
-                </td>
-                {sessions.map(session => (
-                  <td
-                    key={`${year}-${session}-present`}
-                    className="border border-slate-200 px-4 py-3 text-center font-semibold text-slate-900"
-                  >
-                    {stats(year, session).present}
-                  </td>
-                ))}
-              </tr>
-              <tr key={`${year}-absent`} className="bg-slate-50">
-                <td className="border border-slate-200 px-4 py-3 font-medium text-rose-700">A</td>
-                {sessions.map(session => (
-                  <td
-                    key={`${year}-${session}-absent`}
-                    className="border border-slate-200 px-4 py-3 text-center font-semibold text-slate-900"
-                  >
-                    {stats(year, session).absent}
-                  </td>
-                ))}
-              </tr>
-              <tr key={`${year}-total`} className="bg-white">
-                <td className="border border-slate-200 px-4 py-3 font-medium text-slate-700">T</td>
-                {sessions.map(session => (
-                  <td
-                    key={`${year}-${session}-total`}
-                    className="border border-slate-200 px-4 py-3 text-center font-semibold text-slate-900"
-                  >
-                    {stats(year, session).total}
-                  </td>
-                ))}
-              </tr>
-              <tr key={`${year}-percent`} className="bg-slate-50">
-                <td className="border border-slate-200 px-4 py-3 font-medium text-blue-700">%</td>
-                {sessions.map(session => (
-                  <td
-                    key={`${year}-${session}-percent`}
-                    className="border border-slate-200 px-4 py-3 text-center"
-                  >
-                    <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${theme.pill}`}
-                    >
-                      {stats(year, session).percent}%
-                    </span>
-                  </td>
-                ))}
-              </tr>
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
     </section>
   )
 }
