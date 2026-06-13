@@ -1,8 +1,5 @@
 //src/app/logout/page.jsx
 'use client';
-
-import "./globals.css";
-
 export const metadata = {
   title: "OSRA",
   description: "Online Student Record and Attendance Application",
