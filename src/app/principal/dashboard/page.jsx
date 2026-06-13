@@ -233,12 +233,12 @@ export default function PrincipalDashboard() {
               <p className="inline-block rounded-full bg-blue-100/50 px-3 py-1 text-sm font-bold tracking-wider text-blue-600 uppercase">
                 Principal Dashboard
               </p>
-              <h1 className="mt-3 bg-linear-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black tracking-tighter text-transparent lg:text-5xl">
+              <h1 className="mt-1 bg-linear-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black tracking-tighter text-transparent lg:text-4xl">
                 {collegeName}
               </h1>
-              <p className="mt-2 text-base font-medium text-slate-500">{todayDateLabel}</p>
+              <p className="mt-1 text-base font-medium text-slate-500">{todayDateLabel}</p>
             </div>
-            <div className="rounded-3xl border border-blue-200/50 bg-linear-to-r from-blue-50 to-indigo-50/50 px-6 py-4 shadow-lg ring-1 ring-blue-100/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
+            {/* <div className="rounded-3xl border border-blue-200/50 bg-linear-to-r from-blue-50 to-indigo-50/50 px-6 py-4 shadow-lg ring-1 ring-blue-100/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
               <div className="flex items-center gap-4">
                 <div className="rounded-3xl bg-linear-to-br from-blue-400 to-indigo-500 p-4 text-white shadow-lg transition-all duration-300 hover:rotate-6">
                   <Building2 className="h-7 w-7" />
@@ -253,7 +253,7 @@ export default function PrincipalDashboard() {
                   </p>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </section>
 
@@ -328,7 +328,7 @@ export default function PrincipalDashboard() {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+        {/* <section className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
           <Card className="group border-gradient-to-r hover:shadow-3xl rounded-3xl border-2 bg-white/90 from-blue-200/50 to-emerald-200/50 p-6 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 sm:p-8">
             <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
               {principal?.photo ? (
@@ -372,9 +372,9 @@ export default function PrincipalDashboard() {
               </div>
             </CardContent>
           </Card>
-        </section>
+        </section> */}
 
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        {/* <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <Card className="group hover:shadow-3xl rounded-3xl border-emerald-200/50 bg-linear-to-br from-emerald-50/90 via-white to-teal-50 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:-translate-y-1">
             <CardContent className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <div className="flex items-start gap-5">
@@ -406,14 +406,14 @@ export default function PrincipalDashboard() {
           </Card>
 
           <Tutorials />
-        </section>
+        </section> */}
 
-        <MetricsCards />
+        {/* <MetricsCards />
         <AttendanceSmsCard />
         <AttendanceSmsHistoryCard endpoint="/api/attendance/shortage-summary/sms-logs?limit=8" />
-        <PromotionCard />
+        <PromotionCard /> */}
 
-        <section className="grid grid-cols-1 gap-8 p-2 lg:grid-cols-2 xl:grid-cols-[2.5fr_1fr]">
+        {/* <section className="grid grid-cols-1 gap-8 p-2 lg:grid-cols-2 xl:grid-cols-[2.5fr_1fr]">
           <div className="space-y-6">
             <Card className="group hover:shadow-3xl rounded-4xl border-blue-100/80 bg-linear-to-br from-white/95 via-white to-slate-50/80 p-8 shadow-2xl backdrop-blur-md transition-all duration-700 hover:-translate-y-3 hover:shadow-blue-500/10">
               <OverallStrengthCard
@@ -437,17 +437,17 @@ export default function PrincipalDashboard() {
               showViewAll={true}
             />
           </div>
-        </section>
+        </section> */}
 
-        <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-2xl transition-all duration-500">
+        {/* <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-2xl transition-all duration-500">
           <AnalyticsDashboard
             stats={analyticsStats}
             loading={analyticsLoading}
             error={analyticsError}
           />
-        </section>
+        </section> */}
 
-        <footer className="border-gradient-to-r mt-20 rounded-3xl border-t-4 bg-linear-to-br from-blue-400 via-purple-500 to-slate-50/50 px-8 py-10 text-slate-600 shadow-2xl backdrop-blur-xl">
+        {/* <footer className="border-gradient-to-r mt-20 rounded-3xl border-t-4 bg-linear-to-br from-blue-400 via-purple-500 to-slate-50/50 px-8 py-10 text-slate-600 shadow-2xl backdrop-blur-xl">
           <div className="mb-6 flex justify-center gap-8">
             <a
               href="#"
@@ -515,7 +515,7 @@ export default function PrincipalDashboard() {
           <p className="mt-6 text-center text-lg font-semibold text-slate-500">
             &copy; {new Date().getFullYear()} OSRA System - All Rights Reserved | Premium Dashboard
           </p>
-        </footer>
+        </footer> */}
       </main>
     </div>
   )
