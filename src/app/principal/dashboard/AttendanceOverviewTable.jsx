@@ -51,7 +51,7 @@ export default function AttendanceOverviewTable({ title, rows = [], loading = fa
             <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-4 py-3">Group</th>
-                <th className="px-4 py-3">Total Students</th>
+                <th className="px-4 py-3">Total</th>
                 <th className="px-4 py-3">FN Present</th>
                 <th className="px-4 py-3">FN Absent</th>
                 <th className="px-4 py-3">FN %</th>

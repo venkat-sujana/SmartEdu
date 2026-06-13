@@ -185,7 +185,7 @@ export default function PrincipalDashboard() {
     {
       title: 'Total Students',
       value: summary?.totalStudents ?? 0,
-      subtitle: 'Active students across the college',
+      
       icon: GraduationCap,
       accentClassName: 'text-blue-950',
       iconClassName: 'bg-blue-100 text-blue-700',
@@ -193,7 +193,7 @@ export default function PrincipalDashboard() {
     {
       title: 'Total Lecturers',
       value: summary?.totalLecturers ?? 0,
-      subtitle: 'Teaching staff available in the institution',
+      
       icon: Users,
       accentClassName: 'text-emerald-950',
       iconClassName: 'bg-emerald-100 text-emerald-700',
@@ -201,7 +201,7 @@ export default function PrincipalDashboard() {
     {
       title: 'Total Groups',
       value: summary?.totalGroups ?? 0,
-      subtitle: 'Academic groups currently active',
+      
       icon: LayoutGrid,
       accentClassName: 'text-violet-950',
       iconClassName: 'bg-violet-100 text-violet-700',
@@ -209,7 +209,7 @@ export default function PrincipalDashboard() {
     {
       title: "Today's Attendance %",
       value: `${Number(absenteesSummary?.percentage ?? summary?.attendancePercentage ?? 0)}%`,
-      subtitle: `${absenteesSummary?.grandPresent ?? summary?.totalPresentToday ?? 0} present out of ${absenteesSummary?.grandTotal ?? 0} marked records today`,
+      
       icon: Percent,
       accentClassName: 'text-amber-950',
       iconClassName: 'bg-amber-100 text-amber-700',
@@ -217,7 +217,7 @@ export default function PrincipalDashboard() {
     {
       title: 'Total Absentees Today',
       value: absenteesSummary?.grandAbsent ?? summary?.totalAbsenteesToday ?? 0,
-      subtitle: 'Actual absent records marked across FN and AN sessions',
+      
       icon: UserRoundCheck,
       accentClassName: 'text-rose-950',
       iconClassName: 'bg-rose-100 text-rose-700',
@@ -225,40 +225,24 @@ export default function PrincipalDashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50/50 to-indigo-100/30 px-4 py-8 transition-all duration-500 sm:px-6 sm:py-10 lg:px-8 xl:px-12">
-      <main className="max-w-8xl mx-auto w-full space-y-8">
-        <section className="border-white-100/50 rounded-3xl border border-blue-100/50 bg-white/90 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50/50 to-indigo-100/30 px-4 py-6 transition-all duration-500 sm:px-6 sm:py-10 lg:px-8 xl:px-12">
+      <main className="max-w-8xl mx-auto w-full space-y-6">
+        <section className="border-white-100/50 rounded-3xl border border-blue-100/50 bg-white/90 p-4 shadow-xl backdrop-blur-xl sm:p-5">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="inline-block rounded-full bg-blue-100/50 px-3 py-1 text-sm font-bold tracking-wider text-blue-600 uppercase">
                 Principal Dashboard
               </p>
-              <h1 className="mt-1 bg-linear-to-r from-slate-900 to-slate-700 bg-clip-text text-4xl font-black tracking-tighter text-transparent lg:text-4xl">
+              <h1 className="mt-1 bg-linear-to-r from-slate-900 to-slate-700 bg-clip-text text-3xl font-black tracking-tighter text-transparent lg:text-3xl">
                 {collegeName}
               </h1>
               <p className="mt-1 text-base font-medium text-slate-500">{todayDateLabel}</p>
             </div>
-            {/* <div className="rounded-3xl border border-blue-200/50 bg-linear-to-r from-blue-50 to-indigo-50/50 px-6 py-4 shadow-lg ring-1 ring-blue-100/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
-              <div className="flex items-center gap-4">
-                <div className="rounded-3xl bg-linear-to-br from-blue-400 to-indigo-500 p-4 text-white shadow-lg transition-all duration-300 hover:rotate-6">
-                  <Building2 className="h-7 w-7" />
-                </div>
-
-                <div>
-                  <p className="text-sm font-bold tracking-widest text-blue-700 uppercase">
-                    Institution
-                  </p>
-                  <p className="blue-text-transparent bg-linear-to-r from-blue-900 to-slate-800 bg-clip-text text-xl font-black text-transparent">
-                    Daily Admin Overview
-                  </p>
-                </div>
-              </div>
-            </div> */}
           </div>
         </section>
 
         <section className="space-y-4">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {summaryCards.map(card => (
               <OverviewStatCard key={card.title} {...card} loading={overviewLoading} />
             ))}
@@ -270,23 +254,13 @@ export default function PrincipalDashboard() {
             {sessionSummaryCards.map(card => (
               <div
                 key={card.session}
-                className="rounded-3xl border border-white/60 bg-white/90 px-5 py-5 shadow-xl backdrop-blur-sm"
+                className="rounded-3xl border border-white/60 bg-white/90 px-2 py-2 shadow-xl backdrop-blur-sm"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="inline-block rounded-full bg-indigo-100/50 px-3 py-1 text-sm font-bold tracking-wider text-indigo-600 uppercase">
                       {card.session} Session
                     </p>
-                    <h3 className="mt-3 text-2xl font-black text-slate-900">
-                      Session-wise Attendance
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Present, absent, total, and percentage for {card.session}.
-                    </p>
-                  </div>
-                  <div className="rounded-3xl bg-linear-to-br from-indigo-500 to-blue-600 px-4 py-3 text-white shadow-lg">
-                    <p className="text-xs tracking-wide text-white/75 uppercase">Attendance</p>
-                    <p className="mt-1 text-2xl font-black">{card.percent}%</p>
                   </div>
                 </div>
 
@@ -295,19 +269,19 @@ export default function PrincipalDashboard() {
                     <p className="text-xs font-semibold tracking-wide text-emerald-700 uppercase">
                       Present
                     </p>
-                    <p className="mt-1 text-2xl font-black text-emerald-900">{card.present}</p>
+                    <p className="text-md mt-1 font-bold text-emerald-900">{card.present}</p>
                   </div>
                   <div className="rounded-2xl bg-rose-50 px-4 py-3">
                     <p className="text-xs font-semibold tracking-wide text-rose-700 uppercase">
                       Absent
                     </p>
-                    <p className="mt-1 text-2xl font-black text-rose-900">{card.absent}</p>
+                    <p className="mt-1 text-xl font-bold text-rose-900">{card.absent}</p>
                   </div>
                   <div className="rounded-2xl bg-slate-100 px-4 py-3">
                     <p className="text-xs font-semibold tracking-wide text-slate-700 uppercase">
-                      Total Marked
+                      Total
                     </p>
-                    <p className="mt-1 text-2xl font-black text-slate-900">{card.total}</p>
+                    <p className="mt-1 text-2xl font-bold text-slate-900">{card.total}</p>
                   </div>
                 </div>
               </div>
@@ -413,31 +387,16 @@ export default function PrincipalDashboard() {
         <AttendanceSmsHistoryCard endpoint="/api/attendance/shortage-summary/sms-logs?limit=8" />
         <PromotionCard /> */}
 
-        {/* <section className="grid grid-cols-1 gap-8 p-2 lg:grid-cols-2 xl:grid-cols-[2.5fr_1fr]">
-          <div className="space-y-6">
-            <Card className="group hover:shadow-3xl rounded-4xl border-blue-100/80 bg-linear-to-br from-white/95 via-white to-slate-50/80 p-8 shadow-2xl backdrop-blur-md transition-all duration-700 hover:-translate-y-3 hover:shadow-blue-500/10">
-              <OverallStrengthCard
-                sessionWisePresent={sessionWisePresent}
-                sessionWiseAbsentees={sessionWiseAbsentees}
-              />
-            </Card>
+        <section className="space-y-6 p-2">
+          <ConsecutiveAbsenteesCard
+            data={consecutiveAbsentees}
+            title="Students At Risk"
+            loading={!consecutiveData}
+            showViewAll={true}
+          />
 
-            <Card className="group hover:shadow-3xl rounded-4xl border-emerald-100/30 bg-linear-to-br from-white/95 via-white to-slate-50/80 p-8 shadow-2xl backdrop-blur-md transition-all duration-700 hover:-translate-y-3 hover:shadow-emerald-500/10">
-              <OverallAttendanceMatrixCard />
-            </Card>
-          </div>
-
-          <div className="space-y-6 lg:pt-12">
-            <ActiveLecturersCard title="Currently Active Lecturers" />
-
-            <ConsecutiveAbsenteesCard
-              data={consecutiveAbsentees}
-              title="Students At Risk"
-              loading={!consecutiveData}
-              showViewAll={true}
-            />
-          </div>
-        </section> */}
+          <ActiveLecturersCard title="Currently Active Lecturers" />
+        </section>
 
         {/* <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-2xl transition-all duration-500">
           <AnalyticsDashboard
@@ -447,75 +406,29 @@ export default function PrincipalDashboard() {
           />
         </section> */}
 
-        {/* <footer className="border-gradient-to-r mt-20 rounded-3xl border-t-4 bg-linear-to-br from-blue-400 via-purple-500 to-slate-50/50 px-8 py-10 text-slate-600 shadow-2xl backdrop-blur-xl">
-          <div className="mb-6 flex justify-center gap-8">
-            <a
-              href="#"
-              className="group relative rounded-3xl bg-slate-100 p-3 text-slate-600 shadow-lg transition-all duration-500 hover:scale-110 hover:bg-linear-to-r hover:from-blue-500 hover:to-blue-600 hover:text-white hover:shadow-2xl"
-              aria-label="Facebook"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                className="h-8 w-8 drop-shadow-lg group-hover:rotate-360"
-              >
-                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987H7.898v-2.89h2.54V9.845c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.874h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12z" />
-              </svg>
-            </a>
-            <a
-              href="#"
-              className="group relative rounded-3xl bg-slate-100 p-3 text-slate-600 shadow-lg transition-all duration-500 hover:scale-110 hover:bg-linear-to-r hover:from-sky-500 hover:to-sky-600 hover:text-white hover:shadow-2xl"
-              aria-label="Twitter"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="h-8 w-8 drop-shadow-lg group-hover:rotate-360"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"
-                />
-              </svg>
-            </a>
-            <a
-              href="#"
-              className="group relative rounded-3xl bg-slate-100 p-3 text-slate-600 shadow-lg transition-all duration-500 hover:scale-110 hover:bg-linear-to-r hover:from-pink-500 hover:to-rose-500 hover:text-white hover:shadow-2xl"
-              aria-label="Instagram"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                className="h-8 w-8 drop-shadow-lg group-hover:rotate-360"
-              >
-                <path d="M7.75 2A5.75 5.75 0 002 7.75v8.5A5.75 5.75 0 007.75 22h8.5A5.75 5.75 0 0022 16.25v-8.5A5.75 5.75 0 0016.25 2h-8.5zm8.72 6.03a.75.75 0 011.06 1.06l-5.25 5.25a.75.75 0 01-1.06 0L6.47 11.53a.75.75 0 011.06-1.06l3.47 3.47 4.47-4.47z" />
-              </svg>
-            </a>
-            <a
-              href="#"
-              className="group relative rounded-3xl bg-slate-100 p-3 text-slate-600 shadow-lg transition-all duration-500 hover:scale-110 hover:bg-linear-to-r hover:from-blue-500 hover:to-indigo-600 hover:text-white hover:shadow-2xl"
-              aria-label="LinkedIn"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                className="h-8 w-8 drop-shadow-lg group-hover:rotate-360"
-              >
-                <path d="M4.98 3.5C3.33 3.5 2 4.83 2 6.48v11.04C2 19.17 3.33 20.5 4.98 20.5h14.04c1.65 0 2.98-1.33 2.98-2.98V6.48c0-1.65-1.33-2.98-2.98-2.98H4.98zM8.75 17h-2v-7h2v7zm-1-8.27a1.27 1.27 0 110-2.54 1.27 1.27 0 010 2.54zM18 17h-2v-3.6c0-2.07-2.5-1.91-2.5 0V17h-2v-7h2v1.06c.87-1.61 4.5-1.73 4.5 1.55V17z" />
-              </svg>
-            </a>
-          </div>
-          <p className="mt-6 text-center text-lg font-semibold text-slate-500">
-            &copy; {new Date().getFullYear()} OSRA System - All Rights Reserved | Premium Dashboard
-          </p>
-        </footer> */}
+        <footer className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <div className="flex flex-col items-center justify-between gap-4 px-6 py-5 md:flex-row">
+    <div>
+      <h3 className="bg-linear-to-r from-blue-700 to-indigo-700 bg-clip-text text-lg font-bold text-transparent">
+        OSRA
+      </h3>
+
+      <p className="text-sm text-slate-500">
+        Online Student Record & Attendance Management System
+      </p>
+    </div>
+
+    <div className="text-center md:text-right">
+      <p className="text-sm font-medium text-slate-700">
+        Principal Dashboard
+      </p>
+
+      <p className="text-xs text-slate-500">
+        © {new Date().getFullYear()} All Rights Reserved
+      </p>
+    </div>
+  </div>
+</footer>
       </main>
     </div>
   )

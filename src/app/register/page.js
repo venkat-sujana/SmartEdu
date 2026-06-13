@@ -50,23 +50,18 @@ const castes = [
   'OTHER',
 ]
 
-const baseInputClass = `w-full rounded-3xl border border-slate-200/50 bg-white/80 px-4 py-3.5 text-sm font-medium text-slate-900 
-  backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.01] focus:scale-[1.02] focus:border-cyan-500/70 
-  focus:shadow-xl focus:ring-4 focus:ring-cyan-500/30 focus:ring-offset-0 transition-all duration-300 
-  placeholder:text-slate-400`
-
 const modernInputClass =
-  'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/15'
+  'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/15'
 
 function SectionHeader({ icon: Icon, iconClassName, title, description }) {
   return (
-    <div className="mb-5 flex items-start gap-3">
-      <div className={['rounded-2xl p-2.5 shadow-sm', iconClassName].join(' ')}>
-        <Icon className="h-5 w-5 text-white" />
+    <div className="mb-3 flex items-start gap-2.5">
+      <div className={['rounded-xl p-2 shadow-sm', iconClassName].join(' ')}>
+        <Icon className="h-4 w-4 text-white" />
       </div>
       <div>
-        <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-        <p className="mt-1 text-sm text-slate-500">{description}</p>
+        <h3 className="text-base font-bold text-slate-900">{title}</h3>
+        {description ? <p className="mt-0.5 text-xs text-slate-500">{description}</p> : null}
       </div>
     </div>
   )
@@ -74,9 +69,9 @@ function SectionHeader({ icon: Icon, iconClassName, title, description }) {
 
 function FieldLabel({ icon: Icon, iconClassName, children }) {
   return (
-    <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
-      <span className={['rounded-xl p-2 shadow-sm', iconClassName].join(' ')}>
-        <Icon className="h-4 w-4 text-white" />
+    <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
+      <span className={['rounded-lg p-1.5 shadow-sm', iconClassName].join(' ')}>
+        <Icon className="h-3.5 w-3.5 text-white" />
       </span>
       <span>{children}</span>
     </label>
@@ -289,50 +284,45 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-linear(circle_at_top,rgba(14,165,233,0.12),transparent_28%),linear-linear(180deg,#f8fafc_0%,#eef6ff_52%,#f8fafc_100%)] p-4 sm:p-6 lg:p-8">
-      {/* Enhanced Loading Overlay */}
+    <main className="min-h-screen bg-[radial-linear(circle_at_top,rgba(14,165,233,0.12),transparent_28%),linear-linear(180deg,#f8fafc_0%,#eef6ff_52%,#f8fafc_100%)] p-2 sm:p-4 lg:p-6">
+      {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white/95 p-8 shadow-2xl backdrop-blur-xl ring-1 ring-white/50 animate-in fade-in zoom-in duration-300">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-r from-cyan-500 to-emerald-500 shadow-lg">
-              <Loader2 className="h-6 w-6 animate-spin text-white" />
+          <div className="animate-in fade-in zoom-in w-full max-w-sm rounded-2xl bg-white/95 p-6 shadow-2xl ring-1 ring-white/50 backdrop-blur-xl duration-300">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-r from-cyan-500 to-emerald-500 shadow-lg">
+              <Loader2 className="h-5 w-5 animate-spin text-white" />
             </div>
-            <p className="mt-4 text-center text-lg font-black text-slate-800">Registering Student</p>
-            <p className="mt-1 text-center text-sm text-slate-600">Please wait while we process the data...</p>
+            <p className="mt-3 text-center text-base font-bold text-slate-800">
+              Registering Student
+            </p>
+            <p className="mt-1 text-center text-xs text-slate-600">
+              Please wait while we process the data...
+            </p>
           </div>
         </div>
       )}
 
       <div className="mx-auto max-w-md sm:max-w-3xl lg:max-w-6xl">
-        {/* Premium Header Card */}
-        <div className="mx-auto mb-8 max-w-5xl rounded-[28px] border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur md:p-8 ring-1 ring-slate-200/60">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="flex items-start gap-4">
-              <div className="rounded-3xl bg-linear-to-r from-cyan-500 to-blue-600 p-3 shadow-lg">
-                <School className="h-7 w-7 text-white" />
-              </div>
+        {/* Header Card */}
+        <div className="mx-auto mb-3 max-w-5xl rounded-2xl border border-white/70 bg-white/90 p-3 shadow-md ring-1 ring-slate-200/60 backdrop-blur md:p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex items-start gap-3">
               <div className="flex-1">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  Student Registration
+                <p className="mb-0.5 text-xs font-semibold tracking-[0.18em] text-slate-500 uppercase">
+                  Student Admission Form
                 </p>
-                <h1 className="text-2xl font-black text-slate-900 sm:text-3xl lg:text-4xl">
-                  Create Student Profile
-                </h1>
-                
-                <p className="mt-3 text-sm font-semibold text-cyan-700">
+                <p className="mt-1 text-sm font-semibold text-cyan-700">
                   {collegeName || 'Loading college...'}
                 </p>
               </div>
             </div>
-
-            
           </div>
 
           {returnUrl ? (
-            <div className="mt-6 border-t border-slate-200 pt-5">
+            <div className="mt-2 border-t border-slate-200 pt-2">
               <Link
                 href={returnUrl}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-700"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-700"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to Dashboard
@@ -342,140 +332,197 @@ export default function RegisterPage() {
         </div>
 
         {/* Main Form Card */}
-        <div className="mx-auto max-w-5xl rounded-[30px] border border-white/70 bg-white/92 p-6 shadow-2xl backdrop-blur-xl ring-1 ring-slate-200/60 sm:p-8 lg:p-10">
-          {/* Header Badge & Title */}
-          <div className="mb-8 border-b border-slate-200 pb-6">
-            <div className="inline-flex items-center gap-2 rounded-2xl bg-linear-to-r from-cyan-600 via-blue-600 to-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-md">
-              <PlusCircle className="h-5 w-5" />
-              New Student Registration
-            </div>
-            <h2 className="mt-5 text-3xl font-black text-slate-900 sm:text-[2rem]">Student Information Form</h2>
-            
+        <div className="mx-auto max-w-5xl rounded-2xl border border-white/70 bg-white/92 p-3 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl sm:p-4">
+          {/* Title */}
+          <div className="mb-3 border-b border-slate-200 pb-2">
+            <h2 className="text-lg font-black text-slate-900 sm:text-xl">
+              New Student Admission Form-2026-2027
+            </h2>
           </div>
 
-          {/* Form Grid */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Personal Info Section */}
-            <section className="rounded-[26px] border border-slate-200 bg-slate-50/80 p-5 md:p-6">
+            <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3 md:p-4">
               <SectionHeader
                 icon={User}
                 iconClassName="bg-gradient-to-br from-cyan-500 to-blue-600"
                 title="Personal Details"
-                
               />
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <div>
-                <FieldLabel icon={User} iconClassName="bg-gradient-to-r from-cyan-500 to-blue-500">Full Name *</FieldLabel>
-                <input
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter full name"
-                  className={modernInputClass}
-                  required
-                />
-              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                  <FieldLabel
+                    icon={User}
+                    iconClassName="bg-gradient-to-r from-cyan-500 to-blue-500"
+                  >
+                    Full Name *
+                  </FieldLabel>
+                  <input
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Enter full name"
+                    className={modernInputClass}
+                    required
+                  />
+                </div>
 
-              <div>
-                <FieldLabel icon={Pencil} iconClassName="bg-gradient-to-r from-emerald-500 to-green-500">Father&apos;s Name *</FieldLabel>
-                <input
-                  name="fatherName"
-                  value={formData.fatherName}
-                  onChange={handleChange}
-                  placeholder="Enter father&apos;s name"
-                  className={modernInputClass}
-                  required
-                />
-              </div>
+                <div>
+                  <FieldLabel
+                    icon={Pencil}
+                    iconClassName="bg-gradient-to-r from-emerald-500 to-green-500"
+                  >
+                    Father&apos;s Name *
+                  </FieldLabel>
+                  <input
+                    name="fatherName"
+                    value={formData.fatherName}
+                    onChange={handleChange}
+                    placeholder="Enter father's name"
+                    className={modernInputClass}
+                    required
+                  />
+                </div>
 
-              <div>
-                <FieldLabel icon={Phone} iconClassName="bg-gradient-to-r from-indigo-500 to-violet-500">Mobile Number *</FieldLabel>
-                <input
-                  name="mobile"
-                  type="tel"
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  placeholder="10-digit mobile number"
-                  className={modernInputClass}
-                  required
-                />
-              </div>
+                <div>
+                  <FieldLabel
+                    icon={Phone}
+                    iconClassName="bg-gradient-to-r from-indigo-500 to-violet-500"
+                  >
+                    Mobile Number *
+                  </FieldLabel>
+                  <input
+                    name="mobile"
+                    type="tel"
+                    value={formData.mobile}
+                    onChange={handleChange}
+                    placeholder="10-digit mobile number"
+                    className={modernInputClass}
+                    required
+                  />
+                </div>
 
-              <div>
-                <FieldLabel icon={Phone} iconClassName="bg-gradient-to-r from-sky-500 to-cyan-500">Parent Mobile Number *</FieldLabel>
-                <input
-                  name="parentMobile"
-                  type="tel"
-                  value={formData.parentMobile}
-                  onChange={handleChange}
-                  placeholder="10-digit parent mobile number"
-                  className={modernInputClass}
-                  required
-                />
-              </div>
+                <div>
+                  <FieldLabel
+                    icon={Phone}
+                    iconClassName="bg-gradient-to-r from-sky-500 to-cyan-500"
+                  >
+                    Parent Mobile Number *
+                  </FieldLabel>
+                  <input
+                    name="parentMobile"
+                    type="tel"
+                    value={formData.parentMobile}
+                    onChange={handleChange}
+                    placeholder="10-digit parent mobile number"
+                    className={modernInputClass}
+                    required
+                  />
+                </div>
               </div>
             </section>
 
-            <section className="rounded-[26px] border border-slate-200 bg-white p-5 md:p-6">
+            {/* Admission Details */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4">
               <SectionHeader
                 icon={IdCard}
                 iconClassName="bg-gradient-to-br from-amber-500 to-orange-500"
                 title="Admission Details"
-                
               />
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <FieldLabel icon={IdCard} iconClassName="bg-gradient-to-r from-amber-500 to-orange-500">Admission Number *</FieldLabel>
-                <input
-                  name="admissionNo"
-                  value={formData.admissionNo}
-                  onChange={handleChange}
-                  placeholder="e.g., 24MPC018"
-                  disabled={isSecondYear}
-                  className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
-                  required={!isSecondYear}
-                />
-                {isSecondYear ? (
-                  <p className="mt-2 text-xs font-medium text-slate-500">
-                    Admission number is disabled for second-year students.
-                  </p>
-                ) : null}
-              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                <div>
+                  <FieldLabel
+                    icon={IdCard}
+                    iconClassName="bg-gradient-to-r from-amber-500 to-orange-500"
+                  >
+                    Admission Number *
+                  </FieldLabel>
+                  <input
+                    name="admissionNo"
+                    value={formData.admissionNo}
+                    onChange={handleChange}
+                    placeholder="e.g., 24MPC018"
+                    disabled={isSecondYear}
+                    className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
+                    required={!isSecondYear}
+                  />
+                  {isSecondYear ? (
+                    <p className="mt-1.5 text-xs font-medium text-slate-500">
+                      Admission number is disabled for second-year students.
+                    </p>
+                  ) : null}
+                </div>
 
-              <div>
-                <FieldLabel icon={Users2} iconClassName="bg-gradient-to-r from-violet-500 to-purple-500">Group *</FieldLabel>
-                <select name="group" value={formData.group} onChange={handleChange} className={modernInputClass} required>
-                  <option value="">Select Academic Group</option>
-                  {availableGroups.map(group => (
-                    <option key={group} value={group}>{group}</option>
-                  ))}
-                </select>
-              </div>
+                <div>
+                  <FieldLabel
+                    icon={Users2}
+                    iconClassName="bg-gradient-to-r from-violet-500 to-purple-500"
+                  >
+                    Group *
+                  </FieldLabel>
+                  <select
+                    name="group"
+                    value={formData.group}
+                    onChange={handleChange}
+                    className={modernInputClass}
+                    required
+                  >
+                    <option value="">Select Academic Group</option>
+                    {availableGroups.map(group => (
+                      <option key={group} value={group}>
+                        {group}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div>
-                <FieldLabel icon={IdCard} iconClassName="bg-gradient-to-r from-rose-500 to-pink-500">Caste *</FieldLabel>
-                <select name="caste" value={formData.caste} onChange={handleChange} className={modernInputClass} required>
-                  <option value="">Select Caste Category</option>
-                  {castes.map(caste => (
-                    <option key={caste} value={caste}>{caste}</option>
-                  ))}
-                </select>
-              </div>
+                <div>
+                  <FieldLabel
+                    icon={IdCard}
+                    iconClassName="bg-gradient-to-r from-rose-500 to-pink-500"
+                  >
+                    Caste *
+                  </FieldLabel>
+                  <select
+                    name="caste"
+                    value={formData.caste}
+                    onChange={handleChange}
+                    className={modernInputClass}
+                    required
+                  >
+                    <option value="">Select Caste Category</option>
+                    {castes.map(caste => (
+                      <option key={caste} value={caste}>
+                        {caste}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </section>
 
             {/* Academic Info */}
-            <section className="rounded-[26px] border border-slate-200 bg-slate-50/80 p-5 md:p-6">
+            <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3 md:p-4">
               <SectionHeader
                 icon={CalendarCheck2}
                 iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500"
                 title="Academic Details"
-                
               />
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                 <div>
-                  <FieldLabel icon={Users2} iconClassName="bg-gradient-to-r from-lime-500 to-emerald-500">Gender *</FieldLabel>
-                  <select name="gender" value={formData.gender} onChange={handleChange} className={modernInputClass} required>
+                  <FieldLabel
+                    icon={Users2}
+                    iconClassName="bg-gradient-to-r from-lime-500 to-emerald-500"
+                  >
+                    Gender *
+                  </FieldLabel>
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    className={modernInputClass}
+                    required
+                  >
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -484,8 +531,19 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <FieldLabel icon={CalendarCheck2} iconClassName="bg-gradient-to-r from-green-500 to-teal-500">Year of Study *</FieldLabel>
-                  <select name="yearOfStudy" value={formData.yearOfStudy} onChange={handleChange} className={modernInputClass} required>
+                  <FieldLabel
+                    icon={CalendarCheck2}
+                    iconClassName="bg-gradient-to-r from-green-500 to-teal-500"
+                  >
+                    Year of Study *
+                  </FieldLabel>
+                  <select
+                    name="yearOfStudy"
+                    value={formData.yearOfStudy}
+                    onChange={handleChange}
+                    className={modernInputClass}
+                    required
+                  >
                     <option value="">Select Year</option>
                     <option value="First Year">First Year</option>
                     <option value="Second Year">Second Year</option>
@@ -493,7 +551,12 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <FieldLabel icon={CalendarCheck2} iconClassName="bg-gradient-to-r from-teal-500 to-cyan-500">Admission Year *</FieldLabel>
+                  <FieldLabel
+                    icon={CalendarCheck2}
+                    iconClassName="bg-gradient-to-r from-teal-500 to-cyan-500"
+                  >
+                    Admission Year *
+                  </FieldLabel>
                   <input
                     type="number"
                     name="admissionYear"
@@ -508,7 +571,12 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="lg:col-span-2">
-                  <FieldLabel icon={CalendarCheck2} iconClassName="bg-gradient-to-r from-sky-500 to-blue-500">Date of Joining *</FieldLabel>
+                  <FieldLabel
+                    icon={CalendarCheck2}
+                    iconClassName="bg-gradient-to-r from-sky-500 to-blue-500"
+                  >
+                    Date of Joining *
+                  </FieldLabel>
                   <input
                     type="date"
                     name="dateOfJoining"
@@ -519,7 +587,7 @@ export default function RegisterPage() {
                     required={!isSecondYear}
                   />
                   {isSecondYear ? (
-                    <p className="mt-2 text-xs font-medium text-slate-500">
+                    <p className="mt-1.5 text-xs font-medium text-slate-500">
                       Date of joining is auto-set from admission year for second-year students.
                     </p>
                   ) : null}
@@ -527,102 +595,89 @@ export default function RegisterPage() {
               </div>
             </section>
 
-            {/* Full Width Fields */}
-            <section className="rounded-[26px] border border-slate-200 bg-white p-5 md:p-6">
-              {/* <SectionHeader
-                icon={FileInput}
-                iconClassName="bg-gradient-to-br from-indigo-500 to-cyan-500"
-                title="Credentials and Assets"
-                description="Optionally set login credentials and attach a profile image."
-              /> */}
-              <div className="space-y-6">
-              {/* <div>
-                <FieldLabel icon={KeyRound} iconClassName="bg-gradient-to-r from-sky-500 to-indigo-500">Password (Optional)</FieldLabel>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Leave empty for server default password"
-                  className={modernInputClass}
-                />
-              </div> */}
-
-              <div>
-                <FieldLabel icon={MapPin} iconClassName="bg-gradient-to-r from-rose-500 to-red-500">Complete Address *</FieldLabel>
-                <textarea
-                  name="address"
-                  rows={4}
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="Enter complete residential address"
-                  className={`${modernInputClass} min-h-[120px] resize-vertical`}
-                  required
-                />
-              </div>
-
-              <div>
-                <FieldLabel icon={ImageUp} iconClassName="bg-gradient-to-r from-blue-500 to-purple-500">Profile Photo (Optional)</FieldLabel>
-                <div className="group">
-                  <input
-                    id="photo"
-                    name="photo"
-                    type="file"
-                    accept="image/*"
-                    onChange={e => setPhoto(e.target.files?.[0] || null)}
-                    className="block w-full cursor-pointer rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50
-                      px-6 py-8 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300
-                      hover:border-cyan-400 hover:bg-cyan-50/50 hover:shadow-md
-                      file:hidden"
+            {/* Address & Photo */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4">
+              <div className="space-y-4">
+                <div>
+                  <FieldLabel
+                    icon={MapPin}
+                    iconClassName="bg-gradient-to-r from-rose-500 to-red-500"
+                  >
+                    Complete Address *
+                  </FieldLabel>
+                  <textarea
+                    name="address"
+                    rows={3}
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="Enter complete residential address"
+                    className={`${modernInputClass} resize-vertical min-h-[90px]`}
+                    required
                   />
-                  <label htmlFor="photo" className="cursor-pointer">
-                    <div className="flex flex-col items-center justify-center p-4 transition-all group-hover:scale-[1.02]">
-                      <ImageUp className="h-8 w-8 text-slate-400 group-hover:text-cyan-600" />
-                      <p className="mt-2 text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                        Click to upload student photo
-                      </p>
-                      <p className="text-xs text-slate-400">PNG, JPG up to 5MB</p>
-                    </div>
-                  </label>
                 </div>
-                {photoPreview && (
-                  <div className="mt-4 flex items-center gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <Image
-                      src={photoPreview}
-                      alt="Student preview"
-                      width={96}
-                      height={96}
-                      className="h-24 w-24 rounded-2xl object-cover shadow-sm"
+
+                <div>
+                  <FieldLabel
+                    icon={ImageUp}
+                    iconClassName="bg-gradient-to-r from-blue-500 to-purple-500"
+                  >
+                    Profile Photo (Optional)
+                  </FieldLabel>
+                  <div className="group">
+                    <input
+                      id="photo"
+                      name="photo"
+                      type="file"
+                      accept="image/*"
+                      onChange={e => setPhoto(e.target.files?.[0] || null)}
+                      className="block w-full cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300 file:hidden hover:border-cyan-400 hover:bg-cyan-50/50 hover:shadow-md"
                     />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-slate-800">{photo?.name}</p>
-                      <p className="text-xs text-slate-500">Preview ready for upload</p>
-                    </div>
+                    <label htmlFor="photo" className="cursor-pointer">
+                      <div className="flex flex-col items-center justify-center p-2 transition-all group-hover:scale-[1.02]">
+                        <ImageUp className="h-6 w-6 text-slate-400 group-hover:text-cyan-600" />
+                        <p className="mt-1.5 text-sm font-medium text-slate-700 group-hover:text-slate-900">
+                          Click to upload student photo
+                        </p>
+                        <p className="text-xs text-slate-400">PNG, JPG up to 5MB</p>
+                      </div>
+                    </label>
                   </div>
-                )}
-              </div>
+                  {photoPreview && (
+                    <div className="mt-3 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <Image
+                        src={photoPreview}
+                        alt="Student preview"
+                        width={72}
+                        height={72}
+                        className="h-18 w-18 rounded-xl object-cover shadow-sm"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-800">
+                          {photo?.name}
+                        </p>
+                        <p className="text-xs text-slate-500">Preview ready for upload</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </section>
 
             {/* Submit Button */}
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-3xl bg-linear-to-r 
-                  from-cyan-600 via-blue-600 to-emerald-600 px-8 py-4 text-base font-bold text-white shadow-xl 
-                  transition-all duration-300 hover:from-cyan-700 hover:via-blue-700 hover:to-emerald-700 
-                  hover:shadow-2xl active:scale-[0.99] disabled:cursor-not-allowed 
-                  disabled:from-slate-400 disabled:to-slate-500 disabled:shadow-none disabled:scale-100"
+                className="group relative flex w-full items-center justify-center gap-2.5 rounded-2xl bg-linear-to-r from-cyan-600 via-blue-600 to-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:from-cyan-700 hover:via-blue-700 hover:to-emerald-700 hover:shadow-xl active:scale-[0.99] disabled:scale-100 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-500 disabled:shadow-none"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Registering Student...
                   </>
                 ) : (
                   <>
-                    <FileInput className="h-5 w-5" />
+                    <FileInput className="h-4 w-4" />
                     Register Student
                   </>
                 )}
