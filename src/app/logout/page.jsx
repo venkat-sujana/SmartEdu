@@ -7,3 +7,15 @@ export default function LogoutSuccessPage() {
     </div>
   )
 }
+
+export const metadata = {
+  title: "OSRA",
+  description: "Online Student Record and Attendance Application",
+
+  manifest: "/manifest.json",
+
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/images/osra-6.png",
+  },
+};
