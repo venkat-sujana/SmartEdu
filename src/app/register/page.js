@@ -343,7 +343,7 @@ export default function RegisterPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Personal Info Section */}
-            <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3 md:p-4">
+            <section className="rounded-2xl border border-slate-200 bg-linear-to-br from-cyan-400 to-blue-100 p-3 md:p-4">
               <SectionHeader
                 icon={User}
                 iconClassName="bg-gradient-to-br from-cyan-500 to-blue-600"
@@ -351,12 +351,9 @@ export default function RegisterPage() {
               />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
-                  <FieldLabel
-                    icon={User}
-                    iconClassName="bg-gradient-to-r from-cyan-500 to-blue-500"
-                  >
-                    Full Name *
-                  </FieldLabel>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                     Full Name *
+                  </label>
                   <input
                     name="name"
                     value={formData.name}
@@ -368,12 +365,9 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <FieldLabel
-                    icon={Pencil}
-                    iconClassName="bg-gradient-to-r from-emerald-500 to-green-500"
-                  >
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
                     Father&apos;s Name *
-                  </FieldLabel>
+                  </label>
                   <input
                     name="fatherName"
                     value={formData.fatherName}
@@ -385,12 +379,9 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <FieldLabel
-                    icon={Phone}
-                    iconClassName="bg-gradient-to-r from-indigo-500 to-violet-500"
-                  >
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
                     Mobile Number *
-                  </FieldLabel>
+                  </label>
                   <input
                     name="mobile"
                     type="tel"
@@ -403,12 +394,9 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <FieldLabel
-                    icon={Phone}
-                    iconClassName="bg-gradient-to-r from-sky-500 to-cyan-500"
-                  >
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
                     Parent Mobile Number *
-                  </FieldLabel>
+                  </label>
                   <input
                     name="parentMobile"
                     type="tel"
@@ -422,100 +410,39 @@ export default function RegisterPage() {
               </div>
             </section>
 
-            {/* Admission Details */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4">
-              <SectionHeader
-                icon={IdCard}
-                iconClassName="bg-gradient-to-br from-amber-500 to-orange-500"
-                title="Admission Details"
-              />
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                <div>
-                  <FieldLabel
-                    icon={IdCard}
-                    iconClassName="bg-gradient-to-r from-amber-500 to-orange-500"
-                  >
-                    Admission Number *
-                  </FieldLabel>
-                  <input
-                    name="admissionNo"
-                    value={formData.admissionNo}
-                    onChange={handleChange}
-                    placeholder="e.g., 24MPC018"
-                    disabled={isSecondYear}
-                    className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
-                    required={!isSecondYear}
-                  />
-                  {isSecondYear ? (
-                    <p className="mt-1.5 text-xs font-medium text-slate-500">
-                      Admission number is disabled for second-year students.
-                    </p>
-                  ) : null}
-                </div>
-
-                <div>
-                  <FieldLabel
-                    icon={Users2}
-                    iconClassName="bg-gradient-to-r from-violet-500 to-purple-500"
-                  >
-                    Group *
-                  </FieldLabel>
-                  <select
-                    name="group"
-                    value={formData.group}
-                    onChange={handleChange}
-                    className={modernInputClass}
-                    required
-                  >
-                    <option value="">Select Academic Group</option>
-                    {availableGroups.map(group => (
-                      <option key={group} value={group}>
-                        {group}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <FieldLabel
-                    icon={IdCard}
-                    iconClassName="bg-gradient-to-r from-rose-500 to-pink-500"
-                  >
-                    Caste *
-                  </FieldLabel>
-                  <select
-                    name="caste"
-                    value={formData.caste}
-                    onChange={handleChange}
-                    className={modernInputClass}
-                    required
-                  >
-                    <option value="">Select Caste Category</option>
-                    {castes.map(caste => (
-                      <option key={caste} value={caste}>
-                        {caste}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </section>
 
             {/* Academic Info */}
-            <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3 md:p-4">
+            <section className="rounded-2xl border border-slate-200 bg-linear-to-br from-amber-200 to-orange-300 p-3 md:p-4">
               <SectionHeader
                 icon={CalendarCheck2}
                 iconClassName="bg-gradient-to-br from-emerald-500 to-teal-500"
                 title="Academic Details"
               />
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                <div>
-                  <FieldLabel
-                    icon={Users2}
-                    iconClassName="bg-gradient-to-r from-lime-500 to-emerald-500"
+
+               <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                    Year of Study *
+                  </label>
+                  <select
+                    name="yearOfStudy"
+                    value={formData.yearOfStudy}
+                    onChange={handleChange}
+                    className={modernInputClass}
+                    required
                   >
+                    <option value="">Select Year</option>
+                    <option value="First Year">First Year</option>
+                    <option value="Second Year">Second Year</option>
+                  </select>
+                </div>
+
+
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
                     Gender *
-                  </FieldLabel>
+                  </label>
                   <select
                     name="gender"
                     value={formData.gender}
@@ -530,33 +457,12 @@ export default function RegisterPage() {
                   </select>
                 </div>
 
-                <div>
-                  <FieldLabel
-                    icon={CalendarCheck2}
-                    iconClassName="bg-gradient-to-r from-green-500 to-teal-500"
-                  >
-                    Year of Study *
-                  </FieldLabel>
-                  <select
-                    name="yearOfStudy"
-                    value={formData.yearOfStudy}
-                    onChange={handleChange}
-                    className={modernInputClass}
-                    required
-                  >
-                    <option value="">Select Year</option>
-                    <option value="First Year">First Year</option>
-                    <option value="Second Year">Second Year</option>
-                  </select>
-                </div>
+                
 
                 <div>
-                  <FieldLabel
-                    icon={CalendarCheck2}
-                    iconClassName="bg-gradient-to-r from-teal-500 to-cyan-500"
-                  >
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
                     Admission Year *
-                  </FieldLabel>
+                  </label>
                   <input
                     type="number"
                     name="admissionYear"
@@ -571,12 +477,9 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="lg:col-span-2">
-                  <FieldLabel
-                    icon={CalendarCheck2}
-                    iconClassName="bg-gradient-to-r from-sky-500 to-blue-500"
-                  >
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
                     Date of Joining *
-                  </FieldLabel>
+                  </label>
                   <input
                     type="date"
                     name="dateOfJoining"
@@ -595,16 +498,85 @@ export default function RegisterPage() {
               </div>
             </section>
 
+
+            {/* Admission Details */}
+            <section className="rounded-2xl border border-slate-200 bg-linear-to-br from-rose-100 to-red-200 p-3 md:p-4">
+              <SectionHeader
+                icon={IdCard}
+                iconClassName="bg-gradient-to-br from-amber-500 to-orange-500"
+                title="Admission Details"
+              />
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                    Admission Number *
+                  </label>
+                  <input
+                    name="admissionNo"
+                    value={formData.admissionNo}
+                    onChange={handleChange}
+                    placeholder="e.g., 24MPC018"
+                    disabled={isSecondYear}
+                    className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
+                    required={!isSecondYear}
+                  />
+                  {isSecondYear ? (
+                    <p className="mt-1.5 text-xs font-medium text-slate-500">
+                      Admission number is disabled for second-year students.
+                    </p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                    Group *
+                  </label>
+                  <select
+                    name="group"
+                    value={formData.group}
+                    onChange={handleChange}
+                    className={modernInputClass}
+                    required
+                  >
+                    <option value="">Select Academic Group</option>
+                    {availableGroups.map(group => (
+                      <option key={group} value={group}>
+                        {group}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                    Caste *
+                  </label>
+                  <select
+                    name="caste"
+                    value={formData.caste}
+                    onChange={handleChange}
+                    className={modernInputClass}
+                    required
+                  >
+                    <option value="">Select Caste Category</option>
+                    {castes.map(caste => (
+                      <option key={caste} value={caste}>
+                        {caste}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            
             {/* Address & Photo */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-3 md:p-4">
+            <section className="rounded-2xl border border-slate-200     bg-linear-to-br from-green-300 to-blue-200 p-3 md:p-4">
               <div className="space-y-4">
                 <div>
-                  <FieldLabel
-                    icon={MapPin}
-                    iconClassName="bg-gradient-to-r from-rose-500 to-red-500"
-                  >
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
                     Complete Address *
-                  </FieldLabel>
+                  </label>
                   <textarea
                     name="address"
                     rows={3}
@@ -617,12 +589,9 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <FieldLabel
-                    icon={ImageUp}
-                    iconClassName="bg-gradient-to-r from-blue-500 to-purple-500"
-                  >
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
                     Profile Photo (Optional)
-                  </FieldLabel>
+                  </label>
                   <div className="group">
                     <input
                       id="photo"
