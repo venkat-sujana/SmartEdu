@@ -1,7 +1,7 @@
 //src/components/layout/Sidebar.jsx
 "use client";
 import Link from "next/link";
-import { Menu, Sparkles } from "lucide-react";
+import { Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { getDashboardRouteForLecturerSubject } from "@/utils/lecturerDashboardRoute";
@@ -15,6 +15,8 @@ import {
   UserGroupIcon,
   XCircleIcon,
 } from "@heroicons/react/24/solid";
+
+import dashboard from "@/app/dashboard/page";
 
 function SidebarLink({ href, label, icon, active, onClick }) {
   return (
@@ -60,8 +62,10 @@ export default function Sidebar({ onClose }) {
         { href: "/student-table", label: "Student Table", icon: <UserGroupIcon className="h-5 w-5 text-violet-500" /> },
         { href: "/lecturer-registration", label: "Lecturer Registration", icon: <AcademicCapIcon className="h-5 w-5 text-amber-500" /> },
         { href: "/principal-registration", label: "Principal Registration", icon: <UserCircleIcon className="h-5 w-5 text-indigo-500" /> },
+        
       ]
     : [
+        { href: "/dashboard", label: "Analytics", icon: <UserCircleIcon className="h-5 w-5 text-indigo-500" /> },
         { href: "/timetable-management/login", label: "Time Table Management", icon: <PencilSquareIcon className="h-5 w-5 text-sky-500" /> },
         { href: "/timetable", label: "Academic Time Table", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },
         { href: "/timetable/dashboard", label: "Time Table Dashboard", icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" /> },

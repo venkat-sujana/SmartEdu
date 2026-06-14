@@ -20,17 +20,13 @@ import {
   UserRoundCheck,
   Users,
 } from 'lucide-react'
-import OverallStrengthCard from '@/components/dashboard/OverallStrengthCard'
-import Tutorials from '@/components/tutorials/Tutorials'
 import { normalizeAttendanceGroup } from '@/utils/attendanceGroup'
-
-import MetricsCards from './MetricsCards'
 import AttendanceSmsCard from './AttendanceSmsCard'
 import PromotionCard from './PromotionCard'
 import OverviewStatCard from './OverviewStatCard'
 import AttendanceOverviewTable from './AttendanceOverviewTable'
-import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
-
+// import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
+import GroupDashboard from '@/app/dashboard/page'
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function PrincipalDashboard() {
@@ -387,16 +383,20 @@ export default function PrincipalDashboard() {
         <AttendanceSmsHistoryCard endpoint="/api/attendance/shortage-summary/sms-logs?limit=8" />
         <PromotionCard /> */}
 
-        <section className="space-y-6 p-2">
+        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <GroupDashboard />
+        </section>
+
+        {/* <section className="space-y-6 p-2">
           <ConsecutiveAbsenteesCard
             data={consecutiveAbsentees}
             title="Students At Risk"
             loading={!consecutiveData}
             showViewAll={true}
           />
+        </section> */}
 
-          <ActiveLecturersCard title="Currently Active Lecturers" />
-        </section>
+        <ActiveLecturersCard title="Currently Active Lecturers" />
 
         {/* <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-2xl transition-all duration-500">
           <AnalyticsDashboard
@@ -407,28 +407,26 @@ export default function PrincipalDashboard() {
         </section> */}
 
         <footer className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-  <div className="flex flex-col items-center justify-between gap-4 px-6 py-5 md:flex-row">
-    <div>
-      <h3 className="bg-linear-to-r from-blue-700 to-indigo-700 bg-clip-text text-lg font-bold text-transparent">
-        OSRA
-      </h3>
+          <div className="flex flex-col items-center justify-between gap-4 px-6 py-5 md:flex-row">
+            <div>
+              <h3 className="bg-linear-to-r from-blue-700 to-indigo-700 bg-clip-text text-lg font-bold text-transparent">
+                OSRA
+              </h3>
 
-      <p className="text-sm text-slate-500">
-        Online Student Record & Attendance Management System
-      </p>
-    </div>
+              <p className="text-sm text-slate-500">
+                Online Student Record & Attendance Management System
+              </p>
+            </div>
 
-    <div className="text-center md:text-right">
-      <p className="text-sm font-medium text-slate-700">
-        Principal Dashboard
-      </p>
+            <div className="text-center md:text-right">
+              <p className="text-sm font-medium text-slate-700">Principal Dashboard</p>
 
-      <p className="text-xs text-slate-500">
-        © {new Date().getFullYear()} All Rights Reserved
-      </p>
-    </div>
-  </div>
-</footer>
+              <p className="text-xs text-slate-500">
+                © {new Date().getFullYear()} All Rights Reserved
+              </p>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   )
