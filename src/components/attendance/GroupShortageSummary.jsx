@@ -4,18 +4,21 @@
 import { useEffect, useState } from "react";
 import { Printer } from "lucide-react";
 
-const months = [
-  { label: "JUN", year: "2026" },
-  { label: "JUL", year: "2026" },
-  { label: "AUG", year: "2026" },
-  { label: "SEP", year: "2026" },
-  { label: "OCT", year: "2026" },
-  { label: "NOV", year: "2026" },
-  { label: "DEC", year: "2026" },
-  { label: "JAN", year: "2027" },
-  { label: "FEB", year: "2027" },
-  { label: "MAR", year: "2027" },
-];
+// AFTER — component పైన constants తీసేసి, component లోపల generate చేయండి
+const ACADEMIC_MONTH_LABELS = ["JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR"];
+
+function getAcademicMonths() {
+  const now = new Date();
+  const currentMonth = now.getMonth() // 0=Jan
+  // June(5) కంటే ముందు ఉంటే previous year academic session
+  const startYear = currentMonth >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+  const endYear = startYear + 1;
+
+  return ACADEMIC_MONTH_LABELS.map(label => ({
+    label,
+    year: String(["JAN", "FEB", "MAR", "APR", "MAY"].includes(label) ? endYear : startYear),
+  }));
+}
 
 export default function GroupShortageSummary({
   group,
@@ -24,6 +27,7 @@ export default function GroupShortageSummary({
   collegeName = "College",
   className = "",
 }) {
+  const months = getAcademicMonths();
   const [summaryData, setSummaryData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const printAreaId = `print-area-${String(group || "group").replace(/\W+/g, "-")}-${String(year || "year").replace(/\W+/g, "-")}`;
@@ -53,18 +57,32 @@ export default function GroupShortageSummary({
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const shortageFilteredData = filteredData.filter(student => {
-    const totalPresent = months.reduce((sum, { label, year: monthYear }) => {
-      const key = `${label}-${monthYear}`;
-      return sum + (student.present?.[key] || 0);
-    }, 0);
-    const totalWorking = months.reduce((sum, { label, year: monthYear }) => {
-      const key = `${label}-${monthYear}`;
-      return sum + (student.workingDays?.[key] || 0);
-    }, 0);
-    const overallPercent = totalWorking > 0 ? (totalPresent / totalWorking) * 100 : 0;
-    return overallPercent < 75;
-  });
+
+
+
+
+  
+const computedData = filteredData.map(student => {
+  const totalPresent = months.reduce((sum, { label, year: monthYear }) => {
+    const key = `${label}-${monthYear}`;
+    return sum + (student.present?.[key] || 0);
+  }, 0);
+  const totalWorking = months.reduce((sum, { label, year: monthYear }) => {
+    const key = `${label}-${monthYear}`;
+    return sum + (student.workingDays?.[key] || 0);
+  }, 0);
+  const percent = totalWorking > 0 ? ((totalPresent / totalWorking) * 100).toFixed(2) : '0.00';
+  const requiredDays = Math.ceil(totalWorking * 0.75);
+  const shortage = requiredDays - totalPresent;
+  return { ...student, totalPresent, totalWorking, percent, shortage };
+});
+
+const shortageFilteredData = computedData.filter(s => parseFloat(s.percent) < 75);
+
+
+
+
+
 
   const handlePrint = () => {
     const printContent = document.getElementById(printAreaId)?.innerHTML || "";
@@ -96,7 +114,9 @@ export default function GroupShortageSummary({
   }
 
   return (
-    <div className={`mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5 ${className}`}>
+    <div className={`w-full ${className}`}>
+
+
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-slate-900">{group} - {year}</h2>
@@ -148,17 +168,8 @@ export default function GroupShortageSummary({
             </thead>
             <tbody>
               {shortageFilteredData.map((student, idx) => {
-                const totalPresent = months.reduce((sum, { label, year: monthYear }) => {
-                  const key = `${label}-${monthYear}`;
-                  return sum + (student.present?.[key] || 0);
-                }, 0);
-                const totalWorking = months.reduce((sum, { label, year: monthYear }) => {
-                  const key = `${label}-${monthYear}`;
-                  return sum + (student.workingDays?.[key] || 0);
-                }, 0);
-                const percent = totalWorking > 0 ? ((totalPresent / totalWorking) * 100).toFixed(2) : "0.00";
-                const requiredDays = Math.ceil(totalWorking * 0.75);
-                const shortage = requiredDays - totalPresent;
+                const { totalPresent, totalWorking, percent, shortage } = student;
+
 
                 return (
                   <tr key={idx} className="transition odd:bg-white even:bg-slate-50 hover:bg-blue-50">

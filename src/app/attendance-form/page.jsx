@@ -52,7 +52,7 @@ function Sidebar({ collapsed, mobileOpen, onToggleCollapsed, onCloseMobile }) {
       >
         <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
           <div className={collapsed ? 'hidden' : 'block'}>
-            <p className="text-xs uppercase tracking-wide text-slate-500">OSRA</p>
+            <p className="text-xs tracking-wide text-slate-500 uppercase">OSRA</p>
             <h1 className="text-sm font-semibold text-slate-900">Attendance Form</h1>
           </div>
           <button
@@ -92,7 +92,10 @@ function ToggleSwitch({ checked, onChange, color = 'green' }) {
     <button
       type="button"
       onClick={onChange}
-      className={['relative inline-flex h-6 w-11 items-center rounded-full transition', bgClass].join(' ')}
+      className={[
+        'relative inline-flex h-6 w-11 items-center rounded-full transition',
+        bgClass,
+      ].join(' ')}
       aria-pressed={checked}
     >
       <span
@@ -106,7 +109,7 @@ function ToggleSwitch({ checked, onChange, color = 'green' }) {
 }
 
 export default function AttendanceFormPage() {
-  const router = useRouter() 
+  const router = useRouter()
 
   const { data: session } = useSession()
   const searchParams = useSearchParams()
@@ -153,9 +156,12 @@ export default function AttendanceFormPage() {
         setLoadingStudents(true)
         setFeedback({ type: '', message: '' })
 
-        const res = await fetch(`/api/students?group=${encodeURIComponent(selectedGroup)}&status=all&limit=100`, {
-          cache: 'no-store',
-        })
+        const res = await fetch(
+          `/api/students?group=${encodeURIComponent(selectedGroup)}&status=all&limit=100`,
+          {
+            cache: 'no-store',
+          }
+        )
         const json = await res.json()
 
         if (json?.status === 'success') {
@@ -189,7 +195,8 @@ export default function AttendanceFormPage() {
   const absentCount = Object.values(attendanceMap).filter(status => status === 'Absent').length
   const naCount = Math.max(totalStudents - presentCount - absentCount, 0)
   const markedCount = presentCount + absentCount
-  const attendancePercentage = markedCount > 0 ? ((presentCount / markedCount) * 100).toFixed(1) : '0.0'
+  const attendancePercentage =
+    markedCount > 0 ? ((presentCount / markedCount) * 100).toFixed(1) : '0.0'
 
   const setStudentStatus = (studentId, status) => {
     setAttendanceMap(prev => ({
@@ -223,8 +230,17 @@ export default function AttendanceFormPage() {
   }
 
   const submitAttendance = async () => {
-    if (!selectedDate || !selectedGroup || !selectedYear || !selectedSession || students.length === 0) {
-      setFeedback({ type: 'error', message: 'Select date, group, year, session and ensure students are loaded.' })
+    if (
+      !selectedDate ||
+      !selectedGroup ||
+      !selectedYear ||
+      !selectedSession ||
+      students.length === 0
+    ) {
+      setFeedback({
+        type: 'error',
+        message: 'Select date, group, year, session and ensure students are loaded.',
+      })
       return
     }
 
@@ -252,7 +268,8 @@ export default function AttendanceFormPage() {
       if (json?.status === 'success') {
         setFeedback({
           type: 'success',
-          message: json.message || 'Attendance submitted successfully. Unselected students remain N/A.',
+          message:
+            json.message || 'Attendance submitted successfully. Unselected students remain N/A.',
         })
         router.refresh()
       } else {
@@ -276,7 +293,9 @@ export default function AttendanceFormPage() {
         onCloseMobile={() => setMobileSidebarOpen(false)}
       />
 
-      <div className={[contentPadding, 'flex h-full flex-col transition-all duration-300'].join(' ')}>
+      <div
+        className={[contentPadding, 'flex h-full flex-col transition-all duration-300'].join(' ')}
+      >
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -306,7 +325,7 @@ export default function AttendanceFormPage() {
         </header>
 
         <main className="flex-1 overflow-y-auto px-4 py-4">
-          <div className="mx-auto w-full max-w-6xl space-y-4">
+          <div className="w-full space-y-4">
             <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
               <div className="flex flex-wrap items-end gap-3">
                 <div className="min-w-[150px]">
@@ -508,7 +527,9 @@ export default function AttendanceFormPage() {
                           >
                             <td className="px-3 py-2">{index + 1}</td>
                             <td className="px-3 py-2 font-medium">{student.name}</td>
-                            <td className="px-3 py-2">{student.admissionNo || student.rollNumber || 'N/A'}</td>
+                            <td className="px-3 py-2">
+                              {student.admissionNo || student.rollNumber || 'N/A'}
+                            </td>
                             <td className="px-3 py-2 text-center">
                               <ToggleSwitch
                                 checked={current === 'Present'}

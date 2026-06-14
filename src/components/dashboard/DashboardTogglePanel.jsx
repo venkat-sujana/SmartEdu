@@ -220,5 +220,9 @@ const analyticsActions = actions.filter(action =>
 }
 
 function PanelShell({ children }) {
-  return <div className="w-full">{children}</div>
+  return (
+    <div className="w-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
+      {children}
+    </div>
+  )
 }

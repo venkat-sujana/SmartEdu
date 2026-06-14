@@ -5,7 +5,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
-import { CalendarCheck2, LayoutDashboard, UserPlus, Users2 } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 import TodayAbsenteesTable from '@/components/attendance/TodayAbsenteesTable'
 import AttendanceForm from '@/components/attendance/AttendanceForm'
 import IndividualReport from '@/components/attendance/IndividualReport'
@@ -71,9 +71,7 @@ export default function GroupDashboardPage({
   )
 
   const dashboardReturnUrl = returnUrl || `/dashboards/${routeSegment}`
-  const defaultOverview =
-    overviewDescription ||
-    `Monitor attendance, absentees, and shortage analytics for ${groupName} batches.`
+
   const addStudentHref = `/register?group=${encodeURIComponent(groupName)}&returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
   const marksPostingHref = `/exams-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
   const examDashboardHref = `/exams?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
@@ -88,7 +86,7 @@ export default function GroupDashboardPage({
 
   return (
     <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-4 md:p-6`}>
-      <div className="mx-auto max-w-7xl space-y-4">
+      <div className="w-full space-y-4">
         <div
           className={`flex items-center justify-between rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} px-4 py-3 shadow-sm`}
         >
@@ -116,7 +114,6 @@ export default function GroupDashboardPage({
             loading={!consecutiveData}
             showViewAll={false}
           /> */}
-
 
           <GroupAttendanceCard groupName={groupName} />
 
@@ -176,71 +173,21 @@ export default function GroupDashboardPage({
               showExamResults={showExamResults}
               examResultsContent={<GroupExamDashboardPanel groupName={groupName} />}
               groupMonthlyAttendanceContent={
-                <div className="mx-auto mt-6 max-w-7xl space-y-8 rounded-2xl bg-white/95 p-4 shadow-sm md:p-6">
-                  <h1 className="mb-2 text-center text-2xl font-bold text-slate-900">
-                    {collegeName} - {groupName} Attendance
-                  </h1>
+                <div className="space-y-4 py-2">
                   {years.map(year => (
-                    <GroupAttendanceSummary
-                      key={year}
-                      group={groupName}
-                      yearOfStudy={year}
-                      collegeName={collegeName}
-                    />
+                    <GroupAttendanceSummary key={year} group={groupName} yearOfStudy={year} />
                   ))}
-                  {includeEditAttendance ? (
-                    <div className="space-y-5 rounded-2xl border border-slate-200 bg-linear-to-br from-slate-50 to-white p-4 md:p-6">
-                      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3">
-                        <div>
-                          <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                            Attendance Shortage
-                          </p>
-                          <h2 className="mt-1 text-lg font-bold text-slate-900">
-                            Year-wise Risk Overview
-                          </h2>
-                        </div>
-                        <p className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                          {groupName} - First Year and Second Year
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                        <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                          <GroupShortageSummary
-                            group={groupName}
-                            year="First Year"
-                            collegeId={session?.user?.collegeId}
-                            collegeName={session?.user?.collegeName}
-                            className="border-0 p-0 shadow-none"
-                          />
-                        </div>
-                        <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                          <GroupShortageSummary
-                            group={groupName}
-                            year="Second Year"
-                            collegeId={session?.user?.collegeId}
-                            collegeName={session?.user?.collegeName}
-                            className="border-0 p-0 shadow-none"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-8 rounded-xl border border-slate-100 bg-slate-50/70 p-4 md:p-6">
+                  <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                    {years.map(year => (
                       <GroupShortageSummary
+                        key={year}
                         group={groupName}
-                        year="First Year"
+                        year={year}
                         collegeId={session?.user?.collegeId}
                         collegeName={session?.user?.collegeName}
                       />
-                      <GroupShortageSummary
-                        group={groupName}
-                        year="Second Year"
-                        collegeId={session?.user?.collegeId}
-                        collegeName={session?.user?.collegeName}
-                      />
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
               }
               {...editProps}
