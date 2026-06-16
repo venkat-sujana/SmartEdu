@@ -18,6 +18,13 @@ function normalizeAttendanceDate(value) {
   return date
 }
 
+function normalizeStartOfDay(value) {
+  if (!value) return null
+  const date = new Date(value)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
+
 // 🔽 POST Attendance
 export async function POST(req) {
   await connectMongoDB()
@@ -118,7 +125,7 @@ for (const record of markedRecords) {
   const student = studentMap.get(String(record.studentId))
   if (!student) continue
 
-  const joinDate = student.dateOfJoining ? new Date(student.dateOfJoining) : null
+  const joinDate = normalizeStartOfDay(student.dateOfJoining)
   const attendanceDate = normalizeAttendanceDate(record.date)
 
   if (joinDate && attendanceDate < joinDate) continue
@@ -171,6 +178,7 @@ for (const record of markedRecords) {
       status: 'success',
       markedCount: processedRecords.length,
       unmarkedCount,
+      skippedCount: markedRecords.length - processedRecords.length,
     })
   } catch (err) {
     console.error('POST Error:', err)

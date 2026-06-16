@@ -1,4 +1,4 @@
-//app/layout.js
+//src/app/layout.js
 "use client"
 
 import { Geist, Geist_Mono } from "next/font/google"
@@ -49,6 +49,8 @@ function AppShell({ children }) {
   const role = session?.user?.role
   const isStudent = role === "student"
 
+  const isAdminPanel = pathname === "/admin-panel"
+
   if (isAuthPage || isStandaloneModulePage) {
     return <div className="min-h-screen">{children}</div>
   }
@@ -66,11 +68,12 @@ function AppShell({ children }) {
       <Navbar onOpenDrawer={() => setDrawerOpen(true)} />
 
       <div className="min-h-screen pt-16 md:flex">
-        {!isStudent && (
-          <div className="hidden md:block">
-            <Sidebar />
-          </div>
-        )}
+
+        {!isStudent && !isAdminPanel && (
+  <div className="hidden md:block">
+    <Sidebar />
+  </div>
+)}
 
         {!isStudent && drawerOpen && (
           <div className="fixed inset-0 z-50 flex">
@@ -89,7 +92,15 @@ function AppShell({ children }) {
           </div>
         )}
 
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main
+  className={`flex-1 ${
+    isAdminPanel
+      ? "p-0 md:p-0"
+      : "p-4 md:p-6"
+  }`}
+>
+  {children}
+</main>
       </div>
     </>
   )

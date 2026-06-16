@@ -282,20 +282,13 @@ export default function AttendanceFormPage() {
     }
   }
 
-  const contentPadding = sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+  const contentPadding = '' // 0 padding on mobile, 64 on desktop to accommodate sidebar
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-100 text-sm">
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        mobileOpen={mobileSidebarOpen}
-        onToggleCollapsed={() => setSidebarCollapsed(prev => !prev)}
-        onCloseMobile={() => setMobileSidebarOpen(false)}
-      />
+    <div className="w-full h-screen overflow-hidden bg-slate-100 text-sm">
+      
 
-      <div
-        className={[contentPadding, 'flex h-full flex-col transition-all duration-300'].join(' ')}
-      >
+      <div className="flex h-full flex-col">
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <button
