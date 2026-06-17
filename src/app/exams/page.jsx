@@ -304,7 +304,7 @@ function Sidebar({
 
       <aside
         className={[
-          'fixed top-0 left-0 z-40 h-screen border-r border-white/60 bg-gradient-to-b from-slate-950 via-sky-950 to-cyan-900 text-white transition-all duration-300',
+          'fixed top-0 left-0 z-40 h-screen border-r border-white/60 bg-linear-to-b from-slate-950 via-sky-950 to-cyan-900 text-white transition-all duration-300',
           collapsed ? 'w-20' : 'w-64',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         ].join(' ')}
@@ -406,7 +406,7 @@ function SummaryCard({
   return (
     <article
       className={[
-        'rounded-lg border bg-gradient-to-br px-4 py-3 shadow-sm transition hover:-translate-y-0.5',
+        'rounded-lg border bg-linear-to-br px-4 py-3 shadow-sm transition hover:-translate-y-0.5',
         borderClassName,
         gradientClassName,
       ].join(' ')}
@@ -425,7 +425,7 @@ function SummaryCard({
 
 function StreamSummaryPanel({ title, accentClass, cards, onViewDetails }) {
   return (
-    <section className="rounded-xl border border-white/60 bg-gradient-to-br from-white via-slate-50 to-sky-100/70 px-4 py-4 shadow-sm">
+    <section className="rounded-xl border border-white/60 bg-linear-to-br from-white via-slate-50 to-sky-100/70 px-4 py-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
@@ -456,7 +456,7 @@ function StreamSummaryPanel({ title, accentClass, cards, onViewDetails }) {
 
 function UnitCard({ item, onViewDetails }) {
   return (
-    <article className="rounded-lg border border-blue-100 bg-gradient-to-br from-white via-sky-50 to-blue-100/80 px-4 py-3 shadow-sm transition hover:border-blue-300 hover:bg-blue-50/30">
+    <article className="rounded-lg border border-blue-100 bg-linear-to-br from-white via-sky-50 to-blue-100/80 px-4 py-3 shadow-sm transition hover:border-blue-300 hover:bg-blue-50/30">
       <h3 className="text-sm font-semibold text-slate-900">{item.unit}</h3>
       <div className="mt-3 space-y-1 text-xs text-slate-600">
         <p>
@@ -472,7 +472,7 @@ function UnitCard({ item, onViewDetails }) {
       <button
         type="button"
         onClick={() => onViewDetails({ examType: item.examType, title: item.unit })}
-        className="mt-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:from-blue-700 hover:to-cyan-700"
+        className="mt-3 rounded-lg bg-linear-to-r from-blue-600 to-cyan-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:from-blue-700 hover:to-cyan-700"
       >
         View Details
       </button>
@@ -485,7 +485,7 @@ function PublicExamCard({ item, onViewDetails }) {
     item.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
 
   return (
-    <article className="rounded-lg border border-violet-100 bg-gradient-to-br from-white via-violet-50 to-cyan-100/80 px-4 py-3 shadow-sm transition hover:border-violet-300">
+    <article className="rounded-lg border border-violet-100 bg-linear-to-br from-white via-violet-50 to-cyan-100/80 px-4 py-3 shadow-sm transition hover:border-violet-300">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-900">{item.name}</h3>
         <span className={['rounded-full px-2 py-1 text-[11px] font-medium', badgeClass].join(' ')}>
@@ -501,7 +501,7 @@ function PublicExamCard({ item, onViewDetails }) {
       <button
         type="button"
         onClick={() => onViewDetails({ examType: item.examType, title: item.name })}
-        className="mt-3 rounded-lg bg-gradient-to-r from-violet-600 to-cyan-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:from-violet-700 hover:to-cyan-700"
+        className="mt-3 rounded-lg bg-linear-to-r from-violet-600 to-cyan-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition hover:from-violet-700 hover:to-cyan-700"
       >
         View Details
       </button>
@@ -967,7 +967,7 @@ export default function ExamReportPage() {
   const contentPadding = isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-sky-100 via-slate-100 to-cyan-100">
+    <div className="h-screen overflow-hidden bg-linear-to-br from-sky-100 via-slate-100 to-cyan-100">
       <Sidebar
         collapsed={isSidebarCollapsed}
         mobileOpen={isMobileSidebarOpen}
@@ -982,7 +982,7 @@ export default function ExamReportPage() {
       <div
         className={[contentPadding, 'flex h-full flex-col transition-all duration-300'].join(' ')}
       >
-        <header className="sticky top-0 z-20 border-b border-white/60 bg-gradient-to-r from-white via-sky-50 to-cyan-50 px-4 py-3 shadow-sm backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-white/60 bg-linear-to-r from-white via-sky-50 to-cyan-50 px-4 py-3 shadow-sm backdrop-blur">
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
@@ -1016,7 +1016,7 @@ export default function ExamReportPage() {
               {dashboardReturnUrl ? (
                 <Link
                   href={dashboardReturnUrl}
-                  className="mr-2 inline-flex rounded-lg border border-blue-300 bg-gradient-to-r from-white to-blue-50 px-3 py-2 text-sm font-medium text-blue-700 shadow-sm transition hover:from-blue-50 hover:to-blue-100"
+                  className="mr-2 inline-flex rounded-lg border border-blue-300 bg-linear-to-r from-white to-blue-50 px-3 py-2 text-sm font-medium text-blue-700 shadow-sm transition hover:from-blue-50 hover:to-blue-100"
                 >
                   <span className="flex items-center gap-2">
                     <ArrowLeft className="h-4 w-4" />
@@ -1030,7 +1030,7 @@ export default function ExamReportPage() {
                     ? `/exams-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
                     : '/exams-form'
                 }
-                className="mr-2 inline-flex rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:from-blue-700 hover:to-cyan-700"
+                className="mr-2 inline-flex rounded-lg bg-linear-to-r from-blue-600 to-cyan-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:from-blue-700 hover:to-cyan-700"
               >
                 Marks Post Here
               </Link>
@@ -1040,7 +1040,7 @@ export default function ExamReportPage() {
                     ? `/register?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
                     : '/register'
                 }
-                className="mr-2 inline-flex rounded-lg border border-emerald-300 bg-gradient-to-r from-white to-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 shadow-sm transition hover:from-emerald-50 hover:to-emerald-100"
+                className="mr-2 inline-flex rounded-lg border border-emerald-300 bg-linear-to-r from-white to-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 shadow-sm transition hover:from-emerald-50 hover:to-emerald-100"
               >
                 Add Student
               </Link>
@@ -1050,7 +1050,7 @@ export default function ExamReportPage() {
                     ? `/attendance-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
                     : '/attendance-form'
                 }
-                className="mr-2 inline-flex rounded-lg border border-indigo-300 bg-gradient-to-r from-white to-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm transition hover:from-indigo-50 hover:to-indigo-100"
+                className="mr-2 inline-flex rounded-lg border border-indigo-300 bg-linear-to-r from-white to-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm transition hover:from-indigo-50 hover:to-indigo-100"
               >
                 Mark Attendance
               </Link>
@@ -1060,7 +1060,7 @@ export default function ExamReportPage() {
               <button
                 type="button"
                 onClick={() => setIsProfileOpen(prev => !prev)}
-                className="flex items-center gap-2 rounded-lg border border-white/70 bg-gradient-to-r from-white to-sky-50 px-3 py-2 text-sm text-slate-700 shadow-sm"
+                className="flex items-center gap-2 rounded-lg border border-white/70 bg-linear-to-r from-white to-sky-50 px-3 py-2 text-sm text-slate-700 shadow-sm"
               >
                 <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">
                   AD
@@ -1070,7 +1070,7 @@ export default function ExamReportPage() {
               </button>
 
               {isProfileOpen ? (
-                <div className="absolute right-0 mt-2 w-44 rounded-lg border border-white/70 bg-gradient-to-br from-white to-sky-50 p-2 shadow-sm">
+                <div className="absolute right-0 mt-2 w-44 rounded-lg border border-white/70 bg-linear-to-br from-white to-sky-50 p-2 shadow-sm">
                   <button
                     type="button"
                     className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100"
@@ -1131,7 +1131,7 @@ export default function ExamReportPage() {
               />
             </section>
 
-            <section className="rounded-xl border border-blue-100/70 bg-gradient-to-br from-white/70 via-sky-50/80 to-blue-100/50 px-3 py-3 shadow-sm">
+            <section className="rounded-xl border border-blue-100/70 bg-linear-to-br from-white/70 via-sky-50/80 to-blue-100/50 px-3 py-3 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-base font-semibold text-blue-900">Unit-Wise Performance</h2>
                 <button
@@ -1152,7 +1152,7 @@ export default function ExamReportPage() {
               </div>
             </section>
 
-            <section className="rounded-xl border border-violet-100/70 bg-gradient-to-br from-white/70 via-violet-50/80 to-cyan-100/50 px-3 py-3 shadow-sm">
+            <section className="rounded-xl border border-violet-100/70 bg-linear-to-br from-white/70 via-violet-50/80 to-cyan-100/50 px-3 py-3 shadow-sm">
               <h2 className="mb-3 text-base font-semibold text-violet-900">Public Exams</h2>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
                 {publicExamCards.map(item => (
@@ -1164,7 +1164,7 @@ export default function ExamReportPage() {
             {detailsFilter ? (
               <section
                 ref={detailsSectionRef}
-                className="rounded-lg border border-blue-200/70 bg-gradient-to-br from-white via-blue-50 to-cyan-50 px-4 py-3 shadow-sm"
+                className="rounded-lg border border-blue-200/70 bg-linear-to-br from-white via-blue-50 to-cyan-50 px-4 py-3 shadow-sm"
               >
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -1285,7 +1285,7 @@ export default function ExamReportPage() {
               </section>
             ) : null}
 
-            <section className="rounded-lg border border-white/70 bg-gradient-to-br from-white via-slate-50 to-indigo-100/60 px-4 py-3 shadow-sm">
+            <section className="rounded-lg border border-white/70 bg-linear-to-br from-white via-slate-50 to-indigo-100/60 px-4 py-3 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-base font-semibold text-slate-900">Recent Exam Results</h2>
                 <span className="text-xs text-slate-500">

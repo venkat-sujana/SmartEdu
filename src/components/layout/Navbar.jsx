@@ -25,11 +25,12 @@ function NavLink({ href, icon, label, active = false, accent = "text-slate-500",
     <Link
       href={href}
       onClick={onClick}
-      className={`group inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-medium transition ${
-        active
-          ? "bg-slate-950 text-white shadow-lg shadow-slate-200"
-          : "text-slate-600 hover:bg-white hover:text-slate-950"
-      }`}
+
+      className={`group inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition ${
+  active
+    ? "bg-emerald-600 text-white"
+    : "text-slate-600 hover:bg-slate-100"
+}`}
     >
       <span
         className={`rounded-xl p-1.5 transition ${
@@ -108,9 +109,9 @@ export default function Navbar({ onOpenDrawer }) {
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className="fixed inset-x-0 top-0 z-40 border-b border-white/50 bg-linear -to-r from-blue-500 via-purple-500 to-pink-500 backdrop-blur-xl"
+        className="fixed inset-x-0 top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl"
       >
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-3 py-3 sm:px-5">
+        <div className="mx-auto flex max-w-[1440px] bg-emerald-600 text-white items-center justify-between gap-4 px-3 py-2 sm:px-5">
           <div className="flex items-center gap-3">
             {/* Hamburger — mobile only */}
             <button
@@ -118,23 +119,19 @@ export default function Navbar({ onOpenDrawer }) {
               aria-label="Open menu"
               className="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:bg-slate-50 md:hidden"
             >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
 
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br from-cyan-500 via-sky-500 to-emerald-500 text-white shadow-lg shadow-cyan-200/70">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white">
                 <GraduationCap className="h-5 w-5" />
               </div>
+
               <div className="hidden sm:block">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  OSRA Workspace
-                </p>
-                <p className="max-w-[220px] truncate text-sm font-bold text-slate-900">
-                  {user?.collegeName || "Your College"}
+                <p className="text-xs tracking-wider text-white uppercase">OSRA</p>
+
+                <p className="max-w-[180px] truncate text-sm font-semibold  text-white">
+                  {user?.collegeName}
                 </p>
               </div>
             </Link>
@@ -142,12 +139,10 @@ export default function Navbar({ onOpenDrawer }) {
 
           {/* Desktop nav */}
           {user && (
-            <nav className="hidden items-center gap-2 rounded-3xl border border-slate-200/80 bg-slate-50/90 p-2 shadow-inner shadow-white/80 lg:flex">
-              {navItems.map((item) => {
+            <nav className="hidden items-center gap-1 rounded-2xl border border-slate-200 bg-white px-2 py-1 shadow-sm lg:flex">
+              {navItems.map(item => {
                 const isActive =
-                  item.href === "/"
-                    ? pathname === item.href
-                    : pathname?.startsWith(item.href);
+                  item.href === '/' ? pathname === item.href : pathname?.startsWith(item.href)
 
                 return (
                   <NavLink
@@ -158,7 +153,7 @@ export default function Navbar({ onOpenDrawer }) {
                     active={Boolean(isActive)}
                     accent={item.accent}
                   />
-                );
+                )
               })}
             </nav>
           )}
@@ -172,31 +167,24 @@ export default function Navbar({ onOpenDrawer }) {
             </Link>
           ) : (
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="hidden items-center gap-3 rounded-3xl border border-slate-200 bg-white px-3 py-2 shadow-sm md:flex">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
-                  <CircleUserRound className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <p className="max-w-[180px] truncate text-sm font-bold text-slate-900">
-                    {user.name}
-                  </p>
-                  <p className="max-w-[220px] truncate text-xs text-slate-500">
-                    {user.email}
-                  </p>
-                </div>
+              <div className="hidden items-center gap-2 px-2 md:flex">
+                <CircleUserRound className="h-5 w-5 text-slate-500" />
+                <span className="max-w-[120px] truncate text-sm font-medium text-white">
+                  {user.name}
+                </span>
               </div>
 
               <Link
                 href="/profile"
-                className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 sm:inline-flex"
+                className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 sm:inline-flex"
               >
                 <CircleUserRound className="h-4 w-4" />
                 Profile
               </Link>
 
               <button
-                onClick={() => signOut({ callbackUrl: "/" })}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-100"
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-100"
               >
                 <LogOut className="h-4 w-4" />
                 <span className="hidden sm:inline">Logout</span>
@@ -211,17 +199,15 @@ export default function Navbar({ onOpenDrawer }) {
             <motion.div
               key="mobile-menu"
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
+              animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.25 }}
               className="overflow-hidden border-t border-white/30 bg-white/95 backdrop-blur-xl md:hidden"
             >
               <div className="flex flex-col gap-1 px-4 py-3">
-                {navItems.map((item) => {
+                {navItems.map(item => {
                   const isActive =
-                    item.href === "/"
-                      ? pathname === item.href
-                      : pathname?.startsWith(item.href);
+                    item.href === '/' ? pathname === item.href : pathname?.startsWith(item.href)
 
                   return (
                     <NavLink
@@ -233,7 +219,7 @@ export default function Navbar({ onOpenDrawer }) {
                       accent={item.accent}
                       onClick={() => setMobileMenuOpen(false)}
                     />
-                  );
+                  )
                 })}
 
                 {/* User info + profile on mobile */}
@@ -260,5 +246,5 @@ export default function Navbar({ onOpenDrawer }) {
         </AnimatePresence>
       </motion.header>
     </>
-  );
+  )
 }

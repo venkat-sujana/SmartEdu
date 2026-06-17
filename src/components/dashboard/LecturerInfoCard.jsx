@@ -2,6 +2,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import {
   AcademicCapIcon,
@@ -123,16 +124,18 @@ export default function LecturerInfoCard({ user, groupName }) {
     transition={{ type: 'spring', stiffness: 240, damping: 20 }}
     className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
   >
-    <div className={`bg-linear-to-r ${theme.header} p-4 text-white`}>
+    <div className={`bg-linear-to-r ${theme.header} p-2 text-white`}>
       <div className="flex items-center gap-4">
         {/* Photo + Upload */}
         <div className="flex flex-col items-center gap-2">
           <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-white/20 bg-white/10">
             {profile?.photo ? (
-              <img
+              <Image
                 src={profile.photo}
                 alt={profile?.name || 'Lecturer'}
                 className="h-full w-full object-cover"
+                width={64}
+                height={64}
               />
             ) : (
               <UserCircleIcon className="h-12 w-12 text-white" />
