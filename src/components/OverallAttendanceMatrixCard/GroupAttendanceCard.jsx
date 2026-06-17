@@ -73,7 +73,8 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div className={`bg-linear-to-r ${theme.header} px-5 py-5 text-white`}>
         <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-6">
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 xl:grid-cols-3 2xl:grid-cols-6">
             <TopStat icon={<Users className="h-4 w-4" />} label="Strength" value={groupStrength} />
             <TopStat
               icon={<Activity className="h-4 w-4" />}
@@ -102,10 +103,10 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
 
       <div className="grid gap-4 p-2">
         {years.map(year => (
-          <article key={year} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <article key={year} className="rounded-2xl border border-slate-200 bg-slate-50 p-2">
             <h5 className="text-base font-bold text-slate-900">{year}</h5>
 
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-2 hidden overflow-x-auto md:block">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-slate-100">
@@ -151,7 +152,61 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
                   })}
                 </tbody>
               </table>
+
             </div>
+              
+            {/* Mobile version */}
+              <div className="mt-3 space-y-3 md:hidden">
+                {sessions.map(session => {
+                  const current = stats(year, session)
+
+                  return (
+                    <div
+                      key={`${year}-${session}`}
+                      className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-900">{session}</span>
+
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${theme.pill}`}
+                        >
+                          {current.percent}%
+                        </span>
+                      </div>
+
+                      <div className="mt-3">
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                          <div
+                            className="h-full bg-emerald-500 transition-all"
+                            style={{
+                              width: `${current.percent}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        <div>
+                          <p className="text-[11px] text-slate-500">Present</p>
+                          <p className="text-lg font-bold text-emerald-600">{current.present}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-[11px] text-slate-500">Absent</p>
+                          <p className="text-lg font-bold text-rose-600">{current.absent}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-[11px] text-slate-500">Total</p>
+                          <p className="text-lg font-bold text-slate-700">{current.total}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            
           </article>
         ))}
       </div>
@@ -166,22 +221,9 @@ function TopStat({ icon, label, value }) {
         {icon}
         <span className="text-[11px] tracking-wide uppercase">{label}</span>
       </div>
-      <p className="mt-2 text-xl font-bold text-white">{value}</p>
+      <p className="mt-1 text-lg md:text-xl font-bold text-white">{value}</p>
     </div>
   )
 }
 
-function MiniBox({ label, value, tone }) {
-  const tones = {
-    emerald: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    rose: 'border-rose-200 bg-rose-50 text-rose-700',
-    slate: 'border-slate-200 bg-slate-100 text-slate-700',
-  }
 
-  return (
-    <div className={`rounded-2xl border px-3 py-3 ${tones[tone]}`}>
-      <p className="text-[11px] font-semibold tracking-wide uppercase">{label}</p>
-      <p className="mt-1 text-lg font-bold">{value}</p>
-    </div>
-  )
-}
