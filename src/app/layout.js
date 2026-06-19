@@ -1,23 +1,23 @@
 //src/app/layout.js
-"use client"
+'use client'
 
-import { Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
-import { Toaster } from "react-hot-toast"
-import { SessionProvider, useSession } from "next-auth/react"
-import Sidebar from "@/components/layout/Sidebar"
-import Navbar from "@/components/layout/Navbar"
-import { useState, useMemo } from "react"
-import { usePathname } from "next/navigation"
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
+import { Toaster } from 'react-hot-toast'
+import { SessionProvider, useSession } from 'next-auth/react'
+import Sidebar from '@/components/layout/Sidebar'
+import Navbar from '@/components/layout/Navbar'
+import { useState, useMemo } from 'react'
+import { usePathname } from 'next/navigation'
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 })
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 })
 
 function AppShell({ children }) {
@@ -27,35 +27,35 @@ function AppShell({ children }) {
 
   const isAuthPage = useMemo(() => {
     const isModuleAuthPage =
-      pathname === "/invigilation" ||
-      pathname === "/invigilation/login" ||
-      pathname === "/timetable-management" ||
-      pathname === "/timetable-management/login"
+      pathname === '/invigilation' ||
+      pathname === '/invigilation/login' ||
+      pathname === '/timetable-management' ||
+      pathname === '/timetable-management/login'
 
     return (
-      pathname === "/" ||
-      pathname === "/auth/login" ||
-      pathname === "/lecturer/login" ||
-      pathname === "/principal/login" ||
-      pathname === "/student/login" ||
-      pathname === "/admin/login" ||
+      pathname === '/' ||
+      pathname === '/auth/login' ||
+      pathname === '/lecturer/login' ||
+      pathname === '/principal/login' ||
+      pathname === '/student/login' ||
+      pathname === '/admin/login' ||
       isModuleAuthPage
     )
   }, [pathname])
 
   const isStandaloneModulePage =
-    pathname.startsWith("/invigilation") || pathname.startsWith("/timetable-management")
+    pathname.startsWith('/invigilation') || pathname.startsWith('/timetable-management')
 
   const role = session?.user?.role
-  const isStudent = role === "student"
+  const isStudent = role === 'student'
 
-  const isAdminPanel = pathname === "/admin-panel"
+  const isAdminPanel = pathname === '/admin-panel'
 
   if (isAuthPage || isStandaloneModulePage) {
     return <div className="min-h-screen">{children}</div>
   }
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <p className="font-medium text-slate-600">Checking session...</p>
@@ -68,12 +68,11 @@ function AppShell({ children }) {
       <Navbar onOpenDrawer={() => setDrawerOpen(true)} />
 
       <div className="min-h-screen pt-16 md:flex">
-
         {!isStudent && !isAdminPanel && (
-  <div className="hidden md:block">
-    <Sidebar />
-  </div>
-)}
+          <div className="hidden md:block">
+            <Sidebar />
+          </div>
+        )}
 
         {!isStudent && drawerOpen && (
           <div className="fixed inset-0 z-50 flex">
@@ -92,15 +91,7 @@ function AppShell({ children }) {
           </div>
         )}
 
-        <main
-  className={`flex-1 ${
-    isAdminPanel
-      ? "p-0 md:p-0"
-      : "p-4 md:p-6"
-  }`}
->
-  {children}
-</main>
+        <main className={`flex-1 ${isAdminPanel ? 'p-0 md:p-0' : 'p-4 md:p-6'}`}>{children}</main>
       </div>
     </>
   )
@@ -143,27 +134,27 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "SoftwareApplication",
-              "@id": "https://smart-edu-lyart.vercel.app/#software",
-              name: "OSRA – Online Student Record & Attendance System",
-              applicationCategory: "EducationalApplication",
-              operatingSystem: "Web",
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              '@id': 'https://smart-edu-lyart.vercel.app/#software',
+              name: 'OSRA – Online Student Record & Attendance System',
+              applicationCategory: 'EducationalApplication',
+              operatingSystem: 'Web',
               description:
-                "OSRA is an online student record and attendance management system designed for colleges to manage attendance, exams, and academic performance efficiently.",
-              url: "https://smart-edu-lyart.vercel.app",
+                'OSRA is an online student record and attendance management system designed for colleges to manage attendance, exams, and academic performance efficiently.',
+              url: 'https://smart-edu-lyart.vercel.app',
               creator: {
-                "@type": "Organization",
-                name: "OSRA",
+                '@type': 'Organization',
+                name: 'OSRA',
               },
               audience: {
-                "@type": "EducationalAudience",
-                educationalRole: "administrator",
+                '@type': 'EducationalAudience',
+                educationalRole: 'administrator',
               },
               offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "INR",
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'INR',
               },
             }),
           }}
@@ -172,9 +163,12 @@ export default function RootLayout({ children }) {
 
       <body
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-slate-50 antialiased`}
       >
-        <SessionProvider baseUrl={process.env.NEXTAUTH_URL || 'http://localhost:3000'} refetchInterval={60 * 1000}>
+        <SessionProvider
+          baseUrl={process.env.NEXTAUTH_URL || 'http://localhost:3000'}
+          refetchInterval={60 * 1000}
+        >
           <Toaster />
           <AppShell>{children}</AppShell>
         </SessionProvider>

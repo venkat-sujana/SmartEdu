@@ -1,9 +1,9 @@
 //src/components/layout/Navbar.jsx
-"use client";
+'use client'
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { signOut, useSession } from 'next-auth/react'
 import {
   CircleHelp,
   CircleUserRound,
@@ -14,94 +14,70 @@ import {
   ShieldCheck,
   ShieldEllipsis,
   Sparkles,
-  Table2,
   X,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
 
-function NavLink({ href, icon, label, active = false, accent = "text-slate-500", onClick }) {
+function NavLink({ href, icon, label, active = false, accent = 'text-slate-500', onClick }) {
   return (
     <Link
       href={href}
       onClick={onClick}
-
       className={`group inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition ${
-  active
-    ? "bg-emerald-600 text-white"
-    : "text-slate-600 hover:bg-slate-100"
-}`}
+        active ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+      }`}
     >
       <span
         className={`rounded-xl p-1.5 transition ${
-          active ? "bg-white/12 text-white" : `bg-slate-100 ${accent} group-hover:bg-slate-200`
+          active ? 'bg-white/12 text-white' : `bg-slate-100 ${accent} group-hover:bg-slate-200`
         }`}
       >
         {icon}
       </span>
       <span>{label}</span>
     </Link>
-  );
+  )
 }
 
 export default function Navbar({ onOpenDrawer }) {
-  const { data: session } = useSession();
-  const pathname = usePathname();
-  const user = session?.user || null;
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: session } = useSession()
+  const pathname = usePathname()
+  const user = session?.user || null
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const canAccessAiAttendance =
-    user?.role === "lecturer" || user?.role === "principal";
+  const canAccessAiAttendance = user?.role === 'lecturer' || user?.role === 'principal'
 
   const navItems = [
     {
-      href: "/",
-      label: "Home",
+      href: '/',
+      label: 'Home',
       icon: <Home className="h-4 w-4" />,
-      accent: "text-emerald-600",
+      accent: 'text-emerald-600',
     },
+    
+
     {
-      href: "/invigilation/login",
-      label: "Invigilation",
-      icon: <ShieldCheck className="h-4 w-4" />,
-      accent: "text-cyan-600",
-    },
-    {
-      href: "/timetable-management/login",
-      label: "Time Table",
-      icon: <Table2 className="h-4 w-4" />,
-      accent: "text-indigo-600",
-    },
-    {
-      href: "/about",
-      label: "About",
+      href: '/about',
+      label: 'About',
       icon: <CircleHelp className="h-4 w-4" />,
-      accent: "text-violet-600",
+      accent: 'text-violet-600',
     },
-  ];
+  ]
 
-  if (canAccessAiAttendance) {
+  if (user?.role === 'admin') {
     navItems.push({
-      href: "/attendance/ai-chat",
-      label: "AI Chat",
-      icon: <Sparkles className="h-4 w-4" />,
-      accent: "text-emerald-600",
-    });
-  }
-
-  if (user?.role === "admin") {
-    navItems.push({
-      href: "/admin-panel",
-      label: "Admin Panel",
+      href: '/admin-panel',
+      label: 'Admin Panel',
       icon: <ShieldEllipsis className="h-4 w-4" />,
-      accent: "text-rose-600",
-    });
+      accent: 'text-rose-600',
+    })
   }
 
   const handleMenuToggle = () => {
-    setMobileMenuOpen((prev) => !prev);
-    onOpenDrawer?.();
-  };
+    setMobileMenuOpen(prev => !prev)
+    onOpenDrawer?.()
+  }
 
   return (
     <>
@@ -111,7 +87,7 @@ export default function Navbar({ onOpenDrawer }) {
         transition={{ duration: 0.4 }}
         className="fixed inset-x-0 top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl"
       >
-        <div className="mx-auto flex max-w-[1440px] bg-emerald-600 text-white items-center justify-between gap-4 px-3 py-2 sm:px-5">
+        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 bg-emerald-600 px-3 py-2 text-white sm:px-5">
           <div className="flex items-center gap-3">
             {/* Hamburger — mobile only */}
             <button
@@ -130,7 +106,7 @@ export default function Navbar({ onOpenDrawer }) {
               <div className="hidden sm:block">
                 <p className="text-xs tracking-wider text-white uppercase">OSRA</p>
 
-                <p className="max-w-[180px] truncate text-sm font-semibold  text-white">
+                <p className="max-w-[180px] truncate text-sm font-semibold text-white">
                   {user?.collegeName}
                 </p>
               </div>
@@ -168,7 +144,7 @@ export default function Navbar({ onOpenDrawer }) {
           ) : (
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="hidden items-center gap-2 px-2 md:flex">
-                <CircleUserRound className="h-5 w-5 text-slate-500" />
+                <CircleUserRound className="h-5 w-5 text-white-500 color" />
                 <span className="max-w-[120px] truncate text-sm font-medium text-white">
                   {user.name}
                 </span>

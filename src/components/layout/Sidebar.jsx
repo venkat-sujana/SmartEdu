@@ -14,6 +14,7 @@ import {
   UserCircleIcon,
   UserGroupIcon,
   XCircleIcon,
+  ShieldCheck,
 } from '@heroicons/react/24/solid'
 
 function SidebarLink({ href, label, icon, active, onClick }) {
@@ -137,6 +138,90 @@ export default function Sidebar({ onClose }) {
           label: 'Take Attendance',
           icon: <PencilSquareIcon className="h-5 w-5 text-emerald-500" />,
         },
+        {
+      href: '/invigilation/login',
+      label: 'Invigilation',
+      icon: <ShieldCheckIcon className="h-4 w-4" />,
+      accent: 'text-cyan-600',
+    },
+
+        {
+  href: '/faculty-monitor',
+  label: 'Faculty Monitor',
+  icon: <UserGroupIcon className="h-5 w-5 text-cyan-500" />,
+},
+{
+  href: '/notifications',
+  label: 'Notifications',
+  icon: <CalendarDaysIcon className="h-5 w-5 text-amber-500" />,
+},
+{
+  href: '/sms-center',
+  label: 'SMS Center',
+  icon: <PencilSquareIcon className="h-5 w-5 text-green-500" />,
+},
+{
+  href: '/principal-tools',
+  label: 'Principal Tools',
+  icon: <ShieldCheckIcon className="h-5 w-5 text-red-500" />,
+},
+{
+  href: '/ai-reports',
+  label: 'AI Reports',
+  icon: <AcademicCapIcon className="h-5 w-5 text-purple-500" />,
+},
+{
+  href: '/student-analytics',
+  label: 'Student Analytics',
+  icon: <UserCircleIcon className="h-5 w-5 text-blue-500" />,
+},
+{
+  href: '/attendance-insights',
+  label: 'Attendance Insights',
+  icon: <CalendarDaysIcon className="h-5 w-5 text-teal-500" />,
+},
+{
+  href: '/performance-tracker',
+  label: 'Performance Tracker',
+  icon: <AcademicCapIcon className="h-5 w-5 text-pink-500" />,
+},
+{
+  href: '/parent-communication',
+  label: 'Parent Communication',
+  icon: <UserGroupIcon className="h-5 w-5 text-orange-500" />,
+},
+{
+  href: '/staff-directory',
+  label: 'Staff Directory',
+  icon: <UserCircleIcon className="h-5 w-5 text-indigo-500" />,
+},
+{
+  href: '/reports-center',
+  label: 'Reports Center',
+  icon: <CalendarDaysIcon className="h-5 w-5 text-sky-500" />,
+},
+{
+  href: '/data-export',
+  label: 'Data Export',
+  icon: <PencilSquareIcon className="h-5 w-5 text-lime-500" />,
+},
+{
+  href: '/audit-log',
+  label: 'Audit Log',
+  icon: <ShieldCheckIcon className="h-5 w-5 text-rose-500" />,
+},
+{
+  href: '/college-settings',
+  label: 'College Settings',
+  icon: <UserCircleIcon className="h-5 w-5 text-yellow-500" />,
+},
+{
+  href: '/help-center',
+  label: 'Help Center',
+  icon: <AcademicCapIcon className="h-5 w-5 text-cyan-400" />,
+},
+
+
         ...(canAccessAiAttendance
           ? [
               {
@@ -150,7 +235,7 @@ export default function Sidebar({ onClose }) {
 
   return (
     // ✅ overflow-hidden — content aside బయటకి వెళ్ళదు
-    <aside className="flex h-full w-60 shrink-0 flex-col overflow-hidden border-r border-white/10 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.16),transparent_24%),linear-gradient(180deg,#020617_0%,#0f172a_48%,#111827_100%)] px-3 py-4 text-slate-100 shadow-2xl lg:w-64">
+    <aside className="flex h-screen w-60 shrink-0 flex-col overflow-hidden border-r border-white/10 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.16),transparent_24%),linear-gradient(180deg,#020617_0%,#0f172a_48%,#111827_100%)] px-3 py-4 text-slate-100 shadow-2xl lg:w-64">
       {/* Header — shrink-0 గా fix చేసాను, scroll లో కదలదు */}
       <div className="mb-3 shrink-0 rounded-[28px] border border-white/10 bg-white/6 p-3 shadow-lg shadow-slate-950/20">
         <div className="flex items-center gap-3">
@@ -169,9 +254,14 @@ export default function Sidebar({ onClose }) {
       </div>
 
       <nav
-        className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain pr-1"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        className="flex-1 overflow-x-hidden gap-1 overflow-y-auto pr-1"
+        style={{
+          maxHeight: 'calc(100vh - 220px)',
+          WebkitOverflowScrolling: 'touch',
+        }}
       >
+
+        
         {links.map(link => {
           const activeHref = link.href.split('?')[0]
           const active =
@@ -204,14 +294,21 @@ export default function Sidebar({ onClose }) {
 
       <style jsx>{`
         nav::-webkit-scrollbar {
-          width: 5px;
+          width: 8px;
         }
+
         nav::-webkit-scrollbar-thumb {
-          background: rgba(148, 163, 184, 0.35);
+          background: rgba(34, 211, 238, 0.5);
           border-radius: 9999px;
         }
+
+        nav::-webkit-scrollbar-thumb:hover {
+          background: rgba(34, 211, 238, 0.8);
+        }
+
         nav::-webkit-scrollbar-track {
-          background: transparent;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 9999px;
         }
       `}</style>
     </aside>
