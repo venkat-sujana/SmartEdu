@@ -6,12 +6,7 @@ import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 
 import { motion } from 'framer-motion'
-import {
-  Users,
-  ClipboardList,
-  CalendarCheck,
-  ArrowRight,
-} from 'lucide-react'
+import { Users, ClipboardList, CalendarCheck, ArrowRight } from 'lucide-react'
 
 import DashboardFooter from '@/components/layout/Footer'
 
@@ -35,8 +30,8 @@ export default function Page() {
       {/* ================= HERO ================= */}
       <section className="relative overflow-hidden">
         {/* Background Blur Effects */}
-        <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-indigo-500/30 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-sky-500/30 blur-3xl" />
+        <div className="absolute top-0 left-0 h-72 w-72 rounded-full bg-indigo-500/30 blur-3xl" />
+        <div className="absolute right-0 bottom-0 h-72 w-72 rounded-full bg-sky-500/30 blur-3xl" />
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-16 px-6 py-24 md:grid-cols-2">
           {/* LEFT CONTENT */}
@@ -50,7 +45,7 @@ export default function Page() {
                 Smart Multi-College Management Platform
               </span>
 
-              <h1 className="mt-6 text-5xl font-black leading-tight md:text-7xl">
+              <h1 className="mt-6 text-5xl leading-tight font-black md:text-7xl">
                 OSRA
                 <span className="block bg-linear-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
                   Online Student Record Application
@@ -58,9 +53,8 @@ export default function Page() {
               </h1>
 
               <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">
-                Manage students, attendance, examinations and analytics across
-                multiple colleges with a powerful modern platform designed for
-                lecturers and principals.
+                Manage students, attendance, examinations and analytics across multiple colleges
+                with a powerful modern platform designed for lecturers and principals.
               </p>
 
               {/* Buttons */}
@@ -99,7 +93,7 @@ export default function Page() {
             transition={{ duration: 0.7 }}
             className="relative"
           >
-            <div className="absolute inset-0 rounded-4xl bg-linear-to-r from-indigo-500 to-sky-500 blur-2xl opacity-30" />
+            <div className="absolute inset-0 rounded-4xl bg-linear-to-r from-indigo-500 to-sky-500 opacity-30 blur-2xl" />
 
             <div className="relative overflow-hidden rounded-4xl border border-white/10 bg-white/10 shadow-2xl backdrop-blur-xl">
               <Image
@@ -116,20 +110,16 @@ export default function Page() {
       </section>
 
       {/* ================= FEATURES ================= */}
-      <section id="features" className="relative py-24">
+      <section id="features" className="relative py-4">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-16 text-center">
-            <p className="mb-4 text-sm uppercase tracking-[4px] text-sky-400">
-              Core Modules
-            </p>
+          <div className="mb-2 text-center">
+            <p className="mb-2 text-sm tracking-[4px] text-sky-400 uppercase">Core Modules</p>
 
-            <h2 className="text-4xl font-bold md:text-5xl">
-              Everything Your College Needs
-            </h2>
+            <h2 className="text-4xl font-bold md:text-5xl">Everything Your College Needs</h2>
 
             <p className="mx-auto mt-5 max-w-2xl text-slate-300">
-              Modern tools to simplify academic management, student tracking,
-              attendance and examination analytics.
+              Modern tools to simplify academic management, student tracking, attendance and
+              examination analytics.
             </p>
           </div>
 
@@ -152,38 +142,31 @@ export default function Page() {
               title="Attendance"
               desc="Track daily and monthly attendance with advanced analytics."
             />
-          </div>
-
-          {/* Showcase Image */}
-          <div className="relative mt-20 overflow-hidden rounded-4xl border border-white/10 shadow-2xl">
-            <div className="absolute inset-0 bg-black/20" />
-
-            <Image
-              src="/images/college.jpg"
-              alt="College Management"
-              width={1200}
-              height={600}
-              className="w-full object-cover"
+            <Feature
+              icon={<CalendarCheck size={34} />}
+              title="Invigilation"
+              desc="Manage Invigilation Duties based on schedules and lecturer's availability."
+            />
+            <Feature
+              icon={<CalendarCheck size={34} />}
+              title="Time table Management"
+              desc="Manage class schedules and timetables efficiently."
             />
           </div>
         </div>
       </section>
 
       {/* ================= CTA ================= */}
-      <section className="relative py-24">
+      <section className="relative py-2">
         <div className="mx-auto grid max-w-6xl items-center gap-12 rounded-[40px] border border-white/10 bg-white/10 px-8 py-16 shadow-2xl backdrop-blur-xl md:grid-cols-2">
           <div>
-            <p className="mb-4 text-sm uppercase tracking-[4px] text-sky-400">
-              Digital Education
-            </p>
+            <p className="mb-4 text-sm tracking-[4px] text-sky-400 uppercase">Digital Education</p>
 
-            <h2 className="text-4xl font-black leading-tight">
-              Built for Modern Colleges
-            </h2>
+            <h2 className="text-4xl leading-tight font-black">Built for Modern Colleges</h2>
 
             <p className="mt-6 text-lg leading-8 text-slate-300">
-              OSRA empowers lecturers and principals to automate academic
-              management and reduce paperwork with smart digital workflows.
+              OSRA empowers lecturers and principals to automate academic management and reduce
+              paperwork with smart digital workflows.
             </p>
 
             <Link

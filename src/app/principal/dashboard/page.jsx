@@ -25,8 +25,12 @@ import AttendanceSmsCard from './AttendanceSmsCard'
 import PromotionCard from './PromotionCard'
 import OverviewStatCard from './OverviewStatCard'
 import AttendanceOverviewTable from './AttendanceOverviewTable'
-// import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
+import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
+import AttendanceHealthScoreCard from '@/components/attendance/cards/AttendanceHealthScoreCard'
 import GroupDashboard from '@/app/dashboard/page'
+import AttendanceTrendCard from '@/components/attendance/cards/AttendanceTrendCard'
+
+
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function PrincipalDashboard() {
@@ -177,6 +181,19 @@ export default function PrincipalDashboard() {
     return { present, absent, total, percent }
   }
 
+
+  const todayPresent = sessionSummaryCards.reduce((sum, session) => sum + session.present, 0)
+
+  const todayAbsent = sessionSummaryCards.reduce((sum, session) => sum + session.absent, 0)
+
+  const todayTotal = todayPresent + todayAbsent
+
+  const todayAttendancePercentage =
+    todayTotal > 0 ? Math.round((todayPresent / todayTotal) * 100) : 0
+
+
+
+
   const summaryCards = [
     {
       title: 'Total Students',
@@ -236,6 +253,71 @@ export default function PrincipalDashboard() {
             </div>
           </div>
         </section>
+
+        <section className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <Card className="group border-gradient-to-r hover:shadow-3xl rounded-3xl border-2 bg-white/90 from-blue-200/50 to-emerald-200/50 p-6 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 sm:p-8">
+            <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
+              {principal?.photo ? (
+                <Image
+                  src={principal.photo}
+                  alt="Principal"
+                  width={112}
+                  height={112}
+                  className="border-gradient-to-r h-24 w-24 rounded-full border-6 from-blue-400 via-white to-emerald-400 object-cover shadow-2xl ring-4 ring-white/50 transition-transform duration-300 group-hover:scale-110 sm:h-28 sm:w-28"
+                />
+              ) : (
+                <div className="border-gradient-to-r to-slate-20000 flex h-24 w-24 items-center justify-center rounded-full border-6 bg-linear-to-br from-slate-100 via-slate-200 to-slate-300 text-lg font-bold text-slate-600 shadow-2xl sm:h-28 sm:w-28">
+                  No Photo
+                </div>
+              )}
+              <div className="text-center sm:text-left">
+                <p className="text-xl font-bold text-slate-900">{principal?.name || 'Principal'}</p>
+                <p className="text-sm text-slate-600">{principal?.email || 'No email available'}</p>
+                <p className="text-sm text-slate-500">{collegeName}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="group hover:shadow-3xl rounded-3xl border border-indigo-200/50 bg-linear-to-br from-indigo-50 via-white/90 to-purple-50 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:scale-[1.02]">
+            <CardContent className="flex h-full items-center justify-between gap-6 p-8">
+              <div>
+                <p className="inline-block rounded-full bg-indigo-100/50 px-3 py-1 text-sm font-bold tracking-wider text-indigo-600 uppercase">
+                  Total Enrollment
+                </p>
+                <p className="mt-2 animate-pulse bg-linear-to-r from-indigo-900 to-purple-900 bg-clip-text text-4xl font-black text-transparent lg:text-5xl">
+                  {overviewLoading ? '...' : (summary?.totalStudents ?? 0)}
+                </p>
+                <p className="mt-1 text-sm font-medium text-slate-500">
+                  {overviewLoading
+                    ? 'Loading attendance...'
+                    : `${summary?.totalPresentToday ?? 0} present today`}
+                </p>
+              </div>
+              <div className="rounded-3xl bg-linear-to-br from-indigo-400 to-purple-500 p-4 text-white shadow-xl transition-all duration-300 group-hover:scale-110 hover:rotate-12">
+                <GraduationCap className="h-10 w-10 drop-shadow-lg" />
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+
+      <section>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <AttendanceHealthScoreCard
+          attendancePercentage={todayAttendancePercentage}
+          totalStudents={todayTotal}
+          presentStudents={todayPresent}
+          absentStudents={todayAbsent}
+        />
+
+        <AttendanceTrendCard
+          title="College Attendance Trend"
+          trendData={[]}
+        />
+        </div>
+      </section>
+
+      
 
         <section className="space-y-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -298,53 +380,30 @@ export default function PrincipalDashboard() {
           </div>
         </section>
 
-        {/* <section className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <Card className="group border-gradient-to-r hover:shadow-3xl rounded-3xl border-2 bg-white/90 from-blue-200/50 to-emerald-200/50 p-6 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 sm:p-8">
-            <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
-              {principal?.photo ? (
-                <Image
-                  src={principal.photo}
-                  alt="Principal"
-                  width={112}
-                  height={112}
-                  className="border-gradient-to-r h-24 w-24 rounded-full border-6 from-blue-400 via-white to-emerald-400 object-cover shadow-2xl ring-4 ring-white/50 transition-transform duration-300 group-hover:scale-110 sm:h-28 sm:w-28"
-                />
-              ) : (
-                <div className="border-gradient-to-r to-slate-20000 flex h-24 w-24 items-center justify-center rounded-full border-6 bg-linear-to-br from-slate-100 via-slate-200 to-slate-300 text-lg font-bold text-slate-600 shadow-2xl sm:h-28 sm:w-28">
-                  No Photo
-                </div>
-              )}
-              <div className="text-center sm:text-left">
-                <p className="text-xl font-bold text-slate-900">{principal?.name || 'Principal'}</p>
-                <p className="text-sm text-slate-600">{principal?.email || 'No email available'}</p>
-                <p className="text-sm text-slate-500">{collegeName}</p>
-              </div>
-            </div>
-          </Card>
+        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <GroupDashboard />
+        </section>
 
-          <Card className="group hover:shadow-3xl rounded-3xl border border-indigo-200/50 bg-linear-to-br from-indigo-50 via-white/90 to-purple-50 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:scale-[1.02]">
-            <CardContent className="flex h-full items-center justify-between gap-6 p-8">
-              <div>
-                <p className="inline-block rounded-full bg-indigo-100/50 px-3 py-1 text-sm font-bold tracking-wider text-indigo-600 uppercase">
-                  Total Enrollment
-                </p>
-                <p className="mt-2 animate-pulse bg-linear-to-r from-indigo-900 to-purple-900 bg-clip-text text-4xl font-black text-transparent lg:text-5xl">
-                  {overviewLoading ? '...' : (summary?.totalStudents ?? 0)}
-                </p>
-                <p className="mt-1 text-sm font-medium text-slate-500">
-                  {overviewLoading
-                    ? 'Loading attendance...'
-                    : `${summary?.totalPresentToday ?? 0} present today`}
-                </p>
-              </div>
-              <div className="rounded-3xl bg-linear-to-br from-indigo-400 to-purple-500 p-4 text-white shadow-xl transition-all duration-300 group-hover:scale-110 hover:rotate-12">
-                <GraduationCap className="h-10 w-10 drop-shadow-lg" />
-              </div>
-            </CardContent>
-          </Card>
-        </section> */}
+        <section className="space-y-6 p-2">
+          <ConsecutiveAbsenteesCard
+            data={consecutiveAbsentees}
+            title="Students At Risk"
+            loading={!consecutiveData}
+            showViewAll={true}
+          />
+        </section>
 
-        {/* <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <ActiveLecturersCard title="Currently Active Lecturers" />
+
+        <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-2xl transition-all duration-500">
+          <AnalyticsDashboard
+            stats={analyticsStats}
+            loading={analyticsLoading}
+            error={analyticsError}
+          />
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <Card className="group hover:shadow-3xl rounded-3xl border-emerald-200/50 bg-linear-to-br from-emerald-50/90 via-white to-teal-50 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:-translate-y-1">
             <CardContent className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <div className="flex items-start gap-5">
@@ -374,37 +433,11 @@ export default function PrincipalDashboard() {
               </Link>
             </CardContent>
           </Card>
-
-          <Tutorials />
-        </section> */}
-
-        {/* <MetricsCards />
-        <AttendanceSmsCard />
-        <AttendanceSmsHistoryCard endpoint="/api/attendance/shortage-summary/sms-logs?limit=8" />
-        <PromotionCard /> */}
-
-        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <GroupDashboard />
         </section>
 
-        {/* <section className="space-y-6 p-2">
-          <ConsecutiveAbsenteesCard
-            data={consecutiveAbsentees}
-            title="Students At Risk"
-            loading={!consecutiveData}
-            showViewAll={true}
-          />
-        </section> */}
-
-        <ActiveLecturersCard title="Currently Active Lecturers" />
-
-        {/* <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-2xl transition-all duration-500">
-          <AnalyticsDashboard
-            stats={analyticsStats}
-            loading={analyticsLoading}
-            error={analyticsError}
-          />
-        </section> */}
+        <AttendanceSmsCard />
+        <AttendanceSmsHistoryCard endpoint="/api/attendance/shortage-summary/sms-logs?limit=8" />
+        <PromotionCard />
 
         <footer className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col items-center justify-between gap-4 px-6 py-5 md:flex-row">

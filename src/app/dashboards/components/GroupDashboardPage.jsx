@@ -1,6 +1,5 @@
 //src/app/dashboards/components/GroupDashboardPage.jsx
 'use client'
-
 import { useState } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
@@ -33,11 +32,9 @@ export default function GroupDashboardPage({
   groupName,
   routeSegment,
   returnUrl,
-  deskLabel,
   includeExternalLinks = false,
   includeEditAttendance = false,
   statusDescription = 'Use quick actions below to mark attendance and open monthly analytics.',
-  overviewDescription,
 }) {
   const { data: session } = useSession()
   const user = session?.user
@@ -87,23 +84,47 @@ export default function GroupDashboardPage({
   return (
     <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-4 md:p-6`}>
       <div className="w-full space-y-4">
-        <div
-          className={`flex items-center justify-between rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} px-4 py-3 shadow-sm`}
-        >
-          <div>
-            <p className="text-xs tracking-wide text-slate-500 uppercase">Lecturer Dashboard</p>
-            <h1 className="text-lg font-semibold text-slate-900">{groupName} Group</h1>
-            <p className="text-sm text-slate-600">{collegeName}</p>
-          </div>
+<div
+  className={`flex flex-col gap-4 rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between`}
+>
+  {/* Left Section */}
+  <div>
+    <p className="text-xs uppercase tracking-wide text-slate-500">
+      Lecturer Dashboard
+    </p>
+    <h1 className="text-lg font-semibold text-slate-900">
+      {groupName}
+    </h1>
+    <p className="text-sm text-slate-600">{collegeName}</p>
+  </div>
 
-          <Link
-            href={addStudentHref}
-            className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-          >
-            <UserPlus className="h-4 w-4" />
-            Add Student
-          </Link>
-        </div>
+  {/* Action Buttons */}
+  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:flex">
+    <Link
+      href={addStudentHref}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+    >
+      <UserPlus className="h-4 w-4" />
+      Add Student
+    </Link>
+
+    <Link
+      href={marksPostingHref}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+    >
+      <UserPlus className="h-4 w-4" />
+      Post Marks
+    </Link>
+
+    <Link
+      href={examDashboardHref}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+    >
+      <UserPlus className="h-4 w-4" />
+      Exam Dashboard
+    </Link>
+  </div>
+</div>
 
         <section className="space-y-4">
           <LecturerInfoCard user={user} groupName={groupName} />
@@ -128,31 +149,9 @@ export default function GroupDashboardPage({
               </div>
             )}
 
-            <div className="mb-6 border-b border-slate-200 pb-4">
+            <div className="mb-2 border-b border-slate-200 pb-2">
               <h2 className="text-2xl font-bold text-slate-900">Operations Hub</h2>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link
-                  href={addStudentHref}
-                  className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Add Student
-                </Link>
-                <Link
-                  href={marksPostingHref}
-                  className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Post Marks
-                </Link>
-                <Link
-                  href={examDashboardHref}
-                  className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Exam Dashboard
-                </Link>
-              </div>
+              
             </div>
 
             <DashboardTogglePanel

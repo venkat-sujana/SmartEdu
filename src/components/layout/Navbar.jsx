@@ -87,7 +87,7 @@ export default function Navbar({ onOpenDrawer }) {
         transition={{ duration: 0.4 }}
         className="fixed inset-x-0 top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl"
       >
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 bg-emerald-600 px-3 py-2 text-white sm:px-5">
+        <div className="mx-auto flex max-w-full items-center justify-between gap-4 bg-emerald-600 px-3 py-2 text-white sm:px-5">
           <div className="flex items-center gap-3">
             {/* Hamburger — mobile only */}
             <button
@@ -106,7 +106,7 @@ export default function Navbar({ onOpenDrawer }) {
               <div className="hidden sm:block">
                 <p className="text-xs tracking-wider text-white uppercase">OSRA</p>
 
-                <p className="max-w-[180px] truncate text-sm font-semibold text-white">
+                <p className="max-w-full truncate text-sm font-semibold text-white">
                   {user?.collegeName}
                 </p>
               </div>
@@ -144,7 +144,7 @@ export default function Navbar({ onOpenDrawer }) {
           ) : (
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="hidden items-center gap-2 px-2 md:flex">
-                <CircleUserRound className="h-5 w-5 text-white-500 color" />
+                <CircleUserRound className="text-white-500 color h-5 w-5" />
                 <span className="max-w-[120px] truncate text-sm font-medium text-white">
                   {user.name}
                 </span>
