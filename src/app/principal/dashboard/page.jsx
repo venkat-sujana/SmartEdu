@@ -8,10 +8,8 @@ import { useSession } from 'next-auth/react'
 import { useMemo, useState, useEffect } from 'react'
 import ActiveLecturersCard from '@/components/dashboard/ActiveLecturersCard'
 import AttendanceSmsHistoryCard from '@/components/attendance/AttendanceSmsHistoryCard'
-import OverallAttendanceMatrixCard from '@/components/OverallAttendanceMatrixCard/OverallAttendanceMatrixCard'
 import AnalyticsDashboard from '@/app/invigilation/components/AnalyticsDashboard'
 import {
-  Building2,
   FileSpreadsheet,
   GraduationCap,
   LayoutGrid,
@@ -29,10 +27,12 @@ import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveA
 import AttendanceHealthScoreCard from '@/components/attendance/cards/AttendanceHealthScoreCard'
 import GroupDashboard from '@/app/dashboard/page'
 import AttendanceTrendCard from '@/components/attendance/cards/AttendanceTrendCard'
-
+import GroupPerformanceCard from '@/components/attendance/cards/GroupPerformanceCard'
+import AttendanceInsightsCard from '@/components/attendance/cards/AttendanceInsightsCard'
+import AttendanceAlertsCard from '@/components/attendance/cards/AttendanceAlertsCard'
+import { generateAttendanceAlerts } from '@/utils/generateAttendanceAlerts'
 
 const fetcher = url => fetch(url).then(res => res.json())
-
 export default function PrincipalDashboard() {
   const { data: session } = useSession()
   const principal = session?.user
@@ -117,6 +117,22 @@ export default function PrincipalDashboard() {
     }
   )
 
+  const atRiskStudents = consecutiveData?.length || 0
+
+  const { data: trendData } = useSWR('/api/attendance/trend?days=7', fetcher, {
+    refreshInterval: 60000,
+    revalidateOnFocus: true,
+  })
+
+  const { data: groupPerformance } = useSWR('/api/attendance/group-performance', fetcher, {
+    refreshInterval: 60000,
+    revalidateOnFocus: true,
+  })
+
+  const validTrendData = trendData?.filter(day => day.hasData) || []
+
+  const allLecturersSubmitted = true
+
   const consecutiveAbsentees = consecutiveData?.absentees || []
 
   const summary = dashboardOverview?.summary
@@ -125,6 +141,7 @@ export default function PrincipalDashboard() {
   const sessionWisePresent = absenteesData?.sessionWisePresent || {}
   const sessionWiseAbsentees = absenteesData?.sessionWiseAbsentees || {}
   const absenteesSummary = absenteesData?.summary
+
   const sessionSummaryCards = ['FN', 'AN'].map(sessionKey => {
     const present = sessionWisePresent[sessionKey]?.length || 0
     const absent = sessionWiseAbsentees[sessionKey]?.length || 0
@@ -181,6 +198,48 @@ export default function PrincipalDashboard() {
     return { present, absent, total, percent }
   }
 
+  const summaryCards = [
+    {
+      title: 'Total Students',
+      value: summary?.totalStudents ?? 0,
+
+      icon: GraduationCap,
+      accentClassName: 'text-blue-950',
+      iconClassName: 'bg-blue-100 text-blue-700',
+    },
+    {
+      title: 'Total Lecturers',
+      value: summary?.totalLecturers ?? 0,
+
+      icon: Users,
+      accentClassName: 'text-emerald-950',
+      iconClassName: 'bg-emerald-100 text-emerald-700',
+    },
+    {
+      title: 'Total Groups',
+      value: summary?.totalGroups ?? 0,
+
+      icon: LayoutGrid,
+      accentClassName: 'text-violet-950',
+      iconClassName: 'bg-violet-100 text-violet-700',
+    },
+    {
+      title: "Today's Attendance %",
+      value: `${Number(absenteesSummary?.percentage ?? summary?.attendancePercentage ?? 0)}%`,
+
+      icon: Percent,
+      accentClassName: 'text-amber-950',
+      iconClassName: 'bg-amber-100 text-amber-700',
+    },
+    {
+      title: 'Total Absentees Today',
+      value: absenteesSummary?.grandAbsent ?? summary?.totalAbsenteesToday ?? 0,
+
+      icon: UserRoundCheck,
+      accentClassName: 'text-rose-950',
+      iconClassName: 'bg-rose-100 text-rose-700',
+    },
+  ]
 
   const todayPresent = sessionSummaryCards.reduce((sum, session) => sum + session.present, 0)
 
@@ -191,51 +250,22 @@ export default function PrincipalDashboard() {
   const todayAttendancePercentage =
     todayTotal > 0 ? Math.round((todayPresent / todayTotal) * 100) : 0
 
+  const previousAttendancePercentage =
+    validTrendData.length > 1
+      ? validTrendData[validTrendData.length - 2].percentage
+      : todayAttendancePercentage
 
+  const bestGroup = groupPerformance?.[0]?.name || ''
 
+  const attendanceAlerts = generateAttendanceAlerts({
+    attendancePercentage: todayAttendancePercentage,
 
-  const summaryCards = [
-    {
-      title: 'Total Students',
-      value: summary?.totalStudents ?? 0,
-      
-      icon: GraduationCap,
-      accentClassName: 'text-blue-950',
-      iconClassName: 'bg-blue-100 text-blue-700',
-    },
-    {
-      title: 'Total Lecturers',
-      value: summary?.totalLecturers ?? 0,
-      
-      icon: Users,
-      accentClassName: 'text-emerald-950',
-      iconClassName: 'bg-emerald-100 text-emerald-700',
-    },
-    {
-      title: 'Total Groups',
-      value: summary?.totalGroups ?? 0,
-      
-      icon: LayoutGrid,
-      accentClassName: 'text-violet-950',
-      iconClassName: 'bg-violet-100 text-violet-700',
-    },
-    {
-      title: "Today's Attendance %",
-      value: `${Number(absenteesSummary?.percentage ?? summary?.attendancePercentage ?? 0)}%`,
-      
-      icon: Percent,
-      accentClassName: 'text-amber-950',
-      iconClassName: 'bg-amber-100 text-amber-700',
-    },
-    {
-      title: 'Total Absentees Today',
-      value: absenteesSummary?.grandAbsent ?? summary?.totalAbsenteesToday ?? 0,
-      
-      icon: UserRoundCheck,
-      accentClassName: 'text-rose-950',
-      iconClassName: 'bg-rose-100 text-rose-700',
-    },
-  ]
+    totalAbsent: todayAbsent,
+
+    atRiskStudents,
+
+    allLecturersSubmitted,
+  })
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50/50 to-indigo-100/30 px-4 py-6 transition-all duration-500 sm:px-6 sm:py-10 lg:px-8 xl:px-12">
@@ -301,23 +331,50 @@ export default function PrincipalDashboard() {
         </section>
 
 
-      <section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AttendanceHealthScoreCard
-          attendancePercentage={todayAttendancePercentage}
-          totalStudents={todayTotal}
-          presentStudents={todayPresent}
-          absentStudents={todayAbsent}
-        />
+        
+          <GroupPerformanceCard 
+          groups={groupPerformance || []} />
 
-        <AttendanceTrendCard
-          title="College Attendance Trend"
-          trendData={[]}
-        />
+        <section>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 py-4">
+            <AttendanceHealthScoreCard
+              attendancePercentage={todayAttendancePercentage}
+              totalStudents={todayTotal}
+              presentStudents={todayPresent}
+              absentStudents={todayAbsent}
+            />
+
+            <AttendanceTrendCard 
+            title="College Attendance Trend" 
+            trendData={trendData || []} />
+          </div>
+
+          
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+
+          <AttendanceInsightsCard
+            attendancePercentage={todayAttendancePercentage}
+            previousAttendancePercentage={previousAttendancePercentage}
+            totalAbsent={todayAbsent}
+            totalPresent={todayPresent}
+            bestGroup={bestGroup}
+          />
+          <AttendanceAlertsCard 
+          alerts={attendanceAlerts} />
         </div>
-      </section>
 
-      
+        </section>
+
+
+
+
+        
+
+
+
+
+        
 
         <section className="space-y-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -428,7 +485,7 @@ export default function PrincipalDashboard() {
                 href="/students/bulk-upload"
                 className="group/btn inline-flex items-center justify-center gap-3 rounded-3xl bg-linear-to-r from-emerald-500 via-emerald-600 to-teal-600 px-8 py-4 text-lg font-bold text-white shadow-xl ring-2 ring-emerald-200/50 transition-all duration-300 hover:scale-105 hover:rotate-1 hover:from-emerald-600 hover:to-teal-700 hover:shadow-2xl"
               >
-                <Upload className="h-5 w-5 transition-transform duration-500 group-hover:rotate-180" />
+                <Upload className="h-4 w-5 transition-transform duration-500 group-hover:rotate-180" />
                 Open Bulk Upload
               </Link>
             </CardContent>
