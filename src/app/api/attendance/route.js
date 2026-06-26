@@ -210,10 +210,21 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url)
     const month = searchParams.get('month')
     const year = searchParams.get('year')
+    const studentId = searchParams.get('studentId')
 
     const filter = { collegeId, ...buildAttendanceSessionReadFilter() }
-    if (month) filter.month = month
+    if (month) filter.month = Number(month)
     if (year) filter.year = Number(year)
+    if (studentId) {
+      if (!mongoose.Types.ObjectId.isValid(studentId)) {
+        return NextResponse.json(
+          { message: 'Invalid studentId', status: 'error' },
+          { status: 400 }
+        )
+      }
+
+      filter.studentId = new mongoose.Types.ObjectId(studentId)
+    }
 
     // Add session filter if provided
     const sessionQ = searchParams.get('session')

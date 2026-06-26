@@ -3,6 +3,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { useSession } from 'next-auth/react'
 import {
@@ -387,7 +388,7 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
             className="block w-full cursor-pointer rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-cyan-700 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-cyan-800"
           />
           {formData.photo && (
-            <img
+            <Image
               src={formData.photo}
               alt="Student preview"
               className="mt-3 h-24 w-24 rounded-xl border border-slate-200 object-cover"

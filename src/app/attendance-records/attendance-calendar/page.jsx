@@ -12,6 +12,7 @@ import {
   isSecondSaturday,
   isSunday,
 } from "@/lib/attendanceCalendar";
+import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
 
 const groupsList = ["MPC", "BiPC", "CEC", "HEC", "CET", "M&AT", "MLT"];
 const monthNames = [
@@ -80,13 +81,14 @@ export default function CalendarView() {
 
   useEffect(() => {
     if (group && yearOfStudy && session?.user?.collegeId) {
-      fetch(`/api/students?collegeId=${session.user.collegeId}`)
+      const normalizedGroup = normalizeAttendanceGroup(group);
+
+      fetch(
+        `/api/students?group=${encodeURIComponent(normalizedGroup)}&yearOfStudy=${encodeURIComponent(yearOfStudy)}&limit=100`
+      )
         .then((res) => res.json())
         .then((data) => {
-          const filtered = (data.data || []).filter(
-            (student) => student.group === group && student.yearOfStudy === yearOfStudy
-          );
-          setStudents(filtered);
+          setStudents(data.data || []);
           setStudentId("");
         });
     } else {
@@ -101,7 +103,7 @@ export default function CalendarView() {
       return;
     }
 
-    fetch(`/api/attendance/monthly?studentId=${studentId}&month=${month}&year=${year}`)
+    fetch(`/api/attendance?studentId=${studentId}&month=${month + 1}&year=${year}`)
       .then((res) => res.json())
       .then((data) => setAttendanceData(data.data || []));
   }, [studentId, month, year]);
@@ -123,8 +125,8 @@ export default function CalendarView() {
     (student) => student._id?.toString() === studentId?.toString()
   );
   const joinDateObj = useMemo(
-    () => (selectedStudent?.joinDate ? new Date(selectedStudent.joinDate) : null),
-    [selectedStudent?.joinDate]
+    () => (selectedStudent?.dateOfJoining ? new Date(selectedStudent.dateOfJoining) : null),
+    [selectedStudent?.dateOfJoining]
   );
 
   const presentCount = Object.values(attendanceMap).filter(
