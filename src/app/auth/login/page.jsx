@@ -1,10 +1,9 @@
+//src/app/auth/login
 "use client";
-
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ClipboardList, School, ShieldCheck, Users } from "lucide-react";
+import { ClipboardList, School, ShieldCheck, Users,Briefcase} from "lucide-react";
 import DashboardFooter from "@/components/layout/Footer";
-
 const collegeName = "College";
 
 export default function LoginPage() {
@@ -12,19 +11,19 @@ export default function LoginPage() {
     <div className="relative min-h-screen overflow-hidden bg-linear-to-br from-sky-50 via-indigo-50 to-blue-100 text-slate-900">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <motion.div
-          className="absolute left-24 top-40 hidden h-24 w-24 rounded-full border-2 border-cyan-600 bg-cyan-400/60 md:block"
+          className="absolute top-40 left-24 hidden h-24 w-24 rounded-full border-2 border-cyan-600 bg-cyan-400/60 md:block"
           animate={{ x: [0, 40, -20, 0], y: [0, -20, 30, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute right-24 top-64 hidden h-20 w-20 rounded-full border-2 border-indigo-600 bg-indigo-400/60 md:block"
+          className="absolute top-64 right-24 hidden h-20 w-20 rounded-full border-2 border-indigo-600 bg-indigo-400/60 md:block"
           animate={{ x: [0, -30, 20, 0], y: [0, 25, -20, 0] }}
-          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 24, repeat: Infinity, ease: 'easeInOut' }}
         />
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-start pt-6 md:pt-16">
-        <section className="pb-6 pt-6 md:pt-12">
+        <section className="pt-6 pb-6 md:pt-12">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -41,9 +40,11 @@ export default function LoginPage() {
         </section>
 
         <section className="w-full py-12">
-          <h3 className="mb-8 text-center text-3xl font-bold text-blue-800 drop-shadow-sm">Login as</h3>
+          <h3 className="mb-8 text-center text-3xl font-bold text-blue-800 drop-shadow-sm">
+            Login as
+          </h3>
 
-          <div className="mx-auto grid max-w-6xl gap-8 px-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <LoginCard
               icon={<ShieldCheck className="mx-auto h-10 w-10 text-cyan-700" />}
               title="Admin"
@@ -66,6 +67,13 @@ export default function LoginPage() {
               color="purple"
             />
             <LoginCard
+              icon={<Briefcase className="mx-auto h-10 w-10 text-orange-600" />}
+              title="Office Staff"
+              desc="Monitor attendance, student records and office operations."
+              link="/office/login"
+              color="orange"
+            />
+            <LoginCard
               icon={<Users className="mx-auto h-10 w-10 text-blue-600" />}
               title="Student"
               desc="Access courses, attendance, and results."
@@ -84,7 +92,7 @@ export default function LoginPage() {
         />
       </div>
     </div>
-  );
+  )
 }
 
 function LoginCard({ icon, title, desc, link, color }) {
@@ -92,7 +100,9 @@ function LoginCard({ icon, title, desc, link, color }) {
     blue: "from-blue-50/80 to-sky-50/90 hover:from-blue-100/90 hover:to-sky-100",
     green: "from-emerald-50/80 to-green-50/90 hover:from-emerald-100/90 hover:to-green-100",
     purple: "from-violet-50/80 to-fuchsia-50/90 hover:from-violet-100/90 hover:to-fuchsia-100",
-    cyan: "from-cyan-50/80 to-teal-50/90 hover:from-cyan-100/90 hover:to-teal-100",
+    cyan: "from-cyan-50/80 to-teal-50/90 hover:from-cyan-100/50 hover:to-teal-100",
+    orange:"from-orange-50/80 to-amber-50/90 hover:from-orange-100/90 hover:to-amber-100",
+    
   }[color];
 
   const btn = {
@@ -100,6 +110,7 @@ function LoginCard({ icon, title, desc, link, color }) {
     green: "bg-green-600 hover:bg-green-700",
     purple: "bg-purple-600 hover:bg-purple-700",
     cyan: "bg-cyan-600 hover:bg-cyan-700",
+    orange: "bg-orange-600 hover:bg-orange-700",
   }[color];
 
   return (
@@ -117,7 +128,7 @@ function LoginCard({ icon, title, desc, link, color }) {
           href={link}
           className={`inline-block rounded-xl px-6 py-3 font-medium text-white shadow-lg transition hover:shadow-xl ${btn}`}
         >
-          {title} Login
+          {title}
         </Link>
       </div>
     </motion.div>

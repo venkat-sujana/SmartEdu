@@ -1,3 +1,4 @@
+//src/lib/auth.js
 import { getServerSession } from "next-auth";
 import { authOptions as nextAuthOptions } from "@/app/api/auth/[...nextauth]/route";
 

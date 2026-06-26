@@ -330,13 +330,10 @@ export default function PrincipalDashboard() {
           </Card>
         </section>
 
-
-        
-          <GroupPerformanceCard 
-          groups={groupPerformance || []} />
+        <GroupPerformanceCard groups={groupPerformance || []} />
 
         <section>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 py-4">
+          <div className="grid grid-cols-1 gap-4 py-4 lg:grid-cols-2">
             <AttendanceHealthScoreCard
               attendancePercentage={todayAttendancePercentage}
               totalStudents={todayTotal}
@@ -344,37 +341,20 @@ export default function PrincipalDashboard() {
               absentStudents={todayAbsent}
             />
 
-            <AttendanceTrendCard 
-            title="College Attendance Trend" 
-            trendData={trendData || []} />
+            <AttendanceTrendCard title="College Attendance Trend" trendData={trendData || []} />
           </div>
 
-          
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-
-          <AttendanceInsightsCard
-            attendancePercentage={todayAttendancePercentage}
-            previousAttendancePercentage={previousAttendancePercentage}
-            totalAbsent={todayAbsent}
-            totalPresent={todayPresent}
-            bestGroup={bestGroup}
-          />
-          <AttendanceAlertsCard 
-          alerts={attendanceAlerts} />
-        </div>
-
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <AttendanceInsightsCard
+              attendancePercentage={todayAttendancePercentage}
+              previousAttendancePercentage={previousAttendancePercentage}
+              totalAbsent={todayAbsent}
+              totalPresent={todayPresent}
+              bestGroup={bestGroup}
+            />
+            <AttendanceAlertsCard alerts={attendanceAlerts} />
+          </div>
         </section>
-
-
-
-
-        
-
-
-
-
-        
 
         <section className="space-y-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

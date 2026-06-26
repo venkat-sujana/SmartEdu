@@ -1,4 +1,4 @@
-//src/app/lecturer/login/page.jsx
+//src/app/office/login/page.jsx
 "use client";
 
 import Link from "next/link";
@@ -6,15 +6,15 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ArrowRight,GraduationCap} from "lucide-react";
+import { ArrowRight, Briefcase } from "lucide-react";
 
 const LOGIN_HIGHLIGHTS = [
-  "Secure lecturer-only access",
-  "Fast attendance and report workflows",
-  "Designed for daily academic operations",
+  "Secure office-only access",
+  "Fast attendance and record workflows",
+  "Designed for daily administrative operations",
 ];
 
-export default function LecturerLogin() {
+export default function OfficeLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,7 +25,7 @@ export default function LecturerLogin() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboards");
+      router.push("/office/dashboard");
     }
   }, [status, router]);
 
@@ -34,19 +34,19 @@ export default function LecturerLogin() {
     setError("");
     setLoading(true);
 
-    const res = await signIn("lecturer-login", {
+    const res = await signIn("office-login", {
       redirect: false,
       email: email.trim().toLowerCase(),
       password: password.trim(),
     });
 
     if (res?.error) {
-      setError("Invalid lecturer credentials");
+      setError("Invalid office credentials");
       setLoading(false);
       return;
     }
 
-    router.push("/dashboards");
+    router.push("/office/dashboard");
   };
 
   return (
@@ -55,7 +55,7 @@ export default function LecturerLogin() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
           <div className="rounded-3xl border border-cyan-300/20 bg-slate-900/90 px-8 py-6 text-center shadow-2xl">
             <p className="text-lg font-semibold text-white">Signing you in...</p>
-            <p className="mt-2 text-sm text-slate-300">Preparing your lecturer workspace.</p>
+            <p className="mt-2 text-sm text-slate-300">Preparing your office workspace.</p>
           </div>
         </div>
       )}
@@ -78,16 +78,16 @@ export default function LecturerLogin() {
             <div className="mx-auto max-w-md">
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-cyan-100 text-cyan-700 shadow-sm">
-                  <GraduationCap className="h-8 w-8" />
+                  <Briefcase className="h-8 w-8" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">OSRA Portal</p>
-                  <h2 className="mt-1 text-3xl font-black text-slate-950">Lecturer Login</h2>
+                  <h2 className="mt-1 text-3xl font-black text-slate-950">Office Login</h2>
                 </div>
               </div>
 
               <p className="mt-4 text-sm leading-6 text-slate-600">
-                Enter your lecturer credentials to continue to the dashboard.
+                Enter your office credentials to continue to the dashboard.
               </p>
 
               {error && (
@@ -101,7 +101,7 @@ export default function LecturerLogin() {
                   <span className="text-sm font-semibold text-slate-700">Email Address</span>
                   <input
                     type="email"
-                    placeholder="lecturer@college.edu"
+                    placeholder="office@college.edu"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-400 focus:bg-white"
@@ -134,8 +134,8 @@ export default function LecturerLogin() {
               </form>
 
               <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
-                Need a lecturer account?{" "}
-                <Link href="/lecturer-registration" className="font-semibold text-cyan-700 hover:text-cyan-800 hover:underline cursor-pointer">
+                Need an office account?{" "}
+                <Link href="/office-registration" className="font-semibold text-cyan-700 hover:text-cyan-800 hover:underline cursor-pointer">
                   Register here
                 </Link>
               </div>

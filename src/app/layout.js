@@ -48,8 +48,10 @@ function AppShell({ children }) {
 
   const role = session?.user?.role
   const isStudent = role === 'student'
+  
 
   const isAdminPanel = pathname === '/admin-panel'
+  const isLecturer = role === 'lecturer'
 
   if (isAuthPage || isStandaloneModulePage) {
     return <div className="min-h-screen">{children}</div>
@@ -68,13 +70,13 @@ function AppShell({ children }) {
       <Navbar onOpenDrawer={() => setDrawerOpen(true)} />
 
       <div className="min-h-screen pt-16 md:flex">
-        {!isStudent && !isAdminPanel && (
+        {isLecturer && (
           <div className="hidden md:block">
             <Sidebar />
           </div>
         )}
 
-        {!isStudent && drawerOpen && (
+        {isLecturer && drawerOpen && (
           <div className="fixed inset-0 z-50 flex">
             <div className="fixed inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
             <div className="relative z-50 h-full w-72 bg-white shadow-md">

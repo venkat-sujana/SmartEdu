@@ -10,6 +10,8 @@ import Principal from "@/models/Principal";
 import Student from "@/models/Student";
 import User from "@/models/User";
 import { loginRateLimiter } from "@/lib/rateLimiter";
+import OfficeStaff from "@/models/OfficeStaff";
+
 
 async function authenticateAdmin(email, password) {
   await connectMongoDB();
@@ -49,6 +51,10 @@ async function authenticateAdmin(email, password) {
   };
 }
 
+
+
+
+
 async function authenticateLecturer(email, password) {
   await connectMongoDB();
   
@@ -85,6 +91,10 @@ async function authenticateLecturer(email, password) {
     photo: lecturer.photo || "",
   };
 }
+
+
+
+
 
 async function authenticateStudent(admissionNo, password) {
   await connectMongoDB();
@@ -133,6 +143,10 @@ async function authenticateStudent(admissionNo, password) {
   };
 }
 
+
+
+
+
 async function authenticatePrincipal(email, password) {
   await connectMongoDB();
   
@@ -171,6 +185,60 @@ async function authenticatePrincipal(email, password) {
     photo: principal.photo,
   };
 }
+
+
+async function authenticateOfficeStaff(email, password) {
+  await connectMongoDB()
+
+  const key = `login:${email.toLowerCase()}`
+
+  if (process.env.NODE_ENV !== 'development') {
+    try {
+      await loginRateLimiter.consume(key)
+    } catch {
+      console.error(`[AUTH OFFICE RATE LIMIT] ${email}`)
+      return null
+    }
+  }
+
+  const office = await OfficeStaff.findOne({
+    email: email.trim().toLowerCase(),
+    status: 'Active',
+  }).populate('collegeId', 'name')
+
+  if (!office) {
+    console.error(`[AUTH OFFICE NOT FOUND] ${email}`)
+    return null
+  }
+
+  const isValid = await bcrypt.compare(password.trim(), office.password)
+
+  if (!isValid) {
+    console.error(`[AUTH OFFICE INVALID PASS] ${email}`)
+    return null
+  }
+
+  return {
+    id: office._id.toString(),
+
+    name: office.name,
+
+    email: office.email,
+
+    role: 'office',
+
+    designation: office.designation,
+
+    collegeId: office.collegeId?._id?.toString() || null,
+
+    collegeName: office.collegeId?.name || null,
+
+    photo: office.photo || '',
+  }
+}
+
+
+
 
 const authOptions = {
   session: {
@@ -233,7 +301,28 @@ const authOptions = {
         return authenticatePrincipal(credentials.email, credentials.password);
       },
     }),
+    
+CredentialsProvider({
+  id: "office-login",
+  name: "Office Login",
+  credentials: {
+    email: { label: "Email", type: "email" },
+    password: { label: "Password", type: "password" },
+  },
+  async authorize(credentials) {
+    if (!credentials?.email || !credentials?.password) {
+      return null;
+    }
+
+    return authenticateOfficeStaff(
+      credentials.email,
+      credentials.password
+    );
+  },
+}),
+
   ],
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -260,6 +349,10 @@ const authOptions = {
           token.photo = user.photo;
         }
         if (user.role === "principal") token.photo = user.photo;
+        if (user.role === "office") {
+  token.designation = user.designation;
+  token.photo = user.photo;
+}
       }
 
       return token;
@@ -288,6 +381,11 @@ const authOptions = {
         session.user.photo = token.photo;
       }
       if (token.role === "principal") session.user.photo = token.photo;
+
+      if (token.role === "office") {
+  session.user.designation = token.designation;
+  session.user.photo = token.photo;
+}
 
       return session;
     },

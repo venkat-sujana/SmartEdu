@@ -1,4 +1,5 @@
-﻿import { NextResponse } from "next/server";
+﻿//src/app/api/admin/lecturers/route.js
+import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectMongoDB from "@/lib/mongodb";
 import Lecturer from "@/models/Lecturer";

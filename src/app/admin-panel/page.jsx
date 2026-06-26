@@ -1,9 +1,12 @@
 ﻿//src/app/admin-panel/page.jsx
 'use client'
 
+
 import Link from 'next/link'
+import Image from 'next/image'
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
+
 import {
   Activity,
   BarChart3,
@@ -25,6 +28,7 @@ import {
 } from 'lucide-react'
 
 const ENTITY_CONFIG = {
+
   colleges: {
     label: 'Colleges',
     icon: Building2,
@@ -37,7 +41,10 @@ const ENTITY_CONFIG = {
       icon: 'bg-cyan-500/15 text-cyan-700',
       activeCard: 'border-cyan-300 bg-cyan-50 text-cyan-950 shadow-cyan-100',
     },
+
     bulkHeaders: ['Name', 'Code', 'Address', 'District', 'ContactEmail', 'ContactPhone', 'Groups'],
+
+
     fields: [
       { name: 'name', label: 'College Name', type: 'text', required: true },
       { name: 'code', label: 'College Code', type: 'text', required: true },
@@ -47,6 +54,7 @@ const ENTITY_CONFIG = {
       { name: 'contactPhone', label: 'Contact Phone', type: 'text' },
       { name: 'groups', label: 'Groups (comma separated)', type: 'textarea' },
     ],
+
     columns: [
       { key: 'name', label: 'College' },
       { key: 'code', label: 'Code' },
@@ -55,6 +63,7 @@ const ENTITY_CONFIG = {
       { key: 'contactPhone', label: 'Phone' },
     ],
   },
+
   students: {
     label: 'Students',
     icon: Users,
@@ -67,6 +76,7 @@ const ENTITY_CONFIG = {
       icon: 'bg-emerald-500/15 text-emerald-700',
       activeCard: 'border-emerald-300 bg-emerald-50 text-emerald-950 shadow-emerald-100',
     },
+
     bulkHeaders: [
       'CollegeCode',
       'Name',
@@ -85,6 +95,7 @@ const ENTITY_CONFIG = {
       'Photo',
       'Address',
     ],
+
     fields: [
       { name: 'collegeId', label: 'College', type: 'select', required: true },
       { name: 'name', label: 'Name', type: 'text', required: true },
@@ -100,6 +111,7 @@ const ENTITY_CONFIG = {
         required: true,
         options: ['MPC', 'BiPC', 'CEC', 'HEC', 'CET', 'M&AT', 'MLT'],
       },
+
       {
         name: 'yearOfStudy',
         label: 'Year',
@@ -107,6 +119,7 @@ const ENTITY_CONFIG = {
         required: true,
         options: ['First Year', 'Second Year'],
       },
+
       {
         name: 'gender',
         label: 'Gender',
@@ -153,6 +166,8 @@ const ENTITY_CONFIG = {
       { key: 'college', label: 'College', render: item => item.collegeId?.name || '-' },
     ],
   },
+
+
   lecturers: {
     label: 'Lecturers',
     icon: GraduationCap,
@@ -208,6 +223,8 @@ const ENTITY_CONFIG = {
       },
     ],
   },
+
+
   principals: {
     label: 'Principals',
     singularLabel: 'Principal',
@@ -280,6 +297,99 @@ const ENTITY_CONFIG = {
       { key: 'college', label: 'College', render: item => item.collegeId?.name || '-' },
     ],
   },
+
+
+
+
+
+  officeStaff: {
+    label: "Office Staff",
+    singularLabel: "Office Staff",
+    icon: Users,
+    endpoint: "/api/admin/office-staff",
+    hasCollegeFilter: true,
+
+    accent: {
+      badge: "bg-teal-100 text-teal-800 border-teal-200",
+      button: "bg-teal-600 hover:bg-teal-700",
+      soft: "from-teal-500/20 via-cyan-500/10 to-white",
+      icon: "bg-teal-500/15 text-teal-700",
+      activeCard:
+        "border-teal-300 bg-teal-50 text-teal-950 shadow-teal-100",
+    },
+
+    bulkHeaders: [
+      "CollegeCode",
+      "EmployeeId",
+      "Name",
+      "Email",
+      "Password",
+      "Designation",
+      "Mobile",
+    ],
+
+    fields: [
+  { name: "collegeId", label: "College", type: "select", required: true },
+
+  { name: "employeeId", label: "Employee ID", type: "text", required: true },
+
+  { name: "name", label: "Name", type: "text", required: true },
+
+  { name: "email", label: "Email", type: "email", required: true },
+
+  { name: "password", label: "Password", type: "password", required: true },
+
+  {
+    name: "designation",
+    label: "Designation",
+    type: "select",
+    required: true,
+    options: [
+      "Senior Assistant",
+      "Record Assistant",
+      "Office Superintendent",
+      "Junior Assistant",
+      "Data Entry Operator",
+      "Office Subordinate",
+    ],
+  },
+
+  { name: "mobile", label: "Mobile", type: "text" },
+
+  { name: "photo", label: "Photo URL", type: "text" },
+
+  {
+    name: "status",
+    label: "Status",
+    type: "select",
+    options: ["Active", "Inactive"],
+  },
+],
+
+    columns: [
+  { key: "employeeId", label: "Employee ID" },
+
+  { key: "name", label: "Name" },
+
+  { key: "designation", label: "Designation" },
+
+  { key: "mobile", label: "Mobile" },
+
+  { key: "status", label: "Status" },
+
+  {
+    key: "college",
+    label: "College",
+    render: item => item.collegeId?.name || "-",
+  },
+],
+
+},
+
+
+
+
+
   exams: {
     label: 'Exams',
     singularLabel: 'Exam',
@@ -1307,8 +1417,6 @@ export default function AdminPanelPage() {
                 )
               })}
             </div>
-
-            
           </div>
 
           <div className="space-y-4">
@@ -1866,11 +1974,13 @@ function Field({
             </label>
           </div>
           {value && (
-            <image
-              src={value}
-              alt="Uploaded preview"
-              className="mt-3 h-28 w-28 rounded-2xl border border-slate-200 object-cover"
-            />
+            <Image
+  src={value}
+  alt="Uploaded preview"
+  width={200}
+  height={200}
+  className="mt-3 h-28 w-28 rounded-2xl border border-slate-200 object-cover"
+/>
           )}
         </div>
       </label>
@@ -1927,9 +2037,11 @@ function PerformanceCard({ rankLabel, tone, title, subtitle, value }) {
 function buildPayload(entity, form, isEdit) {
   const payload = {
     collegeId: form.collegeId,
+     employeeId: form.employeeId, 
     name: form.name,
     email: form.email,
     password: form.password,
+    designation: form.designation,
     subject: form.subject,
     photo: form.photo,
     fatherName: form.fatherName,
