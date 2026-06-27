@@ -1,3 +1,4 @@
+//src/app/api/admin/students/route.js
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectMongoDB from "@/lib/mongodb";
@@ -79,7 +80,7 @@ export async function POST(req) {
       "address",
       "admissionNo",
       "collegeId",
-      "password",
+      
     ];
 
     const missing = requiredFields.filter((field) => !String(body[field] || "").trim());
@@ -108,7 +109,11 @@ export async function POST(req) {
       address: body.address.trim(),
       admissionNo: body.admissionNo.trim().toUpperCase(),
       collegeId: body.collegeId,
-      password: await bcrypt.hash(body.password.trim(), 10),
+
+      password: body.password?.trim()
+  ? await bcrypt.hash(body.password.trim(), 10)
+  : undefined,
+
       status: body.status || "Active",
       dob: body.dob || undefined,
       dateOfJoining: body.dateOfJoining || undefined,

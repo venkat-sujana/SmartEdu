@@ -103,15 +103,21 @@ export async function GET(req) {
       const identity = getLecturerIdentity(slot);
       if (!identity) return;
       if (!workloadMap[identity.key]) {
+
         workloadMap[identity.key] = {
-          lecturerKey: identity.key,
-          lecturerKeyType: identity.type,
-          lecturerId: identity.lecturerId,
-          name: identity.lecturerName,
-          theory: 0,
-          practical: 0,
-          total: 0,
-        };
+  lecturerKey: identity.key,
+  lecturerKeyType: identity.type,
+  lecturerId: identity.lecturerId,
+  name: identity.lecturerName,
+
+  // 👇 కొత్తది
+  subject: slot.subject,
+
+  theory: 0,
+  practical: 0,
+  total: 0,
+};
+
       }
       if (slot.isPractical) workloadMap[identity.key].practical++;
       else                   workloadMap[identity.key].theory++;
@@ -121,13 +127,39 @@ export async function GET(req) {
     const workload = Object.values(workloadMap).sort((a, b) => b.total - a.total);
 
     // Status: Normal (16-18), Underload (<16), Overload (>18)
-    const workloadWithStatus = workload.map((w) => ({
-      ...w,
-      status:
-        w.total < 16 ? "Underload"
-        : w.total > 18 ? "Overload"
+    const SUBJECT_WORKLOAD = {
+  Mathematics: 12,
+  Maths: 12,
+
+  Physics: 11,
+  Chemistry: 11,
+
+  Botany: 6,
+  Zoology: 6,
+
+  History: 11,
+  Commerce: 11,
+  Economics: 11,
+  Civics: 11,
+
+  English: 14,
+}
+
+const workloadWithStatus = workload.map((w) => {
+
+  const expected = SUBJECT_WORKLOAD[w.subject] ?? 18
+
+  return {
+    ...w,
+    expected,
+    status:
+      w.total < expected
+        ? "Underload"
+        : w.total > expected
+        ? "Overload"
         : "Normal",
-    }));
+  }
+})
 
     // ── Class-wise summary ────────────────────────────────────────────
     const classMap = {};

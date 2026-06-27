@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import {
   LayoutGrid, AlertTriangle, CheckCircle2, Loader2,
-  BookOpen, Users, Clock, TrendingUp, RefreshCw,
-  ChevronRight, FlaskConical, ShieldAlert, BarChart3,
+  BookOpen, TrendingUp, RefreshCw,
+  FlaskConical, ShieldAlert, BarChart3,
   CalendarDays, Layers, GraduationCap, ArrowRight
 } from 'lucide-react'
 import {
@@ -13,6 +13,28 @@ import {
   TIMETABLE_CLASSES as CLASSES,
   TIMETABLE_TOTAL_PERIODS_PER_CLASS as TOTAL_PERIODS_PER_CLASS,
 } from '@/lib/timetable-config'
+
+const SUBJECT_WORKLOAD = {
+  Mathematics: 12,
+  Maths: 12,
+
+  Physics: 11,
+  Chemistry: 11,
+
+  Botany: 6,
+  Zoology: 6,
+
+  History: 11,
+  Commerce: 11,
+  Economics: 11,
+  Civics: 11,
+
+  English: 14,
+}
+
+const getExpectedLoad = (subject) => {
+  return SUBJECT_WORKLOAD[subject] ?? 18
+}
 
 const COLOR_MAP = {
   blue:   { bg: 'bg-blue-50',    border: 'border-blue-200',   text: 'text-blue-700',   badge: 'bg-blue-100 text-blue-700',   bar: 'bg-blue-500',   icon: 'bg-blue-100 text-blue-600'   },
@@ -233,7 +255,7 @@ export default function TimetableDashboardPage() {
 
       {/* ── Page Header ── */}
       <div className="border-b border-slate-200 bg-white shadow-sm">
-        <div className="mx-auto max-w-screen-xl px-6 py-5">
+        <div className="mx-auto max-w-7xl px-6 py-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 shadow-md">
@@ -274,7 +296,7 @@ export default function TimetableDashboardPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-screen-xl space-y-6 px-6 py-6">
+      <div className="mx-auto max-w-7xl space-y-6 px-6 py-6">
 
         {/* ── Stats Row ── */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -316,7 +338,7 @@ export default function TimetableDashboardPage() {
           </div>
           <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-1000"
+              className="h-full rounded-full bg-linear-to-r from-blue-500 to-indigo-500 transition-all duration-1000"
               style={{ width: `${overallPct}%` }}
             />
           </div>
@@ -404,49 +426,101 @@ export default function TimetableDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {workload.map((w, i) => (
-                    <tr key={w.name} className={`transition-colors hover:bg-slate-50 ${i%2===0?'bg-white':'bg-slate-50/40'}`}>
-                      <td className="px-5 py-3 text-xs font-bold text-slate-400">{i+1}</td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 text-xs font-black text-white">
-                            {w.name?.[0]?.toUpperCase() || '?'}
-                          </div>
-                          <span className="font-bold text-slate-700">{w.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-1.5">
-                          <BookOpen size={12} className="text-blue-400"/>
-                          <span className="font-bold text-slate-700">{w.theory}</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-1.5">
-                          <FlaskConical size={12} className="text-amber-500"/>
-                          <span className="font-bold text-slate-700">{w.practical}</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-200">
-                            <div
-                              className={`h-full rounded-full ${w.status==='Normal'?'bg-emerald-500':w.status==='Underload'?'bg-rose-400':'bg-red-600'}`}
-                              style={{ width: `${Math.min((w.total/18)*100,100)}%` }}
-                            />
-                          </div>
-                          <span className="text-base font-black text-slate-800">{w.total}</span>
-                          <span className="text-xs text-slate-400">/ 18</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3">
-                        {w.status === 'Normal'    && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700"><CheckCircle2 size={11}/> Normal</span>}
-                        {w.status === 'Underload' && <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700"><AlertTriangle size={11}/> Underload</span>}
-                        {w.status === 'Overload'  && <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700"><AlertTriangle size={11}/> Overload</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+  {workload.map((w, i) => {
+
+    const expected = w.expected
+
+    const status =
+      w.total < expected
+        ? 'Underload'
+        : w.total > expected
+        ? 'Overload'
+        : 'Normal'
+
+    return (
+      <tr
+        key={w.name}
+        className={`transition-colors hover:bg-slate-50 ${
+          i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'
+        }`}
+      >
+        <td className="px-5 py-3 text-xs font-bold text-slate-400">
+          {i + 1}
+        </td>
+
+        <td className="px-5 py-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 text-xs font-black text-white">
+              {w.name?.[0]?.toUpperCase() || '?'}
+            </div>
+            <span className="font-bold text-slate-700">{w.name}</span>
+          </div>
+        </td>
+
+        <td className="px-5 py-3">
+          <div className="flex items-center gap-1.5">
+            <BookOpen size={12} className="text-blue-400" />
+            <span className="font-bold text-slate-700">{w.theory}</span>
+          </div>
+        </td>
+
+        <td className="px-5 py-3">
+          <div className="flex items-center gap-1.5">
+            <FlaskConical size={12} className="text-amber-500" />
+            <span className="font-bold text-slate-700">{w.practical}</span>
+          </div>
+        </td>
+
+        <td className="px-5 py-3">
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-200">
+              <div
+                className={`h-full rounded-full ${
+                  status === 'Normal'
+                    ? 'bg-emerald-500'
+                    : status === 'Underload'
+                    ? 'bg-rose-400'
+                    : 'bg-red-600'
+                }`}
+                style={{
+                  width: `${Math.min((w.total / expected) * 100, 100)}%`,
+                }}
+              />
+            </div>
+
+            <span className="text-base font-black text-slate-800">
+              {w.total}
+            </span>
+
+            <span className="text-xs text-slate-400">
+              / {expected}
+            </span>
+          </div>
+        </td>
+
+        <td className="px-5 py-3">
+          {status === 'Normal' && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+              <CheckCircle2 size={11} /> Normal
+            </span>
+          )}
+
+          {status === 'Underload' && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700">
+              <AlertTriangle size={11} /> Underload
+            </span>
+          )}
+
+          {status === 'Overload' && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700">
+              <AlertTriangle size={11} /> Overload
+            </span>
+          )}
+        </td>
+      </tr>
+    )
+  })}
+</tbody>
               </table>
             </div>
 

@@ -1,7 +1,5 @@
 ﻿//src/app/admin-panel/page.jsx
 'use client'
-
-
 import Link from 'next/link'
 import Image from 'next/image'
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
@@ -103,7 +101,7 @@ const ENTITY_CONFIG = {
       { name: 'mobile', label: 'Mobile', type: 'text', required: true },
       { name: 'parentMobile', label: 'Parent Mobile', type: 'text', required: true },
       { name: 'admissionNo', label: 'Admission No', type: 'text', required: true },
-      { name: 'password', label: 'Password', type: 'password', required: true },
+      { name: 'password', label: 'Password', type: 'password', required: false },
       {
         name: 'group',
         label: 'Group',
@@ -1700,7 +1698,7 @@ export default function AdminPanelPage() {
                           )}
                         </div>
                       </div>
-                    )}
+                    )}Students Management
 
                     {entity !== 'colleges' &&
                       form.collegeId &&
