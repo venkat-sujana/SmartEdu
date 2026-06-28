@@ -2,10 +2,23 @@
 //src/components/EditableTimeTable.jsx
 'use client'
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
+
 import {
-  Lock, Unlock, RefreshCw, Printer,
-  CheckCircle2, AlertCircle, Loader2, Trash2,
-  Database, Clock, BookOpen, FileText, AlertTriangle, X,Zap
+  Lock,
+  Unlock,
+  RefreshCw,
+  Printer,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Trash2,
+  Database,
+  Clock,
+  BookOpen,
+  FileText,
+  AlertTriangle,
+  X,
+  Zap,
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -20,42 +33,64 @@ import {
   TIMETABLE_SUBJECT_TARGETS as SUBJECT_TARGETS,
 } from '@/lib/timetable-config'
 
+
+import {
+  Eye,
+  ShieldCheck,
+} from "lucide-react"
+
+
 // ── CONSTANTS ────────────────────────────────────────────────────────
 const MIN_PERIODS = 16
 const MAX_PERIODS = 24
 // ── WORKLOAD ─────────────────────────────────────────────────────────
+
 function calculateWorkload(table) {
+  const SUBJECT_TARGETS = {
+    Mathematics: 12,
+    Maths: 12,
+
+    Physics: 11,
+    Chemistry: 11,
+
+    Botany: 6,
+    Zoology: 6,
+
+    History: 11,
+    Commerce: 11,
+    Economics: 11,
+    Civics: 11,
+
+    English: 14,
+    Telugu: 10,
+    Hindi: 10,
+  }
+
   const workload = {}
 
   table.forEach(dayRow => {
     dayRow.forEach(cell => {
       if (!cell?.subject || cell.periodType !== 'period') return
 
-      // ✅ DB లో save అయిన lecturerName వాడండి
-      // లేకపోతే SUBJECT_LECTURERS నుండి fallback
-      const lecturer =
-        cell.lecturerName ||
-        SUBJECT_LECTURERS[cell.subject] ||
-        'Unknown'
+      const lecturer = cell.lecturerName || SUBJECT_LECTURERS[cell.subject] || 'Unknown'
 
       if (!lecturer || lecturer === 'Unknown') return
 
       if (!workload[lecturer]) {
         workload[lecturer] = {
           lecturer,
-          subjects:  [],
-          theory:    0,
+          subjects: [],
+          theory: 0,
           practical: 0,
-          total:     0,
+          total: 0,
         }
       }
 
-      // Subject list (duplicate లేకుండా)
+      // Duplicate subjects వద్దు
       if (!workload[lecturer].subjects.includes(cell.subject)) {
         workload[lecturer].subjects.push(cell.subject)
       }
 
-      // Theory vs Practical
       if (cell.isPractical || cell.subject.toLowerCase().includes('practical')) {
         workload[lecturer].practical++
       } else {
@@ -68,7 +103,6 @@ function calculateWorkload(table) {
 
   return Object.values(workload).sort((a, b) => b.total - a.total)
 }
-
 
 // ── WORKLOAD TABLE ────────────────────────────────────────────────────
 function WorkloadReport({ data }) {
@@ -83,31 +117,50 @@ function WorkloadReport({ data }) {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-slate-800 text-white">
-              {['Lecturer', 'Subjects', 'Theory', 'Practical', 'Total / Week', 'Target', 'Status'].map(h => (
-                <th key={h} className="px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide">
+              {[
+                'Lecturer',
+                'Subjects',
+                'Theory',
+                'Practical',
+                'Total / Week',
+                'Target',
+                'Status',
+              ].map(h => (
+                <th
+                  key={h}
+                  className="px-4 py-2.5 text-left text-xs font-bold tracking-wide uppercase"
+                >
                   {h}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {data.map(row => {
+            {data.filter(Boolean).map(row => {
               // ✅ Subject-wise target sum
-              const subjects    = row.subjects || []
+              const subjects = row.subjects || []
               const targetTotal = subjects.reduce(
-                (sum, sub) => sum + (SUBJECT_TARGETS[sub] || 0), 0
+                (sum, sub) => sum + (SUBJECT_TARGETS[sub] || 0),
+                0
               )
 
-              const status = targetTotal === 0
-                ? (row.total < MIN_PERIODS ? 'Underload' : row.total > MAX_PERIODS ? 'Overload' : 'Normal')
-                : row.total < targetTotal  ? 'Underload'
-                : row.total > targetTotal  ? 'Overload'
-                : 'Normal'
+              const status =
+                targetTotal === 0
+                  ? row.total < MIN_PERIODS
+                    ? 'Underload'
+                    : row.total > MAX_PERIODS
+                      ? 'Overload'
+                      : 'Normal'
+                  : row.total < targetTotal
+                    ? 'Underload'
+                    : row.total > targetTotal
+                      ? 'Overload'
+                      : 'Normal'
 
               // ✅ Each subject — assigned vs target
               const subjectDetails = subjects.map(sub => ({
-                name:     sub,
-                target:   SUBJECT_TARGETS[sub] || 0,
+                name: sub,
+                target: SUBJECT_TARGETS[sub] || 0,
                 isPractical: sub.toLowerCase().includes('practical'),
               }))
 
@@ -117,7 +170,7 @@ function WorkloadReport({ data }) {
                   className={status === 'Normal' ? 'bg-emerald-50' : 'bg-rose-50'}
                 >
                   {/* Lecturer */}
-                  <td className="px-4 py-2 font-semibold text-slate-800 whitespace-nowrap">
+                  <td className="px-4 py-2 font-semibold whitespace-nowrap text-slate-800">
                     {row.lecturer}
                   </td>
 
@@ -127,10 +180,10 @@ function WorkloadReport({ data }) {
                       {subjectDetails.map((s, i) => (
                         <span
                           key={i}
-                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
+                          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
                             s.isPractical
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                              ? 'border-amber-200 bg-amber-50 text-amber-700'
+                              : 'border-blue-200 bg-blue-50 text-blue-700'
                           }`}
                         >
                           {s.name}
@@ -151,18 +204,20 @@ function WorkloadReport({ data }) {
                   <td className="px-4 py-2 text-center">{row.practical}</td>
 
                   {/* Total */}
-                  <td className="px-4 py-2 text-center font-black text-slate-800">
-                    {row.total}
-                  </td>
+                  <td className="px-4 py-2 text-center font-black text-slate-800">{row.total}</td>
 
                   {/* ✅ Target */}
                   <td className="px-4 py-2 text-center">
                     {targetTotal > 0 ? (
-                      <span className={`font-bold ${
-                        row.total === targetTotal ? 'text-emerald-600'
-                        : row.total < targetTotal  ? 'text-rose-600'
-                        : 'text-red-700'
-                      }`}>
+                      <span
+                        className={`font-bold ${
+                          row.total === targetTotal
+                            ? 'text-emerald-600'
+                            : row.total < targetTotal
+                              ? 'text-rose-600'
+                              : 'text-red-700'
+                        }`}
+                      >
                         {row.total}/{targetTotal}
                       </span>
                     ) : (
@@ -174,17 +229,17 @@ function WorkloadReport({ data }) {
                   <td className="px-4 py-2 text-center">
                     {status === 'Normal' && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">
-                        <CheckCircle2 size={11}/> Normal
+                        <CheckCircle2 size={11} /> Normal
                       </span>
                     )}
                     {status === 'Underload' && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-700">
-                        <AlertCircle size={11}/> Underload
+                        <AlertCircle size={11} /> Underload
                       </span>
                     )}
                     {status === 'Overload' && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700">
-                        <AlertCircle size={11}/> Overload
+                        <AlertCircle size={11} /> Overload
                       </span>
                     )}
                   </td>
@@ -199,19 +254,37 @@ function WorkloadReport({ data }) {
       <div className="mt-3 flex flex-wrap justify-center gap-4 text-xs font-semibold">
         <span className="text-emerald-700">🟢 Normal range</span>
         <span className="text-rose-700">🔴 Under/Over Load</span>
-        <span className="text-blue-600">
-          🔢 Subject badge = weekly target periods
-        </span>
+        <span className="text-blue-600">🔢 Subject badge = weekly target periods</span>
       </div>
     </div>
   )
 }
 // ── SAVE STATUS ───────────────────────────────────────────────────────
 function SaveStatus({ status }) {
-  if (status === 'saving')  return <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-400"><Loader2 size={12} className="animate-spin"/> Saving...</span>
-  if (status === 'saved')   return <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400"><CheckCircle2 size={12}/> Saved</span>
-  if (status === 'error')   return <span className="flex items-center gap-1.5 text-xs font-semibold text-rose-400"><AlertCircle size={12}/> Failed</span>
-  if (status === 'loading') return <span className="flex items-center gap-1.5 text-xs font-semibold text-blue-400"><Loader2 size={12} className="animate-spin"/> Loading...</span>
+  if (status === 'saving')
+    return (
+      <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
+        <Loader2 size={12} className="animate-spin" /> Saving...
+      </span>
+    )
+  if (status === 'saved')
+    return (
+      <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+        <CheckCircle2 size={12} /> Saved
+      </span>
+    )
+  if (status === 'error')
+    return (
+      <span className="flex items-center gap-1.5 text-xs font-semibold text-rose-400">
+        <AlertCircle size={12} /> Failed
+      </span>
+    )
+  if (status === 'loading')
+    return (
+      <span className="flex items-center gap-1.5 text-xs font-semibold text-blue-400">
+        <Loader2 size={12} className="animate-spin" /> Loading...
+      </span>
+    )
   return null
 }
 
@@ -219,21 +292,19 @@ function SaveStatus({ status }) {
 function ConflictTooltip({ conflict }) {
   if (!conflict) return null
   return (
-    <div className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 w-52 rounded-xl border border-red-200 bg-white p-3 shadow-xl text-left pointer-events-none">
-      <div className="flex items-center gap-1.5 mb-2">
-        <AlertTriangle size={12} className="text-red-500 shrink-0" />
+    <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-52 -translate-x-1/2 rounded-xl border border-red-200 bg-white p-3 text-left shadow-xl">
+      <div className="mb-2 flex items-center gap-1.5">
+        <AlertTriangle size={12} className="shrink-0 text-red-500" />
         <span className="text-xs font-bold text-red-600">Conflict!</span>
       </div>
-      <p className="text-[10px] font-semibold text-slate-600 mb-1">
-        {conflict.lecturerName}
-      </p>
-      <p className="text-[10px] text-slate-500 mb-1.5">
+      <p className="mb-1 text-[10px] font-semibold text-slate-600">{conflict.lecturerName}</p>
+      <p className="mb-1.5 text-[10px] text-slate-500">
         {conflict.day} · Period {Number(conflict.periodIndex) + 1}
       </p>
       <div className="space-y-1">
         {conflict.classes?.map((cls, i) => (
           <div key={i} className="flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1">
-            <span className="text-[9px] font-bold text-red-700 truncate">{cls.classLabel}</span>
+            <span className="truncate text-[9px] font-bold text-red-700">{cls.classLabel}</span>
           </div>
         ))}
       </div>
@@ -246,40 +317,39 @@ function ConflictTooltip({ conflict }) {
 // ── MAIN COMPONENT ────────────────────────────────────────────────────
 export default function EditableTimeTable({
   title,
-  stream       = 'general',
+  stream = 'general',
   academicYear = '2026-2027',
-  readOnly     = false,
+  readOnly = false,
   onConflictChange, // parent కి conflict count notify చేయడానికి
 }) {
-  const printRef   = useRef(null)
+  const printRef = useRef(null)
   const classLabel = title
-
 
   const [showAutoModal, setShowAutoModal] = useState(false)
 
   const emptyTable = () =>
     DAYS.map(() =>
       COLUMNS.map(c => ({
-        subject:     c.type === 'period' ? '' : c.label,
+        subject: c.type === 'period' ? '' : c.label,
         lecturerName: '',
-        isLocked:    false,
+        isLocked: false,
         isPractical: false,
-        _id:         null,
-        periodType:  c.type,
+        _id: null,
+        periodType: c.type,
       }))
     )
 
-  const [table,        setTable]        = useState(emptyTable)
-  const [editing,      setEditing]      = useState(null)
-  const [saveStatus,   setSaveStatus]   = useState(null)
-  const [savingCell,   setSavingCell]   = useState(null)
-  const [conflicts,    setConflicts]    = useState([])   // ✅ conflict state
-  const [hoverConflict,setHoverConflict]= useState(null) // tooltip
+  const [table, setTable] = useState(emptyTable)
+  const [editing, setEditing] = useState(null)
+  const [saveStatus, setSaveStatus] = useState(null)
+  const [savingCell, setSavingCell] = useState(null)
+  const [conflicts, setConflicts] = useState([]) // ✅ conflict state
+  const [hoverConflict, setHoverConflict] = useState(null) // tooltip
 
   // ── Fetch conflicts from API ─────────────────────────────────────
   const fetchConflicts = useCallback(async () => {
     try {
-      const res  = await fetch(
+      const res = await fetch(
         `/api/timetable-builder/conflicts?academicYear=${encodeURIComponent(academicYear)}`
       )
       const data = await res.json()
@@ -296,7 +366,6 @@ export default function EditableTimeTable({
 
       // Parent కి total conflicts notify చేయండి
       onConflictChange?.(classLabel, myConflicts.length)
-
     } catch (err) {
       console.error('Conflict fetch error:', err)
     }
@@ -306,7 +375,7 @@ export default function EditableTimeTable({
   const fetchTimetable = useCallback(async () => {
     setSaveStatus('loading')
     try {
-      const res  = await fetch(
+      const res = await fetch(
         `/api/timetable-builder/slots?classLabel=${encodeURIComponent(classLabel)}&academicYear=${encodeURIComponent(academicYear)}`
       )
       const data = await res.json()
@@ -324,18 +393,17 @@ export default function EditableTimeTable({
         const dIndex = DAYS.indexOf(slot.day)
         if (dIndex === -1) return
         newTable[dIndex][slot.periodIndex] = {
-          subject:     slot.subject      || '',
-          lecturerName:slot.lecturerName || '',
-          isLocked:    slot.isLocked     || false,
-          isPractical: slot.isPractical  || false,
-          _id:         slot._id,
-          periodType:  slot.periodType   || 'period',
+          subject: slot.subject || '',
+          lecturerName: slot.lecturerName || '',
+          isLocked: slot.isLocked || false,
+          isPractical: slot.isPractical || false,
+          _id: slot._id,
+          periodType: slot.periodType || 'period',
         }
       })
 
       setTable(newTable)
       setSaveStatus(null)
-
     } catch (err) {
       console.error('Fetch error:', err)
       setSaveStatus('error')
@@ -348,22 +416,30 @@ export default function EditableTimeTable({
 
   // ── Save cell ──────────────────────────────────────────────────────
   const saveCell = async (dIndex, pIndex, subject) => {
-    const day          = DAYS[dIndex]
-    const col          = COLUMNS[pIndex]
+    const day = DAYS[dIndex]
+    const col = COLUMNS[pIndex]
     const lecturerName = SUBJECT_LECTURERS[subject] || ''
-    const isPractical  = subject.toLowerCase().includes('practical')
+    const isPractical = subject.toLowerCase().includes('practical')
 
     setSavingCell({ dIndex, pIndex })
     setSaveStatus('saving')
 
     try {
-      const res  = await fetch('/api/timetable-builder/slots', {
-        method:  'POST',
+      const res = await fetch('/api/timetable-builder/slots', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          classLabel, stream, academicYear,
-          day, periodIndex: pIndex, periodLabel: col.label, periodType: col.type,
-          subject, lecturerName, isPractical, subjectColor: '#e2e8f0',
+        body: JSON.stringify({
+          classLabel,
+          stream,
+          academicYear,
+          day,
+          periodIndex: pIndex,
+          periodLabel: col.label,
+          periodType: col.type,
+          subject,
+          lecturerName,
+          isPractical,
+          subjectColor: '#e2e8f0',
         }),
       })
       const data = await res.json()
@@ -373,7 +449,9 @@ export default function EditableTimeTable({
         const copy = prev.map(row => [...row])
         copy[dIndex][pIndex] = {
           ...copy[dIndex][pIndex],
-          subject, lecturerName, isPractical,
+          subject,
+          lecturerName,
+          isPractical,
           _id: data.data?._id || copy[dIndex][pIndex]._id,
         }
         return copy
@@ -384,7 +462,6 @@ export default function EditableTimeTable({
 
       // ✅ Save తర్వాత conflicts re-check చేయండి
       await fetchConflicts()
-
     } catch (err) {
       setSaveStatus('error')
       setTimeout(() => setSaveStatus(null), 3000)
@@ -396,16 +473,24 @@ export default function EditableTimeTable({
   // ── Conflict helpers ───────────────────────────────────────────────
 
   // ఒక cell conflict లో ఉందా?
-  const getConflict = useCallback((dIndex, pIndex) => {
-    const day = DAYS[dIndex]
-    return conflicts.find(
-      c => c.day === day && Number(c.periodIndex) === pIndex
-    ) || null
-  }, [conflicts])
+  const getConflict = useCallback(
+    (dIndex, pIndex) => {
+      const day = DAYS[dIndex]
+      return conflicts.find(c => c.day === day && Number(c.periodIndex) === pIndex) || null
+    },
+    [conflicts]
+  )
 
   // ── Toggle Lock ────────────────────────────────────────────────────
   const toggleLock = async (dIndex, pIndex) => {
-    const cell = table[dIndex][pIndex]
+    const cell = table[dIndex]?.[pIndex] ?? {
+      subject: '',
+      lecturerName: '',
+      isLocked: false,
+      isPractical: false,
+      _id: null,
+      periodType: col.type,
+    }
     if (!cell._id) return
     const newLocked = !cell.isLocked
     try {
@@ -437,12 +522,14 @@ export default function EditableTimeTable({
       setConflicts([])
       onConflictChange?.(classLabel, 0)
       setSaveStatus(null)
-    } catch (err) { setSaveStatus('error') }
+    } catch (err) {
+      setSaveStatus('error')
+    }
   }
 
   // ── Print ──────────────────────────────────────────────────────────
   const handlePrint = () => {
-    const content  = printRef.current.innerHTML
+    const content = printRef.current.innerHTML
     const original = document.body.innerHTML
     document.body.innerHTML = `
       <style>
@@ -464,26 +551,63 @@ export default function EditableTimeTable({
     const doc = new jsPDF('landscape', 'mm', 'a4')
 
     const subjectColors = {
-      'Maths': [219,234,254], 'Physics': [254,243,199], 'Chemistry': [209,250,229],
-      'Physics Practicals': [253,230,138], 'Chemistry Practicals': [167,243,208],
-      'Botany': [220,252,231], 'Botany Practicals': [187,247,208],
-      'Zoology': [204,251,241], 'Zoology Practicals': [153,246,228],
-      'Civics': [243,232,255], 'Economics': [254,228,226], 'History': [255,237,213],
-      'Commerce': [254,243,199], 'English': [224,242,254], 'Telugu': [237,233,254],
-      'Sanskrit': [253,232,243], 'Hindi': [253,231,243],
-      'Study Hour': [241,245,249], 'GFC': [236,253,245], 'Bridge Course': [224,231,255],
+      Maths: [219, 234, 254],
+      Physics: [254, 243, 199],
+      Chemistry: [209, 250, 229],
+      'Physics Practicals': [253, 230, 138],
+      'Chemistry Practicals': [167, 243, 208],
+      Botany: [220, 252, 231],
+      'Botany Practicals': [187, 247, 208],
+      Zoology: [204, 251, 241],
+      'Zoology Practicals': [153, 246, 228],
+      Civics: [243, 232, 255],
+      Economics: [254, 228, 226],
+      History: [255, 237, 213],
+      Commerce: [254, 243, 199],
+      English: [224, 242, 254],
+      Telugu: [237, 233, 254],
+      Sanskrit: [253, 232, 243],
+      Hindi: [253, 231, 243],
+      'Study Hour': [241, 245, 249],
+      GFC: [236, 253, 245],
+      'Bridge Course': [224, 231, 255],
     }
 
     doc.setFontSize(13)
+
     doc.setFont('helvetica', 'bold')
-    doc.text(title, 148, 12, { align: 'center' })
-    doc.setFontSize(8)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`Academic Year: ${academicYear}  ·  Stream: ${stream}  ·  ${filledPeriods}/${totalPeriods} filled`, 148, 18, { align: 'center' })
+doc.setFontSize(16)
+doc.text('S.K.R.GOVERNMENT JUNIOR COLLEGE', 148, 10, {
+  align: 'center'
+})
+
+doc.setFontSize(11)
+doc.text('GUDUR, SPSR NELLORE DISTRICT', 148, 16, {
+  align: 'center'
+})
+
+doc.setFontSize(13)
+doc.text(title.toUpperCase(), 148, 24, {
+  align: 'center'
+})
+
+doc.setFont('helvetica', 'normal')
+doc.setFontSize(8)
+doc.text(
+  `Academic Year : ${academicYear}     Stream : ${stream}`,
+  148,
+  30,
+  { align: 'center' }
+)
 
     if (conflicts.length > 0) {
       doc.setTextColor(220, 38, 38)
-      doc.text(`⚠ ${conflicts.length} conflict(s) detected`, 148, 23, { align: 'center' })
+      doc.text(
+  `⚠ ${conflicts.length} conflict(s) detected`,
+  148,
+  35,
+  { align: 'center' }
+)
       doc.setTextColor(0, 0, 0)
     }
 
@@ -493,14 +617,24 @@ export default function EditableTimeTable({
       ...COLUMNS.map((col, pIndex) => {
         if (col.type === 'break') return 'BREAK'
         if (col.type === 'lunch') return 'LUNCH'
-        return table[dIndex]?.[pIndex]?.subject || ''
+
+        const cell = table[dIndex]?.[pIndex]
+
+if (!cell) return ''
+
+return [
+  cell.subject,
+  cell.lecturerName || ''
+].filter(Boolean).join('\n')
+
+
       }),
     ])
 
     const cellColorMap = DAYS.map((_, dIndex) =>
       COLUMNS.map((col, pIndex) => {
-        if (col.type === 'break') return [209,213,219]
-        if (col.type === 'lunch') return [156,163,175]
+        if (col.type === 'break') return [209, 213, 219]
+        if (col.type === 'lunch') return [156, 163, 175]
         // Conflict → red
         if (getConflict(dIndex, pIndex)) return [254, 202, 202]
         const subj = table[dIndex]?.[pIndex]?.subject || ''
@@ -509,19 +643,36 @@ export default function EditableTimeTable({
     )
 
     autoTable(doc, {
-      startY: conflicts.length > 0 ? 27 : 22,
-      head, body,
+      startY: conflicts.length > 0 ? 40 : 36,
+      head,
+      body,
       theme: 'grid',
-      styles: { fontSize: 7, cellPadding: 2, halign: 'center', valign: 'middle', minCellHeight: 11, textColor: [30,41,59], lineColor: [203,213,225], lineWidth: 0.2 },
-      headStyles: { fillColor: [30,41,59], textColor: [255,255,255], fontStyle: 'bold', fontSize: 7 },
-      columnStyles: { 0: { fontStyle: 'bold', halign: 'left', fillColor: [248,250,252], cellWidth: 22 } },
+      styles: {
+        fontSize: 7,
+        cellPadding: 2,
+        halign: 'center',
+        valign: 'middle',
+        minCellHeight: 11,
+        textColor: [30, 41, 59],
+        lineColor: [203, 213, 225],
+        lineWidth: 0.2,
+      },
+      headStyles: {
+        fillColor: [30, 41, 59],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 7,
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', halign: 'left', fillColor: [248, 250, 252], cellWidth: 22 },
+      },
       didParseCell(hookData) {
         if (hookData.section !== 'body') return
         if (hookData.column.index === 0) return
         const color = cellColorMap[hookData.row.index]?.[hookData.column.index - 1]
         if (color) hookData.cell.styles.fillColor = color
       },
-      margin: { left: 5, right: 5 },
+      margin: { left: 12, right: 12 },
     })
 
     if (workloadData.length > 0) {
@@ -530,41 +681,149 @@ export default function EditableTimeTable({
       doc.text('Lecturer Workload', 148, doc.lastAutoTable.finalY + 8, { align: 'center' })
       autoTable(doc, {
         startY: doc.lastAutoTable.finalY + 12,
-        head: [['#', 'Lecturer', 'Theory', 'Practical', 'Total', 'Status']],
+
+        head: [['#', 'Lecturer', 'Subject', 'Theory', 'Practical', 'Load / Target', 'Status']],
+
         body: workloadData.map((row, i) => {
-          const s = row.total < MIN_PERIODS ? 'Underload' : row.total > MAX_PERIODS ? 'Overload' : 'Normal'
-          return [i + 1, row.lecturer, row.theory, row.practical, row.total, s]
+          const SUBJECT_TARGETS = {
+            Mathematics: 12,
+            Maths: 12,
+            Physics: 11,
+            Chemistry: 11,
+            Botany: 6,
+            Zoology: 6,
+            History: 11,
+            Commerce: 11,
+            Economics: 11,
+            Civics: 11,
+            English: 14,
+            Telugu: 10,
+            Hindi: 10,
+          }
+
+          const mainSubject =
+  (row.subjects || []).find(
+    s => !s.toLowerCase().includes('practical')
+  ) || row.subjects?.[0] || ''
+
+const expected = SUBJECT_TARGETS[mainSubject] || 0
+          const status =
+            expected === 0
+              ? 'Normal'
+              : row.total < expected
+                ? 'Underload'
+                : row.total > expected
+                  ? 'Overload'
+                  : 'Normal'
+
+          return [
+            i + 1,
+            row.lecturer || row.name,
+            
+            mainSubject,
+
+            row.theory,
+            row.practical,
+            `${row.total} / ${expected}`,
+            status,
+          ]
         }),
+
         theme: 'grid',
-        styles: { fontSize: 8, halign: 'center', textColor: [30,41,59] },
-        headStyles: { fillColor: [30,41,59], textColor: [255,255,255], fontStyle: 'bold' },
-        columnStyles: { 0: { cellWidth: 10 }, 1: { halign: 'left', fontStyle: 'bold' } },
+        styles: { fontSize: 8, halign: 'center', textColor: [30, 41, 59] },
+        headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
+
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { halign: 'left', fontStyle: 'bold', cellWidth: 42 },
+          2: { cellWidth: 24 },
+          3: { cellWidth: 16 },
+          4: { cellWidth: 18 },
+          5: { cellWidth: 22 },
+          6: { cellWidth: 22 },
+        },
+
         didParseCell(h) {
           if (h.section !== 'body' || h.column.index !== 5) return
-          if (h.cell.raw === 'Normal')    h.cell.styles.fillColor = [209,250,229]
-          if (h.cell.raw === 'Underload') h.cell.styles.fillColor = [254,226,226]
-          if (h.cell.raw === 'Overload')  h.cell.styles.fillColor = [254,202,202]
+          if (h.cell.raw === 'Normal') h.cell.styles.fillColor = [209, 250, 229]
+          if (h.cell.raw === 'Underload') h.cell.styles.fillColor = [254, 226, 226]
+          if (h.cell.raw === 'Overload') h.cell.styles.fillColor = [254, 202, 202]
         },
         margin: { left: 30, right: 30 },
       })
     }
 
     const pageCount = doc.getNumberOfPages()
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i)
-      doc.setFontSize(7)
-      doc.setTextColor(150)
-      doc.text(`Page ${i} of ${pageCount}  ·  ${new Date().toLocaleString()}`, 148, 205, { align: 'center' })
+
+for (let i = 1; i <= pageCount; i++) {
+
+  doc.setPage(i)
+
+  const pageHeight = doc.internal.pageSize.getHeight()
+  const pageWidth = doc.internal.pageSize.getWidth()
+
+  // =============================
+  // Signature Area
+  // =============================
+
+  const lineY = pageHeight - 22
+
+  doc.setDrawColor(180)
+  doc.setLineWidth(0.3)
+  doc.line(15, lineY - 8, pageWidth - 15, lineY - 8)
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8)
+  doc.setTextColor(60)
+
+  // Labels
+  doc.text('Prepared By', 40, lineY)
+  doc.text('Time Table Convener', pageWidth / 2, lineY, {
+    align: 'center',
+  })
+  doc.text('Principal', pageWidth - 40, lineY, {
+    align: 'right',
+  })
+
+  // Signature lines
+  doc.line(20, lineY + 10, 60, lineY + 10)
+
+  doc.line(
+    pageWidth / 2 - 25,
+    lineY + 10,
+    pageWidth / 2 + 25,
+    lineY + 10
+  )
+
+  doc.line(pageWidth - 60, lineY + 10, pageWidth - 20, lineY + 10)
+
+  // =============================
+  // Footer
+  // =============================
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.setTextColor(130)
+
+  doc.text(
+    `Generated by OSRA ERP • ${new Date().toLocaleString()} • Page ${i} of ${pageCount}`,
+    pageWidth / 2,
+    pageHeight - 4,
+    {
+      align: 'center',
     }
+  )
+}
 
     doc.save(`${title.replace(/\s+/g, '_')}_${academicYear}.pdf`)
   }
 
   // ── Stats ──────────────────────────────────────────────────────────
-  const workloadData  = useMemo(() => calculateWorkload(table), [table])
-  const totalPeriods  = COLUMNS.filter(c => c.type === 'period').length * DAYS.length
+  const workloadData = useMemo(() => calculateWorkload(table), [table])
+
+  const totalPeriods = COLUMNS.filter(c => c.type === 'period').length * DAYS.length
   const filledPeriods = table.flat().filter(c => c.periodType === 'period' && c.subject).length
-  const fillPercent   = Math.round((filledPeriods / totalPeriods) * 100)
+  const fillPercent = Math.round((filledPeriods / totalPeriods) * 100)
   const conflictCount = conflicts.length
 
   return (
@@ -573,8 +832,8 @@ export default function EditableTimeTable({
       <div
         className={`flex flex-wrap items-center justify-between gap-3 rounded-t-2xl border-b px-5 py-4 ${
           conflictCount > 0
-            ? 'border-red-700 bg-gradient-to-r from-red-900 to-rose-800'
-            : 'border-slate-700 bg-gradient-to-r from-slate-800 to-slate-700'
+            ? 'border-red-700 bg-linear-to-r from-red-900 to-rose-800'
+            : 'border-slate-700 bg-linear-to-r from-slate-800 to-slate-700'
         }`}
       >
         <div className="flex items-center gap-3">
@@ -617,7 +876,7 @@ export default function EditableTimeTable({
             </span>
           </div>
 
-          <div className="min-w-[80px]">
+          <div className="min-w-20">
             <SaveStatus status={saveStatus} />
           </div>
 
@@ -736,7 +995,9 @@ export default function EditableTimeTable({
                 </td>
 
                 {COLUMNS.map((col, pIndex) => {
+
                   const cell = table[dIndex][pIndex]
+
                   const isSaving = savingCell?.dIndex === dIndex && savingCell?.pIndex === pIndex
                   const isEditing = editing?.dIndex === dIndex && editing?.pIndex === pIndex
                   const conflict = getConflict(dIndex, pIndex) // ✅
@@ -884,7 +1145,7 @@ export default function EditableTimeTable({
           stream={stream}
           academicYear={academicYear}
           onClose={() => setShowAutoModal(false)}
-          onGenerated={(result) => {
+          onGenerated={result => {
             if (!result?.unallocated?.length) setShowAutoModal(false)
             fetchTimetable().then(fetchConflicts)
           }}
@@ -892,22 +1153,70 @@ export default function EditableTimeTable({
       )}
 
       {/* ── Footer ── */}
-      <div className="flex items-center justify-between rounded-b-2xl border-t border-slate-100 bg-slate-50 px-5 py-2.5 print:hidden">
-        <span className="text-xs text-slate-400">
-          {!readOnly ? '💡 Cell click → Subject select → Auto save' : '👁 Read-only'}
-        </span>
-        <div className="flex items-center gap-4 text-xs">
-          {conflictCount > 0 && (
-            <span className="flex items-center gap-1 font-bold text-red-600">
-              <AlertTriangle size={10} /> {conflictCount} conflict{conflictCount > 1 ? 's' : ''}
-            </span>
-          )}
-          <span className="flex items-center gap-1 text-slate-400">
-            <CheckCircle2 size={10} className="text-emerald-500" />
-            {filledPeriods} filled · {totalPeriods - filledPeriods} empty
+      {/* ───────────── Footer ───────────── */}
+<div className="rounded-b-2xl border-t border-slate-200 bg-linear-to-r from-slate-50 via-white to-slate-50 px-5 py-3 print:hidden">
+
+  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+
+    {/* Left */}
+    <div className="flex items-center gap-2 text-xs text-slate-500">
+      {!readOnly ? (
+        <>
+          <CheckCircle2 size={13} className="text-emerald-500" />
+          <span>
+            Click a cell → Select Subject → Changes are saved automatically
           </span>
-        </div>
-      </div>
+        </>
+      ) : (
+        <>
+          <Eye size={13} className="text-blue-500" />
+          <span>Read Only Mode</span>
+        </>
+      )}
+    </div>
+
+    {/* Center */}
+    <div className="flex items-center gap-4 text-xs">
+
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-700">
+        <CheckCircle2 size={11} />
+        {filledPeriods} Filled
+      </span>
+
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">
+        {totalPeriods - filledPeriods} Empty
+      </span>
+
+      {conflictCount > 0 ? (
+        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 font-semibold text-red-700">
+          <AlertTriangle size={11} />
+          {conflictCount} Conflict{conflictCount > 1 ? "s" : ""}
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-700">
+          <ShieldCheck size={11} />
+          No Conflicts
+        </span>
+      )}
+
+    </div>
+
+    {/* Right */}
+    <div className="text-right text-[11px] leading-tight text-slate-400">
+
+      <p className="font-semibold text-slate-600">
+        OSRA Timetable Builder
+      </p>
+
+      <p>
+        Academic Year {academicYear}
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
     </div>
   )
 }

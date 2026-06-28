@@ -1,3 +1,6 @@
+//src/lib/timetable-config.js
+
+
 export const TIMETABLE_ACADEMIC_YEAR = '2026-2027'
 
 export const TIMETABLE_DAYS = [
@@ -12,12 +15,19 @@ export const TIMETABLE_DAYS = [
 export const TIMETABLE_COLUMNS = [
   { label: '9:10 - 10:00', type: 'period' },
   { label: '10:00 - 10:50', type: 'period' },
+
   { label: 'BREAK', type: 'break' },
+
   { label: '11:00 - 11:50', type: 'period' },
   { label: '11:50 - 12:40', type: 'period' },
+
   { label: 'LUNCH', type: 'lunch' },
+
   { label: '1:20 - 2:10', type: 'period' },
   { label: '2:10 - 3:00', type: 'period' },
+
+  { label: 'BREAK', type: 'break' },
+  
   { label: '3:10 - 4:00', type: 'period' },
   { label: '4:00 - 5:00', type: 'period' },
 ]
@@ -232,12 +242,12 @@ export const TIMETABLE_SUBJECT_LECTURERS = {
   'Botany Practicals': 'A.Munikrishnaiah',
   Zoology: 'A.Sujathamma',
   'Zoology Practicals': 'A.Sujathamma',
-  English: 'Ch.Kesava Prasad/K.Sudheer',
-  'English General': 'Ch.Kesava Prasad',
+  English: 'A.V.Ramanaiah/K.Sudheer',
+  'English General': 'A.Venkata Ramanaiah',
   'English Vocational': 'K.Sudheer',
   Telugu: 'R.B.Penchal Singh',
   Sanskrit: 'No lecturer found',
-  Hindi: 'K.Salajakumari',
+  Hindi: 'K.Salakumari',
   Civics: 'S.Sudhakar Rao',
   Economics: 'Balli.Venkataiah',
   History: 'Bandi Venkataiah',
@@ -294,14 +304,14 @@ export const TIMETABLE_DEFAULT_HOURS = {
 
 export const TIMETABLE_SUBJECT_TARGETS = {
   Maths: 12,
-  Physics: 11,
-  Chemistry: 11,
-  'Physics Practicals': 6,
-  'Chemistry Practicals': 6,
+  Physics: 9,
+  Chemistry: 9,
+  'Physics Practicals': 2,
+  'Chemistry Practicals': 2,
   Botany: 6,
-  'Botany Practicals': 3,
+  'Botany Practicals': 2,
   Zoology: 6,
-  'Zoology Practicals': 3,
+  'Zoology Practicals': 2,
   History: 11,
   Commerce: 11,
   Economics: 11,

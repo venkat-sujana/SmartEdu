@@ -1,7 +1,9 @@
 //src/app/timetable/dashboard/page.jsx
 'use client'
 import { useState, useEffect, useCallback } from 'react'
+import { useSession } from "next-auth/react";
 import Link from 'next/link'
+
 import {
   LayoutGrid, AlertTriangle, CheckCircle2, Loader2,
   BookOpen, TrendingUp, RefreshCw,
@@ -30,6 +32,8 @@ const SUBJECT_WORKLOAD = {
   Civics: 11,
 
   English: 14,
+  Telugu: 10,
+  Hindi: 10,
 }
 
 const getExpectedLoad = (subject) => {
@@ -180,6 +184,14 @@ function ClassCard({ cls, data, conflictCount, loading }) {
 
 // ── Main Dashboard ───────────────────────────────────────────────────
 export default function TimetableDashboardPage() {
+
+  const { data: session } = useSession()
+
+const role = session?.user?.role
+
+const canManage =
+  role === 'admin' || role === 'principal'
+
   const [classData,   setClassData]   = useState({})   // { classLabel: { filled, total, subjects } }
   const [conflicts,   setConflicts]   = useState([])
   const [workload,    setWorkload]    = useState([])
@@ -252,7 +264,6 @@ export default function TimetableDashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-
       {/* ── Page Header ── */}
       <div className="border-b border-slate-200 bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-6 py-5">
@@ -262,9 +273,7 @@ export default function TimetableDashboardPage() {
                 <BarChart3 size={22} className="text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-black text-slate-800">
-                  Timetable Dashboard
-                </h1>
+                <h1 className="text-xl font-black text-slate-800">Timetable Dashboard</h1>
                 <p className="text-xs font-medium text-slate-400">
                   Academic Year {ACADEMIC_YEAR} · All Classes Overview
                 </p>
@@ -285,46 +294,53 @@ export default function TimetableDashboardPage() {
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
                 Refresh
               </button>
-              <Link
-                href="/timetable"
-                className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700"
-              >
-                <LayoutGrid size={14} /> Edit Timetables
-              </Link>
+              
+                <Link
+                  href="/timetable"
+                  className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700"
+                >
+                  <LayoutGrid size={14} /> Edit Timetables
+                </Link>
+                <Link
+                  href="/timetable/lecturer"
+                  className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700"
+                >
+                  <LayoutGrid size={14} /> Lecturer Timetable
+                </Link>
+              
             </div>
           </div>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl space-y-6 px-6 py-6">
-
         {/* ── Stats Row ── */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatCard
             label="Total Classes"
             value={CLASSES.length}
-            icon={<Layers size={18}/>}
+            icon={<Layers size={18} />}
             color="blue"
-            sub={`${CLASSES.filter(c=>c.stream==='general').length} General · ${CLASSES.filter(c=>c.stream==='vocational').length} Vocational`}
+            sub={`${CLASSES.filter(c => c.stream === 'general').length} General · ${CLASSES.filter(c => c.stream === 'vocational').length} Vocational`}
           />
           <StatCard
             label="Overall Fill"
             value={`${overallPct}%`}
-            icon={<TrendingUp size={18}/>}
+            icon={<TrendingUp size={18} />}
             color="emerald"
             sub={`${totalFilled} / ${totalPeriods} periods`}
           />
           <StatCard
             label="Conflicts"
             value={totalConflicts}
-            icon={<ShieldAlert size={18}/>}
+            icon={<ShieldAlert size={18} />}
             color={totalConflicts > 0 ? 'rose' : 'emerald'}
             sub={totalConflicts > 0 ? 'Fix needed!' : 'All clear ✅'}
           />
           <StatCard
             label="Complete Classes"
             value={classesComplete}
-            icon={<CalendarDays size={18}/>}
+            icon={<CalendarDays size={18} />}
             color="violet"
             sub={`${CLASSES.length - classesComplete} remaining`}
           />
@@ -351,20 +367,28 @@ export default function TimetableDashboardPage() {
         {/* ── Conflict Alert ── */}
         {totalConflicts > 0 && (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle size={16} className="text-red-500 shrink-0" />
+            <div className="mb-3 flex items-center gap-2">
+              <AlertTriangle size={16} className="shrink-0 text-red-500" />
               <h3 className="text-sm font-bold text-red-700">
                 {totalConflicts} Conflict{totalConflicts > 1 ? 's' : ''} Detected!
               </h3>
             </div>
             <div className="flex flex-wrap gap-2">
               {conflicts.map((c, i) => (
-                <div key={i} className="rounded-xl border border-red-200 bg-white px-3 py-2 shadow-sm">
+                <div
+                  key={i}
+                  className="rounded-xl border border-red-200 bg-white px-3 py-2 shadow-sm"
+                >
                   <p className="text-xs font-bold text-red-700">{c.lecturerName}</p>
-                  <p className="text-[10px] text-red-500">{c.day} · Period {Number(c.periodIndex)+1}</p>
+                  <p className="text-[10px] text-red-500">
+                    {c.day} · Period {Number(c.periodIndex) + 1}
+                  </p>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {c.classes?.map((cls, j) => (
-                      <span key={j} className="rounded-full bg-red-50 border border-red-200 px-1.5 py-0.5 text-[9px] font-semibold text-red-700">
+                      <span
+                        key={j}
+                        className="rounded-full border border-red-200 bg-red-50 px-1.5 py-0.5 text-[9px] font-semibold text-red-700"
+                      >
                         {cls.classLabel.split(' - ')[0]}
                       </span>
                     ))}
@@ -377,7 +401,7 @@ export default function TimetableDashboardPage() {
 
         {/* ── Class Cards Grid ── */}
         <div>
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-400">
+          <h2 className="mb-4 flex items-center gap-2 text-sm font-bold tracking-widest text-slate-400 uppercase">
             <span className="h-px flex-1 bg-slate-200" />
             Class-wise Summary
             <span className="h-px flex-1 bg-slate-200" />
@@ -397,7 +421,7 @@ export default function TimetableDashboardPage() {
 
         {/* ── Lecturer Workload Table ── */}
         {workload.length > 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-800 px-5 py-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500">
                 <GraduationCap size={16} className="text-white" />
@@ -408,10 +432,10 @@ export default function TimetableDashboardPage() {
               </div>
               <div className="ml-auto flex gap-2 text-xs font-semibold">
                 <span className="rounded-full bg-emerald-900/40 px-2.5 py-1 text-emerald-400">
-                  ✅ Normal: {workload.filter(w=>w.status==='Normal').length}
+                  ✅ Normal: {workload.filter(w => w.status === 'Normal').length}
                 </span>
                 <span className="rounded-full bg-rose-900/40 px-2.5 py-1 text-rose-400">
-                  ⚠ Issues: {workload.filter(w=>w.status!=='Normal').length}
+                  ⚠ Issues: {workload.filter(w => w.status !== 'Normal').length}
                 </span>
               </div>
             </div>
@@ -420,115 +444,115 @@ export default function TimetableDashboardPage() {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50">
-                    {['#','Lecturer','Theory','Practical','Total / Week','Status'].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-400">{h}</th>
+                    {['#', 'Lecturer', 'Theory', 'Practical', 'Total / Week', 'Status'].map(h => (
+                      <th
+                        key={h}
+                        className="px-5 py-3 text-left text-xs font-bold tracking-wide text-slate-400 uppercase"
+                      >
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-  {workload.map((w, i) => {
+                  {workload.map((w, i) => {
+                    const expected = w.expected
 
-    const expected = w.expected
+                    const status =
+                      w.total < expected ? 'Underload' : w.total > expected ? 'Overload' : 'Normal'
 
-    const status =
-      w.total < expected
-        ? 'Underload'
-        : w.total > expected
-        ? 'Overload'
-        : 'Normal'
+                    return (
+                      <tr
+                        key={w.name}
+                        className={`transition-colors hover:bg-slate-50 ${
+                          i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'
+                        }`}
+                      >
+                        <td className="px-5 py-3 text-xs font-bold text-slate-400">{i + 1}</td>
 
-    return (
-      <tr
-        key={w.name}
-        className={`transition-colors hover:bg-slate-50 ${
-          i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'
-        }`}
-      >
-        <td className="px-5 py-3 text-xs font-bold text-slate-400">
-          {i + 1}
-        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 text-xs font-black text-white">
+                              {w.name?.[0]?.toUpperCase() || '?'}
+                            </div>
+                            <span className="font-bold text-slate-700">{w.name}</span>
+                          </div>
+                        </td>
 
-        <td className="px-5 py-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 text-xs font-black text-white">
-              {w.name?.[0]?.toUpperCase() || '?'}
-            </div>
-            <span className="font-bold text-slate-700">{w.name}</span>
-          </div>
-        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <BookOpen size={12} className="text-blue-400" />
+                            <span className="font-bold text-slate-700">{w.theory}</span>
+                          </div>
+                        </td>
 
-        <td className="px-5 py-3">
-          <div className="flex items-center gap-1.5">
-            <BookOpen size={12} className="text-blue-400" />
-            <span className="font-bold text-slate-700">{w.theory}</span>
-          </div>
-        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <FlaskConical size={12} className="text-amber-500" />
+                            <span className="font-bold text-slate-700">{w.practical}</span>
+                          </div>
+                        </td>
 
-        <td className="px-5 py-3">
-          <div className="flex items-center gap-1.5">
-            <FlaskConical size={12} className="text-amber-500" />
-            <span className="font-bold text-slate-700">{w.practical}</span>
-          </div>
-        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-200">
+                              <div
+                                className={`h-full rounded-full ${
+                                  status === 'Normal'
+                                    ? 'bg-emerald-500'
+                                    : status === 'Underload'
+                                      ? 'bg-rose-400'
+                                      : 'bg-red-600'
+                                }`}
+                                style={{
+                                  width: `${Math.min((w.total / expected) * 100, 100)}%`,
+                                }}
+                              />
+                            </div>
 
-        <td className="px-5 py-3">
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-200">
-              <div
-                className={`h-full rounded-full ${
-                  status === 'Normal'
-                    ? 'bg-emerald-500'
-                    : status === 'Underload'
-                    ? 'bg-rose-400'
-                    : 'bg-red-600'
-                }`}
-                style={{
-                  width: `${Math.min((w.total / expected) * 100, 100)}%`,
-                }}
-              />
-            </div>
+                            <span className="text-base font-black text-slate-800">{w.total}</span>
 
-            <span className="text-base font-black text-slate-800">
-              {w.total}
-            </span>
+                            <span className="text-xs text-slate-400">/ {expected}</span>
+                          </div>
+                        </td>
 
-            <span className="text-xs text-slate-400">
-              / {expected}
-            </span>
-          </div>
-        </td>
+                        <td className="px-5 py-3">
+                          {status === 'Normal' && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                              <CheckCircle2 size={11} /> Normal
+                            </span>
+                          )}
 
-        <td className="px-5 py-3">
-          {status === 'Normal' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
-              <CheckCircle2 size={11} /> Normal
-            </span>
-          )}
+                          {status === 'Underload' && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700">
+                              <AlertTriangle size={11} /> Underload
+                            </span>
+                          )}
 
-          {status === 'Underload' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700">
-              <AlertTriangle size={11} /> Underload
-            </span>
-          )}
-
-          {status === 'Overload' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700">
-              <AlertTriangle size={11} /> Overload
-            </span>
-          )}
-        </td>
-      </tr>
-    )
-  })}
-</tbody>
+                          {status === 'Overload' && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700">
+                              <AlertTriangle size={11} /> Overload
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
               </table>
             </div>
 
             {/* Legend */}
             <div className="flex flex-wrap justify-center gap-6 border-t border-slate-100 bg-slate-50 px-5 py-3 text-xs font-semibold">
-              <span className="text-emerald-600 flex items-center gap-1"><CheckCircle2 size={11}/> 16–18 : Normal</span>
-              <span className="text-rose-600 flex items-center gap-1"><AlertTriangle size={11}/> &lt;16 : Underload</span>
-              <span className="text-red-700 flex items-center gap-1"><AlertTriangle size={11}/> &gt;18 : Overload</span>
+              <span className="flex items-center gap-1 text-emerald-600">
+                <CheckCircle2 size={11} /> 16–18 : Normal
+              </span>
+              <span className="flex items-center gap-1 text-rose-600">
+                <AlertTriangle size={11} /> &lt;16 : Underload
+              </span>
+              <span className="flex items-center gap-1 text-red-700">
+                <AlertTriangle size={11} /> &gt;18 : Overload
+              </span>
             </div>
           </div>
         )}
@@ -537,17 +561,20 @@ export default function TimetableDashboardPage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <h3 className="mb-4 text-sm font-bold text-slate-700">Quick Navigation</h3>
           <div className="flex flex-wrap gap-3">
-            <Link href="/timetable"
-              className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700">
-              <LayoutGrid size={14}/> Edit All Timetables
+            <Link
+              href="/timetable"
+              className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700"
+            >
+              <LayoutGrid size={14} /> Edit All Timetables
             </Link>
-            <Link href="/timetable/dashboard"
-              className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100">
-              <BarChart3 size={14}/> Dashboard (Current)
+            <Link
+              href="/timetable/dashboard"
+              className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100"
+            >
+              <BarChart3 size={14} /> Dashboard (Current)
             </Link>
           </div>
         </div>
-
       </div>
     </div>
   )

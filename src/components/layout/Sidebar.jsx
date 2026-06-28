@@ -14,7 +14,7 @@ import {
   UserCircleIcon,
   UserGroupIcon,
   XCircleIcon,
-  ShieldCheck,
+
 } from '@heroicons/react/24/solid'
 
 function SidebarLink({ href, label, icon, active, onClick }) {
@@ -43,10 +43,15 @@ function SidebarLink({ href, label, icon, active, onClick }) {
 }
 
 export default function Sidebar({ onClose }) {
+
   const pathname = usePathname()
   const session = useSession()
   const user = session.data?.user || {}
-  const isAdmin = user.role === 'admin'
+ const role = user.role
+const isAdmin = user.role === 'admin'
+const isPrincipal = role === 'principal'
+const isLecturer = role === 'lecturer'
+const isOffice = role === 'office'
   const canAccessAiAttendance = user.role === 'lecturer' || user.role === 'principal'
   const lecturerDashboardUrl = getDashboardRouteForLecturerSubject(user.subject)
   const attendanceFormHref = `${'/attendance-form'}?returnUrl=${encodeURIComponent(lecturerDashboardUrl)}`
@@ -78,31 +83,65 @@ export default function Sidebar({ onClose }) {
         },
       ]
     : [
-        {
-          href: '/timetable-management/login',
-          label: 'Time Table Management',
-          icon: <PencilSquareIcon className="h-5 w-5 text-sky-500" />,
-        },
-        {
-          href: '/timetable',
-          label: 'Academic Time Table',
-          icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
-        },
-        {
-          href: '/timetable/dashboard',
-          label: 'Time Table Dashboard',
-          icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
-        },
-        {
-          href: '/timetable/lecturer',
-          label: 'Lecturer Time Table',
-          icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
-        },
-        {
-          href: '/timetable/student',
-          label: 'Time Table Student',
-          icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
-        },
+
+
+        ...(isPrincipal
+  ? [
+      {
+        href: '/timetable',
+        label: 'Academic Time Table',
+        icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
+      },
+      {
+        href: '/timetable/dashboard',
+        label: 'Time Table Dashboard',
+        icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
+      },
+      {
+        href: '/timetable/lecturer',
+        label: 'Lecturer Time Table',
+        icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
+      },
+      {
+        href: '/timetable/student',
+        label: 'Student Time Table',
+        icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
+      },
+    ]
+  : isOffice
+  ? [
+      {
+        href: '/timetable/dashboard',
+        label: 'Time Table Dashboard',
+        icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
+      },
+      {
+        href: '/timetable/lecturer',
+        label: 'Lecturer Time Table',
+        icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
+      },
+      {
+        href: '/timetable/student',
+        label: 'Student Time Table',
+        icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
+      },
+    ]
+  : isLecturer
+  ? [
+      {
+        href: '/timetable/dashboard',
+        label: 'Time Table Dashboard',
+        icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
+      },
+      {
+        href: '/timetable/lecturer',
+        label: 'My Time Table',
+        icon: <CalendarDaysIcon className="h-5 w-5 text-cyan-500" />,
+      },
+    ]
+  : []),
+
+
         {
           href: examsFormHref,
           label: 'Marks Posting',

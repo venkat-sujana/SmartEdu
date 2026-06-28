@@ -65,7 +65,7 @@ export default function LecturerTimetablePage() {
     }
   }, [selectedLecturer])
 
-  useEffect(() => { fetchAll() }, [])
+  useEffect(() => { fetchAll() }, [fetchAll])
 
   // ── Filter slots ─────────────────────────────────────────────────
   const mySlots = allSlots.filter(
@@ -150,8 +150,12 @@ export default function LecturerTimetablePage() {
     const body = DAYS.map((day, dIndex) => [
       day,
       ...COLUMNS.map((col, pIndex) => {
-        if (col.type === 'break') return 'BREAK'
-        if (col.type === 'lunch') return 'LUNCH'
+
+        if (col.type === 'break') return 'B\nR\nE\nA\nK'
+
+       if (col.type === 'lunch') return 'L\nU\nN\nC\nH'
+
+
         const cell = getMyCell(day, pIndex)
         return cell ? `${cell.subject}\n${cell.classLabel.split(' ').slice(0,3).join(' ')}` : ''
       }),
@@ -168,7 +172,7 @@ export default function LecturerTimetablePage() {
         cellPadding:   2,
         halign:        'center',
         valign:        'middle',
-        minCellHeight: 12,
+        minCellHeight: 16,
         textColor:     [30, 41, 59],
         lineColor:     [203, 213, 225],
         lineWidth:     0.2,
@@ -182,6 +186,9 @@ export default function LecturerTimetablePage() {
       columnStyles: {
         0: { fontStyle: 'bold', halign: 'left', fillColor: [248, 250, 252], cellWidth: 22 },
       },
+
+
+
       didParseCell(hookData) {
         if (hookData.section !== 'body') return
         if (hookData.column.index === 0)  return
@@ -225,8 +232,9 @@ export default function LecturerTimetablePage() {
         didParseCell(h) {
           if (h.section === 'body' && h.row.index === classBreakdown.length) {
             // Total row
-            h.cell.styles.fillColor  = [241, 245, 249]
-            h.cell.styles.fontStyle  = 'bold'
+            cell.styles.fontStyle = 'bold'
+cell.styles.halign = 'center'
+cell.styles.valign = 'middle'
           }
         },
         margin: { left: 50, right: 50 },
