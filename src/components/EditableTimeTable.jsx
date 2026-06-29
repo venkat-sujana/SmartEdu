@@ -23,7 +23,9 @@ import {
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import AutoGenerateModal from '@/components/AutoGenerateModal'
+import LecturerAvailabilityMatrix from '@/components/LecturerAvailabilityMatrix'
 
+import LecturerAvailabilityByPeriod from '@/components/LecturerAvailabilityByPeriod'
 import {
   TIMETABLE_COLUMNS as COLUMNS,
   TIMETABLE_DAYS as DAYS,
@@ -548,6 +550,7 @@ export default function EditableTimeTable({
 
   // ── Export PDF ──────────────────────────────────────────────────────
   const handleExportPDF = () => {
+
     const doc = new jsPDF('landscape', 'mm', 'a4')
 
     const subjectColors = {
@@ -1136,7 +1139,17 @@ for (let i = 1; i <= pageCount; i++) {
           </tbody>
         </table>
         <WorkloadReport data={workloadData} />
-        
+
+        <LecturerAvailabilityMatrix
+        columns={COLUMNS}
+    table={table}
+
+/>
+<LecturerAvailabilityByPeriod
+    table={table}
+/>
+
+     
       </div>
 
       {showAutoModal && (
