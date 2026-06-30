@@ -24,7 +24,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import AutoGenerateModal from '@/components/AutoGenerateModal'
 import LecturerAvailabilityMatrix from '@/components/LecturerAvailabilityMatrix'
-
+import SubstituteRecommendation from '@/components/SubstituteRecommendation'
 import LecturerAvailabilityByPeriod from '@/components/LecturerAvailabilityByPeriod'
 import {
   TIMETABLE_COLUMNS as COLUMNS,
@@ -1149,6 +1149,9 @@ for (let i = 1; i <= pageCount; i++) {
     table={table}
 />
 
+<SubstituteRecommendation
+    table={table}
+/>
      
       </div>
 
