@@ -265,8 +265,8 @@ export const TIMETABLE_SUBJECT_LECTURERS = {
   'V4 Practicals': 'E.V/K.B.R/R.G',
   V5: 'G.K/K.B.R/R.G',
   'V5 Practicals': 'G.K/K.B.R/R.G',
-  V6: 'G.K/K.B.R/R.G',
-  'V6 Practicals': 'G.K/K.B.R/R.G',
+  V6: 'E.V/K.B.R/R.G',
+  'V6 Practicals': 'E.V/K.B.R/R.G',
   'Study Hour Vocational': '',
 }
 
@@ -292,7 +292,7 @@ export const TIMETABLE_DEFAULT_HOURS = {
   },
   vocational: {
     English: 4,
-    GFC: 5,
+    GFC: 4,
     V1: 4,
     'V1 Practicals': 2,
     V2: 4,

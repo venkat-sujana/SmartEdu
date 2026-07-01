@@ -1,4 +1,3 @@
-// ── Imports ───────────────────────────────────────────────────────
 //src/components/EditableTimeTable.jsx
 'use client'
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
