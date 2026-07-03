@@ -5,16 +5,53 @@ import React from 'react'
 const MIN_PERIODS = 12
 const MAX_PERIODS = 24
 
+function normalizeSubjectName(subject) {
+  return String(subject || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function getBaseSubjectName(subject) {
+  return normalizeSubjectName(subject).replace(/\s+practicals?$/i, '').trim()
+}
+
+function getGroupedSubjectDetails(subjectDetails = {}) {
+  const grouped = []
+  const groupedMap = new Map()
+
+  Object.entries(subjectDetails).forEach(([subject, detail]) => {
+    const normalizedSubject = normalizeSubjectName(subject)
+    const baseSubject = getBaseSubjectName(normalizedSubject)
+
+    if (!baseSubject) return
+
+    if (!groupedMap.has(baseSubject)) {
+      const next = {
+        subject: baseSubject,
+        theory: 0,
+        practical: 0,
+        total: 0,
+      }
+
+      groupedMap.set(baseSubject, next)
+      grouped.push(next)
+    }
+
+    const current = groupedMap.get(baseSubject)
+    current.theory += Number(detail?.theory || 0)
+    current.practical += Number(detail?.practical || 0)
+    current.total += Number(detail?.total || 0)
+  })
+
+  return grouped
+}
+
 // ── Mobile Card ──────────────────────────────────────────────────────────────
 function LecturerCard({ row, index }) {
   const status =
-    row.total < MIN_PERIODS
-      ? 'Underload'
-      : row.total > MAX_PERIODS
-        ? 'Overload'
-        : 'Normal'
+    row.total < MIN_PERIODS ? 'Underload' : row.total > MAX_PERIODS ? 'Overload' : 'Normal'
 
-  const subjects = row.subjects || row.subjectList || []
+  const groupedSubjects = getGroupedSubjectDetails(row.subjectDetails)
 
   const cardBorder =
     status === 'Normal'
@@ -30,31 +67,29 @@ function LecturerCard({ row, index }) {
     <div className={`rounded-xl border-2 ${cardBorder} bg-white p-4 shadow-sm`}>
       {/* Card Header */}
       <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex min-w-0 items-center gap-2.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-800 text-sm font-black text-white">
             {(row.lecturer || row.name || '?')[0].toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="truncate font-bold text-slate-800">
-              {row.lecturer || row.name || '—'}
-            </p>
+            <p className="truncate font-bold text-slate-800">{row.lecturer || row.name || '—'}</p>
             <p className="text-xs text-slate-400">#{index + 1}</p>
           </div>
         </div>
 
         {/* Status Badge */}
         {status === 'Normal' && (
-          <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
             <CheckCircle2 size={11} /> Normal
           </span>
         )}
         {status === 'Underload' && (
-          <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700">
             <AlertCircle size={11} /> Underload
           </span>
         )}
         {status === 'Overload' && (
-          <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700">
             <AlertCircle size={11} /> Overload
           </span>
         )}
@@ -63,21 +98,27 @@ function LecturerCard({ row, index }) {
       {/* Stats Row */}
       <div className="mb-3 grid grid-cols-3 gap-2">
         <div className="rounded-lg bg-blue-50 px-3 py-2 text-center">
-          <div className="flex items-center justify-center gap-1 mb-0.5">
+          <div className="mb-0.5 flex items-center justify-center gap-1">
             <BookOpen size={11} className="text-blue-400" />
-            <span className="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">Theory</span>
+            <span className="text-[10px] font-semibold tracking-wide text-blue-500 uppercase">
+              Theory
+            </span>
           </div>
           <p className="text-lg font-black text-blue-700">{row.theory}</p>
         </div>
         <div className="rounded-lg bg-amber-50 px-3 py-2 text-center">
-          <div className="flex items-center justify-center gap-1 mb-0.5">
+          <div className="mb-0.5 flex items-center justify-center gap-1">
             <FlaskConical size={11} className="text-amber-500" />
-            <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">Practical</span>
+            <span className="text-[10px] font-semibold tracking-wide text-amber-600 uppercase">
+              Practical
+            </span>
           </div>
           <p className="text-lg font-black text-amber-700">{row.practical}</p>
         </div>
         <div className="rounded-lg bg-slate-100 px-3 py-2 text-center">
-          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Total</p>
+          <p className="mb-0.5 text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
+            Total
+          </p>
           <p className="text-lg font-black text-slate-800">{row.total}</p>
         </div>
       </div>
@@ -97,21 +138,23 @@ function LecturerCard({ row, index }) {
       </div>
 
       {/* Subjects */}
-      {subjects.length > 0 && (
+      {groupedSubjects.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {subjects.map((sub, si) => (
+          {groupedSubjects.map((detail, si) => (
             <span
               key={si}
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                sub.toLowerCase().includes('practical')
+                detail.practical > 0
                   ? 'bg-amber-100 text-amber-700'
                   : 'bg-blue-100 text-blue-700'
               }`}
             >
-              {sub.toLowerCase().includes('practical')
-                ? <FlaskConical size={9} />
-                : <BookOpen size={9} />}
-              {sub}
+              {detail.practical > 0 ? (
+                <FlaskConical size={9} />
+              ) : (
+                <BookOpen size={9} />
+              )}
+              {detail.subject}
             </span>
           ))}
         </div>
@@ -133,7 +176,6 @@ export default function LecturerWorkloadReport({ data }) {
 
   return (
     <div className="mt-8 rounded-2xl border border-slate-200 bg-white shadow-sm print:border-black print:shadow-none">
-
       {/* ── Header ── */}
       <div className="flex flex-wrap items-center gap-3 rounded-t-2xl border-b border-slate-100 bg-slate-800 px-4 py-4 sm:px-5 print:bg-blue-800">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500">
@@ -146,11 +188,13 @@ export default function LecturerWorkloadReport({ data }) {
         <div className="flex gap-2 text-xs font-semibold print:hidden">
           <span className="flex items-center gap-1 rounded-full bg-emerald-900/40 px-2.5 py-1 text-emerald-400">
             <CheckCircle2 size={11} />
-            <span className="hidden xs:inline">Normal: </span>{normalCount}
+            <span className="xs:inline hidden">Normal: </span>
+            {normalCount}
           </span>
           <span className="flex items-center gap-1 rounded-full bg-rose-900/40 px-2.5 py-1 text-rose-400">
             <AlertCircle size={11} />
-            <span className="hidden xs:inline">Issues: </span>{issueCount}
+            <span className="xs:inline hidden">Issues: </span>
+            {issueCount}
           </span>
         </div>
       </div>
@@ -166,15 +210,21 @@ export default function LecturerWorkloadReport({ data }) {
         {/* Mobile Summary */}
         <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-center">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Theory</p>
+            <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
+              Theory
+            </p>
             <p className="text-base font-black text-slate-800">{totalTheory}</p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Practical</p>
+            <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
+              Practical
+            </p>
             <p className="text-base font-black text-slate-800">{totalPractical}</p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Total</p>
+            <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
+              Total
+            </p>
             <p className="text-base font-black text-slate-800">{totalPeriods}</p>
           </div>
           <div className="col-span-3 border-t border-slate-200 pt-2 text-xs text-slate-500">
@@ -184,7 +234,7 @@ export default function LecturerWorkloadReport({ data }) {
       </div>
 
       {/* ── Desktop Table (≥ md) ── */}
-      <div className="hidden md:block overflow-x-auto">
+      <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full text-sm print:border-collapse">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 print:bg-blue-700 print:text-white">
@@ -225,11 +275,13 @@ export default function LecturerWorkloadReport({ data }) {
                     ? 'bg-rose-50'
                     : 'bg-red-50'
 
-              const subjects = row.subjects || row.subjectList || []
-              const mainSubject =
-                subjects.find(s => !s.toLowerCase().includes('practical')) ||
-                subjects[0] ||
-                '—'
+              const groupedSubjects = getGroupedSubjectDetails(row.subjectDetails)
+
+              // const subjects = row.subjects || row.subjectList || []
+              // const mainSubject =
+              //   subjects.find(s => !s.toLowerCase().includes('practical')) ||
+              //   subjects[0] ||
+              //   '—'
 
               return (
                 <React.Fragment key={row.lecturer || row.name}>
@@ -240,14 +292,35 @@ export default function LecturerWorkloadReport({ data }) {
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-black text-white print:bg-blue-800">
                           {(row.lecturer || row.name || '?')[0].toUpperCase()}
                         </div>
-                        <span className="font-bold text-slate-800">{row.lecturer || row.name || '—'}</span>
+                        <span className="font-bold text-slate-800">
+                          {row.lecturer || row.name || '—'}
+                        </span>
                       </div>
                     </td>
+
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                        {mainSubject}
-                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {groupedSubjects.map(detail => (
+                          <div
+                            key={detail.subject}
+                            className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2"
+                          >
+                            <div className="font-bold text-blue-700">{detail.subject}</div>
+
+                            <div className="mt-1 text-[11px] text-slate-600">
+                              T : <strong>{detail.theory}</strong>
+                              {detail.practical > 0 && (
+                                <>
+                                  {' '}
+                                  | P : <strong>{detail.practical}</strong>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </td>
+
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
                         <BookOpen size={13} className="text-blue-400" />
@@ -297,7 +370,7 @@ export default function LecturerWorkloadReport({ data }) {
                     </td>
                   </tr>
 
-                  {subjects.length > 0 &&
+                  {/* {subjects.length > 0 &&
                     subjects.map((sub, si) => (
                       <tr
                         key={`${row.lecturer}-${si}`}
@@ -326,7 +399,7 @@ export default function LecturerWorkloadReport({ data }) {
                         <td className="px-4 py-2 text-xs text-slate-500">—</td>
                         <td className="px-4 py-2 text-xs text-slate-500">—</td>
                       </tr>
-                    ))}
+                    ))} */}
                 </React.Fragment>
               )
             })}
@@ -334,7 +407,10 @@ export default function LecturerWorkloadReport({ data }) {
 
           <tfoot>
             <tr className="border-t-2 border-slate-200 bg-slate-50">
-              <td colSpan={3} className="px-4 py-2.5 text-xs font-bold tracking-wide text-slate-500 uppercase">
+              <td
+                colSpan={3}
+                className="px-4 py-2.5 text-xs font-bold tracking-wide text-slate-500 uppercase"
+              >
                 Total ({data.length} lecturers)
               </td>
               <td className="px-4 py-2.5 font-black text-slate-800">{totalTheory}</td>
@@ -358,7 +434,7 @@ export default function LecturerWorkloadReport({ data }) {
         <span className="flex items-center gap-1.5 text-red-700">
           <AlertCircle size={12} /> &gt;{MAX_PERIODS} : Overload
         </span>
-        <span className="sm:ml-auto flex items-center gap-1.5 text-blue-600 print:hidden">
+        <span className="flex items-center gap-1.5 text-blue-600 sm:ml-auto print:hidden">
           <BookOpen size={11} /> Theory &nbsp;
           <FlaskConical size={11} className="text-amber-500" /> Practical
         </span>

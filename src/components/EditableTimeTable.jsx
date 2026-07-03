@@ -22,9 +22,9 @@ import {
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import AutoGenerateModal from '@/components/AutoGenerateModal'
-import LecturerAvailabilityMatrix from '@/components/LecturerAvailabilityMatrix'
-import SubstituteRecommendation from '@/components/SubstituteRecommendation'
-import LecturerAvailabilityByPeriod from '@/components/LecturerAvailabilityByPeriod'
+// import LecturerAvailabilityMatrix from '@/components/LecturerAvailabilityMatrix'
+// import SubstituteRecommendation from '@/components/SubstituteRecommendation'
+// import LecturerAvailabilityByPeriod from '@/components/LecturerAvailabilityByPeriod'
 import {
   TIMETABLE_COLUMNS as COLUMNS,
   TIMETABLE_DAYS as DAYS,
@@ -34,12 +34,7 @@ import {
   TIMETABLE_SUBJECT_TARGETS as SUBJECT_TARGETS,
 } from '@/lib/timetable-config'
 
-
-import {
-  Eye,
-  ShieldCheck,
-} from "lucide-react"
-
+import { Eye, ShieldCheck } from 'lucide-react'
 
 // ── CONSTANTS ────────────────────────────────────────────────────────
 const MIN_PERIODS = 16
@@ -69,11 +64,24 @@ function calculateWorkload(table) {
 
   const workload = {}
 
+  const getCanonicalLecturerName = (cell) => {
+    const subject = String(cell?.subject || '').trim()
+    const configuredLecturer = SUBJECT_LECTURERS[subject] || ''
+    const currentLecturer = String(cell?.lecturerName || '').trim()
+    const isVocationalCombo = /^V[1-6](?:\s+Practicals?)?$/i.test(subject)
+
+    if (isVocationalCombo && configuredLecturer) {
+      return configuredLecturer
+    }
+
+    return currentLecturer || configuredLecturer || 'Unknown'
+  }
+
   table.forEach(dayRow => {
     dayRow.forEach(cell => {
       if (!cell?.subject || cell.periodType !== 'period') return
 
-      const lecturer = cell.lecturerName || SUBJECT_LECTURERS[cell.subject] || 'Unknown'
+      const lecturer = getCanonicalLecturerName(cell)
 
       if (!lecturer || lecturer === 'Unknown') return
 
@@ -84,6 +92,9 @@ function calculateWorkload(table) {
           theory: 0,
           practical: 0,
           total: 0,
+
+          // NEW
+          subjectDetails: {},
         }
       }
 
@@ -91,18 +102,70 @@ function calculateWorkload(table) {
       if (!workload[lecturer].subjects.includes(cell.subject)) {
         workload[lecturer].subjects.push(cell.subject)
       }
+      // NEW
+      if (!workload[lecturer].subjectDetails[cell.subject]) {
+        workload[lecturer].subjectDetails[cell.subject] = {
+          theory: 0,
+          practical: 0,
+          total: 0,
+        }
+      }
 
-      if (cell.isPractical || cell.subject.toLowerCase().includes('practical')) {
+      const isPractical = cell.isPractical || cell.subject.toLowerCase().includes('practical')
+
+      if (isPractical) {
         workload[lecturer].practical++
+        workload[lecturer].subjectDetails[cell.subject].practical++
       } else {
         workload[lecturer].theory++
+        workload[lecturer].subjectDetails[cell.subject].theory++
       }
 
       workload[lecturer].total++
+      workload[lecturer].subjectDetails[cell.subject].total++
     })
   })
 
   return Object.values(workload).sort((a, b) => b.total - a.total)
+}
+
+function normalizeWorkloadSubjectName(subject) {
+  return String(subject || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function getWorkloadBaseSubjectName(subject) {
+  return normalizeWorkloadSubjectName(subject).replace(/\s+practicals?$/i, '').trim()
+}
+
+function getGroupedWorkloadSubjects(row) {
+  const grouped = []
+  const groupedMap = new Map()
+
+  Object.entries(row.subjectDetails || {}).forEach(([subject, detail]) => {
+    const baseSubject = getWorkloadBaseSubjectName(subject)
+
+    if (!baseSubject) return
+
+    if (!groupedMap.has(baseSubject)) {
+      const next = {
+        name: baseSubject,
+        target: SUBJECT_TARGETS[baseSubject] || 0,
+        theory: 0,
+        practical: 0,
+      }
+
+      groupedMap.set(baseSubject, next)
+      grouped.push(next)
+    }
+
+    const current = groupedMap.get(baseSubject)
+    current.theory += Number(detail?.theory || 0)
+    current.practical += Number(detail?.practical || 0)
+  })
+
+  return grouped
 }
 
 // ── WORKLOAD TABLE ────────────────────────────────────────────────────
@@ -139,9 +202,9 @@ function WorkloadReport({ data }) {
           <tbody className="divide-y divide-slate-100">
             {data.filter(Boolean).map(row => {
               // ✅ Subject-wise target sum
-              const subjects = row.subjects || []
-              const targetTotal = subjects.reduce(
-                (sum, sub) => sum + (SUBJECT_TARGETS[sub] || 0),
+              const groupedSubjects = getGroupedWorkloadSubjects(row)
+              const targetTotal = groupedSubjects.reduce(
+                (sum, sub) => sum + (sub.target || 0),
                 0
               )
 
@@ -159,12 +222,6 @@ function WorkloadReport({ data }) {
                       : 'Normal'
 
               // ✅ Each subject — assigned vs target
-              const subjectDetails = subjects.map(sub => ({
-                name: sub,
-                target: SUBJECT_TARGETS[sub] || 0,
-                isPractical: sub.toLowerCase().includes('practical'),
-              }))
-
               return (
                 <tr
                   key={row.lecturer}
@@ -178,11 +235,11 @@ function WorkloadReport({ data }) {
                   {/* ✅ Subject + target badges */}
                   <td className="px-4 py-2">
                     <div className="flex flex-wrap gap-1">
-                      {subjectDetails.map((s, i) => (
+                      {groupedSubjects.map((s, i) => (
                         <span
                           key={i}
                           className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
-                            s.isPractical
+                            s.practical > 0
                               ? 'border-amber-200 bg-amber-50 text-amber-700'
                               : 'border-blue-200 bg-blue-50 text-blue-700'
                           }`}
@@ -549,7 +606,6 @@ export default function EditableTimeTable({
 
   // ── Export PDF ──────────────────────────────────────────────────────
   const handleExportPDF = () => {
-
     const doc = new jsPDF('landscape', 'mm', 'a4')
 
     const subjectColors = {
@@ -578,38 +634,28 @@ export default function EditableTimeTable({
     doc.setFontSize(13)
 
     doc.setFont('helvetica', 'bold')
-doc.setFontSize(16)
-doc.text('S.K.R.GOVERNMENT JUNIOR COLLEGE', 148, 10, {
-  align: 'center'
-})
+    doc.setFontSize(16)
+    doc.text('S.K.R.GOVERNMENT JUNIOR COLLEGE', 148, 10, {
+      align: 'center',
+    })
 
-doc.setFontSize(11)
-doc.text('GUDUR, SPSR NELLORE DISTRICT', 148, 16, {
-  align: 'center'
-})
+    doc.setFontSize(11)
+    doc.text('GUDUR, SPSR NELLORE DISTRICT', 148, 16, {
+      align: 'center',
+    })
 
-doc.setFontSize(13)
-doc.text(title.toUpperCase(), 148, 24, {
-  align: 'center'
-})
+    doc.setFontSize(13)
+    doc.text(title.toUpperCase(), 148, 24, {
+      align: 'center',
+    })
 
-doc.setFont('helvetica', 'normal')
-doc.setFontSize(8)
-doc.text(
-  `Academic Year : ${academicYear}     Stream : ${stream}`,
-  148,
-  30,
-  { align: 'center' }
-)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.text(`Academic Year : ${academicYear}     Stream : ${stream}`, 148, 30, { align: 'center' })
 
     if (conflicts.length > 0) {
       doc.setTextColor(220, 38, 38)
-      doc.text(
-  `⚠ ${conflicts.length} conflict(s) detected`,
-  148,
-  35,
-  { align: 'center' }
-)
+      doc.text(`⚠ ${conflicts.length} conflict(s) detected`, 148, 35, { align: 'center' })
       doc.setTextColor(0, 0, 0)
     }
 
@@ -622,14 +668,9 @@ doc.text(
 
         const cell = table[dIndex]?.[pIndex]
 
-if (!cell) return ''
+        if (!cell) return ''
 
-return [
-  cell.subject,
-  cell.lecturerName || ''
-].filter(Boolean).join('\n')
-
-
+        return [cell.subject, cell.lecturerName || ''].filter(Boolean).join('\n')
       }),
     ])
 
@@ -757,65 +798,59 @@ return [
 
     const pageCount = doc.getNumberOfPages()
 
-for (let i = 1; i <= pageCount; i++) {
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i)
 
-  doc.setPage(i)
+      const pageHeight = doc.internal.pageSize.getHeight()
+      const pageWidth = doc.internal.pageSize.getWidth()
 
-  const pageHeight = doc.internal.pageSize.getHeight()
-  const pageWidth = doc.internal.pageSize.getWidth()
+      // =============================
+      // Signature Area
+      // =============================
 
-  // =============================
-  // Signature Area
-  // =============================
+      const lineY = pageHeight - 22
 
-  const lineY = pageHeight - 22
+      doc.setDrawColor(180)
+      doc.setLineWidth(0.3)
+      doc.line(15, lineY - 8, pageWidth - 15, lineY - 8)
 
-  doc.setDrawColor(180)
-  doc.setLineWidth(0.3)
-  doc.line(15, lineY - 8, pageWidth - 15, lineY - 8)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.setTextColor(60)
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(8)
-  doc.setTextColor(60)
+      // Labels
+      doc.text('Prepared By', 40, lineY)
+      doc.text('Time Table Convener', pageWidth / 2, lineY, {
+        align: 'center',
+      })
+      doc.text('Principal', pageWidth - 40, lineY, {
+        align: 'right',
+      })
 
-  // Labels
-  doc.text('Prepared By', 40, lineY)
-  doc.text('Time Table Convener', pageWidth / 2, lineY, {
-    align: 'center',
-  })
-  doc.text('Principal', pageWidth - 40, lineY, {
-    align: 'right',
-  })
+      // Signature lines
+      doc.line(20, lineY + 10, 60, lineY + 10)
 
-  // Signature lines
-  doc.line(20, lineY + 10, 60, lineY + 10)
+      doc.line(pageWidth / 2 - 25, lineY + 10, pageWidth / 2 + 25, lineY + 10)
 
-  doc.line(
-    pageWidth / 2 - 25,
-    lineY + 10,
-    pageWidth / 2 + 25,
-    lineY + 10
-  )
+      doc.line(pageWidth - 60, lineY + 10, pageWidth - 20, lineY + 10)
 
-  doc.line(pageWidth - 60, lineY + 10, pageWidth - 20, lineY + 10)
+      // =============================
+      // Footer
+      // =============================
 
-  // =============================
-  // Footer
-  // =============================
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(130)
 
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(7)
-  doc.setTextColor(130)
-
-  doc.text(
-    `Generated by OSRA ERP • ${new Date().toLocaleString()} • Page ${i} of ${pageCount}`,
-    pageWidth / 2,
-    pageHeight - 4,
-    {
-      align: 'center',
+      doc.text(
+        `Generated by OSRA ERP • ${new Date().toLocaleString()} • Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        pageHeight - 4,
+        {
+          align: 'center',
+        }
+      )
     }
-  )
-}
 
     doc.save(`${title.replace(/\s+/g, '_')}_${academicYear}.pdf`)
   }
@@ -997,7 +1032,6 @@ for (let i = 1; i <= pageCount; i++) {
                 </td>
 
                 {COLUMNS.map((col, pIndex) => {
-
                   const cell = table[dIndex][pIndex]
 
                   const isSaving = savingCell?.dIndex === dIndex && savingCell?.pIndex === pIndex
@@ -1139,19 +1173,10 @@ for (let i = 1; i <= pageCount; i++) {
         </table>
         <WorkloadReport data={workloadData} />
 
-        <LecturerAvailabilityMatrix
-        columns={COLUMNS}
-    table={table}
+        {/* <LecturerAvailabilityMatrix columns={COLUMNS} table={table} />
+        <LecturerAvailabilityByPeriod table={table} />
 
-/>
-<LecturerAvailabilityByPeriod
-    table={table}
-/>
-
-<SubstituteRecommendation
-    table={table}
-/>
-     
+        <SubstituteRecommendation table={table} /> */}
       </div>
 
       {showAutoModal && (
@@ -1169,69 +1194,55 @@ for (let i = 1; i <= pageCount; i++) {
 
       {/* ── Footer ── */}
       {/* ───────────── Footer ───────────── */}
-<div className="rounded-b-2xl border-t border-slate-200 bg-linear-to-r from-slate-50 via-white to-slate-50 px-5 py-3 print:hidden">
+      <div className="rounded-b-2xl border-t border-slate-200 bg-linear-to-r from-slate-50 via-white to-slate-50 px-5 py-3 print:hidden">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          {/* Left */}
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            {!readOnly ? (
+              <>
+                <CheckCircle2 size={13} className="text-emerald-500" />
+                <span>Click a cell → Select Subject → Changes are saved automatically</span>
+              </>
+            ) : (
+              <>
+                <Eye size={13} className="text-blue-500" />
+                <span>Read Only Mode</span>
+              </>
+            )}
+          </div>
 
-  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          {/* Center */}
+          <div className="flex items-center gap-4 text-xs">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-700">
+              <CheckCircle2 size={11} />
+              {filledPeriods} Filled
+            </span>
 
-    {/* Left */}
-    <div className="flex items-center gap-2 text-xs text-slate-500">
-      {!readOnly ? (
-        <>
-          <CheckCircle2 size={13} className="text-emerald-500" />
-          <span>
-            Click a cell → Select Subject → Changes are saved automatically
-          </span>
-        </>
-      ) : (
-        <>
-          <Eye size={13} className="text-blue-500" />
-          <span>Read Only Mode</span>
-        </>
-      )}
-    </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">
+              {totalPeriods - filledPeriods} Empty
+            </span>
 
-    {/* Center */}
-    <div className="flex items-center gap-4 text-xs">
+            {conflictCount > 0 ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 font-semibold text-red-700">
+                <AlertTriangle size={11} />
+                {conflictCount} Conflict{conflictCount > 1 ? 's' : ''}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-700">
+                <ShieldCheck size={11} />
+                No Conflicts
+              </span>
+            )}
+          </div>
 
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-700">
-        <CheckCircle2 size={11} />
-        {filledPeriods} Filled
-      </span>
+          {/* Right */}
+          <div className="text-right text-[11px] leading-tight text-slate-400">
+            <p className="font-semibold text-slate-600">OSRA Timetable Builder</p>
 
-      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">
-        {totalPeriods - filledPeriods} Empty
-      </span>
-
-      {conflictCount > 0 ? (
-        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 font-semibold text-red-700">
-          <AlertTriangle size={11} />
-          {conflictCount} Conflict{conflictCount > 1 ? "s" : ""}
-        </span>
-      ) : (
-        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-700">
-          <ShieldCheck size={11} />
-          No Conflicts
-        </span>
-      )}
-
-    </div>
-
-    {/* Right */}
-    <div className="text-right text-[11px] leading-tight text-slate-400">
-
-      <p className="font-semibold text-slate-600">
-        OSRA Timetable Builder
-      </p>
-
-      <p>
-        Academic Year {academicYear}
-      </p>
-
-    </div>
-
-  </div>
-
-</div>
+            <p>Academic Year {academicYear}</p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
