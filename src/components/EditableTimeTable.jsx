@@ -742,6 +742,14 @@ export default function EditableTimeTable({
     //         English: 14,
     //         Telugu: 10,
     //         Hindi: 10,
+    //         V1: 12,
+    //         V2: 12,
+    //         V3: 12,
+    //         V4: 12,
+    //         V5: 12,
+    //         V6: 12,
+    //         'English Vocational':6,
+    //         GFC: 6,
     //       }
 
     //       const mainSubject =
@@ -812,26 +820,19 @@ export default function EditableTimeTable({
 
       doc.setDrawColor(180)
       doc.setLineWidth(0.3)
-      doc.line(15, lineY - 8, pageWidth - 15, lineY - 8)
+      
 
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(8)
       doc.setTextColor(60)
 
       // Labels
-      doc.text('Prepared By', 40, lineY)
-      doc.text('Time Table Convener', pageWidth / 2, lineY, {
-        align: 'center',
-      })
+      
       doc.text('Principal', pageWidth - 40, lineY, {
         align: 'right',
       })
 
-      // Signature lines
-      doc.line(20, lineY + 10, 60, lineY + 10)
-
-      doc.line(pageWidth / 2 - 25, lineY + 10, pageWidth / 2 + 25, lineY + 10)
-
+      
       doc.line(pageWidth - 60, lineY + 10, pageWidth - 20, lineY + 10)
 
       // =============================
