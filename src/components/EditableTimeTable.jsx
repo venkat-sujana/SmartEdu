@@ -718,91 +718,91 @@ export default function EditableTimeTable({
       margin: { left: 12, right: 12 },
     })
 
-    // if (workloadData.length > 0) {
-    //   doc.setFontSize(10)
-    //   doc.setFont('helvetica', 'bold')
-    //   doc.text('Lecturer Workload', 148, doc.lastAutoTable.finalY + 8, { align: 'center' })
-    //   autoTable(doc, {
-    //     startY: doc.lastAutoTable.finalY + 12,
+    if (workloadData.length > 0) {
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Lecturer Workload', 148, doc.lastAutoTable.finalY + 8, { align: 'center' })
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 12,
 
-    //     head: [['#', 'Lecturer', 'Subject', 'Theory', 'Practical', 'Load / Target', 'Status']],
+        head: [['#', 'Lecturer', 'Subject', 'Theory', 'Practical', 'Load / Target', 'Status']],
 
-    //     body: workloadData.map((row, i) => {
-    //       const SUBJECT_TARGETS = {
-    //         Mathematics: 12,
-    //         Maths: 12,
-    //         Physics: 11,
-    //         Chemistry: 11,
-    //         Botany: 6,
-    //         Zoology: 6,
-    //         History: 11,
-    //         Commerce: 11,
-    //         Economics: 11,
-    //         Civics: 11,
-    //         English: 14,
-    //         Telugu: 10,
-    //         Hindi: 10,
-    //         V1: 12,
-    //         V2: 12,
-    //         V3: 12,
-    //         V4: 12,
-    //         V5: 12,
-    //         V6: 12,
-    //         'English Vocational':6,
-    //         GFC: 6,
-    //       }
+        body: workloadData.map((row, i) => {
+          const SUBJECT_TARGETS = {
+            Mathematics: 12,
+            Maths: 12,
+            Physics: 11,
+            Chemistry: 11,
+            Botany: 6,
+            Zoology: 6,
+            History: 11,
+            Commerce: 11,
+            Economics: 11,
+            Civics: 11,
+            English: 14,
+            Telugu: 10,
+            Hindi: 10,
+            V1: 12,
+            V2: 12,
+            V3: 12,
+            V4: 12,
+            V5: 12,
+            V6: 12,
+            'English Vocational':6,
+            GFC: 6,
+          }
 
-    //       const mainSubject =
-    //         (row.subjects || []).find(s => !s.toLowerCase().includes('practical')) ||
-    //         row.subjects?.[0] ||
-    //         ''
+          const mainSubject =
+            (row.subjects || []).find(s => !s.toLowerCase().includes('practical')) ||
+            row.subjects?.[0] ||
+            ''
 
-    //       const expected = SUBJECT_TARGETS[mainSubject] || 0
-    //       const status =
-    //         expected === 0
-    //           ? 'Normal'
-    //           : row.total < expected
-    //             ? 'Underload'
-    //             : row.total > expected
-    //               ? 'Overload'
-    //               : 'Normal'
+          const expected = SUBJECT_TARGETS[mainSubject] || 0
+          const status =
+            expected === 0
+              ? 'Normal'
+              : row.total < expected
+                ? 'Underload'
+                : row.total > expected
+                  ? 'Overload'
+                  : 'Normal'
 
-    //       return [
-    //         i + 1,
-    //         row.lecturer || row.name,
+          return [
+            i + 1,
+            row.lecturer || row.name,
 
-    //         mainSubject,
+            mainSubject,
 
-    //         row.theory,
-    //         row.practical,
-    //         `${row.total} / ${expected}`,
-    //         status,
-    //       ]
-    //     }),
+            row.theory,
+            row.practical,
+            `${row.total} / ${expected}`,
+            status,
+          ]
+        }),
 
-    //     theme: 'grid',
-    //     styles: { fontSize: 8, halign: 'center', textColor: [30, 41, 59] },
-    //     headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
+        theme: 'grid',
+        styles: { fontSize: 8, halign: 'center', textColor: [30, 41, 59] },
+        headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
 
-    //     columnStyles: {
-    //       0: { cellWidth: 10 },
-    //       1: { halign: 'left', fontStyle: 'bold', cellWidth: 42 },
-    //       2: { cellWidth: 24 },
-    //       3: { cellWidth: 16 },
-    //       4: { cellWidth: 18 },
-    //       5: { cellWidth: 22 },
-    //       6: { cellWidth: 22 },
-    //     },
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { halign: 'left', fontStyle: 'bold', cellWidth: 42 },
+          2: { cellWidth: 24 },
+          3: { cellWidth: 16 },
+          4: { cellWidth: 18 },
+          5: { cellWidth: 22 },
+          6: { cellWidth: 22 },
+        },
 
-    //     didParseCell(h) {
-    //       if (h.section !== 'body' || h.column.index !== 5) return
-    //       if (h.cell.raw === 'Normal') h.cell.styles.fillColor = [209, 250, 229]
-    //       if (h.cell.raw === 'Underload') h.cell.styles.fillColor = [254, 226, 226]
-    //       if (h.cell.raw === 'Overload') h.cell.styles.fillColor = [254, 202, 202]
-    //     },
-    //     margin: { left: 30, right: 30 },
-    //   })
-    // }
+        didParseCell(h) {
+          if (h.section !== 'body' || h.column.index !== 5) return
+          if (h.cell.raw === 'Normal') h.cell.styles.fillColor = [209, 250, 229]
+          if (h.cell.raw === 'Underload') h.cell.styles.fillColor = [254, 226, 226]
+          if (h.cell.raw === 'Overload') h.cell.styles.fillColor = [254, 202, 202]
+        },
+        margin: { left: 30, right: 30 },
+      })
+    }
 
     const pageCount = doc.getNumberOfPages()
 

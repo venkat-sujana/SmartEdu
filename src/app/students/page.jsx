@@ -96,15 +96,18 @@ export default function StudentsPage() {
       startY: 25,
       head: [
         [
-          "S.No", "Name", "Mobile",dob, "Parent Mobile", "Group", "Caste", "Gender", "Year of Study", "Admission Year", "Date Of Joining", "Address"
+          "S.No", "Name", "Father Name", "Mobile", "Caste", "Group", "Gender", "Year of Study", "Admission Year", "Date Of Joining", "Address"
         ],
       ],
       body: filteredStudents.map((s, idx) => [
         idx + 1,
         s.name,
+        s.fatherName,
         s.mobile,
-        s.group,
         s.caste,
+        s.parentMobile,
+        s.group,
+        
         s.gender,
         s.yearOfStudy === "First Year" ? "First Year" : "Second Year",
         s.admissionYear,
@@ -121,6 +124,7 @@ export default function StudentsPage() {
     const studentData = filteredStudents.map((s, idx) => ({
       SNo: idx + 1,
       Name: s.name,
+      FatherName: s.fatherName,
       Mobile: s.mobile,
       ParentMobile: s.parentMobile,
       Group: s.group,
@@ -133,7 +137,7 @@ export default function StudentsPage() {
         hour: "2-digit", minute: "2-digit", hour12: true,
       }),
       AdmissionYear: s.admissionYear,
-      dateOfJoining: s.dateOfJoining,
+      DateOfJoining: s.dateOfJoining,
       Address: s.address,
     })); 
     const collegeHeaderRow = { SNo: "", Name: `College: ${collegeName}` };

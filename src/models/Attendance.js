@@ -67,6 +67,10 @@ const attendanceSchema = new Schema(
     max: 12,
     index: true
   },
+  reason: {
+        type: String,
+        default: "",
+    },
 
   year: {
     type: Number,
@@ -79,6 +83,8 @@ const attendanceSchema = new Schema(
   }
 
 },
+
+
 {
   timestamps: true
 }
