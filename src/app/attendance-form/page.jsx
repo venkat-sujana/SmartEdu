@@ -308,6 +308,8 @@ export default function AttendanceFormPage() {
                 <ArrowLeft className="h-4 w-4" />
                 <span>Back to Dashboard</span>
               </Link>
+              <Link className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-white transition hover:bg-blue-700"
+              href="/late-entry">Late Entry</Link>
             </div>
 
             <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700">

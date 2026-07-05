@@ -19,14 +19,25 @@ export async function GET(req) {
     }
 
     const { searchParams } = new URL(req.url);
-
     const studentId = searchParams.get("studentId");
     const date = searchParams.get("date");
+
+    if (!studentId || !date) {
+      return NextResponse.json({ status: "success", reason: "" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return NextResponse.json({ status: "success", reason: "" });
+    }
+
+    const [year, month, day] = date.split("-").map(Number);
+    const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59));
 
     const attendance = await Attendance.findOne({
       collegeId: session.user.collegeId,
       studentId: new mongoose.Types.ObjectId(studentId),
-      date: new Date(date),
+      date: { $gte: startOfDay, $lte: endOfDay },
     });
 
     return NextResponse.json({
@@ -34,8 +45,7 @@ export async function GET(req) {
       reason: attendance?.reason || "",
     });
   } catch (err) {
-    console.error(err);
-
+    console.error("GET reason error:", err);
     return NextResponse.json(
       { status: "error", message: "Server Error" },
       { status: 500 }
@@ -58,26 +68,47 @@ export async function POST(req) {
 
     const { studentId, date, reason } = await req.json();
 
-    await Attendance.findOneAndUpdate(
+    if (!studentId || !date) {
+      return NextResponse.json(
+        { status: "error", message: "Missing fields" },
+        { status: 400 }
+      );
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return NextResponse.json(
+        { status: "error", message: "Invalid studentId" },
+        { status: 400 }
+      );
+    }
+
+    const [year, month, day] = date.split("-").map(Number);
+    const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59));
+
+    const result = await Attendance.findOneAndUpdate(
       {
         collegeId: session.user.collegeId,
         studentId: new mongoose.Types.ObjectId(studentId),
-        date: new Date(date),
+        date: { $gte: startOfDay, $lte: endOfDay },
       },
-      {
-        $set: {
-          reason,
-        },
-      }
+      { $set: { reason } },
+      { new: true }
     );
+
+    if (!result) {
+      return NextResponse.json(
+        { status: "error", message: "Attendance record not found" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       status: "success",
       message: "Reason Saved Successfully",
     });
   } catch (err) {
-    console.error(err);
-
+    console.error("POST reason error:", err);
     return NextResponse.json(
       { status: "error", message: "Server Error" },
       { status: 500 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -75,6 +76,38 @@ export default function AbsentReasonPage() {
     [dateParam]
   );
 
+  async function handleSaveReason() {
+  if (!studentId || !normalizedDate) return;
+
+  setSaving(true);
+  setMessage("");
+
+  try {
+    const res = await fetch("/api/attendance/reason", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentId,
+        date: normalizedDate,
+        reason,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+      setMessage("success");
+    } else {
+      setMessage("error");
+    }
+  } catch {
+    setMessage("error");
+  } finally {
+    setSaving(false);
+    setTimeout(() => setMessage(""), 3000);
+  }
+}
+
   async function loadReason(studentId, date) {
   const res = await fetch(
     `/api/attendance/reason?studentId=${studentId}&date=${date}`
@@ -139,6 +172,8 @@ export default function AbsentReasonPage() {
       isMounted = false;
     };
   }, [studentId,normalizedDate]);
+
+
 
   const selectedDayRecords = useMemo(() => {
     if (!normalizedDate) return [];
@@ -365,17 +400,38 @@ export default function AbsentReasonPage() {
                   </div>
 
                   <div className="mt-4 rounded-3xl border border-dashed border-rose-200 bg-rose-50/70 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
-                      Reason Note
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-rose-900">
-                      Reason not recorded yet
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-rose-700">
-                      You can use this section as the student absence explanation area once a
-                      dedicated reason field is added to attendance records.
-                    </p>
-                  </div>
+  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
+    Reason Note
+  </p>
+
+  <textarea
+    value={reason}
+    onChange={(e) => setReason(e.target.value)}
+    placeholder="Reason for absence రాయండి..."
+    rows={3}
+    className="mt-3 w-full resize-none rounded-2xl border border-rose-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+  />
+
+  <div className="mt-3 flex items-center justify-between gap-3">
+    <p className={`text-xs font-semibold ${
+      message === "success" ? "text-emerald-600" :
+      message === "error" ? "text-rose-600" : "text-transparent"
+    }`}>
+      {message === "success" ? "✓ Reason saved!" :
+       message === "error" ? "✗ Save failed. Try again." : "·"}
+    </p>
+
+    <button
+      type="button"
+      onClick={handleSaveReason}
+      disabled={saving || !reason.trim()}
+      className="rounded-2xl bg-rose-600 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {saving ? "Saving..." : "Save Reason"}
+    </button>
+  </div>
+</div>
+
                 </div>
               ))
             ) : (

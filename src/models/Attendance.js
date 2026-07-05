@@ -61,6 +61,9 @@ const attendanceSchema = new Schema(
     index: true
   },
 
+  lateComer: { type: Boolean, default: false },
+  lateTime: { type: String, default: "" },
+
   month: {
     type: Number, // 1-12 (faster than string)
     min: 1,
