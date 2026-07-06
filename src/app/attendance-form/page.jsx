@@ -383,20 +383,7 @@ export default function AttendanceFormPage() {
                   </select>
                 </div>
 
-                <div className="min-w-[150px] flex-1">
-                  <label className="mb-1 block text-xs font-medium text-slate-600">Subject</label>
-                  <select
-                    value={selectedSubject}
-                    onChange={e => setSelectedSubject(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-500"
-                  >
-                    {subjectOptions.map(subject => (
-                      <option key={subject} value={subject}>
-                        {subject}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+               
 
                 <div className="ml-auto">
                   <button
