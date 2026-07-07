@@ -297,9 +297,6 @@ const ENTITY_CONFIG = {
   },
 
 
-
-
-
   officeStaff: {
     label: "Office Staff",
     singularLabel: "Office Staff",
@@ -382,6 +379,44 @@ const ENTITY_CONFIG = {
   },
 ],
 
+},
+
+// ENTITY_CONFIG లో add చేయండి:
+fees: {
+  label: 'Fees',
+  singularLabel: 'Fee',
+  icon: Activity, // top లో Activity already imported ఉంది
+  endpoint: '/api/fee/admin',
+  hasCollegeFilter: true,
+  accent: {
+    badge: 'bg-green-100 text-green-800 border-green-200',
+    button: 'bg-green-600 hover:bg-green-700',
+    soft: 'from-green-500/20 via-emerald-500/10 to-white',
+    icon: 'bg-green-500/15 text-green-700',
+    activeCard: 'border-green-300 bg-green-50 text-green-950 shadow-green-100',
+  },
+  bulkHeaders: ['StudentAdmissionNo', 'AcademicYear', 'TotalFee', 'AmountPaid', 'PaidDate', 'Note'],
+  fields: [
+    { name: 'collegeId',    label: 'College',       type: 'select', required: true },
+    { name: 'studentId',    label: 'Student',       type: 'select', required: true },
+    { name: 'academicYear', label: 'Academic Year (e.g. 2024-2025)', type: 'text', required: true },
+    { name: 'totalFee',     label: 'Total Fee (₹)', type: 'number', required: true },
+    { name: 'feeAmount',    label: 'Payment Amount (₹)', type: 'number', required: false },
+    { name: 'feeNote',      label: 'Payment Note', type: 'text', required: false },
+  ],
+  columns: [
+    { key: 'student',      label: 'Student',       render: item => item.studentId?.name || '-' },
+    { key: 'admissionNo',  label: 'Admission No',  render: item => item.studentId?.admissionNo || '-' },
+    { key: 'academicYear', label: 'Academic Year' },
+    { key: 'totalFee',     label: 'Total Fee',     render: item => `₹${item.totalFee?.toLocaleString('en-IN') || 0}` },
+    { key: 'totalPaid',    label: 'Paid',          render: item => `₹${item.totalPaid?.toLocaleString('en-IN') || 0}` },
+    { key: 'balance',      label: 'Balance',       render: item => `₹${item.balance?.toLocaleString('en-IN') || 0}` },
+    { key: 'status',       label: 'Status',        render: item => {
+      const colors = { Paid: 'text-green-600', Partial: 'text-yellow-600', Pending: 'text-red-600' }
+      return <span className={`font-bold ${colors[item.status] || ''}`}>{item.status}</span>
+    }},
+    { key: 'college', label: 'College', render: item => item.studentId?.collegeId?.name || '-' },
+  ],
 },
 
 
@@ -482,7 +517,12 @@ const INITIAL_FORM = {
   examType: '',
   examDate: '',
   subjects: '',
+   feeAmount: '',
+  feeNote: '',
+  totalFee: '',
 }
+
+
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50]
 
@@ -725,32 +765,42 @@ export default function AdminPanelPage() {
   }, [isAdmin, loadAuditLogs])
 
   useEffect(() => {
-    async function loadStudentOptions() {
-      if (!showForm || !['attendance', 'exams'].includes(entity) || !form.collegeId) {
-        setStudentOptions([])
-        return
-      }
-
-      try {
-        const params = new URLSearchParams({
-          collegeId: form.collegeId,
-          page: '1',
-          limit: '1000',
-        })
-        const res = await fetch(`/api/admin/students?${params.toString()}`)
-        const result = await res.json()
-        if (!res.ok) throw new Error(result.error || 'Failed to fetch students')
-        setStudentOptions(Array.isArray(result.data) ? result.data : [])
-      } catch {
-        setStudentOptions([])
-      }
+  async function loadStudentOptions() {
+    if (
+      !showForm ||
+      !['attendance', 'exams', 'fees'].includes(entity) ||
+      !form.collegeId
+    ) {
+      setStudentOptions([])
+      return
     }
 
-    loadStudentOptions()
-  }, [showForm, entity, form.collegeId])
+    try {
+      const params = new URLSearchParams({
+        collegeId: form.collegeId,
+        page: '1',
+        limit: '1000',
+      })
+
+      const res = await fetch(`/api/admin/students?${params.toString()}`)
+      const result = await res.json()
+
+      if (!res.ok) throw new Error(result.error)
+
+      console.log("Students:", result.data); // Debug
+
+      setStudentOptions(Array.isArray(result.data) ? result.data : [])
+    } catch (err) {
+      console.error(err)
+      setStudentOptions([])
+    }
+  }
+
+  loadStudentOptions()
+}, [showForm, entity, form.collegeId])
 
   useEffect(() => {
-    if (!selectedStudent || !['attendance', 'exams'].includes(entity)) return
+    if (!selectedStudent || !['attendance', 'exams', 'fee'].includes(entity)) return
 
     setForm(prev => ({
       ...prev,
@@ -1720,7 +1770,7 @@ export default function AdminPanelPage() {
                         </div>
                       )}
 
-                    {['attendance', 'exams'].includes(entity) && selectedStudent && (
+                    {['attendance', 'exams', 'fee'].includes(entity) && selectedStudent && (
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
                         <div className="font-semibold text-slate-900">
                           Selected Student Snapshot
@@ -2189,6 +2239,17 @@ function buildPayload(entity, form, isEdit) {
       payload.subjects = form.subjects
     }
   }
+
+  if (entity === 'fees') {
+  return {
+    studentId:    form.studentId,
+    collegeId:    form.collegeId,
+    academicYear: form.academicYear,
+    totalFee:     Number(form.totalFee),
+    amount:       form.feeAmount ? Number(form.feeAmount) : undefined,
+    note:         form.feeNote || '',
+  }
+}
 
   Object.keys(payload).forEach(key => {
     if (payload[key] === '' || payload[key] === undefined) delete payload[key]

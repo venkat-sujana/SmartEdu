@@ -1,3 +1,4 @@
+//src/app/student/dashboard/page.jsx
 'use client'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
@@ -5,9 +6,13 @@ import StudentIndividualExams           from '@/components/StudentIndividualExam
 import StudentMonthlyAttendanceSummary  from '@/components/StudentMonthlyAttendanceSummary/StudentMonthlyAttendanceSummary'
 import StudentAttendanceAlert           from '@/components/StudentAttendanceAlert/StudentAttendanceAlert'
 import StudentLateComingHistory         from '@/components/StudentLateComingHistory/StudentLateComingHistory'
+import StudentFeeStatus                from '@/components/StudentFeeStatus/StudentFeeStatus'
+
 
 export default function StudentDashboard() {
   const { data: session, status } = useSession()
+  console.log(session.user);
+console.log("studentId:", session.user.id);
   const studentId = session?.user?.id
 
   if (status === 'loading')
@@ -88,11 +93,17 @@ export default function StudentDashboard() {
         <StudentLateComingHistory studentId={studentId} />
       </section>
 
+      {/* ── Fee Payment Status ── */}
+      <section>
+        <StudentFeeStatus studentId={studentId} />
+      </section>
+
       {/* ── Exam Results ── */}
       <section>
         <StudentIndividualExams studentId={studentId} />
       </section>
 
+      
     </div>
   )
 }
