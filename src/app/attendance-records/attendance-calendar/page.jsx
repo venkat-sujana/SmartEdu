@@ -653,7 +653,7 @@ export default function CalendarView() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:min-w-[300px]">
+          <div className="grid w-full grid-cols-3 gap-2 sm:w-auto sm:min-w-[320px]">
             {[
               {
                 value: presentCount,
@@ -671,9 +671,9 @@ export default function CalendarView() {
                 tone: 'bg-sky-100 text-sky-800',
               },
             ].map(item => (
-              <div key={item.label} className={`rounded-2xl px-3 py-2 shadow-sm ${item.tone}`}>
-                <p className="text-lg leading-none font-black">{item.value}</p>
-                <p className="mt-1 text-[11px] font-semibold tracking-wide uppercase">
+              <div key={item.label} className={`rounded-2xl px-2 py-3 text-center shadow-sm sm:px-3 ${item.tone}`}>
+                <p className="text-base sm:text-lg leading-none font-black">{item.value}</p>
+                <p className="mt-1 text-[10px] sm:text-[11px] font-semibold tracking-wide uppercase">
                   {item.label}
                 </p>
               </div>
@@ -683,11 +683,11 @@ export default function CalendarView() {
       </div>
 
       <div className="sticky top-0 z-10 mb-4 rounded-3xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur">
-        <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-3 py-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 px-3 py-2">
           <button
             type="button"
             onClick={() => changeMonthBy(-1)}
-            className="rounded-full bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-100"
+            className="rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-100"
           >
             {'< Prev'}
           </button>
@@ -700,17 +700,17 @@ export default function CalendarView() {
           <button
             type="button"
             onClick={() => changeMonthBy(1)}
-            className="rounded-full bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-100"
+            className="rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-100"
           >
             {'Next >'}
           </button>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <select
             value={yearOfStudy}
             onChange={e => setYearOfStudy(e.target.value)}
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition outline-none focus:border-cyan-400 focus:bg-white"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition focus:border-cyan-400 focus:bg-white"
           >
             <option value="">Select Year</option>
             <option value="First Year">First Year</option>
@@ -720,7 +720,7 @@ export default function CalendarView() {
           <select
             value={group}
             onChange={e => setGroup(e.target.value)}
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition outline-none focus:border-cyan-400 focus:bg-white"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition focus:border-cyan-400 focus:bg-white"
           >
             <option value="">Select Group</option>
             {groupsList.map(groupName => (
@@ -733,7 +733,7 @@ export default function CalendarView() {
           <select
             value={studentId}
             onChange={e => setStudentId(e.target.value)}
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition outline-none focus:border-cyan-400 focus:bg-white"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition focus:border-cyan-400 focus:bg-white"
           >
             <option value="">Select Student</option>
             {students.map(student => (
@@ -746,7 +746,7 @@ export default function CalendarView() {
           <select
             value={month}
             onChange={e => setMonth(parseInt(e.target.value, 10))}
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition outline-none focus:border-cyan-400 focus:bg-white"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition focus:border-cyan-400 focus:bg-white"
           >
             {monthNames.map((monthName, index) => (
               <option key={monthName} value={index}>
@@ -758,7 +758,7 @@ export default function CalendarView() {
           <select
             value={year}
             onChange={e => setYear(parseInt(e.target.value, 10))}
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition outline-none focus:border-cyan-400 focus:bg-white"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition focus:border-cyan-400 focus:bg-white"
           >
             {[...Array(5)].map((_, index) => {
               const yearValue = new Date().getFullYear() - 2 + index
@@ -773,14 +773,14 @@ export default function CalendarView() {
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap justify-center gap-3">
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:justify-center">
   <Link href="/attendance-form">
-    <button className="rounded-2xl bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700">
+    <button className="rounded-2xl bg-cyan-600 w-full px-4 py-2 sm:w-auto text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700">
       Attendance Form
     </button>
   </Link>
   <Link href="/attendance-records">
-    <button className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">
+    <button className="rounded-2xl bg-slate-900 w-full px-4 py-2 sm:w-auto text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">
       Attendance Records
     </button>
   </Link>
@@ -790,7 +790,7 @@ export default function CalendarView() {
     <button
       type="button"
       onClick={generatePDF}
-      className="rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+      className="rounded-2xl bg-emerald-600 w-full px-4 py-2 sm:w-auto text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
     >
       ⬇ Download PDF
     </button>
@@ -799,7 +799,7 @@ export default function CalendarView() {
   <button
     type="button"
     onClick={generateClassPDF}
-    className="rounded-2xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700"
+    className="rounded-2xl bg-violet-600 w-full px-4 py-2 sm:w-auto text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700"
   >
     ⬇ Class PDF
   </button>
@@ -807,9 +807,9 @@ export default function CalendarView() {
 </div>
 
       {selectedStudent && (
-        <div className="mb-4 grid gap-4 xl:grid-cols-[1.4fr_2fr]">
+        <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_2fr]">
           <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-start sm:text-left">
               {selectedStudent?.photo ? (
                 <Image
                   src={selectedStudent.photo}
@@ -828,7 +828,7 @@ export default function CalendarView() {
                 <p className="text-xs font-semibold tracking-[0.2em] text-slate-400 uppercase">
                   Student
                 </p>
-                <p className="truncate text-lg font-black text-slate-900">{selectedStudent.name}</p>
+                <p className="wrap-break-word text-lg font-black text-slate-900">{selectedStudent.name}</p>
                 {joinDateObj && (
                   <p className="mt-1 text-sm text-slate-500">
                     Joined on {joinDateObj.toLocaleDateString()}
@@ -837,7 +837,7 @@ export default function CalendarView() {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 text-sm">
               <div className="rounded-2xl bg-slate-50 px-3 py-2">
                 <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
                   Working Days
@@ -859,7 +859,7 @@ export default function CalendarView() {
               <p className="text-xs text-slate-500">Quick totals for the selected month</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
               {[
                 {
                   value: presentCount,
@@ -894,7 +894,7 @@ export default function CalendarView() {
               ].map((card, index) => (
                 <motion.div
                   key={card.label}
-                  className={`rounded-2xl px-3 py-3 shadow-sm ${card.color}`}
+                  className={`rounded-2xl px-2 py-3 text-center sm:px-3 shadow-sm ${card.color}`}
                   initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.35, delay: index * 0.06 }}
@@ -903,7 +903,7 @@ export default function CalendarView() {
                     <span className="text-xs font-black tracking-[0.2em] uppercase">
                       {card.icon}
                     </span>
-                    <p className="text-xl leading-none font-black">{card.value}</p>
+                    <p className="text-lg sm:text-xl leading-none font-black">{card.value}</p>
                   </div>
                   <p className="mt-2 text-xs font-semibold tracking-wide uppercase">{card.label}</p>
                 </motion.div>
@@ -927,7 +927,7 @@ export default function CalendarView() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2 text-xs font-semibold">
+          <div className="grid grid-cols-2 gap-2 text-xs sm:flex sm:flex-wrap font-semibold">
             {[
               { label: 'Present', tone: 'present' },
               { label: 'Absent', tone: 'absent' },
@@ -947,7 +947,7 @@ export default function CalendarView() {
         </div>
 
         {selectedStudent && (
-          <div className="grid gap-2 border-b border-slate-100 px-4 py-3 md:grid-cols-5">
+          <div className="grid grid-cols-1 gap-3 border-b border-slate-100 px-4 py-3 sm:grid-cols-2 lg:grid-cols-5">
             {weeklySummary.map(week => (
               <div key={week.label} className="rounded-2xl bg-slate-50 px-3 py-2">
                 <p className="text-[11px] font-bold tracking-wide text-slate-500 uppercase">
@@ -969,7 +969,8 @@ export default function CalendarView() {
           </div>
         )}
 
-        <div className="grid grid-cols-7 gap-px bg-slate-200 p-px">
+        <div className="overflow-x-auto">
+  <div className="grid min-w-[720px] grid-cols-7 gap-px bg-slate-200 p-px">
           {weekDayNames.map(dayName => (
             <div
               key={dayName}
@@ -981,7 +982,7 @@ export default function CalendarView() {
 
           {calendarCells.map(cell => {
             if (cell.empty) {
-              return <div key={cell.key} className="min-h-[74px] bg-slate-50 sm:min-h-28" />
+              return <div key={cell.key} className="min-h-[88px] bg-slate-50 sm:min-h-28" />
             }
 
             const theme = statusTheme[cell.tone]
@@ -991,12 +992,12 @@ export default function CalendarView() {
             return (
               <div
                 key={cell.key}
-                className={`min-h-[74px] border p-1.5 transition sm:min-h-28 sm:p-3 ${theme.cell}`}
+                className={`min-h-[74px] border p-2 sm:p-3 transition sm:min-h-28 ${theme.cell}`}
                 title={cell.status}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-sm leading-none font-black sm:text-lg">{cell.date}</p>
+                    <p className="text-base sm:text-lg leading-none font-black">{cell.date}</p>
                     <p className="mt-1 text-[10px] tracking-wide uppercase opacity-70">
                       {weekDayNames[cell.currentDate.getDay()]}
                     </p>
@@ -1016,7 +1017,7 @@ export default function CalendarView() {
                   </span>
                 </div>
 
-                <div className="mt-1.5 space-y-1 text-[9px] sm:mt-2 sm:text-xs">
+                <div className="mt-1.5 space-y-1 text-[8px] sm:text-[10px] sm:mt-2 sm:text-xs">
                   {cell.holiday && (
                     <p className="line-clamp-2 font-semibold">{cell.holiday.name}</p>
                   )}
@@ -1079,6 +1080,7 @@ export default function CalendarView() {
             )
           })}
         </div>
+      </div>
       </div>
     </div>
   )

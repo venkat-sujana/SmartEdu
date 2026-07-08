@@ -35,23 +35,28 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
   const secondYearStrength = secondYearStudentsData?.totalStudents || 0
 
   function stats(year, session) {
-    const present =
-      sessionWisePresent[session]?.filter(
-        student =>
-          normalizeAttendanceGroup(student.group) === normalizedGroupName &&
-          student.yearOfStudy === year
-      ).length || 0
-    const absent =
-      sessionWiseAbsentees[session]?.filter(
-        student =>
-          normalizeAttendanceGroup(student.group) === normalizedGroupName &&
-          student.yearOfStudy === year
-      ).length || 0
-    const total = present + absent
-    const percent = total > 0 ? Math.round((present / total) * 100) : 0
+  const yearStrength = year === 'First Year' ? firstYearStrength : secondYearStrength
 
-    return { present, absent, total, percent }
-  }
+  const present =
+    sessionWisePresent[session]?.filter(
+      student =>
+        normalizeAttendanceGroup(student.group) === normalizedGroupName &&
+        student.yearOfStudy === year
+    ).length || 0
+
+  const absent =
+    sessionWiseAbsentees[session]?.filter(
+      student =>
+        normalizeAttendanceGroup(student.group) === normalizedGroupName &&
+        student.yearOfStudy === year
+    ).length || 0
+
+  const total = yearStrength
+  const unmarked = yearStrength - present - absent  // ✅ new
+  const percent = total > 0 ? Math.round((present / total) * 100) : 0
+
+  return { present, absent, unmarked, total, percent }
+}
 
   const sessionSummary = sessions.map(session => {
     const firstYear = stats('First Year', session)
@@ -116,6 +121,8 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
 
                     <th className="border px-3 py-2 text-center">Absent</th>
 
+                    <th className="border px-3 py-2 text-center">Unmarked</th>
+
                     <th className="border px-3 py-2 text-center">Total</th>
 
                     <th className="border px-3 py-2 text-center">%</th>
@@ -136,6 +143,12 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
 
                         <td className="border px-3 py-2 text-center font-bold text-rose-600">
                           {current.absent}
+                        </td>
+
+                        <td className="border px-3 py-2 text-center font-bold text-amber-500">
+                          {' '}
+                          {/* ✅ new */}
+                          {current.unmarked}
                         </td>
 
                         <td className="border px-3 py-2 text-center">{current.total}</td>
@@ -195,6 +208,11 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
                         <div>
                           <p className="text-[11px] text-slate-500">Absent</p>
                           <p className="text-lg font-bold text-rose-600">{current.absent}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-[11px] text-slate-500">Unmarked</p>
+                          <p className="text-lg font-bold text-amber-500">{current.unmarked}</p>
                         </div>
 
                         <div>

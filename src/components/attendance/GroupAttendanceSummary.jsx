@@ -271,7 +271,7 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
 
               <div className="hidden overflow-hidden rounded-2xl border border-slate-200 lg:block">
                 <div className="overflow-x-auto">
-                  <table className="min-w-[1280px] border-collapse text-sm">
+                  <table className="min-w-7xl border-collapse text-sm">
                     <thead className="bg-slate-900 text-xs uppercase tracking-wide text-white">
                       <tr>
                         <th className="w-16 border border-slate-700 px-3 py-3 text-center">
