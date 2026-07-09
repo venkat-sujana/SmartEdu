@@ -163,6 +163,17 @@ const isOffice = role === 'office'
           icon: <CalendarDaysIcon className="h-5 w-5 text-blue-500" />,
         },
         {
+          href: '/late-entry',
+          label: 'Late Entry',
+          icon: <CalendarDaysIcon className="h-5 w-5 text-blue-500" />,
+        },
+        {
+          href: "/late-entry-register",
+          label: "Late Entry Register",
+          icon: <CalendarDaysIcon className="h-5 w-5 text-amber-500" />,
+        },
+
+        {
           href: '/attendance-records/individual',
           label: 'Update Attendance',
           icon: <PencilSquareIcon className="h-5 w-5 text-blue-500" />,
@@ -177,6 +188,7 @@ const isOffice = role === 'office'
           label: 'Take Attendance',
           icon: <PencilSquareIcon className="h-5 w-5 text-emerald-500" />,
         },
+        
         {
       href: '/invigilation/login',
       label: 'Invigilation',
@@ -184,7 +196,7 @@ const isOffice = role === 'office'
       accent: 'text-cyan-600',
     },
 
-        {
+{
   href: '/faculty-monitor',
   label: 'Faculty Monitor',
   icon: <UserGroupIcon className="h-5 w-5 text-cyan-500" />,
