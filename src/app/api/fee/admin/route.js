@@ -95,17 +95,26 @@ export async function GET(req) {
   const limit         = parseInt(searchParams.get("limit") || "10", 10);
   const skip          = (page - 1) * limit;
 
-  if (!collegeId) {
-    return NextResponse.json(
-      { error: "collegeId required" },
-      { status: 400 }
-    );
-  }
+  const filter = {};
+
+if (collegeId) {
+  filter.collegeId = new mongoose.Types.ObjectId(collegeId);
+}
+
+if (academicYear) {
+  filter.academicYear = academicYear;
+}
 
   try {
-    const filter = {
-      collegeId: new mongoose.Types.ObjectId(collegeId),
-    };
+    const filter = {};
+
+if (collegeId) {
+  filter.collegeId = new mongoose.Types.ObjectId(collegeId);
+}
+
+if (academicYear) {
+  filter.academicYear = academicYear;
+}
     if (academicYear) filter.academicYear = academicYear;
 
     const [records, total] = await Promise.all([

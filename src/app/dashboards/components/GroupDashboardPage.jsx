@@ -1,6 +1,6 @@
 //src/app/dashboards/components/GroupDashboardPage.jsx
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
@@ -15,9 +15,11 @@ import GroupAttendanceSummary from '@/components/attendance/GroupAttendanceSumma
 import GroupShortageSummary from '@/components/attendance/GroupShortageSummary'
 import LecturerInfoCard from '@/components/dashboard/LecturerInfoCard'
 import GroupAttendanceCard from '@/components/OverallAttendanceMatrixCard/GroupAttendanceCard'
+
 import GroupExamDashboardPanel from '@/components/exams/GroupExamDashboardPanel'
 import GroupStudentTable from '@/components/tables/GroupStudentTable'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
+
 // import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
 
 const fetcher = async url => {
@@ -44,7 +46,8 @@ export default function GroupDashboardPage({
   const [monthlyAttendance, setMonthlyAttendance] = useState(false)
   const [showExamResults, setShowExamResults] = useState(false)
   const [editAttendance, setEditAttendance] = useState(false)
-
+  const [feeData, setFeeData] = useState([]);
+const [loadingFees, setLoadingFees] = useState(true);
   const collegeName = user?.collegeName || 'College'
   const { data: collegeDetails } = useSWR(
     user?.collegeId ? `/api/colleges/${user.collegeId}` : null,
@@ -81,8 +84,259 @@ export default function GroupDashboardPage({
       }
     : {}
 
+    
+
+async function loadFees() {
+  try {
+    setLoadingFees(true);
+
+    const res = await fetch("/api/fee/admin?limit=10000");
+    const result = await res.json();
+
+    if (result.status === "success") {
+      setFeeData(result.data || []);
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoadingFees(false);
+  }
+}
+
+const groupSummary = feeData.reduce((acc, item) => {
+  const group = item.studentId?.group || "Unknown";
+
+  if (!acc[group]) {
+    acc[group] = {
+      group,
+      students: 0,
+      totalFee: 0,
+      totalPaid: 0,
+      balance: 0,
+      pendingStudents: 0,
+    };
+  }
+
+  acc[group].students += 1;
+  acc[group].totalFee += item.totalFee || 0;
+  acc[group].totalPaid += item.totalPaid || 0;
+  acc[group].balance += item.balance || 0;
+
+  if ((item.balance || 0) > 0) {
+    acc[group].pendingStudents += 1;
+  }
+
+  return acc;
+}, {});
+
+const groupData = Object.values(groupSummary);
+const dashboardSummary = groupData.reduce(
+  (acc, group) => {
+    acc.students += group.students;
+    acc.totalFee += group.totalFee;
+    acc.totalPaid += group.totalPaid;
+    acc.balance += group.balance;
+    acc.pendingStudents += group.pendingStudents;
+
+    return acc;
+  },
+  {
+    students: 0,
+    totalFee: 0,
+    totalPaid: 0,
+    balance: 0,
+    pendingStudents: 0,
+  }
+);
+
+dashboardSummary.collectionPercentage =
+  dashboardSummary.totalFee > 0
+    ? ((dashboardSummary.totalPaid / dashboardSummary.totalFee) * 100).toFixed(2)
+    : 0;
+
+useEffect(() => {
+  loadFees();
+}, []);
+
+
+
   return (
     <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-4 md:p-6`}>
+<div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+
+  <div className="bg-blue-600 text-white rounded-xl p-4">
+    <p className="text-sm">Students</p>
+    <h2 className="text-2xl font-bold">{dashboardSummary.students}</h2>
+  </div>
+
+  <div className="bg-indigo-600 text-white rounded-xl p-4">
+    <p className="text-sm">Total Fee</p>
+    <h2 className="text-2xl font-bold">
+      ₹{dashboardSummary.totalFee.toLocaleString("en-IN")}
+    </h2>
+  </div>
+
+  <div className="bg-green-600 text-white rounded-xl p-4">
+    <p className="text-sm">Collected</p>
+    <h2 className="text-2xl font-bold">
+      ₹{dashboardSummary.totalPaid.toLocaleString("en-IN")}
+    </h2>
+  </div>
+
+  <div className="bg-red-600 text-white rounded-xl p-4">
+    <p className="text-sm">Balance</p>
+    <h2 className="text-2xl font-bold">
+      ₹{dashboardSummary.balance.toLocaleString("en-IN")}
+    </h2>
+  </div>
+
+  <div className="bg-orange-500 text-white rounded-xl p-4">
+    <p className="text-sm">Pending</p>
+    <h2 className="text-2xl font-bold">
+      {dashboardSummary.pendingStudents}
+    </h2>
+  </div>
+
+  <div className="bg-emerald-700 text-white rounded-xl p-4">
+    <p className="text-sm">Collection %</p>
+    <h2 className="text-2xl font-bold">
+      {dashboardSummary.collectionPercentage}%
+    </h2>
+  </div>
+
+</div>
+
+
+
+<div className="mt-8 rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+  <div className="overflow-x-auto">
+
+    <table className="min-w-[2200px] w-full border-collapse">
+
+      <thead className="sticky top-0 z-10 bg-blue-600 text-white whitespace-nowrap">
+        <tr>
+
+          <th className="border px-4 py-3 text-center">S.No</th>
+
+          <th className="border px-4 py-3 text-left">Student Name</th>
+
+          <th className="border px-4 py-3 text-center">Admission No</th>
+
+          <th className="border px-4 py-3 text-center">Group</th>
+
+          <th className="border px-4 py-3 text-center">Year</th>
+
+          <th className="border px-4 py-3 text-center">Academic Year</th>
+
+          <th className="border px-4 py-3 text-right">Total Fee</th>
+
+          <th className="border px-4 py-3 text-right">Paid</th>
+
+          <th className="border px-4 py-3 text-right">Balance</th>
+
+          <th className="border px-4 py-3 text-center">Payments</th>
+
+          <th className="border px-4 py-3 text-center">Status</th>
+
+          <th className="border px-4 py-3 text-left">College</th>
+
+          <th className="border px-4 py-3 text-center">Action</th>
+
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {feeData
+          .filter(item => item.studentId?.group === groupName)
+          .map((item, index) => (
+
+            <tr
+              key={item._id}
+              className="border-b even:bg-slate-50 hover:bg-blue-50 whitespace-nowrap"
+            >
+
+              <td className="border px-4 py-3 text-center font-semibold">
+                {index + 1}
+              </td>
+
+              <td className="border px-4 py-3 font-semibold">
+                {item.studentId?.name}
+              </td>
+
+              <td className="border px-4 py-3 text-center">
+                {item.studentId?.admissionNo}
+              </td>
+
+              <td className="border px-4 py-3 text-center">
+                {item.studentId?.group}
+              </td>
+
+              <td className="border px-4 py-3 text-center">
+                {item.studentId?.yearOfStudy}
+              </td>
+
+              <td className="border px-4 py-3 text-center">
+                {item.academicYear}
+              </td>
+
+              <td className="border px-4 py-3 text-right font-semibold">
+                ₹{item.totalFee.toLocaleString("en-IN")}
+              </td>
+
+              <td className="border px-4 py-3 text-right font-semibold text-green-600">
+                ₹{item.totalPaid.toLocaleString("en-IN")}
+              </td>
+
+              <td className="border px-4 py-3 text-right font-semibold text-red-600">
+                ₹{item.balance.toLocaleString("en-IN")}
+              </td>
+
+              <td className="border px-4 py-3 text-center">
+                {item.paymentCount}
+              </td>
+
+              <td className="border px-4 py-3 text-center">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-bold ${
+                    item.status === "Paid"
+                      ? "bg-green-100 text-green-700"
+                      : item.status === "Partial"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {item.status}
+                </span>
+              </td>
+
+              <td className="border px-4 py-3">
+                {item.studentId?.collegeId?.name}
+              </td>
+
+              <td className="border px-4 py-3 text-center">
+                <button className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">
+                  View
+                </button>
+              </td>
+
+            </tr>
+
+        ))}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+      
+      
+      
+      
+      
       <div className="w-full space-y-4">
 <div
   className={`flex flex-col gap-4 rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between`}
@@ -137,7 +391,7 @@ export default function GroupDashboardPage({
           /> */}
 
           <GroupAttendanceCard groupName={groupName} />
-
+          
           <div
             className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm md:p-6`}
           >
