@@ -46,8 +46,8 @@ async function authenticateAdmin(email, password) {
     name: admin.name,
     email: admin.email,
     role: "admin",
-    collegeId: null,
-    collegeName: "System Admin",
+    collegeId: admin.collegeId?.toString() || null,
+    collegeName: admin.collegeName || "System Admin",
   };
 }
 

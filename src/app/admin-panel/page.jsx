@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
-
+import { useRouter } from "next/navigation";
 import {
   Activity,
   BarChart3,
@@ -24,7 +24,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
-
+import { Settings } from "lucide-react";
 const ENTITY_CONFIG = {
 
   colleges: {
@@ -165,7 +165,21 @@ const ENTITY_CONFIG = {
     ],
   },
 
-
+settings: {
+  label: "System Settings",
+  endpoint: "/api/settings",
+  icon: Settings,
+  hasCollegeFilter: true,
+  hideTable: true,
+  hideAddButton: true,
+  accent: {
+    badge: "bg-slate-100 text-slate-800 border-slate-200",
+    button: "bg-slate-600 hover:bg-slate-700",
+    soft: "from-slate-500/20 via-slate-400/10 to-white",
+    icon: "bg-slate-500/15 text-slate-700",
+    activeCard: "border-slate-300 bg-slate-50 text-slate-950",
+  },
+},
   lecturers: {
     label: 'Lecturers',
     icon: GraduationCap,
@@ -221,7 +235,6 @@ const ENTITY_CONFIG = {
       },
     ],
   },
-
 
   principals: {
     label: 'Principals',
@@ -382,41 +395,10 @@ const ENTITY_CONFIG = {
 },
 
 // ENTITY_CONFIG లో add చేయండి:
-fees: {
-  label: 'Fees',
-  singularLabel: 'Fee',
-  icon: Activity, // top లో Activity already imported ఉంది
-  endpoint: '/api/fee/admin',
-  hasCollegeFilter: true,
-  accent: {
-    badge: 'bg-green-100 text-green-800 border-green-200',
-    button: 'bg-green-600 hover:bg-green-700',
-    soft: 'from-green-500/20 via-emerald-500/10 to-white',
-    icon: 'bg-green-500/15 text-green-700',
-    activeCard: 'border-green-300 bg-green-50 text-green-950 shadow-green-100',
-  },
-  bulkHeaders: ['StudentAdmissionNo', 'AcademicYear', 'TotalFee', 'AmountPaid', 'PaidDate', 'Note'],
-  fields: [
-    { name: 'collegeId',    label: 'College',       type: 'select', required: true },
-    { name: 'studentId',    label: 'Student',       type: 'select', required: true },
-    { name: 'academicYear', label: 'Academic Year (e.g. 2024-2025)', type: 'text', required: true },
-    { name: 'totalFee',     label: 'Total Fee (₹)', type: 'number', required: true },
-    { name: 'feeAmount',    label: 'Payment Amount (₹)', type: 'number', required: false },
-    { name: 'feeNote',      label: 'Payment Note', type: 'text', required: false },
-  ],
-  columns: [
-    { key: 'student',      label: 'Student',       render: item => item.studentId?.name || '-' },
-    { key: 'admissionNo',  label: 'Admission No',  render: item => item.studentId?.admissionNo || '-' },
-    { key: 'academicYear', label: 'Academic Year' },
-    { key: 'totalFee',     label: 'Total Fee',     render: item => `₹${item.totalFee?.toLocaleString('en-IN') || 0}` },
-    { key: 'totalPaid',    label: 'Paid',          render: item => `₹${item.totalPaid?.toLocaleString('en-IN') || 0}` },
-    { key: 'balance',      label: 'Balance',       render: item => `₹${item.balance?.toLocaleString('en-IN') || 0}` },
-    { key: 'status',       label: 'Status',        render: item => {
-      const colors = { Paid: 'text-green-600', Partial: 'text-yellow-600', Pending: 'text-red-600' }
-      return <span className={`font-bold ${colors[item.status] || ''}`}>{item.status}</span>
-    }},
-    { key: 'college', label: 'College', render: item => item.studentId?.collegeId?.name || '-' },
-  ],
+settings: {
+  label: "System Settings",
+  icon: Settings,
+  route: "/admin-panel/settings",
 },
 
 
@@ -569,7 +551,7 @@ export default function AdminPanelPage() {
   const [error, setError] = useState('')
   const [auditLogs, setAuditLogs] = useState([])
   const [auditLoading, setAuditLoading] = useState(false)
-
+const router = useRouter();
   const activeConfig = ENTITY_CONFIG[entity]
 
   const summary = useMemo(() => {
@@ -697,6 +679,54 @@ export default function AdminPanelPage() {
   }, [])
 
   const fetchRecords = useCallback(async () => {
+
+if (entity === "settings") {
+  await loadSystemSettings();
+  setLoading(false);
+  return;
+}
+
+
+const saveSettings = async () => {
+  try {
+    const res = await fetch("/api/settings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        collegeId,
+        modules: settings.modules,
+      }),
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      toast.success("Settings Saved Successfully");
+    } else {
+      toast.error(result.message);
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Unable to save settings");
+  }
+};
+
+const loadSystemSettings = async () => {
+  try {
+    const res = await fetch(`/api/settings?collegeId=${collegeId}`);
+    const result = await res.json();
+
+    if (result.success && result.data) {
+      setSettings(result.data);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
     setLoading(true)
     setError('')
 
@@ -1432,11 +1462,15 @@ export default function AdminPanelPage() {
                   <button
                     key={key}
                     type="button"
+
                     onClick={() => {
-                      setEntity(key)
-                      setShowForm(false)
-                      setEditingRecord(null)
-                    }}
+  if (ENTITY_CONFIG[key].route) {
+    router.push(ENTITY_CONFIG[key].route);
+    return;
+  }
+
+  setSelectedEntity(key);
+}}
                     className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                       active
                         ? `${config.accent.activeCard} shadow-lg`

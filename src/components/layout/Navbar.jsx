@@ -1,6 +1,5 @@
 //src/components/layout/Navbar.jsx
 'use client'
-
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
@@ -11,9 +10,7 @@ import {
   Home,
   LogOut,
   Menu,
-  ShieldCheck,
   ShieldEllipsis,
-  Sparkles,
   X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'

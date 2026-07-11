@@ -127,6 +127,8 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState(emptyForm)
   const [collegeName, setCollegeName] = useState('')
   const [availableGroups, setAvailableGroups] = useState(DEFAULT_COLLEGE_GROUPS)
+  const [admissionsOpen, setAdmissionsOpen] = useState(true)
+  const [admissionsMessage, setAdmissionsMessage] = useState('')
   const returnUrl = searchParams.get('returnUrl')
   const requestedGroup = searchParams.get('group') || ''
 
@@ -166,6 +168,49 @@ export default function RegisterPage() {
     }
 
     fetchCollegeGroups()
+  }, [session?.user?.collegeId])
+
+  useEffect(() => {
+    const loadSystemSettings = async () => {
+      if (!session?.user?.collegeId) return
+
+      try {
+        const res = await fetch(`/api/settings?collegeId=${session.user.collegeId}`)
+        const result = await parseResponseBody(res)
+
+        if (!res.ok || !result?.success) {
+          return
+        }
+
+        const admissions = result.data?.modules?.admissions
+
+        if (!admissions?.enabled) {
+          setAdmissionsOpen(false)
+          setAdmissionsMessage('Admissions are currently disabled by the admin.')
+          return
+        }
+
+        if (admissions.mode === 'manual') {
+          setAdmissionsOpen(true)
+          setAdmissionsMessage('')
+          return
+        }
+
+        const today = new Date().toISOString().slice(0, 10)
+        const isOpen = today >= admissions.startDate && today <= admissions.endDate
+
+        setAdmissionsOpen(isOpen)
+        setAdmissionsMessage(
+          isOpen
+            ? ''
+            : `Admissions are open only from ${admissions.startDate || '-'} to ${admissions.endDate || '-'}.`
+        )
+      } catch (error) {
+        console.error('Failed to load admission settings:', error)
+      }
+    }
+
+    loadSystemSettings()
   }, [session?.user?.collegeId])
 
   const currentYear = useMemo(() => new Date().getFullYear(), [])
@@ -220,6 +265,12 @@ export default function RegisterPage() {
   const handleSubmit = async e => {
     e.preventDefault()
     setIsLoading(true)
+
+    if (!admissionsOpen) {
+      toast.error(admissionsMessage || 'Admissions are currently closed.')
+      setIsLoading(false)
+      return
+    }
 
     if (!session?.user?.collegeId) {
       toast.error('Session expired. Please login again.')
@@ -327,6 +378,12 @@ export default function RegisterPage() {
                 <ArrowLeft className="h-4 w-4" />
                 Back to Dashboard
               </Link>
+            </div>
+          ) : null}
+
+          {!admissionsOpen ? (
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+              {admissionsMessage || 'Admissions are currently closed.'}
             </div>
           ) : null}
         </div>
@@ -636,7 +693,7 @@ export default function RegisterPage() {
             <div className="pt-1">
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !admissionsOpen}
                 className="group relative flex w-full items-center justify-center gap-2.5 rounded-2xl bg-linear-to-r from-cyan-600 via-blue-600 to-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:from-cyan-700 hover:via-blue-700 hover:to-emerald-700 hover:shadow-xl active:scale-[0.99] disabled:scale-100 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-500 disabled:shadow-none"
               >
                 {isLoading ? (

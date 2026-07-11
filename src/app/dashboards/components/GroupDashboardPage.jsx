@@ -1,6 +1,6 @@
 //src/app/dashboards/components/GroupDashboardPage.jsx
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
@@ -15,12 +15,12 @@ import GroupAttendanceSummary from '@/components/attendance/GroupAttendanceSumma
 import GroupShortageSummary from '@/components/attendance/GroupShortageSummary'
 import LecturerInfoCard from '@/components/dashboard/LecturerInfoCard'
 import GroupAttendanceCard from '@/components/OverallAttendanceMatrixCard/GroupAttendanceCard'
-
 import GroupExamDashboardPanel from '@/components/exams/GroupExamDashboardPanel'
 import GroupStudentTable from '@/components/tables/GroupStudentTable'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
-
-// import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
+import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const fetcher = async url => {
   const response = await fetch(url)
@@ -46,8 +46,13 @@ export default function GroupDashboardPage({
   const [monthlyAttendance, setMonthlyAttendance] = useState(false)
   const [showExamResults, setShowExamResults] = useState(false)
   const [editAttendance, setEditAttendance] = useState(false)
-  const [feeData, setFeeData] = useState([]);
-const [loadingFees, setLoadingFees] = useState(true);
+  const [feeData, setFeeData] = useState([])
+  const [loadingFees, setLoadingFees] = useState(true)
+
+  const [systemSettings, setSystemSettings] = useState(null)
+  const [showFeeModule, setShowFeeModule] = useState(true)
+  const [showAdmissionsModule, setShowAdmissionsModule] = useState(true)
+
   const collegeName = user?.collegeName || 'College'
   const { data: collegeDetails } = useSWR(
     user?.collegeId ? `/api/colleges/${user.collegeId}` : null,
@@ -84,314 +89,480 @@ const [loadingFees, setLoadingFees] = useState(true);
       }
     : {}
 
-    
+  async function loadFees() {
+    try {
+      setLoadingFees(true)
 
-async function loadFees() {
-  try {
-    setLoadingFees(true);
+      const res = await fetch('/api/fee/admin?limit=10000')
+      const result = await res.json()
 
-    const res = await fetch("/api/fee/admin?limit=10000");
-    const result = await res.json();
-
-    if (result.status === "success") {
-      setFeeData(result.data || []);
+      if (result.status === 'success') {
+        setFeeData(result.data || [])
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoadingFees(false)
     }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoadingFees(false);
   }
-}
 
-const groupSummary = feeData.reduce((acc, item) => {
-  const group = item.studentId?.group || "Unknown";
+  const loadSystemSettings = useCallback(async () => {
+    if (!user?.collegeId) {
+      setSystemSettings(null)
+      return
+    }
 
-  if (!acc[group]) {
-    acc[group] = {
-      group,
+    try {
+      const res = await fetch(`/api/settings?collegeId=${user.collegeId}`)
+
+      const result = await res.json()
+
+      if (result.success && result.data) {
+        setSystemSettings(result.data)
+      } else {
+        setSystemSettings(null)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }, [user?.collegeId])
+
+  const groupSummary = feeData.reduce((acc, item) => {
+    const group = item.studentId?.group || 'Unknown'
+
+    if (!acc[group]) {
+      acc[group] = {
+        group,
+        students: 0,
+        totalFee: 0,
+        totalPaid: 0,
+        balance: 0,
+        pendingStudents: 0,
+      }
+    }
+
+    acc[group].students += 1
+    acc[group].totalFee += item.totalFee || 0
+    acc[group].totalPaid += item.totalPaid || 0
+    acc[group].balance += item.balance || 0
+
+    if ((item.balance || 0) > 0) {
+      acc[group].pendingStudents += 1
+    }
+
+    return acc
+  }, {})
+
+  const exportFeePdf = () => {
+    const doc = new jsPDF('landscape')
+
+    doc.setFontSize(18)
+    doc.text(collegeName || 'College', 14, 15)
+
+    doc.setFontSize(14)
+    doc.text(`${groupName} Fee Report`, 14, 24)
+
+    doc.setFontSize(10)
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 31)
+
+    const rows = feeData
+      .filter(item => item.studentId?.group === groupName)
+      .map((item, index) => [
+        index + 1,
+        item.studentId?.name,
+        item.studentId?.admissionNo,
+        item.studentId?.group,
+        item.studentId?.yearOfStudy,
+        item.academicYear,
+        item.totalFee,
+        item.totalPaid,
+        item.balance,
+        item.paymentCount,
+        item.status,
+      ])
+
+    autoTable(doc, {
+      startY: 38,
+      head: [
+        [
+          'S.No',
+          'Student Name',
+          'Admission No',
+          'Group',
+          'Year',
+          'Academic Year',
+          'Total Fee',
+          'Paid',
+          'Balance',
+          'Payments',
+          'Status',
+        ],
+      ],
+      body: rows,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [37, 99, 235],
+      },
+    })
+
+    const finalY = doc.lastAutoTable.finalY + 10
+
+    doc.setFontSize(11)
+
+    doc.text(`Students : ${feeSummary.students}`, 14, finalY)
+
+    doc.text(`Total Fee : ₹${feeSummary.totalFee.toLocaleString('en-IN')}`, 80, finalY)
+
+    doc.text(`Collected : ₹${feeSummary.totalPaid.toLocaleString('en-IN')}`, 150, finalY)
+
+    doc.text(`Balance : ₹${feeSummary.balance.toLocaleString('en-IN')}`, 225, finalY)
+
+    doc.save(`${groupName}-Fee-Report.pdf`)
+  }
+
+  const groupData = Object.values(groupSummary)
+  // const [systemSettings, setSystemSettings] = useState(null)
+  // const [showFeeModule, setShowFeeModule] = useState(true)
+  const feeSummary = feeData
+    .filter(item => item.studentId?.group === groupName)
+    .reduce(
+      (acc, item) => {
+        acc.students += 1
+        acc.totalFee += item.totalFee || 0
+        acc.totalPaid += item.totalPaid || 0
+        acc.balance += item.balance || 0
+        acc.paymentCount += item.paymentCount || 0
+
+        return acc
+      },
+      {
+        students: 0,
+        totalFee: 0,
+        totalPaid: 0,
+        balance: 0,
+        paymentCount: 0,
+      }
+    )
+
+  const dashboardSummary = groupData.reduce(
+    (acc, group) => {
+      acc.students += group.students
+      acc.totalFee += group.totalFee
+      acc.totalPaid += group.totalPaid
+      acc.balance += group.balance
+      acc.pendingStudents += group.pendingStudents
+
+      return acc
+    },
+    {
       students: 0,
       totalFee: 0,
       totalPaid: 0,
       balance: 0,
       pendingStudents: 0,
-    };
-  }
+    }
+  )
 
-  acc[group].students += 1;
-  acc[group].totalFee += item.totalFee || 0;
-  acc[group].totalPaid += item.totalPaid || 0;
-  acc[group].balance += item.balance || 0;
+  dashboardSummary.collectionPercentage =
+    dashboardSummary.totalFee > 0
+      ? ((dashboardSummary.totalPaid / dashboardSummary.totalFee) * 100).toFixed(2)
+      : 0
+  useEffect(() => {
+    loadFees()
+  }, [])
 
-  if ((item.balance || 0) > 0) {
-    acc[group].pendingStudents += 1;
-  }
+  useEffect(() => {
+    if (!user?.collegeId) return
+    loadSystemSettings()
+  }, [user?.collegeId,loadSystemSettings])
 
-  return acc;
-}, {});
+  console.log(systemSettings)
 
-const groupData = Object.values(groupSummary);
-const dashboardSummary = groupData.reduce(
-  (acc, group) => {
-    acc.students += group.students;
-    acc.totalFee += group.totalFee;
-    acc.totalPaid += group.totalPaid;
-    acc.balance += group.balance;
-    acc.pendingStudents += group.pendingStudents;
+  useEffect(() => {
+    if (!systemSettings) return
 
-    return acc;
-  },
-  {
-    students: 0,
-    totalFee: 0,
-    totalPaid: 0,
-    balance: 0,
-    pendingStudents: 0,
-  }
-);
+    const fee = systemSettings.modules?.fee
 
-dashboardSummary.collectionPercentage =
-  dashboardSummary.totalFee > 0
-    ? ((dashboardSummary.totalPaid / dashboardSummary.totalFee) * 100).toFixed(2)
-    : 0;
+    // Module disabled
+    if (!fee?.enabled) {
+      setShowFeeModule(false)
+      return
+    }
 
-useEffect(() => {
-  loadFees();
-}, []);
+    // Manual mode
+    if (fee.mode === 'manual') {
+      setShowFeeModule(true)
+      return
+    }
 
+    // Automatic mode
+    const today = new Date().toISOString().slice(0, 10)
 
+    const show = today >= fee.startDate && today <= fee.endDate
+
+    setShowFeeModule(show)
+  }, [systemSettings])
+
+  useEffect(() => {
+    if (!systemSettings) return
+
+    const admissions = systemSettings.modules?.admissions
+
+    if (!admissions?.enabled) {
+      setShowAdmissionsModule(false)
+      return
+    }
+
+    if (admissions.mode === 'manual') {
+      setShowAdmissionsModule(true)
+      return
+    }
+
+    const today = new Date().toISOString().slice(0, 10)
+    const show = today >= admissions.startDate && today <= admissions.endDate
+
+    setShowAdmissionsModule(show)
+  }, [systemSettings])
 
   return (
     <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-4 md:p-6`}>
-<div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+      {showFeeModule ? (
+        <>
+          <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+            <div className="rounded-xl bg-blue-600 p-4 text-white">
+              <p className="text-sm">Students</p>
+              <h2 className="text-2xl font-bold">{dashboardSummary.students}</h2>
+            </div>
 
-  <div className="bg-blue-600 text-white rounded-xl p-4">
-    <p className="text-sm">Students</p>
-    <h2 className="text-2xl font-bold">{dashboardSummary.students}</h2>
-  </div>
+            <div className="rounded-xl bg-indigo-600 p-4 text-white">
+              <p className="text-sm">Total Fee</p>
+              <h2 className="text-2xl font-bold">
+                ₹{dashboardSummary.totalFee.toLocaleString('en-IN')}
+              </h2>
+            </div>
 
-  <div className="bg-indigo-600 text-white rounded-xl p-4">
-    <p className="text-sm">Total Fee</p>
-    <h2 className="text-2xl font-bold">
-      ₹{dashboardSummary.totalFee.toLocaleString("en-IN")}
-    </h2>
-  </div>
+            <div className="rounded-xl bg-green-600 p-4 text-white">
+              <p className="text-sm">Collected</p>
+              <h2 className="text-2xl font-bold">
+                ₹{dashboardSummary.totalPaid.toLocaleString('en-IN')}
+              </h2>
+            </div>
 
-  <div className="bg-green-600 text-white rounded-xl p-4">
-    <p className="text-sm">Collected</p>
-    <h2 className="text-2xl font-bold">
-      ₹{dashboardSummary.totalPaid.toLocaleString("en-IN")}
-    </h2>
-  </div>
+            <div className="rounded-xl bg-red-600 p-4 text-white">
+              <p className="text-sm">Balance</p>
+              <h2 className="text-2xl font-bold">
+                ₹{dashboardSummary.balance.toLocaleString('en-IN')}
+              </h2>
+            </div>
 
-  <div className="bg-red-600 text-white rounded-xl p-4">
-    <p className="text-sm">Balance</p>
-    <h2 className="text-2xl font-bold">
-      ₹{dashboardSummary.balance.toLocaleString("en-IN")}
-    </h2>
-  </div>
+            <div className="rounded-xl bg-orange-500 p-4 text-white">
+              <p className="text-sm">Pending</p>
+              <h2 className="text-2xl font-bold">{dashboardSummary.pendingStudents}</h2>
+            </div>
 
-  <div className="bg-orange-500 text-white rounded-xl p-4">
-    <p className="text-sm">Pending</p>
-    <h2 className="text-2xl font-bold">
-      {dashboardSummary.pendingStudents}
-    </h2>
-  </div>
-
-  <div className="bg-emerald-700 text-white rounded-xl p-4">
-    <p className="text-sm">Collection %</p>
-    <h2 className="text-2xl font-bold">
-      {dashboardSummary.collectionPercentage}%
-    </h2>
-  </div>
-
-</div>
-
-
-
-<div className="mt-8 rounded-2xl border border-slate-200 bg-white shadow-sm">
-
-  <div className="overflow-x-auto">
-
-    <table className="min-w-[2200px] w-full border-collapse">
-
-      <thead className="sticky top-0 z-10 bg-blue-600 text-white whitespace-nowrap">
-        <tr>
-
-          <th className="border px-4 py-3 text-center">S.No</th>
-
-          <th className="border px-4 py-3 text-left">Student Name</th>
-
-          <th className="border px-4 py-3 text-center">Admission No</th>
-
-          <th className="border px-4 py-3 text-center">Group</th>
-
-          <th className="border px-4 py-3 text-center">Year</th>
-
-          <th className="border px-4 py-3 text-center">Academic Year</th>
-
-          <th className="border px-4 py-3 text-right">Total Fee</th>
-
-          <th className="border px-4 py-3 text-right">Paid</th>
-
-          <th className="border px-4 py-3 text-right">Balance</th>
-
-          <th className="border px-4 py-3 text-center">Payments</th>
-
-          <th className="border px-4 py-3 text-center">Status</th>
-
-          <th className="border px-4 py-3 text-left">College</th>
-
-          <th className="border px-4 py-3 text-center">Action</th>
-
-        </tr>
-      </thead>
-
-      <tbody>
-
-        {feeData
-          .filter(item => item.studentId?.group === groupName)
-          .map((item, index) => (
-
-            <tr
-              key={item._id}
-              className="border-b even:bg-slate-50 hover:bg-blue-50 whitespace-nowrap"
-            >
-
-              <td className="border px-4 py-3 text-center font-semibold">
-                {index + 1}
-              </td>
-
-              <td className="border px-4 py-3 font-semibold">
-                {item.studentId?.name}
-              </td>
-
-              <td className="border px-4 py-3 text-center">
-                {item.studentId?.admissionNo}
-              </td>
-
-              <td className="border px-4 py-3 text-center">
-                {item.studentId?.group}
-              </td>
-
-              <td className="border px-4 py-3 text-center">
-                {item.studentId?.yearOfStudy}
-              </td>
-
-              <td className="border px-4 py-3 text-center">
-                {item.academicYear}
-              </td>
-
-              <td className="border px-4 py-3 text-right font-semibold">
-                ₹{item.totalFee.toLocaleString("en-IN")}
-              </td>
-
-              <td className="border px-4 py-3 text-right font-semibold text-green-600">
-                ₹{item.totalPaid.toLocaleString("en-IN")}
-              </td>
-
-              <td className="border px-4 py-3 text-right font-semibold text-red-600">
-                ₹{item.balance.toLocaleString("en-IN")}
-              </td>
-
-              <td className="border px-4 py-3 text-center">
-                {item.paymentCount}
-              </td>
-
-              <td className="border px-4 py-3 text-center">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-bold ${
-                    item.status === "Paid"
-                      ? "bg-green-100 text-green-700"
-                      : item.status === "Partial"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
+            <div className="rounded-xl bg-emerald-700 p-4 text-white">
+              <p className="text-sm">Collection %</p>
+              <h2 className="text-2xl font-bold">{dashboardSummary.collectionPercentage}%</h2>
+            </div>
+          </div>
+          {/* ===== Fee Table ===== */}
+          <div className="mt-8 rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <div className="mb-4 flex justify-end">
+                <button
+                  onClick={exportFeePdf}
+                  className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700"
                 >
-                  {item.status}
-                </span>
-              </td>
-
-              <td className="border px-4 py-3">
-                {item.studentId?.collegeId?.name}
-              </td>
-
-              <td className="border px-4 py-3 text-center">
-                <button className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">
-                  View
+                  Export PDF
                 </button>
-              </td>
+              </div>
+              <table className="w-full min-w-[2200px] border-collapse">
+                <thead className="sticky top-0 z-10 bg-blue-600 whitespace-nowrap text-white">
+                  <tr>
+                    <th className="border px-4 py-3 text-center">S.No</th>
 
-            </tr>
+                    <th className="border px-4 py-3 text-left">Student Name</th>
 
-        ))}
+                    <th className="border px-4 py-3 text-center">Admission No</th>
 
-      </tbody>
+                    <th className="border px-4 py-3 text-center">Group</th>
 
-    </table>
+                    <th className="border px-4 py-3 text-center">Year</th>
 
-  </div>
+                    <th className="border px-4 py-3 text-center">Academic Year</th>
 
-</div>
-      
-      
-      
-      
-      
+                    <th className="border px-4 py-3 text-right">Total Fee</th>
+
+                    <th className="border px-4 py-3 text-right">Paid</th>
+
+                    <th className="border px-4 py-3 text-right">Balance</th>
+
+                    <th className="border px-4 py-3 text-center">Payments</th>
+
+                    <th className="border px-4 py-3 text-center">Status</th>
+
+                    <th className="border px-4 py-3 text-left">College</th>
+
+                    <th className="border px-4 py-3 text-center">Action</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {feeData
+                    .filter(item => item.studentId?.group === groupName)
+                    .map((item, index) => (
+                      <tr
+                        key={item._id}
+                        className="border-b whitespace-nowrap even:bg-slate-50 hover:bg-blue-50"
+                      >
+                        <td className="border px-4 py-3 text-center font-semibold">{index + 1}</td>
+
+                        <td className="border px-4 py-3 font-semibold">{item.studentId?.name}</td>
+
+                        <td className="border px-4 py-3 text-center">
+                          {item.studentId?.admissionNo}
+                        </td>
+
+                        <td className="border px-4 py-3 text-center">{item.studentId?.group}</td>
+
+                        <td className="border px-4 py-3 text-center">
+                          {item.studentId?.yearOfStudy}
+                        </td>
+
+                        <td className="border px-4 py-3 text-center">{item.academicYear}</td>
+
+                        <td className="border px-4 py-3 text-right font-semibold">
+                          ₹{item.totalFee.toLocaleString('en-IN')}
+                        </td>
+
+                        <td className="border px-4 py-3 text-right font-semibold text-green-600">
+                          ₹{item.totalPaid.toLocaleString('en-IN')}
+                        </td>
+
+                        <td className="border px-4 py-3 text-right font-semibold text-red-600">
+                          ₹{item.balance.toLocaleString('en-IN')}
+                        </td>
+
+                        <td className="border px-4 py-3 text-center">{item.paymentCount}</td>
+
+                        <td className="border px-4 py-3 text-center">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-bold ${
+                              item.status === 'Paid'
+                                ? 'bg-green-100 text-green-700'
+                                : item.status === 'Partial'
+                                  ? 'bg-yellow-100 text-yellow-700'
+                                  : 'bg-red-100 text-red-700'
+                            }`}
+                          >
+                            {item.status}
+                          </span>
+                        </td>
+
+                        <td className="border px-4 py-3">{item.studentId?.collegeId?.name}</td>
+
+                        <td className="border px-4 py-3 text-center">
+                          <button className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+
+                  <tr className="bg-blue-100 font-bold">
+                    <td className="border px-4 py-3" colSpan={5}>
+                      Grand Total
+                    </td>
+
+                    <td className="border px-4 py-3 text-center">{feeSummary.students}</td>
+
+                    <td className="border px-4 py-3 text-right">
+                      ₹{feeSummary.totalFee.toLocaleString('en-IN')}
+                    </td>
+
+                    <td className="border px-4 py-3 text-right text-green-700">
+                      ₹{feeSummary.totalPaid.toLocaleString('en-IN')}
+                    </td>
+
+                    <td className="border px-4 py-3 text-right text-red-700">
+                      ₹{feeSummary.balance.toLocaleString('en-IN')}
+                    </td>
+
+                    <td className="border px-4 py-3 text-center">{feeSummary.paymentCount}</td>
+
+                    <td className="border" colSpan={3}></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-8 text-center shadow-sm">
+          <h2 className="text-2xl font-bold text-yellow-700">Fee Collection Closed</h2>
+
+          <p className="mt-3 text-gray-700">
+            Fee Dashboard is hidden because the configured fee collection period has ended.
+          </p>
+        </div>
+      )}
+
       <div className="w-full space-y-4">
-<div
-  className={`flex flex-col gap-4 rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between`}
->
-  {/* Left Section */}
-  <div>
-    <p className="text-xs uppercase tracking-wide text-slate-500">
-      Lecturer Dashboard
-    </p>
-    <h1 className="text-lg font-semibold text-slate-900">
-      {groupName}
-    </h1>
-    <p className="text-sm text-slate-600">{collegeName}</p>
-  </div>
+        <div
+          className={`flex flex-col gap-4 rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between`}
+        >
+          {/* Left Section */}
+          <div>
+            <p className="text-xs tracking-wide text-slate-500 uppercase">Lecturer Dashboard</p>
+            <h1 className="text-lg font-semibold text-slate-900">{groupName}</h1>
+            <p className="text-sm text-slate-600">{collegeName}</p>
+          </div>
 
-  {/* Action Buttons */}
-  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:flex">
-    <Link
-      href={addStudentHref}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-    >
-      <UserPlus className="h-4 w-4" />
-      Add Student
-    </Link>
+          {/* Action Buttons */}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:flex">
+            {showAdmissionsModule ? (
+              <Link
+                href={addStudentHref}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+              >
+                <UserPlus className="h-4 w-4" />
+                Add Student
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-400 shadow-sm"
+                title="Admissions are currently closed"
+              >
+                <UserPlus className="h-4 w-4" />
+                Admissions Closed
+              </button>
+            )}
 
-    <Link
-      href={marksPostingHref}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-    >
-      <UserPlus className="h-4 w-4" />
-      Post Marks
-    </Link>
+            <Link
+              href={marksPostingHref}
+              className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+            >
+              <UserPlus className="h-4 w-4" />
+              Post Marks
+            </Link>
 
-    <Link
-      href={examDashboardHref}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-    >
-      <UserPlus className="h-4 w-4" />
-      Exam Dashboard
-    </Link>
-  </div>
-</div>
+            <Link
+              href={examDashboardHref}
+              className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
+            >
+              <UserPlus className="h-4 w-4" />
+              Exam Dashboard
+            </Link>
+          </div>
+        </div>
 
         <section className="space-y-4">
           <LecturerInfoCard user={user} groupName={groupName} />
 
-          {/* <ConsecutiveAbsenteesCard
-            data={consecutiveAbsentees}
-            title={`${groupName} Consecutive Absentees`}
-            loading={!consecutiveData}
-            showViewAll={false}
-          /> */}
-
           <GroupAttendanceCard groupName={groupName} />
-          
+
           <div
             className={`rounded-xl border ${theme.softBorder} bg-linear-to-br ${theme.soft} p-4 shadow-sm md:p-6`}
           >
@@ -405,7 +576,6 @@ useEffect(() => {
 
             <div className="mb-2 border-b border-slate-200 pb-2">
               <h2 className="text-2xl font-bold text-slate-900">Operations Hub</h2>
-              
             </div>
 
             <DashboardTogglePanel
@@ -447,6 +617,13 @@ useEffect(() => {
             />
           </div>
         </section>
+
+        <ConsecutiveAbsenteesCard
+          data={consecutiveAbsentees}
+          title={`${groupName} Consecutive Absentees`}
+          loading={!consecutiveData}
+          showViewAll={false}
+        />
 
         <section
           className={`rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} shadow-sm`}
