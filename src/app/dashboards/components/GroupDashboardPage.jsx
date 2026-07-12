@@ -35,7 +35,7 @@ export default function GroupDashboardPage({
   routeSegment,
   returnUrl,
   includeExternalLinks = false,
-  includeEditAttendance = false,
+  includeEditAttendance = true,
   statusDescription = 'Use quick actions below to mark attendance and open monthly analytics.',
 }) {
   const { data: session } = useSession()
@@ -243,6 +243,7 @@ export default function GroupDashboardPage({
         paymentCount: 0,
       }
     )
+  const groupFeeRows = feeData.filter(item => item.studentId?.group === groupName)
 
   const dashboardSummary = groupData.reduce(
     (acc, group) => {
@@ -366,131 +367,240 @@ export default function GroupDashboardPage({
             </div>
           </div>
           {/* ===== Fee Table ===== */}
-          <div className="mt-8 rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="overflow-x-auto">
-              <div className="mb-4 flex justify-end">
-                <button
-                  onClick={exportFeePdf}
-                  className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700"
-                >
-                  Export PDF
-                </button>
+          <div className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-200 bg-linear-to-r from-slate-950 via-slate-900 to-blue-900 px-4 py-4 text-white sm:px-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-200">
+                    Fee Register
+                  </p>
+                  <h3 className="mt-1 text-xl font-black">{groupName} Fee Table</h3>
+                  <p className="mt-1 text-sm text-slate-300">
+                    Compact mobile cards and a cleaner desktop ledger for quick review.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <div className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2">
+                    <p className="text-[11px] uppercase tracking-wide text-slate-300">Students</p>
+                    <p className="text-lg font-bold">{feeSummary.students}</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2">
+                    <p className="text-[11px] uppercase tracking-wide text-slate-300">Balance</p>
+                    <p className="text-lg font-bold">₹{feeSummary.balance.toLocaleString('en-IN')}</p>
+                  </div>
+                  <button
+                    onClick={exportFeePdf}
+                    className="rounded-2xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+                  >
+                    Export PDF
+                  </button>
+                </div>
               </div>
-              <table className="w-full min-w-[2200px] border-collapse">
-                <thead className="sticky top-0 z-10 bg-blue-600 whitespace-nowrap text-white">
+            </div>
+
+            <div className="grid gap-3 border-b border-slate-200 bg-slate-50 px-4 py-4 sm:grid-cols-2 xl:hidden">
+              <div className="rounded-2xl bg-white p-3 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  Total Fee
+                </p>
+                <p className="mt-1 text-lg font-black text-slate-900">
+                  ₹{feeSummary.totalFee.toLocaleString('en-IN')}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white p-3 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  Collected
+                </p>
+                <p className="mt-1 text-lg font-black text-emerald-700">
+                  ₹{feeSummary.totalPaid.toLocaleString('en-IN')}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white p-3 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  Payments
+                </p>
+                <p className="mt-1 text-lg font-black text-slate-900">{feeSummary.paymentCount}</p>
+              </div>
+              <div className="rounded-2xl bg-white p-3 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  Collection %
+                </p>
+                <p className="mt-1 text-lg font-black text-blue-700">
+                  {dashboardSummary.collectionPercentage}%
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 p-4 xl:hidden">
+              {groupFeeRows.map((item, index) => (
+                <div
+                  key={item._id}
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                        #{index + 1} • {item.studentId?.admissionNo}
+                      </p>
+                      <h4 className="mt-1 text-base font-black text-slate-900">
+                        {item.studentId?.name}
+                      </h4>
+                      <p className="mt-1 text-xs font-medium text-slate-500">
+                        {item.studentId?.group} • {item.studentId?.yearOfStudy}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-[11px] font-bold ${
+                        item.status === 'Paid'
+                          ? 'bg-green-100 text-green-700'
+                          : item.status === 'Partial'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div className="rounded-xl bg-slate-50 p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        Total Fee
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-slate-900">
+                        ₹{item.totalFee.toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-emerald-50 p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
+                        Paid
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-emerald-700">
+                        ₹{item.totalPaid.toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-rose-50 p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-600">
+                        Balance
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-rose-700">
+                        ₹{item.balance.toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-blue-50 p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-600">
+                        Payments
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-blue-700">{item.paymentCount}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                        Academic Year
+                      </p>
+                      <p className="truncate text-sm font-medium text-slate-700">
+                        {item.academicYear}
+                      </p>
+                    </div>
+
+                    <button className="rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700">
+                      View
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {groupFeeRows.length === 0 && (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                  <p className="text-sm font-semibold text-slate-600">No fee records found</p>
+                </div>
+              )}
+            </div>
+
+            <div className="hidden overflow-x-auto xl:block">
+              <table className="w-full min-w-7xl border-collapse">
+                <thead className="sticky top-0 z-10 bg-slate-900 whitespace-nowrap text-white">
                   <tr>
-                    <th className="border px-4 py-3 text-center">S.No</th>
-
-                    <th className="border px-4 py-3 text-left">Student Name</th>
-
-                    <th className="border px-4 py-3 text-center">Admission No</th>
-
-                    <th className="border px-4 py-3 text-center">Group</th>
-
-                    <th className="border px-4 py-3 text-center">Year</th>
-
-                    <th className="border px-4 py-3 text-center">Academic Year</th>
-
-                    <th className="border px-4 py-3 text-right">Total Fee</th>
-
-                    <th className="border px-4 py-3 text-right">Paid</th>
-
-                    <th className="border px-4 py-3 text-right">Balance</th>
-
-                    <th className="border px-4 py-3 text-center">Payments</th>
-
-                    <th className="border px-4 py-3 text-center">Status</th>
-
-                    <th className="border px-4 py-3 text-left">College</th>
-
-                    <th className="border px-4 py-3 text-center">Action</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">S.No</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-left text-xs font-bold uppercase tracking-wide">Student Name</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Admission No</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Group</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Year</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Academic Year</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide">Total Fee</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide">Paid</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide">Balance</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Payments</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Status</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-left text-xs font-bold uppercase tracking-wide">College</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Action</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {feeData
-                    .filter(item => item.studentId?.group === groupName)
-                    .map((item, index) => (
-                      <tr
-                        key={item._id}
-                        className="border-b whitespace-nowrap even:bg-slate-50 hover:bg-blue-50"
-                      >
-                        <td className="border px-4 py-3 text-center font-semibold">{index + 1}</td>
+                  {groupFeeRows.map((item, index) => (
+                    <tr
+                      key={item._id}
+                      className="border-b border-slate-100 whitespace-nowrap even:bg-slate-50 hover:bg-blue-50"
+                    >
+                      <td className="px-3 py-3 text-center text-sm font-semibold">{index + 1}</td>
+                      <td className="px-3 py-3 text-sm font-semibold text-slate-900">{item.studentId?.name}</td>
+                      <td className="px-3 py-3 text-center text-sm">{item.studentId?.admissionNo}</td>
+                      <td className="px-3 py-3 text-center text-sm">{item.studentId?.group}</td>
+                      <td className="px-3 py-3 text-center text-sm">{item.studentId?.yearOfStudy}</td>
+                      <td className="px-3 py-3 text-center text-sm">{item.academicYear}</td>
+                      <td className="px-3 py-3 text-right text-sm font-semibold text-slate-900">
+                        ₹{item.totalFee.toLocaleString('en-IN')}
+                      </td>
+                      <td className="px-3 py-3 text-right text-sm font-semibold text-green-600">
+                        ₹{item.totalPaid.toLocaleString('en-IN')}
+                      </td>
+                      <td className="px-3 py-3 text-right text-sm font-semibold text-red-600">
+                        ₹{item.balance.toLocaleString('en-IN')}
+                      </td>
+                      <td className="px-3 py-3 text-center text-sm">{item.paymentCount}</td>
+                      <td className="px-3 py-3 text-center">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-bold ${
+                            item.status === 'Paid'
+                              ? 'bg-green-100 text-green-700'
+                              : item.status === 'Partial'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-sm text-slate-700">{item.studentId?.collegeId?.name}</td>
+                      <td className="px-3 py-3 text-center">
+                        <button className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
 
-                        <td className="border px-4 py-3 font-semibold">{item.studentId?.name}</td>
-
-                        <td className="border px-4 py-3 text-center">
-                          {item.studentId?.admissionNo}
-                        </td>
-
-                        <td className="border px-4 py-3 text-center">{item.studentId?.group}</td>
-
-                        <td className="border px-4 py-3 text-center">
-                          {item.studentId?.yearOfStudy}
-                        </td>
-
-                        <td className="border px-4 py-3 text-center">{item.academicYear}</td>
-
-                        <td className="border px-4 py-3 text-right font-semibold">
-                          ₹{item.totalFee.toLocaleString('en-IN')}
-                        </td>
-
-                        <td className="border px-4 py-3 text-right font-semibold text-green-600">
-                          ₹{item.totalPaid.toLocaleString('en-IN')}
-                        </td>
-
-                        <td className="border px-4 py-3 text-right font-semibold text-red-600">
-                          ₹{item.balance.toLocaleString('en-IN')}
-                        </td>
-
-                        <td className="border px-4 py-3 text-center">{item.paymentCount}</td>
-
-                        <td className="border px-4 py-3 text-center">
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-bold ${
-                              item.status === 'Paid'
-                                ? 'bg-green-100 text-green-700'
-                                : item.status === 'Partial'
-                                  ? 'bg-yellow-100 text-yellow-700'
-                                  : 'bg-red-100 text-red-700'
-                            }`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-
-                        <td className="border px-4 py-3">{item.studentId?.collegeId?.name}</td>
-
-                        <td className="border px-4 py-3 text-center">
-                          <button className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-
-                  <tr className="bg-blue-100 font-bold">
-                    <td className="border px-4 py-3" colSpan={5}>
+                  <tr className="bg-blue-100 font-bold text-slate-900">
+                    <td className="px-3 py-3" colSpan={5}>
                       Grand Total
                     </td>
-
-                    <td className="border px-4 py-3 text-center">{feeSummary.students}</td>
-
-                    <td className="border px-4 py-3 text-right">
+                    <td className="px-3 py-3 text-center">{feeSummary.students}</td>
+                    <td className="px-3 py-3 text-right">
                       ₹{feeSummary.totalFee.toLocaleString('en-IN')}
                     </td>
-
-                    <td className="border px-4 py-3 text-right text-green-700">
+                    <td className="px-3 py-3 text-right text-green-700">
                       ₹{feeSummary.totalPaid.toLocaleString('en-IN')}
                     </td>
-
-                    <td className="border px-4 py-3 text-right text-red-700">
+                    <td className="px-3 py-3 text-right text-red-700">
                       ₹{feeSummary.balance.toLocaleString('en-IN')}
                     </td>
-
-                    <td className="border px-4 py-3 text-center">{feeSummary.paymentCount}</td>
-
-                    <td className="border" colSpan={3}></td>
+                    <td className="px-3 py-3 text-center">{feeSummary.paymentCount}</td>
+                    <td className="px-3 py-3" colSpan={3}></td>
                   </tr>
                 </tbody>
               </table>

@@ -6,6 +6,7 @@ export default function CETDashboard() {
       groupName="CET"
       routeSegment="cet"
       includeExternalLinks
+      includeEditAttendance
     />
   );
 }

@@ -11,22 +11,85 @@ import {
 import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
 import { getPublicHoliday, isSecondSaturday, isSunday } from "@/lib/attendanceCalendar";
 
+function buildDayRange(date = new Date()) {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
+}
+
+function getAttendanceRecordPriority(record) {
+  if (record?.lateComer) return 3;
+  if (record?.status === "Present") return 2;
+  if (record?.status === "Absent") return 1;
+  return 0;
+}
+
+function dedupeAttendanceRecords(records = []) {
+  const recordMap = new Map();
+
+  for (const record of records) {
+    const studentId = record.studentId?._id?.toString?.() || record.studentId?.toString?.();
+    const session = normalizeAttendanceSession(record.session);
+
+    if (!studentId || !session) continue;
+
+    const key = `${studentId}_${session}`;
+    const existingRecord = recordMap.get(key);
+
+    if (!existingRecord) {
+      recordMap.set(key, record);
+      continue;
+    }
+
+    const currentPriority = getAttendanceRecordPriority(record);
+    const existingPriority = getAttendanceRecordPriority(existingRecord);
+
+    if (currentPriority > existingPriority) {
+      recordMap.set(key, record);
+      continue;
+    }
+
+    if (currentPriority === existingPriority) {
+      const currentMarkedAt = new Date(record.markedAt || record.updatedAt || record.createdAt || 0).getTime();
+      const existingMarkedAt = new Date(
+        existingRecord.markedAt || existingRecord.updatedAt || existingRecord.createdAt || 0
+      ).getTime();
+
+      if (currentMarkedAt > existingMarkedAt) {
+        recordMap.set(key, record);
+      }
+    }
+  }
+
+  return Array.from(recordMap.values());
+}
+
+function resolveAttendanceFilterOptions(groupOrDate, maybeDate) {
+  if (groupOrDate instanceof Date) {
+    return { group: undefined, date: groupOrDate };
+  }
+
+  return { group: groupOrDate, date: maybeDate || new Date() };
+}
+
 export async function getTodayAttendancePercent(collegeId) {
   await connectMongoDB();
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const { start, end } = buildDayRange(new Date());
 
   const todayRecords = await Attendance.find({
     collegeId,
-    date: { $gte: today, $lt: tomorrow },
+    date: { $gte: start, $lte: end },
     ...buildAttendanceSessionReadFilter(),
-  });
+  }).lean();
 
-  const presentCount = todayRecords.filter(
+  const uniqueRecords = dedupeAttendanceRecords(todayRecords);
+
+  const presentCount = uniqueRecords.filter(
     (rec) => rec.status === "Present"
   ).length;
 
@@ -44,35 +107,18 @@ export async function getTodayAttendancePercent(collegeId) {
 export async function getTodayAttendanceStats(collegeId, date, group) {
   await connectMongoDB();
 
-  const start = new Date(date);
-  start.setHours(0,0,0,0);
-
-  const end = new Date(date);
-  end.setHours(23,59,59,999);
+  const { start, end } = buildDayRange(date);
 
   const collegeObjectId = new mongoose.Types.ObjectId(collegeId);
 
-  const result = await Attendance.aggregate([
-    {
-      $match: {
-        collegeId: collegeObjectId,
-        date: { $gte: start, $lte: end },
-        ...(group ? { group } : {}),
-        ...buildAttendanceSessionReadFilter(),
-      }
-    },
-    {
-      $group: {
-        _id: null,
-        present: {
-          $sum: {
-            $cond: [{ $eq: ["$status", "Present"] }, 1, 0]
-          }
-        },
-        totalRecords: { $sum: 1 }
-      }
-    }
-  ]);
+  const records = await Attendance.find({
+    collegeId: collegeObjectId,
+    date: { $gte: start, $lte: end },
+    ...(group ? { group } : {}),
+    ...buildAttendanceSessionReadFilter(),
+  }).lean();
+
+  const uniqueRecords = dedupeAttendanceRecords(records);
 
   const totalStudents = await Student.countDocuments({
     collegeId: collegeObjectId,
@@ -80,7 +126,7 @@ export async function getTodayAttendanceStats(collegeId, date, group) {
     ...(group ? { group } : {}),
   });
 
-  const present = result[0]?.present || 0;
+  const present = uniqueRecords.filter((record) => record.status === "Present").length;
   const absent = totalStudents - present;
 
   const percent =
@@ -99,50 +145,29 @@ export async function getTodayAttendanceStats(collegeId, date, group) {
 export async function getTodayAttendanceList(collegeId, date, group) {
   await connectMongoDB();
 
-  const start = new Date(date);
-  start.setHours(0,0,0,0);
+  const { start, end } = buildDayRange(date);
 
-  const end = new Date(date);
-  end.setHours(23,59,59,999);
+  const records = await Attendance.find({
+    collegeId: new mongoose.Types.ObjectId(collegeId),
+    date: { $gte: start, $lte: end },
+    ...(group ? { group } : {}),
+    ...buildAttendanceSessionReadFilter(),
+  })
+    .populate("studentId", "name")
+    .select("studentId group yearOfStudy status session lateComer markedAt updatedAt")
+    .lean();
 
-  const records = await Attendance.aggregate([
-    {
-      $match: {
-        collegeId: new mongoose.Types.ObjectId(collegeId),
-        date: { $gte: start, $lte: end },
-        ...(group ? { group } : {}),
-        ...buildAttendanceSessionReadFilter(),
-      }
-    },
-    {
-      $lookup: {
-        from: "students",
-        localField: "studentId",
-        foreignField: "_id",
-        as: "student"
-      }
-    },
-    { $unwind: "$student" },
-
-    {
-      $project: {
-        name: "$student.name",
-        group: "$group",
-        yearOfStudy: "$yearOfStudy",
-        status: 1
-      }
-    }
-  ]);
+  const uniqueRecords = dedupeAttendanceRecords(records);
 
   const grouped = {};
 
-  for (const r of records) {
+  for (const r of uniqueRecords) {
     if (!grouped[r.group]) {
       grouped[r.group] = { Present: [], Absent: [] };
     }
 
     grouped[r.group][r.status].push({
-      name: r.name,
+      name: r.studentId?.name || "Unknown",
       year: r.yearOfStudy
     });
   }
@@ -150,36 +175,29 @@ export async function getTodayAttendanceList(collegeId, date, group) {
   return grouped;
 }
 
-export async function getTodayAttendanceBreakdown(collegeId) {
+export async function getTodayAttendanceBreakdown(collegeId, date = new Date()) {
   await connectMongoDB();
 
-  const todayStart = startOfDay(new Date());
-  const todayEnd = endOfDay(new Date());
+  const todayStart = startOfDay(date);
+  const todayEnd = endOfDay(date);
 
-  const result = await Attendance.aggregate([
-  {
-    $match:{
-      collegeId:new mongoose.Types.ObjectId(collegeId),
-      status:"Present",
-      date:{ $gte: todayStart, $lte: todayEnd },
-      ...buildAttendanceSessionReadFilter()
-    }
-  },
-  {
-    $group:{
-      _id:"$yearOfStudy",
-      count:{ $sum:1 }
-    }
-  }
-  ])
+  const records = await Attendance.find({
+    collegeId: new mongoose.Types.ObjectId(collegeId),
+    date: { $gte: todayStart, $lte: todayEnd },
+    ...buildAttendanceSessionReadFilter(),
+  })
+    .select("status yearOfStudy session lateComer markedAt updatedAt studentId")
+    .lean();
 
-  const firstYear = result.filter(
-    (a) => a._id === "First Year"
-  ).reduce((sum, r) => sum + r.count, 0) || 0;
+  const uniqueRecords = dedupeAttendanceRecords(records);
 
-  const secondYear = result.filter(
-    (a) => a._id === "Second Year"
-  ).reduce((sum, r) => sum + r.count, 0) || 0;
+  const firstYear = uniqueRecords.filter(
+    (record) => record.status === "Present" && record.yearOfStudy === "First Year"
+  ).length;
+
+  const secondYear = uniqueRecords.filter(
+    (record) => record.status === "Present" && record.yearOfStudy === "Second Year"
+  ).length;
 
   const totalPresent = firstYear + secondYear;
 
@@ -201,24 +219,24 @@ export async function getTodayAttendanceBreakdown(collegeId) {
   };
 }
 
-export async function getTodayAbsentees(collegeId, group) {
+export async function getTodayAbsentees(collegeId, groupOrDate, maybeDate) {
   await connectMongoDB();
 
-  const today = new Date();
-  const start = new Date(today);
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(today);
-  end.setHours(23, 59, 59, 999);
+  const { group, date } = resolveAttendanceFilterOptions(groupOrDate, maybeDate);
+  const { start, end } = buildDayRange(date);
 
   const todayRecords = await Attendance.find({
     collegeId,
     date: { $gte: start, $lte: end },
     ...(group ? { group } : {}),
     ...buildAttendanceSessionReadFilter(),
-  }).populate("studentId", "name yearOfStudy group");
+  })
+    .populate("studentId", "name yearOfStudy group")
+    .lean();
 
-  if (todayRecords.length === 0) {
+  const uniqueRecords = dedupeAttendanceRecords(todayRecords);
+
+  if (uniqueRecords.length === 0) {
     return {
       status: "no-data",
       message: "No attendance recorded today",
@@ -226,8 +244,8 @@ export async function getTodayAbsentees(collegeId, group) {
   }
 
   const sessions = ["FN", "AN"];
-  const normalizedRecords = todayRecords.map((record) => ({
-    ...record.toObject(),
+  const normalizedRecords = uniqueRecords.map((record) => ({
+    ...record,
     session: normalizeAttendanceSession(record.session),
   }));
 
@@ -554,11 +572,7 @@ export async function getStudentMonthlyCalendar({
 export async function getTodayAttendanceSessionStats(collegeId, date, group) {
   await connectMongoDB();
 
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(date);
-  end.setHours(23, 59, 59, 999);
+  const { start, end } = buildDayRange(date);
 
   const records = await Attendance.find({
     collegeId,
@@ -569,12 +583,14 @@ export async function getTodayAttendanceSessionStats(collegeId, date, group) {
     .select("status session")
     .lean();
 
+  const uniqueRecords = dedupeAttendanceRecords(records);
+
   const summary = {
     FN: { present: 0, absent: 0, total: 0, percent: 0 },
     AN: { present: 0, absent: 0, total: 0, percent: 0 },
   };
 
-  records.forEach((record) => {
+  uniqueRecords.forEach((record) => {
     const session = normalizeAttendanceSession(record.session);
     if (!summary[session]) return;
 
@@ -597,23 +613,21 @@ export async function getTodayAttendanceSessionStats(collegeId, date, group) {
 export async function getTodayGroupComparison(collegeId, date) {
   await connectMongoDB();
 
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(date);
-  end.setHours(23, 59, 59, 999);
+  const { start, end } = buildDayRange(date);
 
   const records = await Attendance.find({
     collegeId,
     date: { $gte: start, $lte: end },
     ...buildAttendanceSessionReadFilter(),
   })
-    .select("group status session")
+    .select("group status session studentId lateComer markedAt updatedAt")
     .lean();
+
+  const uniqueRecords = dedupeAttendanceRecords(records);
 
   const grouped = {};
 
-  records.forEach((record) => {
+  uniqueRecords.forEach((record) => {
     const groupName = normalizeAttendanceGroup(record.group);
     const session = normalizeAttendanceSession(record.session);
 

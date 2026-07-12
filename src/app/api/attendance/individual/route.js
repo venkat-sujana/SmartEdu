@@ -11,6 +11,66 @@ import {
   normalizeAttendanceSession,
 } from '@/validations/attendanceValidation'
 
+function getAttendanceRecordPriority(record) {
+  if (record?.lateComer) return 3
+  if (record?.status === 'Present') return 2
+  if (record?.status === 'Absent') return 1
+  return 0
+}
+
+function getAttendanceRecordKey(record) {
+  const studentId = record.studentId?.toString?.()
+  const session = normalizeAttendanceSession(record.session)
+  const date = new Date(record.date)
+
+  if (!studentId || Number.isNaN(date.getTime())) {
+    return null
+  }
+
+  const dateKey = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+  }).format(date)
+
+  return `${studentId}_${session}_${dateKey}`
+}
+
+function dedupeAttendanceRecords(records) {
+  const recordMap = new Map()
+
+  for (const record of records) {
+    const key = getAttendanceRecordKey(record)
+    if (!key) continue
+
+    const existingRecord = recordMap.get(key)
+
+    if (!existingRecord) {
+      recordMap.set(key, record)
+      continue
+    }
+
+    const currentPriority = getAttendanceRecordPriority(record)
+    const existingPriority = getAttendanceRecordPriority(existingRecord)
+
+    if (currentPriority > existingPriority) {
+      recordMap.set(key, record)
+      continue
+    }
+
+    if (currentPriority === existingPriority) {
+      const currentMarkedAt = new Date(record.markedAt || record.updatedAt || 0).getTime()
+      const existingMarkedAt = new Date(
+        existingRecord.markedAt || existingRecord.updatedAt || 0
+      ).getTime()
+
+      if (currentMarkedAt > existingMarkedAt) {
+        recordMap.set(key, record)
+      }
+    }
+  }
+
+  return Array.from(recordMap.values())
+}
+
 export async function GET(req) {
   await connectMongoDB()
 
@@ -33,22 +93,18 @@ export async function GET(req) {
     return NextResponse.json({ data: [], message: 'Missing group/year' }, { status: 400 })
   }
 
-  // ✅ Build query WITHOUT buildAttendanceSessionReadFilter()
-  // That helper was silently adding unknown filters — apply it only if you
-  // know exactly what it returns. Remove it until verified.
   const query = {
-    
     collegeId,
     group,
     yearOfStudy: year,
   }
 
   if (start && end) {
-  query.date = {
-    $gte: new Date(`${start}T00:00:00+05:30`),
-    $lte: new Date(`${end}T23:59:59+05:30`),
-  };
-}
+    query.date = {
+      $gte: new Date(`${start}T00:00:00+05:30`),
+      $lte: new Date(`${end}T23:59:59+05:30`),
+    }
+  }
 
   if (sessionParam) {
     const parsedSession = attendanceSessionParamSchema.safeParse(sessionParam)
@@ -63,62 +119,56 @@ export async function GET(req) {
     query.session = parsedSession.data
   }
 
-  // 🐛 Debug: log the query to confirm it looks right
-  console.log('📋 Attendance Query:', JSON.stringify(query, null, 2))
-
   try {
-    // ✅ Step 1: Attendance fetch — populate లేకుండా
     const attendance = await Attendance.find(query)
-      .select("status date session group yearOfStudy studentId")
-      .lean();
-
-    console.log(`✅ Found ${attendance.length} records`);
+      .select(
+        'status date session group yearOfStudy studentId lateComer lateTime markedAt updatedAt'
+      )
+      .sort({ markedAt: -1, updatedAt: -1 })
+      .lean()
 
     if (attendance.length === 0) {
-      return NextResponse.json({ data: [] }, { status: 200 });
+      return NextResponse.json({ data: [] }, { status: 200 })
     }
 
-    // ✅ Step 2: Unique studentIds తీసుకోండి
+    const dedupedAttendance = dedupeAttendanceRecords(attendance)
+
     const studentIds = [
-      ...new Set(attendance.map((a) => a.studentId?.toString()).filter(Boolean))
-    ];
+      ...new Set(dedupedAttendance.map(record => record.studentId?.toString()).filter(Boolean)),
+    ]
 
-    // ✅ Step 3: Students separately fetch చేయండి
     const students = await Student.find({ _id: { $in: studentIds } })
-      .select("name admissionNo group yearOfStudy")
-      .lean();
+      .select('name admissionNo group yearOfStudy')
+      .lean()
 
-    console.log(`✅ Found ${students.length} students`);
-    console.log("Sample student:", students[0]); // ← name వస్తోందో చూడండి
+    const studentMap = {}
+    students.forEach(student => {
+      studentMap[student._id.toString()] = student
+    })
 
-    // ✅ Step 4: Quick lookup map
-    const studentMap = {};
-    students.forEach((s) => {
-      studentMap[s._id.toString()] = s;
-    });
+    const formatted = dedupedAttendance.map(record => {
+      const student = studentMap[record.studentId?.toString()]
 
-    // ✅ Step 5: Format
-    const formatted = attendance.map((a) => {
-      const student = studentMap[a.studentId?.toString()];
       return {
-        _id: a._id.toString(),
-        student: student?.name || student?.admissionNo || "Unknown",
-        studentId: a.studentId,
-        present: a.status === "Present" ? 1 : 0,
-        absent: a.status === "Absent" ? 1 : 0,
-        date: a.date,
-        status: a.status,
-        session: normalizeAttendanceSession(a.session),
-        group: a.group,
-        year: a.yearOfStudy,
-        yearOfStudy: a.yearOfStudy,
-      };
-    });
+        _id: record._id.toString(),
+        student: student?.name || student?.admissionNo || 'Unknown',
+        studentId: record.studentId,
+        present: record.status === 'Present' ? 1 : 0,
+        absent: record.status === 'Absent' ? 1 : 0,
+        date: record.date,
+        status: record.status,
+        session: normalizeAttendanceSession(record.session),
+        group: record.group,
+        year: record.yearOfStudy,
+        yearOfStudy: record.yearOfStudy,
+        lateComer: record.lateComer || false,
+        lateTime: record.lateTime || '',
+      }
+    })
 
-    return NextResponse.json({ data: formatted }, { status: 200 });
-
+    return NextResponse.json({ data: formatted }, { status: 200 })
   } catch (err) {
-    console.error("❌ API Error:", err);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+    console.error('Attendance individual API error:', err)
+    return NextResponse.json({ message: 'Server error' }, { status: 500 })
   }
 }

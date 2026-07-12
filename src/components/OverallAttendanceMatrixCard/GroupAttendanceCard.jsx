@@ -2,6 +2,7 @@
 'use client'
 import React from 'react'
 import useSWR from 'swr'
+import { useSession } from 'next-auth/react'
 import { Activity, CheckCircle2, Clock3, Users, XCircle } from 'lucide-react'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
 import { normalizeAttendanceGroup } from '@/utils/attendanceGroup'
@@ -12,11 +13,19 @@ const sessions = ['FN', 'AN']
 const fetcher = url => fetch(url).then(res => res.json())
 
 export default function GroupAttendanceCard({ groupName, compact = false }) {
+  const { data: session } = useSession()
   const normalizedGroupName = normalizeAttendanceGroup(groupName)
   const theme = getGroupTheme(normalizedGroupName)
   const { data: absApiData } = useSWR('/api/attendance/today-absentees', fetcher)
   const sessionWisePresent = absApiData?.sessionWisePresent || {}
   const sessionWiseAbsentees = absApiData?.sessionWiseAbsentees || {}
+  const today = new Date().toISOString().slice(0, 10)
+  const { data: groupWiseData } = useSWR(
+    session?.user?.collegeId
+      ? `/api/attendance/group-wise-today?collegeId=${session.user.collegeId}&date=${today}`
+      : null,
+    fetcher
+  )
 
   const { data: studentsData } = useSWR(
     `/api/students?group=${encodeURIComponent(normalizedGroupName)}&limit=1`,
@@ -243,5 +252,4 @@ function TopStat({ icon, label, value }) {
     </div>
   )
 }
-
 

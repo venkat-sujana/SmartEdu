@@ -9,6 +9,53 @@ import {
 } from "@/validations/attendanceValidation";
 import { getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
 
+function getRecordPriority(record) {
+  if (record?.lateComer) return 3;
+  if (record?.status === "Present") return 2;
+  if (record?.status === "Absent") return 1;
+  return 0;
+}
+
+function dedupeAttendanceRecords(records = []) {
+  const recordMap = new Map();
+
+  for (const record of records) {
+    const studentId = record.studentId?.toString?.();
+    const session = normalizeAttendanceSession(record.session);
+
+    if (!studentId || !session) continue;
+
+    const key = `${studentId}_${session}`;
+    const existingRecord = recordMap.get(key);
+
+    if (!existingRecord) {
+      recordMap.set(key, record);
+      continue;
+    }
+
+    const currentPriority = getRecordPriority(record);
+    const existingPriority = getRecordPriority(existingRecord);
+
+    if (currentPriority > existingPriority) {
+      recordMap.set(key, record);
+      continue;
+    }
+
+    if (currentPriority === existingPriority) {
+      const currentMarkedAt = new Date(record.markedAt || record.updatedAt || record.createdAt || 0).getTime();
+      const existingMarkedAt = new Date(
+        existingRecord.markedAt || existingRecord.updatedAt || existingRecord.createdAt || 0
+      ).getTime();
+
+      if (currentMarkedAt > existingMarkedAt) {
+        recordMap.set(key, record);
+      }
+    }
+  }
+
+  return Array.from(recordMap.values());
+}
+
 export async function GET(req) {
   await connectMongoDB();
   const session = await getServerSession(authOptions);
@@ -43,12 +90,15 @@ export async function GET(req) {
     attendanceQuery.group = getLecturerGroupFromSubject(session.user.subject);
   }
 
-  const attendanceRecords = await Attendance.find(attendanceQuery).lean();
+  const attendanceRecords = await Attendance.find(attendanceQuery)
+    .select("studentId group yearOfStudy status lecturerName session lateComer markedAt updatedAt")
+    .lean();
+  const uniqueRecords = dedupeAttendanceRecords(attendanceRecords);
 
   // ==== Group by group → year → session ====
   const result = {};
 
-  attendanceRecords.forEach((record) => {
+  uniqueRecords.forEach((record) => {
     const { group, yearOfStudy, status, lecturerName } = record;
     const session = normalizeAttendanceSession(record.session);
 

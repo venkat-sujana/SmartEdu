@@ -6,6 +6,7 @@ export default function MLTDashboard() {
       groupName="MLT"
       routeSegment="mlt"
       includeExternalLinks
+      includeEditAttendance
     />
   );
 }

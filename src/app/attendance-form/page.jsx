@@ -397,7 +397,7 @@ export default function AttendanceFormPage() {
                   </button>
                 </div>
               </div>
-
+{/* 
               <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
                 <button
                   type="button"
@@ -426,7 +426,7 @@ export default function AttendanceFormPage() {
                 <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">
                   Selected: {markedCount} / {totalStudents}
                 </span>
-              </div>
+              </div> */}
 
               {feedback.message ? (
                 <div
