@@ -107,15 +107,14 @@ export async function GET(req) {
     if (!result[group][yearOfStudy]) result[group][yearOfStudy] = {};
 
     // Unique by session
-    if (!result[group][yearOfStudy][session]) {
-      result[group][yearOfStudy][session] = {
-        present: 0,
-        absent: 0,
-        percent: 0,
-        lecturerName: lecturerName || "—",
-        session: session || "FN"
-      };
-    }
+    result[group][yearOfStudy][session] = {
+    present: 0,
+    absent: 0,
+    percent: 0,
+    lecturerName: lecturerName || "—",
+    markedAt: record.markedAt || record.updatedAt || record.createdAt,
+    session: session || "FN",
+    };
     // First non-empty lecturerName assign only
     if (
       !result[group][yearOfStudy][session].lecturerName ||

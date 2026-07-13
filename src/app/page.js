@@ -24,7 +24,7 @@ export default function Page() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
+    <main className="min-h-screen mt-15 overflow-hidden bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
       <Navbar />
 
       {/* ================= HERO ================= */}

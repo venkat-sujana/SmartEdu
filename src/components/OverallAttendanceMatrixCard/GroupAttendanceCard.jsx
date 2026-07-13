@@ -45,44 +45,60 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
 
 
 
-
   function stats(year, session) {
-  const yearStrength = year === "First Year"
-    ? firstYearStrength
-    : secondYearStrength;
+    const yearStrength = year === 'First Year' ? firstYearStrength : secondYearStrength
 
-  const present =
-    sessionWisePresent[session]?.filter(
-      student =>
-        normalizeAttendanceGroup(student.group) === normalizedGroupName &&
-        student.yearOfStudy === year
-    ).length || 0;
+    const present =
+      sessionWisePresent[session]?.filter(
+        student =>
+          normalizeAttendanceGroup(student.group) === normalizedGroupName &&
+          student.yearOfStudy === year
+      ).length || 0
 
-  const absent =
-    sessionWiseAbsentees[session]?.filter(
-      student =>
-        normalizeAttendanceGroup(student.group) === normalizedGroupName &&
-        student.yearOfStudy === year
-    ).length || 0;
+    const absent =
+      sessionWiseAbsentees[session]?.filter(
+        student =>
+          normalizeAttendanceGroup(student.group) === normalizedGroupName &&
+          student.yearOfStudy === year
+      ).length || 0
 
-  const total = yearStrength;
-  const unmarked = yearStrength - present - absent;
-  const percent = total > 0 ? Math.round((present / total) * 100) : 0;
+    const total = yearStrength
+    const unmarked = yearStrength - present - absent
+    const percent = total > 0 ? Math.round((present / total) * 100) : 0
 
-  // 👇 NEW
-  const lecturerName =
-    groupWiseData?.groupWise?.[normalizedGroupName]?.[year]
-      ?.find(item => item.session === session)
-      ?.lecturerName || "—";
+    const sessionData = groupWiseData?.groupWise?.[normalizedGroupName]?.[year]?.find(
+      item => item.session === session
+    )
 
-  return {
-    present,
-    absent,
-    unmarked,
-    total,
-    percent,
-    lecturerName,
-  };
+    // 👇 NEW
+    const lecturerName = sessionData?.lecturerName || '—'
+
+    const markedAt = sessionData?.markedAt || null
+
+    const status = unmarked === 0 ? "Completed" : "Pending";
+
+    return {
+      present,
+      absent,
+      unmarked,
+      total,
+      percent,
+      lecturerName,
+      markedAt,
+      status,
+    }
+  }
+
+
+
+  function formatTime(date) {
+  if (!date) return "—";
+
+  return new Date(date).toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }).toUpperCase();
 }
 
 
@@ -107,8 +123,7 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div className={`bg-linear-to-r ${theme.header} px-5 py-5 text-white`}>
         <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 xl:grid-cols-3 2xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6">
             <TopStat icon={<Users className="h-4 w-4" />} label="Strength" value={groupStrength} />
             <TopStat
               icon={<Activity className="h-4 w-4" />}
@@ -152,13 +167,17 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
 
                     <th className="border px-3 py-2 text-center">Unmarked</th>
 
-                    
-
                     <th className="border px-3 py-2 text-center">Total</th>
 
-                    <th className="border px-3 py-2 text-center">Lecturer</th>
+                    <th className="border px-3 py-2 text-center">👤Marked By</th>
+
+                    <th className="border px-3 py-2 text-center">🕒Marked At</th>
+
+                    <th className="border px-3 py-2 text-center">Status</th>
 
                     <th className="border px-3 py-2 text-center">%</th>
+
+                    
                   </tr>
                 </thead>
 
@@ -189,6 +208,23 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
                         <td className="border px-3 py-2 text-center">{current.lecturerName}</td>
 
                         <td className="border px-3 py-2 text-center">
+                          {formatTime(current.markedAt)}
+                        </td>
+
+                        <td className="border px-3 py-2 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                              current.status === 'Completed'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-amber-100 text-amber-700'
+                            }`}
+                          >
+                            {current.status === 'Completed' ? '🟢' : '⏳'}
+                            {current.status}
+                          </span>
+                        </td>
+
+                        <td className="border px-3 py-2 text-center">
                           <span
                             className={`rounded-full px-2 py-1 text-xs font-semibold ${theme.pill}`}
                           >
@@ -200,71 +236,91 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
                   })}
                 </tbody>
               </table>
-
             </div>
-              
+
             {/* Mobile version */}
-              <div className="mt-3 space-y-3 md:hidden">
-                {sessions.map(session => {
-                  const current = stats(year, session)
+            <div className="mt-3 space-y-3 md:hidden">
+              {sessions.map(session => {
+                const current = stats(year, session)
 
-                  return (
-                    <div
-                      key={`${year}-${session}`}
-                      className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-900">{session}</span>
+                return (
+                  <div
+                    key={`${year}-${session}`}
+                    className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-slate-900">{session}</span>
 
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${theme.pill}`}
-                        >
-                          {current.percent}%
-                        </span>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${theme.pill}`}
+                      >
+                        {current.percent}%
+                      </span>
+                    </div>
+
+                    <div className="mt-3">
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                        <div
+                          className="h-full bg-emerald-500 transition-all"
+                          style={{
+                            width: `${current.percent}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      <div>
+                        <p className="text-[11px] text-slate-500">Present</p>
+                        <p className="text-lg font-bold text-emerald-600">{current.present}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] text-slate-500">Absent</p>
+                        <p className="text-lg font-bold text-rose-600">{current.absent}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] text-slate-500">Unmarked</p>
+                        <p className="text-lg font-bold text-amber-500">{current.unmarked}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] text-slate-500">Total</p>
+                        <p className="text-lg font-bold text-slate-700">{current.total}</p>
+                      </div>
+
+                      <div className="col-span-3">
+                        <p className="text-[11px] text-slate-500">👤Marked By</p>
+                        <p className="font-semibold text-slate-800">{current.lecturerName}</p>
+                      </div>
+
+                      <div className="col-span-3">
+                        <p className="text-[11px] text-slate-500">🕒Marked At</p>
+                        <p className="font-semibold text-slate-800">
+                          {formatTime(current.markedAt)}
+                        </p>
                       </div>
 
                       <div className="mt-3">
-                        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                          <div
-                            className="h-full bg-emerald-500 transition-all"
-                            style={{
-                              width: `${current.percent}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
+                        <p className="text-[11px] text-slate-500">Status</p>
 
-                      <div className="mt-3 grid grid-cols-3 gap-2">
-                        <div>
-                          <p className="text-[11px] text-slate-500">Present</p>
-                          <p className="text-lg font-bold text-emerald-600">{current.present}</p>
-                        </div>
-
-                        <div>
-                          <p className="text-[11px] text-slate-500">Absent</p>
-                          <p className="text-lg font-bold text-rose-600">{current.absent}</p>
-                        </div>
-
-                        <div>
-                          <p className="text-[11px] text-slate-500">Unmarked</p>
-                          <p className="text-lg font-bold text-amber-500">{current.unmarked}</p>
-                        </div>
-
-                        <div>
-                          <p className="text-[11px] text-slate-500">Total</p>
-                          <p className="text-lg font-bold text-slate-700">{current.total}</p>
-                        </div>
-
-                        <div className="col-span-3">
-                          <p className="text-[11px] text-slate-500">Lecturer</p>
-                          <p className="font-semibold text-slate-800">{current.lecturerName}</p>
-                        </div>
+                        <span
+                          className={`mt-1 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                            current.status === 'Completed'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {current.status === 'Completed' ? '🟢' : '⏳'}
+                          {current.status}
+                        </span>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            
+                  </div>
+                )
+              })}
+            </div>
           </article>
         ))}
       </div>
@@ -279,8 +335,7 @@ function TopStat({ icon, label, value }) {
         {icon}
         <span className="text-[11px] tracking-wide uppercase">{label}</span>
       </div>
-      <p className="mt-1 text-lg md:text-xl font-bold text-white">{value}</p>
+      <p className="mt-1 text-lg font-bold text-white md:text-xl">{value}</p>
     </div>
   )
 }
-
