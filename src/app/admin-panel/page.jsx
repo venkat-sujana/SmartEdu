@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation'
 import {
   Activity,
   BarChart3,
@@ -24,9 +24,8 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { Settings } from "lucide-react";
+import { Settings } from 'lucide-react'
 const ENTITY_CONFIG = {
-
   colleges: {
     label: 'Colleges',
     icon: Building2,
@@ -41,7 +40,6 @@ const ENTITY_CONFIG = {
     },
 
     bulkHeaders: ['Name', 'Code', 'Address', 'District', 'ContactEmail', 'ContactPhone', 'Groups'],
-
 
     fields: [
       { name: 'name', label: 'College Name', type: 'text', required: true },
@@ -165,10 +163,11 @@ const ENTITY_CONFIG = {
     ],
   },
 
-settings: {
+  settings: {
   label: "System Settings",
-  endpoint: "/api/settings",
   icon: Settings,
+  endpoint: "/api/settings",
+  route: "/admin-panel/settings",
   hasCollegeFilter: true,
   hideTable: true,
   hideAddButton: true,
@@ -180,6 +179,8 @@ settings: {
     activeCard: "border-slate-300 bg-slate-50 text-slate-950",
   },
 },
+
+
   lecturers: {
     label: 'Lecturers',
     icon: GraduationCap,
@@ -309,101 +310,145 @@ settings: {
     ],
   },
 
-
   officeStaff: {
-    label: "Office Staff",
-    singularLabel: "Office Staff",
+    label: 'Office Staff',
+    singularLabel: 'Office Staff',
     icon: Users,
-    endpoint: "/api/admin/office-staff",
+    endpoint: '/api/admin/office-staff',
     hasCollegeFilter: true,
 
     accent: {
-      badge: "bg-teal-100 text-teal-800 border-teal-200",
-      button: "bg-teal-600 hover:bg-teal-700",
-      soft: "from-teal-500/20 via-cyan-500/10 to-white",
-      icon: "bg-teal-500/15 text-teal-700",
-      activeCard:
-        "border-teal-300 bg-teal-50 text-teal-950 shadow-teal-100",
+      badge: 'bg-teal-100 text-teal-800 border-teal-200',
+      button: 'bg-teal-600 hover:bg-teal-700',
+      soft: 'from-teal-500/20 via-cyan-500/10 to-white',
+      icon: 'bg-teal-500/15 text-teal-700',
+      activeCard: 'border-teal-300 bg-teal-50 text-teal-950 shadow-teal-100',
     },
 
     bulkHeaders: [
-      "CollegeCode",
-      "EmployeeId",
-      "Name",
-      "Email",
-      "Password",
-      "Designation",
-      "Mobile",
+      'CollegeCode',
+      'EmployeeId',
+      'Name',
+      'Email',
+      'Password',
+      'Designation',
+      'Mobile',
     ],
 
     fields: [
-  { name: "collegeId", label: "College", type: "select", required: true },
+      { name: 'collegeId', label: 'College', type: 'select', required: true },
 
-  { name: "employeeId", label: "Employee ID", type: "text", required: true },
+      { name: 'employeeId', label: 'Employee ID', type: 'text', required: true },
 
-  { name: "name", label: "Name", type: "text", required: true },
+      { name: 'name', label: 'Name', type: 'text', required: true },
 
-  { name: "email", label: "Email", type: "email", required: true },
+      { name: 'email', label: 'Email', type: 'email', required: true },
 
-  { name: "password", label: "Password", type: "password", required: true },
+      { name: 'password', label: 'Password', type: 'password', required: true },
 
-  {
-    name: "designation",
-    label: "Designation",
-    type: "select",
-    required: true,
-    options: [
-      "Senior Assistant",
-      "Record Assistant",
-      "Office Superintendent",
-      "Junior Assistant",
-      "Data Entry Operator",
-      "Office Subordinate",
+      {
+        name: 'designation',
+        label: 'Designation',
+        type: 'select',
+        required: true,
+        options: [
+          'Senior Assistant',
+          'Record Assistant',
+          'Office Superintendent',
+          'Junior Assistant',
+          'Data Entry Operator',
+          'Office Subordinate',
+        ],
+      },
+
+      { name: 'mobile', label: 'Mobile', type: 'text' },
+
+      { name: 'photo', label: 'Photo URL', type: 'text' },
+
+      {
+        name: 'status',
+        label: 'Status',
+        type: 'select',
+        options: ['Active', 'Inactive'],
+      },
+    ],
+
+    columns: [
+      { key: 'employeeId', label: 'Employee ID' },
+
+      { key: 'name', label: 'Name' },
+
+      { key: 'designation', label: 'Designation' },
+
+      { key: 'mobile', label: 'Mobile' },
+
+      { key: 'status', label: 'Status' },
+
+      {
+        key: 'college',
+        label: 'College',
+        render: item => item.collegeId?.name || '-',
+      },
     ],
   },
 
-  { name: "mobile", label: "Mobile", type: "text" },
 
-  { name: "photo", label: "Photo URL", type: "text" },
+  fees: {
+  label: 'Fees',
+  singularLabel: 'Fee',
+  icon: Download,
+  endpoint: '/api/fee/admin',
+  hasCollegeFilter: true,
 
-  {
-    name: "status",
-    label: "Status",
-    type: "select",
-    options: ["Active", "Inactive"],
+  accent: {
+    badge: 'bg-green-100 text-green-800 border-green-200',
+    button: 'bg-green-600 hover:bg-green-700',
+    soft: 'from-green-500/20 via-emerald-500/10 to-white',
+    icon: 'bg-green-500/15 text-green-700',
+    activeCard: 'border-green-300 bg-green-50 text-green-950 shadow-green-100',
   },
-],
 
-    columns: [
-  { key: "employeeId", label: "Employee ID" },
+  bulkHeaders: [
+    'CollegeCode',
+    'AdmissionNo',
+    'AcademicYear',
+    'TotalFee',
+    'Amount',
+    'Note',
+  ],
 
-  { key: "name", label: "Name" },
+  fields: [
+    { name: 'collegeId', label: 'College', type: 'select', required: true },
+    { name: 'studentId', label: 'Student', type: 'select', required: true },
+    { name: 'academicYear', label: 'Academic Year', type: 'text', required: true },
+    { name: 'totalFee', label: 'Total Fee', type: 'number', required: true },
+    { name: 'feeAmount', label: 'Paid Amount', type: 'number' },
+    { name: 'feeNote', label: 'Note', type: 'textarea' },
+  ],
 
-  { key: "designation", label: "Designation" },
-
-  { key: "mobile", label: "Mobile" },
-
-  { key: "status", label: "Status" },
-
-  {
-    key: "college",
-    label: "College",
-    render: item => item.collegeId?.name || "-",
-  },
-],
-
+  columns: [
+    {
+      key: 'student',
+      label: 'Student',
+      render: item => item.studentId?.name || '-',
+    },
+    {
+      key: 'admissionNo',
+      label: 'Admission No',
+      render: item => item.studentId?.admissionNo || '-',
+    },
+    { key: 'academicYear', label: 'Academic Year' },
+    { key: 'totalFee', label: 'Total Fee' },
+    { key: 'balance', label: 'Balance' },
+    {
+      key: 'college',
+      label: 'College',
+      render: item => item.collegeId?.name || '-',
+    },
+  ],
 },
 
-// ENTITY_CONFIG లో add చేయండి:
-settings: {
-  label: "System Settings",
-  icon: Settings,
-  route: "/admin-panel/settings",
-},
-
-
-
-
+ 
 
   exams: {
     label: 'Exams',
@@ -499,12 +544,10 @@ const INITIAL_FORM = {
   examType: '',
   examDate: '',
   subjects: '',
-   feeAmount: '',
+  feeAmount: '',
   feeNote: '',
   totalFee: '',
 }
-
-
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50]
 
@@ -551,7 +594,7 @@ export default function AdminPanelPage() {
   const [error, setError] = useState('')
   const [auditLogs, setAuditLogs] = useState([])
   const [auditLoading, setAuditLoading] = useState(false)
-const router = useRouter();
+  const router = useRouter()
   const activeConfig = ENTITY_CONFIG[entity]
 
   const summary = useMemo(() => {
@@ -679,53 +722,50 @@ const router = useRouter();
   }, [])
 
   const fetchRecords = useCallback(async () => {
-
-if (entity === "settings") {
-  await loadSystemSettings();
-  setLoading(false);
-  return;
-}
-
-
-const saveSettings = async () => {
-  try {
-    const res = await fetch("/api/settings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        collegeId,
-        modules: settings.modules,
-      }),
-    });
-
-    const result = await res.json();
-
-    if (result.success) {
-      toast.success("Settings Saved Successfully");
-    } else {
-      toast.error(result.message);
+    if (entity === 'settings') {
+      await loadSystemSettings()
+      setLoading(false)
+      return
     }
-  } catch (err) {
-    console.error(err);
-    toast.error("Unable to save settings");
-  }
-};
 
-const loadSystemSettings = async () => {
-  try {
-    const res = await fetch(`/api/settings?collegeId=${collegeId}`);
-    const result = await res.json();
+    const saveSettings = async () => {
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            collegeId,
+            modules: settings.modules,
+          }),
+        })
 
-    if (result.success && result.data) {
-      setSettings(result.data);
+        const result = await res.json()
+
+        if (result.success) {
+          toast.success('Settings Saved Successfully')
+        } else {
+          toast.error(result.message)
+        }
+      } catch (err) {
+        console.error(err)
+        toast.error('Unable to save settings')
+      }
     }
-  } catch (err) {
-    console.error(err);
-  }
-};
 
+    const loadSystemSettings = async () => {
+      try {
+        const res = await fetch(`/api/settings?collegeId=${collegeId}`)
+        const result = await res.json()
+
+        if (result.success && result.data) {
+          setSettings(result.data)
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    }
 
     setLoading(true)
     setError('')
@@ -795,39 +835,35 @@ const loadSystemSettings = async () => {
   }, [isAdmin, loadAuditLogs])
 
   useEffect(() => {
-  async function loadStudentOptions() {
-    if (
-      !showForm ||
-      !['attendance', 'exams', 'fees'].includes(entity) ||
-      !form.collegeId
-    ) {
-      setStudentOptions([])
-      return
+    async function loadStudentOptions() {
+      if (!showForm || !['attendance', 'exams', 'fees'].includes(entity) || !form.collegeId) {
+        setStudentOptions([])
+        return
+      }
+
+      try {
+        const params = new URLSearchParams({
+          collegeId: form.collegeId,
+          page: '1',
+          limit: '1000',
+        })
+
+        const res = await fetch(`/api/admin/students?${params.toString()}`)
+        const result = await res.json()
+
+        if (!res.ok) throw new Error(result.error)
+
+        console.log('Students:', result.data) // Debug
+
+        setStudentOptions(Array.isArray(result.data) ? result.data : [])
+      } catch (err) {
+        console.error(err)
+        setStudentOptions([])
+      }
     }
 
-    try {
-      const params = new URLSearchParams({
-        collegeId: form.collegeId,
-        page: '1',
-        limit: '1000',
-      })
-
-      const res = await fetch(`/api/admin/students?${params.toString()}`)
-      const result = await res.json()
-
-      if (!res.ok) throw new Error(result.error)
-
-      console.log("Students:", result.data); // Debug
-
-      setStudentOptions(Array.isArray(result.data) ? result.data : [])
-    } catch (err) {
-      console.error(err)
-      setStudentOptions([])
-    }
-  }
-
-  loadStudentOptions()
-}, [showForm, entity, form.collegeId])
+    loadStudentOptions()
+  }, [showForm, entity, form.collegeId])
 
   useEffect(() => {
     if (!selectedStudent || !['attendance', 'exams', 'fee'].includes(entity)) return
@@ -1463,13 +1499,13 @@ const loadSystemSettings = async () => {
                     key={key}
                     type="button"
 
-                    onClick={() => {
-  if (ENTITY_CONFIG[key].route) {
-    router.push(ENTITY_CONFIG[key].route);
+onClick={() => {
+  if (config.route) {
+    router.push(config.route);
     return;
   }
 
-  setSelectedEntity(key);
+  setEntity(key);
 }}
                     className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                       active
@@ -1754,7 +1790,6 @@ const loadSystemSettings = async () => {
                         />
                       ))}
                     </div>
-
                     {entity === 'colleges' && (
                       <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3">
                         <div className="text-sm font-semibold text-slate-900">Group Preview</div>
@@ -1782,8 +1817,8 @@ const loadSystemSettings = async () => {
                           )}
                         </div>
                       </div>
-                    )}Students Management
-
+                    )}
+                    Students Management
                     {entity !== 'colleges' &&
                       form.collegeId &&
                       selectedCollegeGroups.length > 0 && (
@@ -1803,7 +1838,6 @@ const loadSystemSettings = async () => {
                           </div>
                         </div>
                       )}
-
                     {['attendance', 'exams', 'fee'].includes(entity) && selectedStudent && (
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
                         <div className="font-semibold text-slate-900">
@@ -1817,7 +1851,6 @@ const loadSystemSettings = async () => {
                         </div>
                       </div>
                     )}
-
                     <div className="flex flex-wrap gap-3">
                       <button
                         type="submit"
@@ -2057,12 +2090,12 @@ function Field({
           </div>
           {value && (
             <Image
-  src={value}
-  alt="Uploaded preview"
-  width={200}
-  height={200}
-  className="mt-3 h-28 w-28 rounded-2xl border border-slate-200 object-cover"
-/>
+              src={value}
+              alt="Uploaded preview"
+              width={200}
+              height={200}
+              className="mt-3 h-28 w-28 rounded-2xl border border-slate-200 object-cover"
+            />
           )}
         </div>
       </label>
@@ -2119,7 +2152,7 @@ function PerformanceCard({ rankLabel, tone, title, subtitle, value }) {
 function buildPayload(entity, form, isEdit) {
   const payload = {
     collegeId: form.collegeId,
-     employeeId: form.employeeId, 
+    employeeId: form.employeeId,
     name: form.name,
     email: form.email,
     password: form.password,
@@ -2275,15 +2308,15 @@ function buildPayload(entity, form, isEdit) {
   }
 
   if (entity === 'fees') {
-  return {
-    studentId:    form.studentId,
-    collegeId:    form.collegeId,
-    academicYear: form.academicYear,
-    totalFee:     Number(form.totalFee),
-    amount:       form.feeAmount ? Number(form.feeAmount) : undefined,
-    note:         form.feeNote || '',
+    return {
+      studentId: form.studentId,
+      collegeId: form.collegeId,
+      academicYear: form.academicYear,
+      totalFee: Number(form.totalFee),
+      amount: form.feeAmount ? Number(form.feeAmount) : undefined,
+      note: form.feeNote || '',
+    }
   }
-}
 
   Object.keys(payload).forEach(key => {
     if (payload[key] === '' || payload[key] === undefined) delete payload[key]

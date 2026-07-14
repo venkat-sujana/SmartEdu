@@ -264,7 +264,7 @@ export default function StudentTimetablePage() {
 
                               return (
                                 <td key={pIndex} className="border-r border-b border-slate-100 p-0">
-                                  <div className={`min-h-[56px] flex flex-col items-center justify-center px-1 py-1.5 ${colorCls} ${isToday && !colorCls ? 'bg-blue-50/50' : ''}`}>
+                                  <div className={`min-h-14 flex flex-col items-center justify-center px-1 py-1.5 ${colorCls} ${isToday && !colorCls ? 'bg-blue-50/50' : ''}`}>
                                     {cell?.subject ? (
                                       <>
                                         <span className="text-[10px] font-black text-center leading-tight">

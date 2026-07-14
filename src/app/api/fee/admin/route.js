@@ -118,15 +118,19 @@ if (academicYear) {
     if (academicYear) filter.academicYear = academicYear;
 
     const [records, total] = await Promise.all([
+      
       Fee.find(filter)
-       .populate({
-  path: "studentId",
-  select: "name admissionNo group yearOfStudy collegeId",
-  populate: {
-    path: "collegeId",
-    select: "name",
-  },
-})
+  .populate({
+    path: "studentId",
+    select: "name admissionNo group yearOfStudy collegeId",
+    populate: {
+      path: "collegeId",
+      select: "name",
+    },
+  })
+  .populate("collegeId", "name")
+
+  
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -143,19 +147,22 @@ if (academicYear) {
       : records;
 
     const formatted = filtered.map((r) => {
-      const totalPaid = r.payments.reduce((sum, p) => sum + p.amount, 0);
-      return {
-        _id:          r._id,
-        studentId:    r.studentId,
-        academicYear: r.academicYear,
-        totalFee:     r.totalFee,
-        totalPaid,
-        balance:      r.totalFee - totalPaid > 0 ? r.totalFee - totalPaid : 0,
-        status:       r.status,
-        paymentCount: r.payments.length,
-      };
-    });
+  const totalPaid = r.payments.reduce((sum, p) => sum + p.amount, 0);
 
+  return {
+    _id: r._id,
+    studentId: r.studentId,
+    collegeId: r.collegeId,
+    academicYear: r.academicYear,
+    totalFee: r.totalFee,
+    totalPaid,
+    balance: r.totalFee - totalPaid > 0 ? r.totalFee - totalPaid : 0,
+    status: r.status,
+    paymentCount: r.payments.length,
+  };
+});
+
+console.log(JSON.stringify(formatted[0], null, 2));
     return NextResponse.json({
       data: formatted,
       pagination: {
