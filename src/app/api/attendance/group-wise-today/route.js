@@ -3,12 +3,15 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
+import Student from "@/models/Student";
+import Fee from "@/models/Fee";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import {
   buildAttendanceSessionReadFilter,
   normalizeAttendanceSession,
 } from "@/validations/attendanceValidation";
 import { getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
+
 
 function getRecordPriority(record) {
   if (record?.lateComer) return 3;
@@ -96,8 +99,71 @@ export async function GET(req) {
     .lean();
   const uniqueRecords = dedupeAttendanceRecords(attendanceRecords);
 
+  // Current Academic Year
+const currentYear = new Date().getFullYear();
+const academicYear = `${currentYear}-${currentYear + 1}`;
+// Get all students of this college
+const students = await Student.find({
+  collegeId,
+})
+  .select("_id group yearOfStudy")
+  .lean();
+
+  // Get fee records for current academic year
+const feeRecords = await Fee.find({
+  collegeId,
+  academicYear,
+})
+  .select("studentId status")
+  .lean();
+
+  // Create a map: studentId -> fee status
+const feeMap = new Map();
+
+feeRecords.forEach((fee) => {
+  feeMap.set(fee.studentId.toString(), fee.status);
+});
+
+
   // ==== Group by group → year → session ====
-  const result = {};
+const result = {};
+
+  // ==== Fee Summary ====
+const feeSummary = {};
+
+students.forEach((student) => {
+  const group = student.group;
+  const year = student.yearOfStudy;
+
+  // Group create
+  if (!feeSummary[group]) {
+    feeSummary[group] = {};
+  }
+
+  // Year create
+  if (!feeSummary[group][year]) {
+    feeSummary[group][year] = {
+      total: 0,
+      paid: 0,
+      partial: 0,
+      pending: 0,
+    };
+  }
+
+  // Total students
+  feeSummary[group][year].total++;
+
+  // Fee Status
+  const status = feeMap.get(student._id.toString());
+
+  if (status === "Paid") {
+    feeSummary[group][year].paid++;
+  } else if (status === "Partial") {
+    feeSummary[group][year].partial++;
+  } else {
+    feeSummary[group][year].pending++;
+  }
+});
 
   uniqueRecords.forEach((record) => {
     const { group, yearOfStudy, status, lecturerName } = record;
@@ -143,5 +209,8 @@ export async function GET(req) {
     }
   }
 
-  return NextResponse.json({ groupWise: result });
+  return NextResponse.json({
+  groupWise: result,
+  feeSummary,
+});
 }

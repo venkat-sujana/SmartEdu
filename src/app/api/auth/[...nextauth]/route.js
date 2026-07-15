@@ -14,6 +14,7 @@ import OfficeStaff from "@/models/OfficeStaff";
 
 
 async function authenticateAdmin(email, password) {
+  console.log("✅ NextAuth Route Loaded");
   await connectMongoDB();
   
   const key = `login:${email.toLowerCase()}`;

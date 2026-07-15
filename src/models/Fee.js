@@ -1,3 +1,4 @@
+//src/models/Fee.js
 import mongoose from "mongoose";
 
 const feeSchema = new mongoose.Schema(

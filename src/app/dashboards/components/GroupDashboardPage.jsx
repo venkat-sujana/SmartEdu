@@ -48,6 +48,12 @@ export default function GroupDashboardPage({
   const [editAttendance, setEditAttendance] = useState(false)
   const [feeData, setFeeData] = useState([])
   const [loadingFees, setLoadingFees] = useState(true)
+  const [showFeeModal, setShowFeeModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [paymentForm, setPaymentForm] = useState({
+    amount: '',
+    note: '',
+  })
 
   const [systemSettings, setSystemSettings] = useState(null)
   const [showFeeModule, setShowFeeModule] = useState(true)
@@ -64,6 +70,10 @@ export default function GroupDashboardPage({
   const footerPhone = collegeDetails?.phone || ''
   const footerEmail = collegeDetails?.email || ''
   const years = ['First Year', 'Second Year']
+  const { data: groupDashboardData } = useSWR(
+    user?.collegeId ? `/api/attendance/group-wise-today?collegeId=${user.collegeId}` : null,
+    fetcher
+  )
   const theme = getGroupTheme(groupName)
 
   const { data: consecutiveData } = useSWR(
@@ -105,6 +115,49 @@ export default function GroupDashboardPage({
       setLoadingFees(false)
     }
   }
+
+  async function handleSavePayment() {
+  if (!selectedStudent) return;
+
+  if (!paymentForm.amount || Number(paymentForm.amount) <= 0) {
+    alert("Please enter a valid amount");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/fee/admin/${selectedStudent._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: Number(paymentForm.amount),
+        note: paymentForm.note,
+      }),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      alert(result.error || "Payment failed");
+      return;
+    }
+
+    alert("Payment saved successfully");
+
+    setShowFeeModal(false);
+
+    setPaymentForm({
+      amount: "",
+      note: "",
+    });
+
+    loadFees();
+  } catch (error) {
+    console.error(error);
+    alert("Server Error");
+  }
+}
 
   const loadSystemSettings = useCallback(async () => {
     if (!user?.collegeId) {
@@ -245,6 +298,21 @@ export default function GroupDashboardPage({
     )
   const groupFeeRows = feeData.filter(item => item.studentId?.group === groupName)
 
+  // Fee summary from Group Dashboard API
+  const firstYearFee = groupDashboardData?.feeSummary?.[groupName]?.['First Year'] || {
+    total: 0,
+    paid: 0,
+    partial: 0,
+    pending: 0,
+  }
+
+  const secondYearFee = groupDashboardData?.feeSummary?.[groupName]?.['Second Year'] || {
+    total: 0,
+    paid: 0,
+    partial: 0,
+    pending: 0,
+  }
+
   const dashboardSummary = groupData.reduce(
     (acc, group) => {
       acc.students += group.students
@@ -275,7 +343,7 @@ export default function GroupDashboardPage({
   useEffect(() => {
     if (!user?.collegeId) return
     loadSystemSettings()
-  }, [user?.collegeId,loadSystemSettings])
+  }, [user?.collegeId, loadSystemSettings])
 
   console.log(systemSettings)
 
@@ -329,7 +397,7 @@ export default function GroupDashboardPage({
     <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-4 md:p-6`}>
       {showFeeModule ? (
         <>
-          <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+          <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-8">
             <div className="rounded-xl bg-blue-600 p-4 text-white">
               <p className="text-sm">Students</p>
               <h2 className="text-2xl font-bold">{dashboardSummary.students}</h2>
@@ -365,13 +433,27 @@ export default function GroupDashboardPage({
               <p className="text-sm">Collection %</p>
               <h2 className="text-2xl font-bold">{dashboardSummary.collectionPercentage}%</h2>
             </div>
+
+            <div className="rounded-xl bg-cyan-600 p-4 text-white">
+              <p className="text-sm">First Year Fee</p>
+              <h2 className="text-2xl font-bold">
+                {firstYearFee.paid} / {firstYearFee.total}
+              </h2>
+            </div>
+
+            <div className="rounded-xl bg-violet-600 p-4 text-white">
+              <p className="text-sm">Second Year Fee</p>
+              <h2 className="text-2xl font-bold">
+                {secondYearFee.paid} / {secondYearFee.total}
+              </h2>
+            </div>
           </div>
           {/* ===== Fee Table ===== */}
           <div className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-200 bg-linear-to-r from-slate-950 via-slate-900 to-blue-900 px-4 py-4 text-white sm:px-5">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-200">
+                  <p className="text-xs font-semibold tracking-[0.25em] text-blue-200 uppercase">
                     Fee Register
                   </p>
                   <h3 className="mt-1 text-xl font-black">{groupName} Fee Table</h3>
@@ -382,12 +464,14 @@ export default function GroupDashboardPage({
 
                 <div className="flex flex-wrap gap-2">
                   <div className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-300">Students</p>
+                    <p className="text-[11px] tracking-wide text-slate-300 uppercase">Students</p>
                     <p className="text-lg font-bold">{feeSummary.students}</p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-300">Balance</p>
-                    <p className="text-lg font-bold">₹{feeSummary.balance.toLocaleString('en-IN')}</p>
+                    <p className="text-[11px] tracking-wide text-slate-300 uppercase">Balance</p>
+                    <p className="text-lg font-bold">
+                      ₹{feeSummary.balance.toLocaleString('en-IN')}
+                    </p>
                   </div>
                   <button
                     onClick={exportFeePdf}
@@ -401,7 +485,7 @@ export default function GroupDashboardPage({
 
             <div className="grid gap-3 border-b border-slate-200 bg-slate-50 px-4 py-4 sm:grid-cols-2 xl:hidden">
               <div className="rounded-2xl bg-white p-3 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
                   Total Fee
                 </p>
                 <p className="mt-1 text-lg font-black text-slate-900">
@@ -409,7 +493,7 @@ export default function GroupDashboardPage({
                 </p>
               </div>
               <div className="rounded-2xl bg-white p-3 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
                   Collected
                 </p>
                 <p className="mt-1 text-lg font-black text-emerald-700">
@@ -417,13 +501,13 @@ export default function GroupDashboardPage({
                 </p>
               </div>
               <div className="rounded-2xl bg-white p-3 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
                   Payments
                 </p>
                 <p className="mt-1 text-lg font-black text-slate-900">{feeSummary.paymentCount}</p>
               </div>
               <div className="rounded-2xl bg-white p-3 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
                   Collection %
                 </p>
                 <p className="mt-1 text-lg font-black text-blue-700">
@@ -440,7 +524,7 @@ export default function GroupDashboardPage({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
                         #{index + 1} • {item.studentId?.admissionNo}
                       </p>
                       <h4 className="mt-1 text-base font-black text-slate-900">
@@ -466,7 +550,7 @@ export default function GroupDashboardPage({
 
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     <div className="rounded-xl bg-slate-50 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                      <p className="text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
                         Total Fee
                       </p>
                       <p className="mt-1 text-sm font-bold text-slate-900">
@@ -474,7 +558,7 @@ export default function GroupDashboardPage({
                       </p>
                     </div>
                     <div className="rounded-xl bg-emerald-50 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
+                      <p className="text-[11px] font-semibold tracking-wide text-emerald-600 uppercase">
                         Paid
                       </p>
                       <p className="mt-1 text-sm font-bold text-emerald-700">
@@ -482,7 +566,7 @@ export default function GroupDashboardPage({
                       </p>
                     </div>
                     <div className="rounded-xl bg-rose-50 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-600">
+                      <p className="text-[11px] font-semibold tracking-wide text-rose-600 uppercase">
                         Balance
                       </p>
                       <p className="mt-1 text-sm font-bold text-rose-700">
@@ -490,7 +574,7 @@ export default function GroupDashboardPage({
                       </p>
                     </div>
                     <div className="rounded-xl bg-blue-50 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-600">
+                      <p className="text-[11px] font-semibold tracking-wide text-blue-600 uppercase">
                         Payments
                       </p>
                       <p className="mt-1 text-sm font-bold text-blue-700">{item.paymentCount}</p>
@@ -499,7 +583,7 @@ export default function GroupDashboardPage({
 
                   <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
                     <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                      <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
                         Academic Year
                       </p>
                       <p className="truncate text-sm font-medium text-slate-700">
@@ -507,8 +591,18 @@ export default function GroupDashboardPage({
                       </p>
                     </div>
 
-                    <button className="rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700">
-                      View
+                    <button
+                      onClick={() => {
+                        setSelectedStudent(item)
+                        setPaymentForm({
+                          amount: '',
+                          note: '',
+                        })
+                        setShowFeeModal(true)
+                      }}
+                      className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Collect Fee
                     </button>
                   </div>
                 </div>
@@ -525,19 +619,45 @@ export default function GroupDashboardPage({
               <table className="w-full min-w-7xl border-collapse">
                 <thead className="sticky top-0 z-10 bg-slate-900 whitespace-nowrap text-white">
                   <tr>
-                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">S.No</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-left text-xs font-bold uppercase tracking-wide">Student Name</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Admission No</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Group</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Year</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Academic Year</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide">Total Fee</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide">Paid</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide">Balance</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Payments</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Status</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-left text-xs font-bold uppercase tracking-wide">College</th>
-                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide">Action</th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold tracking-wide uppercase">
+                      S.No
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-left text-xs font-bold tracking-wide uppercase">
+                      Student Name
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold tracking-wide uppercase">
+                      Admission No
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold tracking-wide uppercase">
+                      Group
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold tracking-wide uppercase">
+                      Year
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold tracking-wide uppercase">
+                      Academic Year
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-right text-xs font-bold tracking-wide uppercase">
+                      Total Fee
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-right text-xs font-bold tracking-wide uppercase">
+                      Paid
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-right text-xs font-bold tracking-wide uppercase">
+                      Balance
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold tracking-wide uppercase">
+                      Payments
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold tracking-wide uppercase">
+                      Status
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-left text-xs font-bold tracking-wide uppercase">
+                      College
+                    </th>
+                    <th className="border-b border-slate-700 px-3 py-3 text-center text-xs font-bold tracking-wide uppercase">
+                      Action
+                    </th>
                   </tr>
                 </thead>
 
@@ -548,10 +668,16 @@ export default function GroupDashboardPage({
                       className="border-b border-slate-100 whitespace-nowrap even:bg-slate-50 hover:bg-blue-50"
                     >
                       <td className="px-3 py-3 text-center text-sm font-semibold">{index + 1}</td>
-                      <td className="px-3 py-3 text-sm font-semibold text-slate-900">{item.studentId?.name}</td>
-                      <td className="px-3 py-3 text-center text-sm">{item.studentId?.admissionNo}</td>
+                      <td className="px-3 py-3 text-sm font-semibold text-slate-900">
+                        {item.studentId?.name}
+                      </td>
+                      <td className="px-3 py-3 text-center text-sm">
+                        {item.studentId?.admissionNo}
+                      </td>
                       <td className="px-3 py-3 text-center text-sm">{item.studentId?.group}</td>
-                      <td className="px-3 py-3 text-center text-sm">{item.studentId?.yearOfStudy}</td>
+                      <td className="px-3 py-3 text-center text-sm">
+                        {item.studentId?.yearOfStudy}
+                      </td>
                       <td className="px-3 py-3 text-center text-sm">{item.academicYear}</td>
                       <td className="px-3 py-3 text-right text-sm font-semibold text-slate-900">
                         ₹{item.totalFee.toLocaleString('en-IN')}
@@ -576,10 +702,22 @@ export default function GroupDashboardPage({
                           {item.status}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-sm text-slate-700">{item.studentId?.collegeId?.name}</td>
+                      <td className="px-3 py-3 text-sm text-slate-700">
+                        {item.studentId?.collegeId?.name}
+                      </td>
                       <td className="px-3 py-3 text-center">
-                        <button className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">
-                          View
+                        <button
+                          onClick={() => {
+                            setSelectedStudent(item)
+                            setPaymentForm({
+                              amount: '',
+                              note: '',
+                            })
+                            setShowFeeModal(true)
+                          }}
+                          className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+                        >
+                          Collect Fee
                         </button>
                       </td>
                     </tr>
@@ -605,6 +743,118 @@ export default function GroupDashboardPage({
                 </tbody>
               </table>
             </div>
+            {showFeeModal && selectedStudent && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+
+      <h2 className="mb-5 text-xl font-bold text-slate-900">
+        Collect Fee
+      </h2>
+
+      <div className="space-y-3">
+
+        <div>
+          <p className="text-sm text-slate-500">Student</p>
+          <p className="font-semibold">
+            {selectedStudent.studentId?.name}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm text-slate-500">Admission No</p>
+          <p className="font-semibold">
+            {selectedStudent.studentId?.admissionNo}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+
+          <div className="rounded-lg bg-slate-100 p-3 text-center">
+            <p className="text-xs text-slate-500">Total</p>
+            <p className="font-bold">
+              ₹{selectedStudent.totalFee}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-green-100 p-3 text-center">
+            <p className="text-xs text-slate-500">Paid</p>
+            <p className="font-bold text-green-700">
+              ₹{selectedStudent.totalPaid}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-red-100 p-3 text-center">
+            <p className="text-xs text-slate-500">Balance</p>
+            <p className="font-bold text-red-700">
+              ₹{selectedStudent.balance}
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="mt-6 flex justify-end gap-3">
+  <button
+    onClick={() => setShowFeeModal(false)}
+    className="rounded-lg bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
+  >
+    Cancel
+  </button>
+
+  <button
+    onClick={handleSavePayment}
+    className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
+  >
+    Save Payment
+  </button>
+</div>
+
+      <div className="mt-5 space-y-4">
+
+  <div>
+    <label className="mb-1 block text-sm font-medium text-slate-700">
+      Amount
+    </label>
+
+    <input
+      type="number"
+      value={paymentForm.amount}
+      onChange={(e) =>
+        setPaymentForm({
+          ...paymentForm,
+          amount: e.target.value,
+        })
+      }
+      placeholder="Enter Amount"
+      className="w-full rounded-lg border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
+    />
+  </div>
+
+  <div>
+    <label className="mb-1 block text-sm font-medium text-slate-700">
+      Note
+    </label>
+
+    <textarea
+      rows={3}
+      value={paymentForm.note}
+      onChange={(e) =>
+        setPaymentForm({
+          ...paymentForm,
+          note: e.target.value,
+        })
+      }
+      placeholder="Optional Note"
+      className="w-full rounded-lg border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
+    />
+  </div>
+
+</div>
+
+    </div>
+  </div>
+)}
           </div>
         </>
       ) : (
@@ -752,5 +1002,9 @@ export default function GroupDashboardPage({
         </section>
       </div>
     </div>
+
+
+
+
   )
 }
