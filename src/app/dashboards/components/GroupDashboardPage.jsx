@@ -48,6 +48,7 @@ export default function GroupDashboardPage({
   const [editAttendance, setEditAttendance] = useState(false)
   const [feeData, setFeeData] = useState([])
   const [loadingFees, setLoadingFees] = useState(true)
+  const [pendingOnly, setPendingOnly] = useState(false)
   const [showFeeModal, setShowFeeModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [paymentForm, setPaymentForm] = useState({
@@ -99,11 +100,16 @@ export default function GroupDashboardPage({
       }
     : {}
 
-  async function loadFees() {
+  const loadFees = useCallback(async () => {
+    if (!user?.collegeId) return
+
     try {
       setLoadingFees(true)
 
-      const res = await fetch('/api/fee/admin?limit=10000')
+      const res = await fetch(
+        `/api/fee/lecturer?collegeId=${user.collegeId}&group=${encodeURIComponent(groupName)}`
+      )
+
       const result = await res.json()
 
       if (result.status === 'success') {
@@ -114,7 +120,7 @@ export default function GroupDashboardPage({
     } finally {
       setLoadingFees(false)
     }
-  }
+  }, [user?.collegeId, groupName])
 
   async function handleSavePayment() {
   if (!selectedStudent) return;
@@ -181,7 +187,7 @@ export default function GroupDashboardPage({
   }, [user?.collegeId])
 
   const groupSummary = feeData.reduce((acc, item) => {
-    const group = item.studentId?.group || 'Unknown'
+    const group = item.group || 'Unknown'
 
     if (!acc[group]) {
       acc[group] = {
@@ -219,13 +225,13 @@ export default function GroupDashboardPage({
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 31)
 
     const rows = feeData
-      .filter(item => item.studentId?.group === groupName)
+      .filter(item => item.group === groupName)
       .map((item, index) => [
         index + 1,
-        item.studentId?.name,
-        item.studentId?.admissionNo,
-        item.studentId?.group,
-        item.studentId?.yearOfStudy,
+        item.name,
+        item.admissionNo,
+        item.group,
+        item.yearOfStudy,
         item.academicYear,
         item.totalFee,
         item.totalPaid,
@@ -276,27 +282,44 @@ export default function GroupDashboardPage({
   const groupData = Object.values(groupSummary)
   // const [systemSettings, setSystemSettings] = useState(null)
   // const [showFeeModule, setShowFeeModule] = useState(true)
-  const feeSummary = feeData
-    .filter(item => item.studentId?.group === groupName)
-    .reduce(
-      (acc, item) => {
-        acc.students += 1
-        acc.totalFee += item.totalFee || 0
-        acc.totalPaid += item.totalPaid || 0
-        acc.balance += item.balance || 0
-        acc.paymentCount += item.paymentCount || 0
 
-        return acc
-      },
-      {
-        students: 0,
-        totalFee: 0,
-        totalPaid: 0,
-        balance: 0,
-        paymentCount: 0,
-      }
-    )
-  const groupFeeRows = feeData.filter(item => item.studentId?.group === groupName)
+
+  const groupFeeRows = feeData.filter(item => {
+  if (item.group !== groupName) return false
+    // Group filter
+    if (item.group !== groupName) return false
+
+    // Pending Only filter
+    if (pendingOnly) {
+      return item.status === 'Pending'
+    }
+
+    return true
+  })
+
+  const feeSummary = groupFeeRows.reduce(
+  (acc, item) => {
+    acc.students += 1
+    acc.totalFee += item.totalFee || 0
+    acc.totalPaid += item.totalPaid || 0
+    acc.balance += item.balance || 0
+    acc.paymentCount += item.paymentCount || 0
+
+    return acc
+  },
+  {
+    students: 0,
+    totalFee: 0,
+    totalPaid: 0,
+    balance: 0,
+    paymentCount: 0,
+  }
+)
+
+  
+
+
+
 
   // Fee summary from Group Dashboard API
   const firstYearFee = groupDashboardData?.feeSummary?.[groupName]?.['First Year'] || {
@@ -338,7 +361,7 @@ export default function GroupDashboardPage({
       : 0
   useEffect(() => {
     loadFees()
-  }, [])
+  }, [loadFees, user?.collegeId, groupName])
 
   useEffect(() => {
     if (!user?.collegeId) return
@@ -473,6 +496,15 @@ export default function GroupDashboardPage({
                       ₹{feeSummary.balance.toLocaleString('en-IN')}
                     </p>
                   </div>
+                  <label className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-white">
+  <input
+    type="checkbox"
+    checked={pendingOnly}
+    onChange={(e) => setPendingOnly(e.target.checked)}
+    className="h-4 w-4"
+  />
+  Pending Only
+</label>
                   <button
                     onClick={exportFeePdf}
                     className="rounded-2xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
@@ -525,13 +557,13 @@ export default function GroupDashboardPage({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
-                        #{index + 1} • {item.studentId?.admissionNo}
+                        #{index + 1} • {item.admissionNo}
                       </p>
                       <h4 className="mt-1 text-base font-black text-slate-900">
-                        {item.studentId?.name}
+                        {item.name}
                       </h4>
                       <p className="mt-1 text-xs font-medium text-slate-500">
-                        {item.studentId?.group} • {item.studentId?.yearOfStudy}
+                        {item.group} • {item.yearOfStudy}
                       </p>
                     </div>
 
@@ -591,19 +623,25 @@ export default function GroupDashboardPage({
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => {
-                        setSelectedStudent(item)
-                        setPaymentForm({
-                          amount: '',
-                          note: '',
-                        })
-                        setShowFeeModal(true)
-                      }}
-                      className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
-                    >
-                      Collect Fee
-                    </button>
+                    {item.status === "Pending" ? (
+  <button
+    onClick={() => {
+      setSelectedStudent(item)
+      setPaymentForm({
+        amount: "",
+        note: "",
+      })
+      setShowFeeModal(true)
+    }}
+    className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+  >
+    Collect Fee
+  </button>
+) : (
+  <span className="rounded-lg bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
+    Completed
+  </span>
+)}
                   </div>
                 </div>
               ))}
@@ -669,14 +707,14 @@ export default function GroupDashboardPage({
                     >
                       <td className="px-3 py-3 text-center text-sm font-semibold">{index + 1}</td>
                       <td className="px-3 py-3 text-sm font-semibold text-slate-900">
-                        {item.studentId?.name}
+                        {item.name}
                       </td>
                       <td className="px-3 py-3 text-center text-sm">
-                        {item.studentId?.admissionNo}
+                        {item.admissionNo}
                       </td>
-                      <td className="px-3 py-3 text-center text-sm">{item.studentId?.group}</td>
+                      <td className="px-3 py-3 text-center text-sm">{item.group}</td>
                       <td className="px-3 py-3 text-center text-sm">
-                        {item.studentId?.yearOfStudy}
+                        {item.yearOfStudy}
                       </td>
                       <td className="px-3 py-3 text-center text-sm">{item.academicYear}</td>
                       <td className="px-3 py-3 text-right text-sm font-semibold text-slate-900">
@@ -706,19 +744,25 @@ export default function GroupDashboardPage({
                         {item.studentId?.collegeId?.name}
                       </td>
                       <td className="px-3 py-3 text-center">
-                        <button
-                          onClick={() => {
-                            setSelectedStudent(item)
-                            setPaymentForm({
-                              amount: '',
-                              note: '',
-                            })
-                            setShowFeeModal(true)
-                          }}
-                          className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
-                        >
-                          Collect Fee
-                        </button>
+                        {item.status === "Pending" ? (
+  <button
+    onClick={() => {
+      setSelectedStudent(item)
+      setPaymentForm({
+        amount: "",
+        note: "",
+      })
+      setShowFeeModal(true)
+    }}
+    className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+  >
+    Collect Fee
+  </button>
+) : (
+  <span className="rounded-lg bg-green-100 px-3 py-2 text-xs font-bold text-green-700">
+    Completed
+  </span>
+)}
                       </td>
                     </tr>
                   ))}

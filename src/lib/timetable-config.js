@@ -255,18 +255,25 @@ export const TIMETABLE_SUBJECT_LECTURERS = {
   'Study Hour General': '',
   GFC: 'P.Ramesh',
   'Bridge Course': 'Bridge Course Lecturer',
-  V1: 'E.V/K.B.R/R.G',
-  'V1 Practicals': 'E.V/K.B.R/R.G',
+
+  V1: 'E.V/S.P/R.G',
+  'V1 Practicals': 'E.V/S.P/R.G',
+
   V2: 'G.K/K.S.R/B.V',
   'V2 Practicals': 'G.K/K.S.R/B.V',
+
   V3: 'G.K/K.S.R/R.G',
   'V3 Practicals': 'G.K/K.S.R/R.G',
-  V4: 'E.V/K.B.R/R.G',
-  'V4 Practicals': 'E.V/K.B.R/R.G',
-  V5: 'G.K/K.B.R/B.V',
-  'V5 Practicals': 'G.K/K.B.R/B.V',
-  V6: 'E.V/K.B.R/B.V',
-  'V6 Practicals': 'E.V/K.B.R/B.V',
+
+  V4: 'E.V/S.P/R.G',
+  'V4 Practicals': 'E.V/S.P/R.G',
+
+  V5: 'G.K/K.S.R/B.V',
+  'V5 Practicals': 'G.K/K.S.R/B.V',
+
+  V6: 'E.V/S.P/R.G',
+  'V6 Practicals': 'E.V/S.P/R.G',
+  
   'Study Hour Vocational': '',
 }
 
@@ -320,21 +327,21 @@ export const TIMETABLE_SUBJECT_TARGETS = {
   Hindi: 11,
   Telugu: 11,
   Sanskrit: 11,
-  GFC: 6,
+  GFC: 9,
   'Study Hour': 6,
   'Bridge Course': 2,
   'English Vocational': 6,
-  V1: 12,
+  V1: 11,
   'V1 Practicals': 2,
-  V2: 12,
+  V2: 11,
   'V2 Practicals': 2,
-  V3: 12,
+  V3: 11,
   'V3 Practicals': 2,
-  V4: 12,
+  V4: 11,
   'V4 Practicals': 2,
-  V5: 12,
+  V5: 11,
   'V5 Practicals': 2,
-  V6: 12,
+  V6: 11,
   'V6 Practicals': 2,
 }
 

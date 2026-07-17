@@ -119,7 +119,7 @@ export default function AutoGenerateModal({
       <div className="relative flex h-[90vh] w-full max-w-2xl flex-col rounded-2xl bg-white shadow-2xl">
 
         {/* ── Modal Header ── */}
-        <div className="flex items-center gap-3 rounded-t-2xl bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4">
+        <div className="flex items-center gap-3 rounded-t-2xl bg-linear-to-r from-slate-800 to-slate-700 px-5 py-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500 shadow">
             <Zap size={16} className="text-white" />
           </div>
