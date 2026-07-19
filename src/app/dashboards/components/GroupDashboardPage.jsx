@@ -252,20 +252,22 @@ export default function GroupDashboardPage({
     doc.setFontSize(10)
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 31)
 
-    const rows = groupFeeRows
-      .map((item, index) => [
-        index + 1,
-        item.name,
-        item.admissionNo,
-        item.group,
-        item.yearOfStudy,
-        item.academicYear,
-        item.totalFee,
-        item.totalPaid,
-        item.balance,
-        item.paymentCount,
-        item.status,
-      ])
+    const rows =
+      groupFeeRows.length > 0
+        ? groupFeeRows.map((item, index) => [
+            String(index + 1),
+            String(item.name || '-'),
+            String(item.admissionNo || '-'),
+            String(item.group || '-'),
+            String(item.yearOfStudy || '-'),
+            String(item.academicYear || '-'),
+            `Rs.${Number(item.totalFee || 0).toLocaleString('en-IN')}`,
+            `Rs.${Number(item.totalPaid || 0).toLocaleString('en-IN')}`,
+            `Rs.${Number(item.balance || 0).toLocaleString('en-IN')}`,
+            String(item.paymentCount || 0),
+            String(item.status || '-'),
+          ])
+        : [['-', 'No records found for selected filters', '-', '-', '-', '-', '-', '-', '-', '-', '-']]
 
     autoTable(doc, {
       startY: 38,
@@ -286,8 +288,34 @@ export default function GroupDashboardPage({
       ],
       body: rows,
       theme: 'grid',
+      tableWidth: 'auto',
+      margin: { left: 10, right: 10 },
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        overflow: 'linebreak',
+        valign: 'middle',
+      },
       headStyles: {
         fillColor: [37, 99, 235],
+        fontSize: 8,
+        halign: 'center',
+      },
+      bodyStyles: {
+        textColor: [31, 41, 55],
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' },
+        1: { cellWidth: 42 },
+        2: { cellWidth: 24, halign: 'center' },
+        3: { cellWidth: 16, halign: 'center' },
+        4: { cellWidth: 22, halign: 'center' },
+        5: { cellWidth: 24, halign: 'center' },
+        6: { cellWidth: 24, halign: 'right' },
+        7: { cellWidth: 24, halign: 'right' },
+        8: { cellWidth: 24, halign: 'right' },
+        9: { cellWidth: 18, halign: 'center' },
+        10: { cellWidth: 18, halign: 'center' },
       },
     })
 
