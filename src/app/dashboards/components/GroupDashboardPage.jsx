@@ -30,6 +30,14 @@ const fetcher = async url => {
   return response.json()
 }
 
+function getCurrentAcademicYear() {
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const month = now.getMonth() + 1
+  const startYear = month >= 6 ? currentYear : currentYear - 1
+  return `${startYear}-${startYear + 1}`
+}
+
 export default function GroupDashboardPage({
   groupName,
   routeSegment,
@@ -49,6 +57,8 @@ export default function GroupDashboardPage({
   const [feeData, setFeeData] = useState([])
   const [loadingFees, setLoadingFees] = useState(true)
   const [pendingOnly, setPendingOnly] = useState(false)
+  const [paidOnly, setPaidOnly] = useState(false)
+  const [selectedFeeYear, setSelectedFeeYear] = useState('All Years')
   const [showFeeModal, setShowFeeModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [paymentForm, setPaymentForm] = useState({
@@ -123,47 +133,65 @@ export default function GroupDashboardPage({
   }, [user?.collegeId, groupName])
 
   async function handleSavePayment() {
-  if (!selectedStudent) return;
+    if (!selectedStudent) return
 
-  if (!paymentForm.amount || Number(paymentForm.amount) <= 0) {
-    alert("Please enter a valid amount");
-    return;
-  }
+    const enteredAmount = Number(paymentForm.amount)
 
-  try {
-    const res = await fetch(`/api/fee/admin/${selectedStudent._id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        amount: Number(paymentForm.amount),
-        note: paymentForm.note,
-      }),
-    });
-
-    const result = await res.json();
-
-    if (!res.ok) {
-      alert(result.error || "Payment failed");
-      return;
+    if (!enteredAmount || enteredAmount <= 0) {
+      alert('Please enter a valid amount')
+      return
     }
 
-    alert("Payment saved successfully");
+    try {
+      const isExistingFeeRecord = Boolean(selectedStudent.feeId)
+      const endpoint = isExistingFeeRecord
+        ? `/api/fee/admin/${selectedStudent.feeId}`
+        : '/api/fee/admin'
+      const method = isExistingFeeRecord ? 'PUT' : 'POST'
+      const payload = isExistingFeeRecord
+        ? {
+            amount: enteredAmount,
+            note: paymentForm.note,
+          }
+        : {
+            studentId: selectedStudent.studentId || selectedStudent._id,
+            collegeId: user?.collegeId,
+            academicYear: selectedStudent.academicYear || getCurrentAcademicYear(),
+            totalFee: Number(selectedStudent.totalFee) || enteredAmount,
+            amount: enteredAmount,
+            note: paymentForm.note,
+          }
 
-    setShowFeeModal(false);
+      const res = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
 
-    setPaymentForm({
-      amount: "",
-      note: "",
-    });
+      const result = await res.json()
 
-    loadFees();
-  } catch (error) {
-    console.error(error);
-    alert("Server Error");
+      if (!res.ok) {
+        alert(result.error || 'Payment failed')
+        return
+      }
+
+      alert('Payment saved successfully')
+
+      setShowFeeModal(false)
+      setSelectedStudent(null)
+      setPaymentForm({
+        amount: '',
+        note: '',
+      })
+
+      loadFees()
+    } catch (error) {
+      console.error(error)
+      alert('Server Error')
+    }
   }
-}
 
   const loadSystemSettings = useCallback(async () => {
     if (!user?.collegeId) {
@@ -224,8 +252,7 @@ export default function GroupDashboardPage({
     doc.setFontSize(10)
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 31)
 
-    const rows = feeData
-      .filter(item => item.group === groupName)
+    const rows = groupFeeRows
       .map((item, index) => [
         index + 1,
         item.name,
@@ -268,13 +295,17 @@ export default function GroupDashboardPage({
 
     doc.setFontSize(11)
 
-    doc.text(`Students : ${feeSummary.students}`, 14, finalY)
+    const filterLabel = [
+      groupName,
+      selectedFeeYear !== 'All Years' ? selectedFeeYear : 'All Years',
+      pendingOnly ? 'Pending Only' : paidOnly ? 'Paid Only' : 'All Statuses',
+    ].join(' | ')
 
-    doc.text(`Total Fee : ₹${feeSummary.totalFee.toLocaleString('en-IN')}`, 80, finalY)
-
-    doc.text(`Collected : ₹${feeSummary.totalPaid.toLocaleString('en-IN')}`, 150, finalY)
-
-    doc.text(`Balance : ₹${feeSummary.balance.toLocaleString('en-IN')}`, 225, finalY)
+    doc.text(`Filters : ${filterLabel}`, 14, finalY)
+    doc.text(`Students : ${feeSummary.students}`, 14, finalY + 8)
+    doc.text(`Total Fee : ₹${feeSummary.totalFee.toLocaleString('en-IN')}`, 80, finalY + 8)
+    doc.text(`Collected : ₹${feeSummary.totalPaid.toLocaleString('en-IN')}`, 150, finalY + 8)
+    doc.text(`Balance : ₹${feeSummary.balance.toLocaleString('en-IN')}`, 225, finalY + 8)
 
     doc.save(`${groupName}-Fee-Report.pdf`)
   }
@@ -285,13 +316,22 @@ export default function GroupDashboardPage({
 
 
   const groupFeeRows = feeData.filter(item => {
-  if (item.group !== groupName) return false
     // Group filter
     if (item.group !== groupName) return false
+
+    // Year filter
+    if (selectedFeeYear !== 'All Years' && item.yearOfStudy !== selectedFeeYear) {
+      return false
+    }
 
     // Pending Only filter
     if (pendingOnly) {
       return item.status === 'Pending'
+    }
+
+    // Paid Only filter
+    if (paidOnly) {
+      return item.status === 'Paid'
     }
 
     return true
@@ -497,14 +537,50 @@ export default function GroupDashboardPage({
                     </p>
                   </div>
                   <label className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-white">
-  <input
-    type="checkbox"
-    checked={pendingOnly}
-    onChange={(e) => setPendingOnly(e.target.checked)}
-    className="h-4 w-4"
-  />
-  Pending Only
-</label>
+                    <input
+                      type="checkbox"
+                      checked={pendingOnly}
+                      onChange={e => {
+                        const checked = e.target.checked
+                        setPendingOnly(checked)
+                        if (checked) {
+                          setPaidOnly(false)
+                        }
+                      }}
+                      className="h-4 w-4"
+                    />
+                    Pending Only
+                  </label>
+                  <label className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-white">
+                    <input
+                      type="checkbox"
+                      checked={paidOnly}
+                      onChange={e => {
+                        const checked = e.target.checked
+                        setPaidOnly(checked)
+                        if (checked) {
+                          setPendingOnly(false)
+                        }
+                      }}
+                      className="h-4 w-4"
+                    />
+                    Paid Only
+                  </label>
+                  <select
+                    value={selectedFeeYear}
+                    onChange={e => setSelectedFeeYear(e.target.value)}
+                    className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-sm font-medium text-white outline-none"
+                  >
+                    <option value="All Years" className="text-slate-900">
+                      All Years
+                    </option>
+                    <option value="First Year" className="text-slate-900">
+                      First Year
+                    </option>
+                    <option value="Second Year" className="text-slate-900">
+                      Second Year
+                    </option>
+                  </select>
                   <button
                     onClick={exportFeePdf}
                     className="rounded-2xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
@@ -800,14 +876,14 @@ export default function GroupDashboardPage({
         <div>
           <p className="text-sm text-slate-500">Student</p>
           <p className="font-semibold">
-            {selectedStudent.studentId?.name}
+            {selectedStudent.name}
           </p>
         </div>
 
         <div>
           <p className="text-sm text-slate-500">Admission No</p>
           <p className="font-semibold">
-            {selectedStudent.studentId?.admissionNo}
+            {selectedStudent.admissionNo}
           </p>
         </div>
 

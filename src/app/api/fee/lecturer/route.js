@@ -33,7 +33,7 @@ export async function GET(req) {
     const feeRecords = await Fee.find({
       collegeId: new mongoose.Types.ObjectId(collegeId),
     })
-      .select("studentId totalFee payments status")
+      .select("_id studentId academicYear totalFee payments status")
       .lean();
 
     // Merge Students + Fee Records
@@ -52,12 +52,15 @@ export async function GET(req) {
         admissionNo: student.admissionNo,
         group: student.group,
         yearOfStudy: student.yearOfStudy,
+        studentId: student._id,
 
         status: fee ? fee.status : "Pending",
+        academicYear: fee?.academicYear || "",
 
         totalFee: fee?.totalFee || 0,
         totalPaid,
         balance: fee ? fee.totalFee - totalPaid : 0,
+        paymentCount: fee?.payments?.length || 0,
 
         feeId: fee?._id || null,
       };
