@@ -121,9 +121,9 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
 
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className={`bg-linear-to-r ${theme.header} px-5 py-5 text-white`}>
+      <div className={`bg-linear-to-r ${theme.header} px-4 py-4 text-white sm:px-5 sm:py-5`}>
         <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-end 2xl:justify-between">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6">
             <TopStat icon={<Users className="h-4 w-4" />} label="Strength" value={groupStrength} />
             <TopStat
               icon={<Activity className="h-4 w-4" />}
@@ -150,10 +150,10 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
         </div>
       </div>
 
-      <div className="grid gap-4 p-2">
+      <div className="grid gap-3 p-2 sm:gap-4">
         {years.map(year => (
-          <article key={year} className="rounded-2xl border border-slate-200 bg-slate-50 p-2">
-            <h5 className="text-base font-bold text-slate-900">{year}</h5>
+          <article key={year} className="rounded-2xl border border-slate-200 bg-slate-50 p-2 sm:p-3">
+            <h5 className="text-sm font-bold text-slate-900 sm:text-base">{year}</h5>
 
             <div className="mt-2 hidden overflow-x-auto md:block">
               <table className="w-full border-collapse">
@@ -248,8 +248,8 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
                     key={`${year}-${session}`}
                     className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-900">{session}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-slate-900">{session}</span>
 
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-semibold ${theme.pill}`}
@@ -269,40 +269,40 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
                       </div>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-3 gap-2">
-                      <div>
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <div className="rounded-xl bg-slate-50 p-2.5">
                         <p className="text-[11px] text-slate-500">Present</p>
-                        <p className="text-lg font-bold text-emerald-600">{current.present}</p>
+                        <p className="text-base font-bold text-emerald-600">{current.present}</p>
                       </div>
 
-                      <div>
+                      <div className="rounded-xl bg-slate-50 p-2.5">
                         <p className="text-[11px] text-slate-500">Absent</p>
-                        <p className="text-lg font-bold text-rose-600">{current.absent}</p>
+                        <p className="text-base font-bold text-rose-600">{current.absent}</p>
                       </div>
 
-                      <div>
+                      <div className="rounded-xl bg-slate-50 p-2.5">
                         <p className="text-[11px] text-slate-500">Unmarked</p>
-                        <p className="text-lg font-bold text-amber-500">{current.unmarked}</p>
+                        <p className="text-base font-bold text-amber-500">{current.unmarked}</p>
                       </div>
 
-                      <div>
+                      <div className="rounded-xl bg-slate-50 p-2.5">
                         <p className="text-[11px] text-slate-500">Total</p>
-                        <p className="text-lg font-bold text-slate-700">{current.total}</p>
+                        <p className="text-base font-bold text-slate-700">{current.total}</p>
                       </div>
 
-                      <div className="col-span-3">
+                      <div className="col-span-2 rounded-xl bg-slate-50 p-2.5">
                         <p className="text-[11px] text-slate-500">👤Marked By</p>
                         <p className="font-semibold text-slate-800">{current.lecturerName}</p>
                       </div>
 
-                      <div className="col-span-3">
+                      <div className="col-span-2 rounded-xl bg-slate-50 p-2.5">
                         <p className="text-[11px] text-slate-500">🕒Marked At</p>
                         <p className="font-semibold text-slate-800">
                           {formatTime(current.markedAt)}
                         </p>
                       </div>
 
-                      <div className="mt-3">
+                      <div className="col-span-2 rounded-xl bg-slate-50 p-2.5">
                         <p className="text-[11px] text-slate-500">Status</p>
 
                         <span
@@ -330,12 +330,12 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
 
 function TopStat({ icon, label, value }) {
   return (
-    <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-2">
+    <div className="rounded-2xl border border-white/15 bg-white/10 px-3 py-2 sm:px-4">
       <div className="flex items-center gap-2 text-white/80">
         {icon}
         <span className="text-[11px] tracking-wide uppercase">{label}</span>
       </div>
-      <p className="mt-1 text-lg font-bold text-white md:text-xl">{value}</p>
+      <p className="mt-1 text-base font-bold text-white sm:text-lg md:text-xl">{value}</p>
     </div>
   )
 }

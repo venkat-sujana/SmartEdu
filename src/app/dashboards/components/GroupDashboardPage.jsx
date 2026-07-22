@@ -22,9 +22,9 @@ const fetcher = async url => {
 
 function OverviewCard({ title, value, note, className }) {
   return (
-    <div className={`rounded-3xl p-4 text-white shadow-sm ${className}`}>
-      <p className="text-sm text-white/80">{title}</p>
-      <p className="mt-2 text-2xl font-black">{value}</p>
+    <div className={`rounded-3xl p-4 text-white shadow-sm sm:p-5 ${className}`}>
+      <p className="text-xs text-white/80 sm:text-sm">{title}</p>
+      <p className="mt-2 text-xl font-black sm:text-2xl">{value}</p>
       {note ? <p className="mt-2 text-xs text-white/75">{note}</p> : null}
     </div>
   )
@@ -34,10 +34,27 @@ function QuickLinkCard({ href, title, description }) {
   return (
     <Link
       href={href}
-      className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+      className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:p-5"
     >
-      <p className="text-lg font-bold text-slate-900">{title}</p>
-      <p className="mt-2 text-sm text-slate-600">{description}</p>
+      <p className="text-base font-bold text-slate-900 sm:text-lg">{title}</p>
+      {description ? <p className="mt-2 text-sm text-slate-600">{description}</p> : null}
+    </Link>
+  )
+}
+
+function HeaderActionLink({ href, label, theme, variant = 'theme' }) {
+  const className =
+    variant === 'neutral'
+      ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+      : `${theme.pill}`
+
+  return (
+    <Link
+      href={href}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-center text-sm font-semibold shadow-sm transition sm:px-4 ${className}`}
+    >
+      <UserPlus className="h-4 w-4" />
+      {label}
     </Link>
   )
 }
@@ -73,13 +90,13 @@ export default function GroupDashboardPage({
     {
       title: 'First Year Fee',
       value: `${firstYearFee.paid} / ${firstYearFee.total}`,
-      note: 'Students paid vs total',
+      
       className: 'bg-cyan-600',
     },
     {
       title: 'Second Year Fee',
       value: `${secondYearFee.paid} / ${secondYearFee.total}`,
-      note: 'Students paid vs total',
+      
       className: 'bg-violet-600',
     },
    
@@ -88,52 +105,32 @@ export default function GroupDashboardPage({
   const footerAddress = [collegeDetails?.address, collegeDetails?.district].filter(Boolean).join(', ')
 
   return (
-    <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-4 md:p-6`}>
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-3 sm:p-4 md:p-6`}>
+      <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
         <div
-          className={`flex flex-col gap-4 rounded-3xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between`}
+          className={`flex flex-col gap-4 rounded-3xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-4 shadow-sm sm:p-5 lg:flex-row lg:items-center lg:justify-between`}
         >
           <div>
             
-            <h1 className="mt-1 text-2xl font-black text-slate-900">{groupName}</h1>
-            <p className="text-xs font-black text-slate-900 tracking-[0.25em] uppercase">Lecturer Dashboard</p>
+            <h1 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">{groupName}</h1>
+            <p className="text-[11px] font-black text-slate-900 tracking-[0.2em] uppercase sm:text-xs">Lecturer Dashboard</p>
             <p className="mt-1 text-sm font-black text-slate-900">{collegeName}</p>
             
           </div>
 
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <Link
-              href={addStudentHref}
-              className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-            >
-              <UserPlus className="h-4 w-4" />
-              Add Student
-            </Link>
-            <Link
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <HeaderActionLink href={addStudentHref} label="Add Student" theme={theme} />
+            <HeaderActionLink
               href={`${baseDashboardHref}/attendance`}
-              className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-            >
-              <UserPlus className="h-4 w-4" />
-              Take Attendance
-            </Link>
-            <Link
-              href={marksPostingHref}
-              className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-            >
-              <UserPlus className="h-4 w-4" />
-              Post Marks
-            </Link>
-            <Link
-              href={examDashboardHref}
-              className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${theme.pill}`}
-            >
-              <UserPlus className="h-4 w-4" />
-              Exam Dashboard
-            </Link>
+              label="Take Attendance"
+              theme={theme}
+            />
+            <HeaderActionLink href={marksPostingHref} label="Post Marks" theme={theme} />
+            <HeaderActionLink href={examDashboardHref} label="Exam Dashboard" theme={theme} />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
           <div className="space-y-4">
             <GroupDashboardSidebar
               groupName={groupName}
@@ -157,26 +154,26 @@ export default function GroupDashboardPage({
               <GroupAttendanceCard groupName={groupName} />
             </div>
 
-            <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm md:p-6">
+            <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5 md:p-6">
               <div className="mb-4 border-b border-slate-200 pb-3">
-                <h2 className="text-2xl font-black text-slate-900">Fee Overview</h2>
+                <h2 className="text-xl font-black text-slate-900 sm:text-2xl">Fee Overview</h2>
                 
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {overviewCards.map(card => (
                   <OverviewCard key={card.title} {...card} />
                 ))}
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm md:p-6">
+            <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5 md:p-6">
               <div className="mb-4 border-b border-slate-200 pb-3">
-                <h2 className="text-2xl font-black text-slate-900">Quick Links</h2>
+                <h2 className="text-xl font-black text-slate-900 sm:text-2xl">Quick Links</h2>
                 
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <QuickLinkCard
                   href={`${baseDashboardHref}/attendance`}
                   title="Attendance"

@@ -128,20 +128,20 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
 
   return (
     <section className={`overflow-hidden rounded-3xl border ${theme.softBorder} bg-white shadow-sm`}>
-      <div className={`bg-linear-to-r ${theme.header} px-5 py-5 text-white`}>
+      <div className={`bg-linear-to-r ${theme.header} px-4 py-4 text-white sm:px-5 sm:py-5`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
               <Users2 className="h-4 w-4" />
               Monthly Attendance
             </div>
-            <h2 className="mt-3 text-2xl font-black tracking-tight">
+            <h2 className="mt-3 text-xl font-black tracking-tight sm:text-2xl">
               {group} - {yearOfStudy}
             </h2>
             <p className="mt-1 text-sm text-emerald-50">{collegeName}</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <StatCard label="Students" value={summaryStats.students} />
             <StatCard label="Eligible" value={summaryStats.safe} />
             <StatCard label="Below 75%" value={summaryStats.below75} />
@@ -149,9 +149,9 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
         </div>
       </div>
 
-      <div className={`space-y-4 bg-linear-to-br ${theme.soft} p-4 md:p-5`}>
+      <div className={`space-y-4 bg-linear-to-br ${theme.soft} p-3 sm:p-4 md:p-5`}>
         <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 md:flex-row md:items-center md:justify-between">
-          <label className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <label className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 sm:px-4 sm:py-3">
             <Search className="h-4 w-4 text-slate-400" />
             <input
               type="text"
@@ -164,7 +164,7 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
 
           <button
             onClick={handlePrint}
-            className={`inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition`}
+            className={`inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition sm:py-3`}
           >
             <Printer className="h-4 w-4" />
             Print
@@ -194,14 +194,14 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
                   return (
                     <article
                       key={`${student.name}-${index}`}
-                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                      className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                             #{index + 1}
                           </p>
-                          <h3 className="truncate text-base font-bold text-slate-900">
+                          <h3 className="truncate text-sm font-bold text-slate-900 sm:text-base">
                             {student.name}
                           </h3>
                         </div>
@@ -216,7 +216,7 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
                         </span>
                       </div>
 
-                      <div className="mt-4 grid grid-cols-2 gap-3">
+                      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
                         <MiniStat label="Working Days" value={computed.totalWorking} />
                         <MiniStat label="Present Days" value={computed.totalPresent} />
                         <MiniStat label="Overall %" value={`${computed.overallPercent}%`} />
@@ -229,7 +229,7 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
                       </div>
 
                       <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
-                        <div className="grid grid-cols-4 bg-slate-900 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white">
+                        <div className="grid grid-cols-4 bg-slate-900 px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-white sm:px-3 sm:text-[11px]">
                           <span>Month</span>
                           <span className="text-center">Working</span>
                           <span className="text-center">Present</span>
@@ -247,7 +247,7 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
                             return (
                               <div
                                 key={key}
-                                className="grid grid-cols-4 px-3 py-2 text-sm text-slate-700"
+                                className="grid grid-cols-4 px-2 py-2 text-xs text-slate-700 sm:px-3 sm:text-sm"
                               >
                                 <span className="font-semibold text-slate-900">{label}</span>
                                 <span className="text-center">{total}</span>
@@ -448,16 +448,16 @@ function getStudentTotals(student) {
 
 function StatCard({ label, value }) {
   return (
-    <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3">
-      <p className="text-[11px] uppercase tracking-wide text-emerald-50">{label}</p>
-      <p className="mt-1 text-xl font-bold">{value}</p>
+    <div className="rounded-2xl border border-white/15 bg-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
+      <p className="text-[10px] uppercase tracking-wide text-emerald-50 sm:text-[11px]">{label}</p>
+      <p className="mt-1 text-lg font-bold sm:text-xl">{value}</p>
     </div>
   );
 }
 
 function MiniStat({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-2.5 py-2.5 sm:px-3 sm:py-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
         {label}
       </p>
