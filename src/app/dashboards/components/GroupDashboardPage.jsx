@@ -1,3 +1,4 @@
+
 'use client'
 
 import Link from 'next/link'
@@ -7,7 +8,6 @@ import { UserPlus } from 'lucide-react'
 import ExternalLinks from '@/components/ExternalLinks'
 import LecturerInfoCard from '@/components/dashboard/LecturerInfoCard'
 import GroupAttendanceCard from '@/components/OverallAttendanceMatrixCard/GroupAttendanceCard'
-import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
 import DashboardFooter from '@/components/layout/Footer'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
 import GroupDashboardSidebar from './GroupDashboardSidebar'
@@ -47,7 +47,7 @@ export default function GroupDashboardPage({
   routeSegment,
   includeExternalLinks = false,
   includeEditAttendance = true,
-  statusDescription = 'Open a module from the sidebar to work in a dedicated page.',
+ 
 }) {
   const { data: session } = useSession()
   const user = session?.user
@@ -66,15 +66,6 @@ export default function GroupDashboardPage({
     user?.collegeId ? `/api/attendance/group-wise-today?collegeId=${user.collegeId}` : null,
     fetcher
   )
-  const { data: consecutiveData } = useSWR(
-    user?.collegeId ? `/api/attendance/consecutive-absentees?collegeId=${user.collegeId}` : null,
-    fetcher
-  )
-
-  const consecutiveAbsentees = (consecutiveData?.absentees || []).filter(
-    student => student.group === groupName
-  )
-
   const feeSummary = groupDashboardData?.feeSummary?.[groupName] || {}
   const firstYearFee = feeSummary['First Year'] || { total: 0, paid: 0 }
   const secondYearFee = feeSummary['Second Year'] || { total: 0, paid: 0 }
@@ -91,18 +82,7 @@ export default function GroupDashboardPage({
       note: 'Students paid vs total',
       className: 'bg-violet-600',
     },
-    {
-      title: 'Operations',
-      value: 'Dedicated Pages',
-      note: 'Each module now opens separately',
-      className: 'bg-slate-900',
-    },
-    {
-      title: 'Mobile View',
-      value: 'Cleaner',
-      note: 'One module per page keeps content visible',
-      className: 'bg-emerald-700',
-    },
+   
   ]
 
   const footerAddress = [collegeDetails?.address, collegeDetails?.district].filter(Boolean).join(', ')
@@ -114,10 +94,11 @@ export default function GroupDashboardPage({
           className={`flex flex-col gap-4 rounded-3xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between`}
         >
           <div>
-            <p className="text-xs tracking-[0.25em] text-slate-500 uppercase">Lecturer Dashboard</p>
-            <h1 className="mt-2 text-2xl font-black text-slate-900">{groupName} Overview</h1>
-            <p className="mt-1 text-sm text-slate-600">{collegeName}</p>
-            <p className="mt-3 max-w-2xl text-sm text-slate-600">{statusDescription}</p>
+            
+            <h1 className="mt-1 text-2xl font-black text-slate-900">{groupName}</h1>
+            <p className="text-xs font-black text-slate-900 tracking-[0.25em] uppercase">Lecturer Dashboard</p>
+            <p className="mt-1 text-sm font-black text-slate-900">{collegeName}</p>
+            
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -161,7 +142,9 @@ export default function GroupDashboardPage({
               activeSection="overview"
             />
             <LecturerInfoCard user={user} groupName={groupName} />
-            <GroupAttendanceCard groupName={groupName} />
+            <div className="xl:hidden">
+              <GroupAttendanceCard groupName={groupName} />
+            </div>
             {includeExternalLinks ? (
               <div className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm">
                 <ExternalLinks />
@@ -170,12 +153,14 @@ export default function GroupDashboardPage({
           </div>
 
           <div className="space-y-4">
+            <div className="hidden xl:block">
+              <GroupAttendanceCard groupName={groupName} />
+            </div>
+
             <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm md:p-6">
               <div className="mb-4 border-b border-slate-200 pb-3">
-                <h2 className="text-2xl font-black text-slate-900">Module Overview</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  Open each item in its own page so every component stays fully visible on mobile.
-                </p>
+                <h2 className="text-2xl font-black text-slate-900">Fee Overview</h2>
+                
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -188,58 +173,55 @@ export default function GroupDashboardPage({
             <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm md:p-6">
               <div className="mb-4 border-b border-slate-200 pb-3">
                 <h2 className="text-2xl font-black text-slate-900">Quick Links</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  These links take you directly to full-page components.
-                </p>
+                
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <QuickLinkCard
                   href={`${baseDashboardHref}/attendance`}
                   title="Attendance"
-                  description="Take daily attendance in a separate workspace."
+                  
                 />
                 <QuickLinkCard
                   href={`${baseDashboardHref}/students`}
                   title="Students"
-                  description="Open the complete student table in a dedicated page."
+                  
                 />
                 <QuickLinkCard
                   href={`${baseDashboardHref}/absentees`}
                   title="Absentees"
-                  description="View today's absentees and consecutive absentees clearly."
+                  
+                />
+                <QuickLinkCard
+                  href={`${baseDashboardHref}/absentees`}
+                  title="Consecutive Absentees"
+                  
                 />
                 <QuickLinkCard
                   href={`${baseDashboardHref}/monthly`}
                   title="Monthly Reports"
-                  description="Monthly attendance and shortage reports in one focused page."
+                  
                 />
                 <QuickLinkCard
                   href={`${baseDashboardHref}/exams`}
                   title="Exam Dashboard"
-                  description="Review exam output without other dashboard sections crowding it."
+                  
                 />
                 <QuickLinkCard
                   href={`${baseDashboardHref}/fees`}
                   title="Fee Dashboard"
-                  description="Open fee summary and student-wise fee cards on a separate page."
+                  
                 />
                 {includeEditAttendance ? (
                   <QuickLinkCard
                     href={`${baseDashboardHref}/edit`}
                     title="Edit Attendance"
-                    description="Correct attendance entries in a full-page editor view."
+                    
                   />
                 ) : null}
               </div>
             </section>
 
-            <ConsecutiveAbsenteesCard
-              data={consecutiveAbsentees}
-              title={`${groupName} Consecutive Absentees`}
-              loading={!consecutiveData}
-              showViewAll={false}
-            />
           </div>
         </div>
 

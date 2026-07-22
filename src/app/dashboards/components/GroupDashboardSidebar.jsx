@@ -13,13 +13,9 @@ export default function GroupDashboardSidebar({
 
   return (
     <aside className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm">
-      <p className="text-xs font-semibold tracking-[0.25em] text-slate-400 uppercase">
-        {groupName} Modules
-      </p>
+      
       <h2 className="mt-2 text-xl font-black text-slate-900">Sidebar Navigation</h2>
-      <p className="mt-2 text-sm text-slate-600">
-        Open each module in a dedicated page for a cleaner mobile view.
-      </p>
+      
 
       <nav className="mt-5 md:hidden">
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2">

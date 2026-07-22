@@ -32,6 +32,14 @@ const fetcher = async url => {
   return response.json()
 }
 
+function getCurrentAcademicYear() {
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const month = now.getMonth() + 1
+  const startYear = month >= 6 ? currentYear : currentYear - 1
+  return `${startYear}-${startYear + 1}`
+}
+
 function SectionCard({ title, description, children }) {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm md:p-6">
@@ -177,9 +185,15 @@ export default function GroupDashboardSectionPage({
             note: paymentForm.note,
           }
         : {
-            studentId: selectedStudent.studentId || selectedStudent._id,
-            collegeId: user?.collegeId,
-            academicYear: selectedStudent.academicYear,
+            studentId:
+              selectedStudent.studentId?._id ||
+              selectedStudent.studentId ||
+              selectedStudent._id,
+            collegeId:
+              selectedStudent.collegeId?._id ||
+              selectedStudent.collegeId ||
+              user?.collegeId,
+            academicYear: selectedStudent.academicYear || getCurrentAcademicYear(),
             totalFee: Number(selectedStudent.totalFee) || enteredAmount,
             amount: enteredAmount,
             note: paymentForm.note,
