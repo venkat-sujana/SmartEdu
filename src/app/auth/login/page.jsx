@@ -1,12 +1,62 @@
 //src/app/auth/login
 "use client";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ClipboardList, School, ShieldCheck, Users,Briefcase} from "lucide-react";
 import DashboardFooter from "@/components/layout/Footer";
 const collegeName = "College";
 
+const LOGIN_OPTIONS = [
+  {
+    value: "admin",
+    title: "Admin",
+    desc: "Full CRUD access across the entire platform.",
+    link: "/admin/login",
+    color: "cyan",
+    Icon: ShieldCheck,
+  },
+  {
+    value: "lecturer",
+    title: "Lecturer",
+    desc: "Manage attendance and exams.",
+    link: "/lecturer/login",
+    color: "green",
+    Icon: ClipboardList,
+  },
+  {
+    value: "principal",
+    title: "Principal",
+    desc: "Monitor academics and performance.",
+    link: "/principal/login",
+    color: "purple",
+    Icon: School,
+  },
+  {
+    value: "office",
+    title: "Office Staff",
+    desc: "Monitor attendance, student records and office operations.",
+    link: "/office/login",
+    color: "orange",
+    Icon: Briefcase,
+  },
+  {
+    value: "student",
+    title: "Student",
+    desc: "Access courses, attendance, and results.",
+    link: "/student/login",
+    color: "blue",
+    Icon: Users,
+  },
+];
+
 export default function LoginPage() {
+  const [selectedRole, setSelectedRole] = useState(LOGIN_OPTIONS[0].value);
+  const activeOption = useMemo(
+    () => LOGIN_OPTIONS.find(option => option.value === selectedRole) || LOGIN_OPTIONS[0],
+    [selectedRole]
+  );
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-linear-to-br from-sky-50 via-indigo-50 to-blue-100 text-slate-900">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
@@ -33,69 +83,37 @@ export default function LoginPage() {
             <h1 className="text-4xl font-bold text-blue-900 drop-shadow-sm md:text-5xl">
               Welcome to SmartCollege Portal
             </h1>
-            <p className="mx-auto mt-3 max-w-2xl text-lg text-gray-700">
-              Manage students, lecturers, principals, and administration in one connected platform.
-            </p>
+            
           </motion.div>
         </section>
 
-        <section className="w-full py-12">
+        <section className="w-full py-2">
           <h3 className="mb-8 text-center text-3xl font-bold text-blue-800 drop-shadow-sm">
             Login as
           </h3>
 
-          <div className="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            <LoginCard
-              icon={<ShieldCheck className="mx-auto h-10 w-10 text-cyan-700" />}
-              title="Admin"
-              desc="Full CRUD access across the entire platform."
-              link="/admin/login"
-              color="cyan"
-            />
-            <LoginCard
-              icon={<ClipboardList className="mx-auto h-10 w-10 text-green-600" />}
-              title="Lecturer"
-              desc="Manage attendance and exams."
-              link="/lecturer/login"
-              color="green"
-            />
-            <LoginCard
-              icon={<School className="mx-auto h-10 w-10 text-purple-600" />}
-              title="Principal"
-              desc="Monitor academics and performance."
-              link="/principal/login"
-              color="purple"
-            />
-            <LoginCard
-              icon={<Briefcase className="mx-auto h-10 w-10 text-orange-600" />}
-              title="Office Staff"
-              desc="Monitor attendance, student records and office operations."
-              link="/office/login"
-              color="orange"
-            />
-            <LoginCard
-              icon={<Users className="mx-auto h-10 w-10 text-blue-600" />}
-              title="Student"
-              desc="Access courses, attendance, and results."
-              link="/student/login"
-              color="blue"
+          <div className="mx-auto max-w-xl px-6">
+            <LoginSelectorCard
+              activeOption={activeOption}
+              selectedRole={selectedRole}
+              onChangeRole={setSelectedRole}
             />
           </div>
         </section>
 
-        <DashboardFooter
+        {/* <DashboardFooter
           collegeName={collegeName}
           facebookUrl="https://facebook.com/yourcollege"
           instagramUrl="https://instagram.com/yourcollege"
           twitterUrl="https://x.com/yourcollege"
           youtubeUrl="https://youtube.com/@yourcollege"
-        />
+        /> */}
       </div>
     </div>
   )
 }
 
-function LoginCard({ icon, title, desc, link, color }) {
+function LoginSelectorCard({ activeOption, selectedRole, onChangeRole }) {
   const bg = {
     blue: "from-blue-50/80 to-sky-50/90 hover:from-blue-100/90 hover:to-sky-100",
     green: "from-emerald-50/80 to-green-50/90 hover:from-emerald-100/90 hover:to-green-100",
@@ -103,7 +121,7 @@ function LoginCard({ icon, title, desc, link, color }) {
     cyan: "from-cyan-50/80 to-teal-50/90 hover:from-cyan-100/50 hover:to-teal-100",
     orange:"from-orange-50/80 to-amber-50/90 hover:from-orange-100/90 hover:to-amber-100",
     
-  }[color];
+  }[activeOption.color];
 
   const btn = {
     blue: "bg-blue-600 hover:bg-blue-700",
@@ -111,7 +129,17 @@ function LoginCard({ icon, title, desc, link, color }) {
     purple: "bg-purple-600 hover:bg-purple-700",
     cyan: "bg-cyan-600 hover:bg-cyan-700",
     orange: "bg-orange-600 hover:bg-orange-700",
-  }[color];
+  }[activeOption.color];
+
+  const iconColor = {
+    blue: "text-blue-600",
+    green: "text-green-600",
+    purple: "text-purple-600",
+    cyan: "text-cyan-700",
+    orange: "text-orange-600",
+  }[activeOption.color];
+
+  const ActiveIcon = activeOption.Icon;
 
   return (
     <motion.div
@@ -119,16 +147,35 @@ function LoginCard({ icon, title, desc, link, color }) {
       transition={{ type: "spring", stiffness: 260, damping: 18 }}
       className={`rounded-2xl border border-white/60 bg-linear-to-br p-8 shadow-xl backdrop-blur-md ${bg}`}
     >
-      {icon}
-      <h4 className="mb-2 mt-4 text-center text-xl font-semibold text-gray-900">{title}</h4>
-      <p className="mb-4 text-center text-gray-700">{desc}</p>
+      <ActiveIcon className={`mx-auto h-10 w-10 ${iconColor}`} />
+      <h4 className="mb-2 mt-4 text-center text-xl font-semibold text-gray-900">
+        {activeOption.title}
+      </h4>
+      <p className="mb-5 text-center text-gray-700">{activeOption.desc}</p>
+
+      <div className="mb-5">
+        <label className="mb-2 block text-sm font-semibold text-gray-700">
+          Choose Login Role
+        </label>
+        <select
+          value={selectedRole}
+          onChange={event => onChangeRole(event.target.value)}
+          className="w-full rounded-xl border border-white/70 bg-white/90 px-4 py-3 text-sm font-medium text-slate-800 shadow-sm outline-none transition focus:border-slate-400"
+        >
+          {LOGIN_OPTIONS.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.title}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="flex justify-center">
         <Link
-          href={link}
+          href={activeOption.link}
           className={`inline-block rounded-xl px-6 py-3 font-medium text-white shadow-lg transition hover:shadow-xl ${btn}`}
         >
-          {title}
+          Continue as {activeOption.title}
         </Link>
       </div>
     </motion.div>
