@@ -56,7 +56,7 @@ function FeeSummaryCard({ title, value, className }) {
   return (
     <div className={`rounded-2xl p-4 text-white shadow-sm sm:p-5 ${className}`}>
       <p className="text-xs text-white/80 sm:text-sm">{title}</p>
-      <p className="mt-2 break-words text-xl font-black sm:text-2xl">{value}</p>
+      <p className="mt-2 wrap-break-word text-xl font-black sm:text-2xl">{value}</p>
     </div>
   )
 }
@@ -126,7 +126,10 @@ export default function GroupDashboardSectionPage({
     student => student.group === groupName
   )
 
-  const feeData = Array.isArray(feeRows?.data) ? feeRows.data : []
+  const feeData = useMemo(
+    () => (Array.isArray(feeRows?.data) ? feeRows.data : []),
+    [feeRows]
+  )
   const filteredFeeData = useMemo(
     () =>
       feeData.filter(item => {
@@ -266,12 +269,12 @@ export default function GroupDashboardSectionPage({
         ? filteredFeeData.map((item, index) => [
             String(index + 1),
             String(item.name || '-'),
-            String(item.admissionNo || '-'),
+            // String(item.admissionNo || '-'),
             String(item.yearOfStudy || '-'),
             String(item.academicYear || '-'),
             `Rs.${Number(item.totalFee || 0).toLocaleString('en-IN')}`,
             `Rs.${Number(item.totalPaid || 0).toLocaleString('en-IN')}`,
-            `Rs.${Number(item.balance || 0).toLocaleString('en-IN')}`,
+            // `Rs.${Number(item.balance || 0).toLocaleString('en-IN')}`,
             String(item.status || '-'),
           ])
         : [['-', 'No records found', '-', '-', '-', '-', '-', '-', '-']]
@@ -281,12 +284,12 @@ export default function GroupDashboardSectionPage({
       head: [[
         'S.No',
         'Student Name',
-        'Admission No',
+        // 'Admission No',
         'Year',
         'Academic Year',
         'Total Fee',
         'Paid',
-        'Balance',
+        // 'Balance',
         'Status',
       ]],
       body: rows,
@@ -403,17 +406,10 @@ export default function GroupDashboardSectionPage({
 
     if (section === 'fees') {
       return (
-        <SectionCard title="Fee Dashboard" description="Group fee summary in a cleaner layout.">
+        <SectionCard title="Fee Dashboard" description="">
           <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.25em] text-slate-400 uppercase">
-                  Fee Controls
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  Filter student records and export the current view to PDF.
-                </p>
-              </div>
+              
 
               <button
                 onClick={exportFeePdf}
@@ -493,16 +489,7 @@ export default function GroupDashboardSectionPage({
               value={`Rs.${feeSummary.totalFee.toLocaleString('en-IN')}`}
               className="bg-indigo-600"
             />
-            <FeeSummaryCard
-              title="Collected"
-              value={`Rs.${feeSummary.totalPaid.toLocaleString('en-IN')}`}
-              className="bg-emerald-600"
-            />
-            <FeeSummaryCard
-              title="Balance"
-              value={`Rs.${feeSummary.balance.toLocaleString('en-IN')}`}
-              className="bg-rose-600"
-            />
+            
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -575,22 +562,7 @@ export default function GroupDashboardSectionPage({
                         Rs.{Number(item.totalPaid || 0).toLocaleString('en-IN')}
                       </p>
                     </div>
-                    <div className="rounded-xl bg-rose-50 p-3">
-                      <p className="text-[11px] font-semibold tracking-wide text-rose-600 uppercase">
-                        Balance
-                      </p>
-                      <p className="mt-1 text-sm font-bold text-rose-700">
-                        Rs.{Number(item.balance || 0).toLocaleString('en-IN')}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-blue-50 p-3">
-                      <p className="text-[11px] font-semibold tracking-wide text-blue-600 uppercase">
-                        Payments
-                      </p>
-                      <p className="mt-1 text-sm font-bold text-blue-700">
-                        {item.paymentCount || 0}
-                      </p>
-                    </div>
+                    
                   </div>
 
                   <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
@@ -648,10 +620,7 @@ export default function GroupDashboardSectionPage({
                       <p className="font-bold text-green-700">Rs.{selectedStudent.totalPaid}</p>
                     </div>
 
-                    <div className="rounded-lg bg-red-100 p-3 text-center">
-                      <p className="text-xs text-slate-500">Balance</p>
-                      <p className="font-bold text-red-700">Rs.{selectedStudent.balance}</p>
-                    </div>
+                    
                   </div>
                 </div>
 
@@ -672,21 +641,7 @@ export default function GroupDashboardSectionPage({
                     />
                   </div>
 
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">Note</label>
-                    <textarea
-                      rows={3}
-                      value={paymentForm.note}
-                      onChange={e =>
-                        setPaymentForm({
-                          ...paymentForm,
-                          note: e.target.value,
-                        })
-                      }
-                      placeholder="Optional Note"
-                      className="w-full rounded-lg border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
+                  
                 </div>
 
                 <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
