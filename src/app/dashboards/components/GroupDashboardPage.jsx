@@ -1,4 +1,4 @@
-
+//src/app/dashboards/components/GroupDashboardPage.jsx
 'use client'
 
 import Link from 'next/link'
@@ -12,12 +12,46 @@ import DashboardFooter from '@/components/layout/Footer'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
 import GroupDashboardSidebar from './GroupDashboardSidebar'
 
+const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
+const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
+
 const fetcher = async url => {
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error('Failed to fetch data')
   }
   return response.json()
+}
+
+function formatExamLabel(value) {
+  return value || 'Unknown Exam'
+}
+
+function isUnitExam(examType) {
+  return UNIT_EXAMS.includes(examType)
+}
+
+function isPublicExam(examType) {
+  return PUBLIC_EXAMS.includes(examType)
+}
+
+function getAllMarks(report) {
+  return [...(report?.generalSubjects || []), ...(report?.vocationalSubjects || [])]
+}
+
+function isReportPass(report) {
+  const subjects = getAllMarks(report)
+  if (subjects.length === 0) return false
+
+  return subjects.every(subject => {
+    const numericMark =
+      typeof subject?.marks === 'number' ? subject.marks : Number(subject?.marks)
+
+    if (!Number.isFinite(numericMark)) return false
+    if (isUnitExam(report.examType) && numericMark < 9) return false
+    if (isPublicExam(report.examType) && numericMark < 18) return false
+    return numericMark >= 0
+  })
 }
 
 function OverviewCard({ title, value, note, className }) {
@@ -59,6 +93,121 @@ function HeaderActionLink({ href, label, theme, variant = 'theme' }) {
   )
 }
 
+function CompactExamTable({ rows, loading }) {
+  return (
+    <>
+      <div className="space-y-3 md:hidden">
+        {!loading && rows.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+            No exam summary available.
+          </div>
+        ) : (
+          rows.map((row, index) => (
+            <div
+              key={row.examType}
+              className="rounded-3xl border border-slate-200 bg-slate-50/90 p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    S.No {index + 1}
+                  </p>
+                  <h3 className="mt-1 text-sm font-bold text-slate-900">{row.examType}</h3>
+                </div>
+                <div className="rounded-2xl bg-white px-3 py-2 text-right shadow-sm">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    Pass %
+                  </div>
+                  <div className="text-sm font-bold text-cyan-700">{row.passPercent}</div>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <div className="text-xs text-slate-500">Enrolled</div>
+                  <div className="font-bold text-slate-900">{row.enrolled}</div>
+                </div>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <div className="text-xs text-slate-500">Attended</div>
+                  <div className="font-bold text-slate-900">{row.attended}</div>
+                </div>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <div className="text-xs text-slate-500">Absent</div>
+                  <div className="font-bold text-rose-700">{row.absent}</div>
+                </div>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <div className="text-xs text-slate-500">Present</div>
+                  <div className="font-bold text-emerald-700">{row.present}</div>
+                </div>
+                <div className="rounded-2xl bg-white px-3 py-2 col-span-2">
+                  <div className="text-xs text-slate-500">Pass</div>
+                  <div className="font-bold text-slate-900">{row.pass}</div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
+        <table className="min-w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-slate-600">
+              <th className="px-3 py-2 text-left font-medium">S.No</th>
+              <th className="px-3 py-2 text-left font-medium">Exam Type</th>
+              <th className="px-3 py-2 text-left font-medium">Enrolled</th>
+              <th className="px-3 py-2 text-left font-medium">Attended</th>
+              <th className="px-3 py-2 text-left font-medium">Absent</th>
+              <th className="px-3 py-2 text-left font-medium">Present</th>
+              <th className="px-3 py-2 text-left font-medium">Pass</th>
+              <th className="px-3 py-2 text-left font-medium">Pass %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {!loading && rows.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-3 py-6 text-center text-sm text-slate-500">
+                  No exam summary available.
+                </td>
+              </tr>
+            ) : (
+              rows.map((row, index) => (
+                <tr
+                  key={row.examType}
+                  className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
+                >
+                  <td className="px-3 py-2">{index + 1}</td>
+                  <td className="px-3 py-2 font-medium">{row.examType}</td>
+                  <td className="px-3 py-2">{row.enrolled}</td>
+                  <td className="px-3 py-2">{row.attended}</td>
+                  <td className="px-3 py-2 text-rose-700">{row.absent}</td>
+                  <td className="px-3 py-2 text-emerald-700">{row.present}</td>
+                  <td className="px-3 py-2">{row.pass}</td>
+                  <td className="px-3 py-2 font-medium text-blue-700">{row.passPercent}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}
+
+function YearlyExamSummarySection({ title, rows, loading }) {
+  return (
+    <div className="space-y-3 rounded-3xl border border-slate-200 bg-slate-50/70 p-3 sm:p-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-black text-slate-900 sm:text-lg">{title}</h3>
+        <span className="text-xs text-slate-500">
+          {loading ? 'Loading...' : `${rows.length} exams`}
+        </span>
+      </div>
+      <CompactExamTable rows={rows} loading={loading} />
+    </div>
+  )
+}
+
 export default function GroupDashboardPage({
   groupName,
   routeSegment,
@@ -83,9 +232,67 @@ export default function GroupDashboardPage({
     user?.collegeId ? `/api/attendance/group-wise-today?collegeId=${user.collegeId}` : null,
     fetcher
   )
+  const { data: examData, isLoading: examsLoading } = useSWR(
+    user?.collegeId ? `/api/exams?stream=${encodeURIComponent(groupName)}` : null,
+    fetcher
+  )
+  const { data: studentData } = useSWR(
+    user?.collegeId ? `/api/students?group=${encodeURIComponent(groupName)}&page=1&limit=1` : null,
+    fetcher
+  )
   const feeSummary = groupDashboardData?.feeSummary?.[groupName] || {}
   const firstYearFee = feeSummary['First Year'] || { total: 0, paid: 0 }
   const secondYearFee = feeSummary['Second Year'] || { total: 0, paid: 0 }
+  const enrolledCount = studentData?.totalStudents || 0
+  const examReports = Array.isArray(examData?.data) ? examData.data : []
+  const firstYearEnrolled = feeSummary['First Year']?.total || 0
+  const secondYearEnrolled = feeSummary['Second Year']?.total || 0
+
+  const buildExamSummaryRows = (reports, enrolled) =>
+    Object.values(
+      reports.reduce((acc, report) => {
+        const key = report.examType || 'Unknown Exam'
+        if (!acc[key]) {
+          acc[key] = {
+            examType: formatExamLabel(key),
+            enrolled,
+            attended: 0,
+            absent: 0,
+            present: 0,
+            pass: 0,
+            passPercent: '0.0%',
+          }
+        }
+
+        acc[key].attended += 1
+        acc[key].present += 1
+        if (isReportPass(report)) {
+          acc[key].pass += 1
+        }
+        return acc
+      }, {})
+    )
+      .map(row => {
+        const absent = Math.max(row.enrolled - row.attended, 0)
+        const passPercent =
+          row.attended > 0 ? `${((row.pass / row.attended) * 100).toFixed(1)}%` : '0.0%'
+
+        return {
+          ...row,
+          absent,
+          passPercent,
+        }
+      })
+      .sort((a, b) => a.examType.localeCompare(b.examType))
+
+  const firstYearExamSummaryRows = buildExamSummaryRows(
+    examReports.filter(report => report.yearOfStudy === 'First Year'),
+    firstYearEnrolled
+  )
+  const secondYearExamSummaryRows = buildExamSummaryRows(
+    examReports.filter(report => report.yearOfStudy === 'Second Year'),
+    secondYearEnrolled
+  )
   const overviewCards = [
     {
       title: 'First Year Fee',
@@ -216,6 +423,35 @@ export default function GroupDashboardPage({
                     
                   />
                 ) : null}
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5 md:p-6">
+              <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 sm:text-2xl">Exam Summary</h2>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Compact exam-wise performance snapshot by year
+                  </p>
+                </div>
+                <span className="text-xs text-slate-500">
+                  {examsLoading
+                    ? 'Loading...'
+                    : `${firstYearExamSummaryRows.length + secondYearExamSummaryRows.length} exams`}
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                <YearlyExamSummarySection
+                  title="First Year"
+                  rows={firstYearExamSummaryRows}
+                  loading={examsLoading}
+                />
+                <YearlyExamSummarySection
+                  title="Second Year"
+                  rows={secondYearExamSummaryRows}
+                  loading={examsLoading}
+                />
               </div>
             </section>
 

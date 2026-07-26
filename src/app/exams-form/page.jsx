@@ -1,5 +1,5 @@
-//app/exams-form/page.jsx
 "use client";
+
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,6 +10,7 @@ import { getDashboardRouteForLecturerSubject } from "@/utils/lecturerDashboardRo
 const generalStreams = ["MPC", "BIPC", "CEC", "HEC"];
 const unitExams = ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"];
 const publicExams = ["QUARTERLY", "HALFYEARLY", "PRE-PUBLIC-1", "PRE-PUBLIC-2"];
+const validYearsOfStudy = ["First Year", "Second Year"];
 
 function buildSubjectPayload(subjects, examType) {
   const maxMarks = unitExams.includes(examType)
@@ -32,6 +33,15 @@ function hasEnteredMarks(subjects) {
   return Object.values(subjects || {}).some(
     (mark) => mark !== "" && mark !== null && mark !== undefined
   );
+}
+
+function deriveYearOfStudy(academicYear) {
+  if (!academicYear) return "";
+  return academicYear.endsWith("-1") ? "First Year" : "Second Year";
+}
+
+function isValidYearOfStudy(yearOfStudy) {
+  return validYearsOfStudy.includes(yearOfStudy);
 }
 
 export default function ExamsFormPage() {
@@ -60,7 +70,6 @@ export default function ExamsFormPage() {
       ? getDashboardRouteForLecturerSubject(session.user.subject)
       : "/exam-report");
 
-  // Fetch students based on selected stream/year
   useEffect(() => {
     const fetchStudents = async () => {
       if (!session?.user?.collegeId || !formData.stream) {
@@ -68,11 +77,7 @@ export default function ExamsFormPage() {
         return;
       }
 
-      const yearOfStudy = formData.academicYear
-        ? formData.academicYear.endsWith("-1")
-          ? "First Year"
-          : "Second Year"
-        : "";
+      const yearOfStudy = deriveYearOfStudy(formData.academicYear);
 
       try {
         const params = new URLSearchParams({
@@ -95,12 +100,38 @@ export default function ExamsFormPage() {
     fetchStudents();
   }, [formData.stream, formData.academicYear, session?.user?.collegeId]);
 
-
-
+  const resetForm = () => {
+    setFormData({
+      yearOfStudy: "",
+      academicYear: "",
+      studentId: "",
+      stream: "",
+      examType: "",
+      examDate: "",
+      subjects: {},
+      total: 0,
+      percentage: 0,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const resolvedYearOfStudy =
+      formData.yearOfStudy || deriveYearOfStudy(formData.academicYear);
+
+    if (!formData.studentId) {
+      toast.error("Please select a student.");
+      return;
+    }
+
+    if (!isValidYearOfStudy(resolvedYearOfStudy)) {
+      toast.error("Please select a valid academic year.");
+      return;
+    }
+
     setIsSubmitting(true);
+
     try {
       const subjectPayload = buildSubjectPayload(formData.subjects, formData.examType);
       const isGeneralStream = generalStreams.includes(formData.stream);
@@ -110,6 +141,7 @@ export default function ExamsFormPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          yearOfStudy: resolvedYearOfStudy,
           generalSubjects: isGeneralStream ? subjectPayload : undefined,
           vocationalSubjects: isGeneralStream ? undefined : subjectPayload,
           collegeId: session?.user?.collegeId,
@@ -120,24 +152,14 @@ export default function ExamsFormPage() {
       const result = await res.json();
 
       if (res.ok) {
-        toast.success("✅ Exam saved successfully!");
+        toast.success("Exam saved successfully!");
         router.push(dashboardReturnUrl);
-        setFormData({
-          yearOfStudy: "",
-          academicYear: "",
-          studentId: "",
-          stream: "",
-          examType: "",
-          examDate: "",
-          subjects: {},
-          total: 0,
-          percentage: 0,
-        });
+        resetForm();
       } else {
-        toast.error(`❌ Error: ${result.message}`);
+        toast.error(`Error: ${result.message}`);
       }
     } catch {
-      toast.error("❌ Server error while submitting.");
+      toast.error("Server error while submitting.");
     } finally {
       setIsSubmitting(false);
     }
@@ -145,7 +167,14 @@ export default function ExamsFormPage() {
 
   const handleBulkSubmit = async ({ bulkMarks, students: bulkStudents, yearOfStudy }) => {
     if (!formData.stream || !formData.academicYear || !formData.examType || !formData.examDate) {
-      toast.error("Group, academic year, exam type, exam date తప్పనిసరి.");
+      toast.error("Group, academic year, exam type, and exam date are required.");
+      return;
+    }
+
+    const resolvedYearOfStudy = yearOfStudy || deriveYearOfStudy(formData.academicYear);
+
+    if (!isValidYearOfStudy(resolvedYearOfStudy)) {
+      toast.error("Please select a valid academic year.");
       return;
     }
 
@@ -154,10 +183,13 @@ export default function ExamsFormPage() {
         student,
         subjects: bulkMarks?.[student._id] || {},
       }))
-      .filter((row) => hasEnteredMarks(row.subjects));
+      .filter((row) => {
+        const studentYear = row.student?.yearOfStudy || resolvedYearOfStudy;
+        return row.student?._id && isValidYearOfStudy(studentYear) && hasEnteredMarks(row.subjects);
+      });
 
     if (rowsToSave.length === 0) {
-      toast.error("కనీసం ఒక student కి marks enter చేయండి.");
+      toast.error("Enter marks for at least one valid student.");
       return;
     }
 
@@ -165,7 +197,7 @@ export default function ExamsFormPage() {
 
     try {
       const isGeneralStream = generalStreams.includes(formData.stream);
-      const results = [];
+      let savedCount = 0;
 
       for (const row of rowsToSave) {
         const subjectPayload = buildSubjectPayload(row.subjects, formData.examType);
@@ -174,21 +206,23 @@ export default function ExamsFormPage() {
           continue;
         }
 
+        const payload = {
+          studentId: row.student._id,
+          stream: formData.stream,
+          yearOfStudy: row.student.yearOfStudy || resolvedYearOfStudy,
+          academicYear: formData.academicYear,
+          examType: formData.examType,
+          examDate: formData.examDate,
+          generalSubjects: isGeneralStream ? subjectPayload : undefined,
+          vocationalSubjects: isGeneralStream ? undefined : subjectPayload,
+          collegeId: session?.user?.collegeId,
+          lecturerId: session?.user?.id,
+        };
+
         const res = await fetch("/api/exams", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            studentId: row.student._id,
-            stream: formData.stream,
-            yearOfStudy: row.student.yearOfStudy || yearOfStudy,
-            academicYear: formData.academicYear,
-            examType: formData.examType,
-            examDate: formData.examDate,
-            generalSubjects: isGeneralStream ? subjectPayload : undefined,
-            vocationalSubjects: isGeneralStream ? undefined : subjectPayload,
-            collegeId: session?.user?.collegeId,
-            lecturerId: session?.user?.id,
-          }),
+          body: JSON.stringify(payload),
         });
 
         const result = await res.json();
@@ -196,24 +230,19 @@ export default function ExamsFormPage() {
           throw new Error(result?.message || `${row.student.name} save failed`);
         }
 
-        results.push(row.student._id);
+        savedCount += 1;
       }
 
-      toast.success(`✅ ${results.length} students marks saved successfully!`);
+      if (savedCount === 0) {
+        toast.error("No valid rows found to save.");
+        return;
+      }
+
+      toast.success(`${savedCount} students marks saved successfully!`);
       router.push(dashboardReturnUrl);
-      setFormData({
-        yearOfStudy: "",
-        academicYear: "",
-        studentId: "",
-        stream: "",
-        examType: "",
-        examDate: "",
-        subjects: {},
-        total: 0,
-        percentage: 0,
-      });
+      resetForm();
     } catch (error) {
-      toast.error(`❌ ${error.message || "Bulk save failed"}`);
+      toast.error(error.message || "Bulk save failed");
     } finally {
       setIsSubmitting(false);
     }

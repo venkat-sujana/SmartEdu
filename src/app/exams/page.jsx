@@ -308,7 +308,7 @@ function Sidebar({
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         ].join(' ')}
       >
-        <div className="flex h-16 items-center justify-between border-b border-white/10 px-4">
+        <div className="flex h-16 items-center mt-10 justify-between border-b border-white/10 px-4">
           <div className={collapsed ? 'hidden' : 'block'}>
             <p className="text-xs font-medium tracking-wide text-cyan-200/80 uppercase">Academic</p>
             <h1 className="text-base font-semibold text-white">Exam Module</h1>
@@ -979,7 +979,7 @@ export default function ExamReportPage() {
       />
 
       <div
-        className={[contentPadding, 'flex h-full flex-col transition-all duration-300'].join(' ')}
+        className={[contentPadding, 'flex h-full flex-col mt-10 transition-all duration-300'].join(' ')}
       >
         <header className="sticky top-0 z-20 border-b border-white/60 bg-linear-to-r from-white via-sky-50 to-cyan-50 px-4 py-3 shadow-sm backdrop-blur">
           <div className="flex flex-wrap items-center gap-3">
@@ -993,16 +993,14 @@ export default function ExamReportPage() {
             </button>
 
             <div className="min-w-[220px]">
-              <label className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                Academic Year
-              </label>
+              
               <select
                 value={academicYear}
                 onChange={e => {
                   setAcademicYear(e.target.value)
                   setDetailsFilter(null)
                 }}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition outline-none focus:border-blue-500"
+                className="w-full mr-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition outline-none focus:border-blue-500"
               >
                 {academicYearOptions.map(year => (
                   <option key={year} value={year}>
@@ -1017,7 +1015,7 @@ export default function ExamReportPage() {
                   href={dashboardReturnUrl}
                   className="mr-2 inline-flex rounded-lg border border-blue-300 bg-linear-to-r from-white to-blue-50 px-3 py-2 text-sm font-medium text-blue-700 shadow-sm transition hover:from-blue-50 hover:to-blue-100"
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-2 ml-4">
                     <ArrowLeft className="h-4 w-4" />
                     Back to Dashboard
                   </span>
