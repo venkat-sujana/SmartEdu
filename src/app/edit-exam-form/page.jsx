@@ -1,5 +1,5 @@
-// app/edit-exam-form/page.jsx
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
@@ -10,11 +10,25 @@ const UNIT_EXAMS = ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"];
 function generateAcademicYearOptions() {
   const currentYear = new Date().getFullYear();
   const years = [];
+
   for (let y = currentYear - 2; y <= currentYear + 1; y++) {
     years.push({ value: `${y}-1`, label: `First Year (${y})` });
     years.push({ value: `${y}-2`, label: `Second Year (${y})` });
   }
+
   return years;
+}
+
+function normalizeGroup(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+}
+
+function deriveYearOfStudy(academicYear) {
+  if (!academicYear) return "";
+  return academicYear.endsWith("-1") ? "First Year" : "Second Year";
 }
 
 export default function EditExamForm({ examData, onClose, onUpdated }) {
@@ -37,9 +51,9 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
 
   const examId = examData?._id;
 
-  // stream బట్టి subject keys decide అవుతాయి
   const subjectKeys = useMemo(() => {
     if (!formData.stream) return [];
+
     return GENERAL_STREAMS.includes(formData.stream)
       ? [
           "Telugu/Sanskrit/Hindi",
@@ -54,50 +68,83 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
 
   const academicYearOptions = useMemo(() => generateAcademicYearOptions(), []);
 
+  const selectedYearOfStudy = formData.academicYear
+    ? deriveYearOfStudy(formData.academicYear)
+    : formData.yearOfStudy;
+
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => {
+      const sameGroup = formData.stream
+        ? normalizeGroup(student.group) === normalizeGroup(formData.stream)
+        : true;
+      const sameYear = selectedYearOfStudy
+        ? student.yearOfStudy === selectedYearOfStudy
+        : true;
+
+      return sameGroup && sameYear;
+    });
+  }, [students, formData.stream, selectedYearOfStudy]);
+
   useEffect(() => {
-    // Students list fetch
+    if (!examData) return;
+
+    const rawSubjects = examData.generalSubjects?.length
+      ? examData.generalSubjects
+      : examData.vocationalSubjects || [];
+
+    const subjectsObj = Array.isArray(rawSubjects)
+      ? rawSubjects.reduce((acc, subject) => {
+          if (subject?.subject) {
+            acc[subject.subject] = subject.marks ?? "";
+          }
+          return acc;
+        }, {})
+      : rawSubjects;
+
+    const studentIdValue =
+      typeof examData.studentId === "object"
+        ? examData.studentId?._id || ""
+        : examData.studentId || "";
+
+    setFormData({
+      _id: examData._id || "",
+      stream: examData.stream || "",
+      studentId: studentIdValue,
+      yearOfStudy: examData.yearOfStudy || "",
+      academicYear: examData.academicYear || "",
+      examType: examData.examType || "",
+      examDate: examData.examDate?.substring(0, 10) || "",
+      subjects: subjectsObj,
+      total: examData.total || 0,
+      percentage: examData.percentage || 0,
+    });
+  }, [examData]);
+
+  useEffect(() => {
     const fetchStudents = async () => {
       if (!session?.user?.collegeId) return;
-      const res = await fetch(`/api/students`);
-      const json = await res.json();
-      setStudents(json.data || []);
+
+      try {
+        const params = new URLSearchParams({ limit: "100" });
+
+        if (formData.stream) {
+          params.set("group", formData.stream);
+        }
+
+        if (selectedYearOfStudy) {
+          params.set("yearOfStudy", selectedYearOfStudy);
+        }
+
+        const res = await fetch(`/api/students?${params.toString()}`);
+        const json = await res.json();
+        setStudents(Array.isArray(json.data) ? json.data : []);
+      } catch {
+        setStudents([]);
+      }
     };
+
     fetchStudents();
-
-    if (examData) {
-      // ✅ FIX: generalSubjects [] empty array అయినా truthy — length చెక్ చేయాలి
-      const rawSubjects = examData.generalSubjects?.length
-        ? examData.generalSubjects
-        : examData.vocationalSubjects || [];
-
-      // ✅ Array [{subject, marks, maxMarks}] → Object {"GFC": 20} గా convert
-      const subjectsObj = Array.isArray(rawSubjects)
-        ? rawSubjects.reduce((acc, s) => {
-            if (s?.subject) acc[s.subject] = s.marks ?? "";
-            return acc;
-          }, {})
-        : rawSubjects;
-
-      // ✅ studentId populated object గా వస్తే _id తీసుకోవాలి
-      const studentIdValue =
-        typeof examData.studentId === "object"
-          ? examData.studentId?._id || ""
-          : examData.studentId || "";
-
-      setFormData({
-        _id: examData._id || "",
-        stream: examData.stream || "",
-        studentId: studentIdValue,
-        yearOfStudy: examData.yearOfStudy || "",
-        academicYear: examData.academicYear || "",
-        examType: examData.examType || "",
-        examDate: examData.examDate?.substring(0, 10) || "",
-        subjects: subjectsObj,
-        total: examData.total || 0,
-        percentage: examData.percentage || 0,
-      });
-    }
-  }, [examData, session]);
+  }, [session?.user?.collegeId, formData.stream, selectedYearOfStudy]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -112,15 +159,15 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
           [subject]:
             subjectValue === "A" || subjectValue === "AB"
               ? subjectValue
-              : isNaN(Number(subjectValue))
+              : Number.isNaN(Number(subjectValue))
               ? ""
               : Number(subjectValue),
         };
 
         const validMarks = Object.values(updatedSubjects).filter(
-          (v) => typeof v === "number" && !isNaN(v)
+          (mark) => typeof mark === "number" && !Number.isNaN(mark)
         );
-        const totalMarks = validMarks.reduce((sum, val) => sum + val, 0);
+        const totalMarks = validMarks.reduce((sum, mark) => sum + mark, 0);
         const percent =
           validMarks.length > 0
             ? parseFloat((totalMarks / validMarks.length).toFixed(2))
@@ -133,9 +180,27 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
           percentage: percent,
         };
       });
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+
+      return;
     }
+
+    if (name === "studentId") {
+      const selectedStudent = students.find((student) => student._id === value);
+      setFormData((prev) => ({
+        ...prev,
+        studentId: value,
+        yearOfStudy: selectedStudent?.yearOfStudy || prev.yearOfStudy,
+      }));
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "academicYear"
+        ? { yearOfStudy: deriveYearOfStudy(value), studentId: "" }
+        : {}),
+    }));
   };
 
   const handleUpdate = async (e) => {
@@ -143,21 +208,18 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
     setLoading(true);
 
     if (!examId) {
-      toast.error("❌ Exam ID missing");
+      toast.error("Exam ID missing");
       setLoading(false);
       return;
     }
 
     if (!formData.studentId || formData.studentId.length !== 24) {
-      toast.error("❌ Please select a valid student");
+      toast.error("Please select a valid student");
       setLoading(false);
       return;
     }
 
-    // ✅ FIX: examType బట్టి maxMarks set చేయాలి
     const maxMarks = UNIT_EXAMS.includes(formData.examType) ? 25 : 50;
-
-    // ✅ FIX: Object {"GFC": 20} → Array [{subject, marks, maxMarks}] గా convert చేసి పంపాలి
     const subjectsArray = Object.entries(formData.subjects)
       .filter(([, marks]) => marks !== "" && marks !== undefined)
       .map(([subject, marks]) => ({ subject, marks, maxMarks }));
@@ -184,12 +246,11 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
       });
 
       const result = await res.json();
-
       if (!res.ok || result.success === false) {
-        throw new Error(result.message || "❌ Failed to update exam");
+        throw new Error(result.message || "Failed to update exam");
       }
 
-      toast.success("✅ Exam updated successfully!");
+      toast.success("Exam updated successfully");
       onUpdated();
       onClose();
     } catch (error) {
@@ -200,75 +261,76 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
   };
 
   return (
-    <div className="bg-white border rounded-xl p-4 shadow-lg max-w-xl mx-auto relative">
+    <div className="relative mx-auto max-w-xl rounded-xl border bg-white p-4 shadow-lg">
       <Toaster />
-      <h2 className="text-xl font-bold mb-4 text-center">Edit Exam Entry</h2>
+      <h2 className="mb-4 text-center text-xl font-bold">Edit Exam Entry</h2>
 
       <form onSubmit={handleUpdate} className="space-y-4">
-        {/* Student */}
         <div>
           <label className="block font-medium">Student Name</label>
           <select
             name="studentId"
             value={formData.studentId}
             onChange={handleChange}
-            className="w-full border p-2 rounded"
+            className="w-full rounded border p-2"
             required
           >
             <option value="">-- Select Student --</option>
-            {students.map((student) => (
+            {filteredStudents.map((student) => (
               <option key={student._id} value={student._id}>
                 {student.name}
+                {student.admissionNo ? ` (${student.admissionNo})` : ""}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Academic Year */}
         <div>
           <label className="block font-medium">Academic Year</label>
           <select
             name="academicYear"
             value={formData.academicYear}
             onChange={handleChange}
-            className="w-full border p-2 rounded"
+            className="w-full rounded border p-2"
           >
             <option value="">-- Select Year --</option>
             {formData.academicYear &&
-              !academicYearOptions.find(
-                (o) => o.value === formData.academicYear
-              ) && (
-                <option value={formData.academicYear}>
-                  {formData.academicYear}
-                </option>
+              !academicYearOptions.find((option) => option.value === formData.academicYear) && (
+                <option value={formData.academicYear}>{formData.academicYear}</option>
               )}
-            {academicYearOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
+            {academicYearOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Exam Type */}
         <div>
           <label className="block font-medium">Exam Type</label>
           <select
             name="examType"
             value={formData.examType}
             onChange={handleChange}
-            className="w-full border p-2 rounded"
+            className="w-full rounded border p-2"
           >
             {[
-              "UNIT-1","UNIT-2","UNIT-3","UNIT-4",
-              "QUARTERLY","HALFYEARLY","PRE-PUBLIC-1","PRE-PUBLIC-2",
+              "UNIT-1",
+              "UNIT-2",
+              "UNIT-3",
+              "UNIT-4",
+              "QUARTERLY",
+              "HALFYEARLY",
+              "PRE-PUBLIC-1",
+              "PRE-PUBLIC-2",
             ].map((exam) => (
-              <option key={exam} value={exam}>{exam}</option>
+              <option key={exam} value={exam}>
+                {exam}
+              </option>
             ))}
           </select>
         </div>
 
-        {/* Exam Date */}
         <div>
           <label className="block font-medium">Exam Date</label>
           <input
@@ -276,39 +338,33 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
             name="examDate"
             value={formData.examDate}
             onChange={handleChange}
-            className="w-full border p-2 rounded"
+            className="w-full rounded border p-2"
           />
         </div>
 
-        {/* Subjects */}
         {subjectKeys.length > 0 ? (
           <div>
-            <label className="block font-medium mb-1">Subject Marks</label>
+            <label className="mb-1 block font-medium">Subject Marks</label>
             <div className="grid grid-cols-2 gap-2">
-              {subjectKeys.map((subj) => (
-                <div key={subj}>
-                  <label className="block text-xs text-gray-500 mb-0.5">
-                    {subj}
-                  </label>
+              {subjectKeys.map((subject) => (
+                <div key={subject}>
+                  <label className="mb-0.5 block text-xs text-gray-500">{subject}</label>
                   <input
                     type="text"
-                    name={`subject_${subj}`}
-                    placeholder={subj}
-                    value={formData.subjects[subj] ?? ""}
+                    name={`subject_${subject}`}
+                    placeholder={subject}
+                    value={formData.subjects[subject] ?? ""}
                     onChange={handleChange}
-                    className="border p-2 rounded w-full"
+                    className="w-full rounded border p-2"
                   />
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <p className="text-sm text-gray-400">
-            Stream select చేయబడలేదు — subjects load కావడం లేదు.
-          </p>
+          <p className="text-sm text-gray-400">Stream select చేసిన తర్వాత subjects కనిపిస్తాయి.</p>
         )}
 
-        {/* Total & Percentage (readonly) */}
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-xs text-gray-500">Total Marks</label>
@@ -316,7 +372,7 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
               type="text"
               value={formData.total}
               readOnly
-              className="border p-2 rounded w-full bg-gray-50 text-gray-600"
+              className="w-full rounded border bg-gray-50 p-2 text-gray-600"
             />
           </div>
           <div>
@@ -325,17 +381,16 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
               type="text"
               value={formData.percentage}
               readOnly
-              className="border p-2 rounded w-full bg-gray-50 text-gray-600"
+              className="w-full rounded border bg-gray-50 p-2 text-gray-600"
             />
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className="flex justify-between gap-2 mt-4">
+        <div className="mt-4 flex justify-between gap-2">
           <button
             type="submit"
             disabled={loading}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full disabled:opacity-50"
+            className="w-full rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
           >
             {loading ? "Updating..." : "Update"}
           </button>
@@ -343,7 +398,7 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-600 w-full"
+            className="w-full rounded bg-gray-400 px-4 py-2 text-white hover:bg-gray-600"
           >
             Cancel
           </button>

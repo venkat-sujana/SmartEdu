@@ -1,4 +1,3 @@
-// This is a client-side rendered page for displaying exam reports and analytics.
 //src/app/exams/page.jsx
 'use client'
 

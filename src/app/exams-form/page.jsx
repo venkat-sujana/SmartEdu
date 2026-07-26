@@ -28,6 +28,12 @@ function buildSubjectPayload(subjects, examType) {
     .filter((item) => Number.isFinite(item.marks));
 }
 
+function hasEnteredMarks(subjects) {
+  return Object.values(subjects || {}).some(
+    (mark) => mark !== "" && mark !== null && mark !== undefined
+  );
+}
+
 export default function ExamsFormPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -137,6 +143,82 @@ export default function ExamsFormPage() {
     }
   };
 
+  const handleBulkSubmit = async ({ bulkMarks, students: bulkStudents, yearOfStudy }) => {
+    if (!formData.stream || !formData.academicYear || !formData.examType || !formData.examDate) {
+      toast.error("Group, academic year, exam type, exam date తప్పనిసరి.");
+      return;
+    }
+
+    const rowsToSave = bulkStudents
+      .map((student) => ({
+        student,
+        subjects: bulkMarks?.[student._id] || {},
+      }))
+      .filter((row) => hasEnteredMarks(row.subjects));
+
+    if (rowsToSave.length === 0) {
+      toast.error("కనీసం ఒక student కి marks enter చేయండి.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const isGeneralStream = generalStreams.includes(formData.stream);
+      const results = [];
+
+      for (const row of rowsToSave) {
+        const subjectPayload = buildSubjectPayload(row.subjects, formData.examType);
+
+        if (subjectPayload.length === 0) {
+          continue;
+        }
+
+        const res = await fetch("/api/exams", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            studentId: row.student._id,
+            stream: formData.stream,
+            yearOfStudy: row.student.yearOfStudy || yearOfStudy,
+            academicYear: formData.academicYear,
+            examType: formData.examType,
+            examDate: formData.examDate,
+            generalSubjects: isGeneralStream ? subjectPayload : undefined,
+            vocationalSubjects: isGeneralStream ? undefined : subjectPayload,
+            collegeId: session?.user?.collegeId,
+            lecturerId: session?.user?.id,
+          }),
+        });
+
+        const result = await res.json();
+        if (!res.ok || result?.success === false) {
+          throw new Error(result?.message || `${row.student.name} save failed`);
+        }
+
+        results.push(row.student._id);
+      }
+
+      toast.success(`✅ ${results.length} students marks saved successfully!`);
+      router.push(dashboardReturnUrl);
+      setFormData({
+        yearOfStudy: "",
+        academicYear: "",
+        studentId: "",
+        stream: "",
+        examType: "",
+        examDate: "",
+        subjects: {},
+        total: 0,
+        percentage: 0,
+      });
+    } catch (error) {
+      toast.error(`❌ ${error.message || "Bulk save failed"}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <Toaster />
@@ -147,6 +229,7 @@ export default function ExamsFormPage() {
         setFormData={setFormData}
         isSubmitting={isSubmitting}
         onSubmit={handleSubmit}
+        onBulkSubmit={handleBulkSubmit}
         dashboardReturnUrl={dashboardReturnUrl}
       />
     </>
