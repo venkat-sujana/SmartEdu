@@ -407,6 +407,11 @@ export default function GroupDashboardPage({
                   
                 />
                 <QuickLinkCard
+                  href={`${baseDashboardHref}/monthly`}
+                  title="<75% Attendance"
+                  
+                />
+                <QuickLinkCard
                   href={`${baseDashboardHref}/exams`}
                   title="Exam Dashboard"
                   

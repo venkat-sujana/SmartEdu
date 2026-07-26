@@ -366,10 +366,27 @@ export default function GroupDashboardSectionPage({
           description="Monthly attendance reports and shortage summaries."
         >
           <div className="space-y-6">
-            {YEARS.map(year => (
-              <GroupAttendanceSummary key={year} group={groupName} yearOfStudy={year} />
-            ))}
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <h3 className="text-base font-bold text-slate-900">Monthly Attendance Register</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Full attendance register for each academic year.
+                </p>
+              </div>
+              {YEARS.map(year => (
+                <GroupAttendanceSummary key={year} group={groupName} yearOfStudy={year} />
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
+                <h3 className="text-base font-bold text-rose-900">&lt;75% Attendance</h3>
+                <p className="mt-1 text-sm text-rose-700">
+                  Attendance shortage students are shown separately here.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               {YEARS.map(year => (
                 <GroupShortageSummary
                   key={year}
@@ -379,6 +396,7 @@ export default function GroupDashboardSectionPage({
                   collegeName={session?.user?.collegeName}
                 />
               ))}
+              </div>
             </div>
           </div>
         </SectionCard>

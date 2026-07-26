@@ -70,26 +70,12 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
     [searchTerm, summaryData]
   );
 
-  const summaryStats = useMemo(() => {
-    const students = filteredData.length;
-    const below75 = filteredData.filter(student => {
-      const totalPresent = months.reduce((sum, { label, year }) => {
-        const key = `${label}-${year}`;
-        return sum + (student.present?.[key] || 0);
-      }, 0);
-      const totalWorking = months.reduce((sum, { label, year }) => {
-        const key = `${label}-${year}`;
-        return sum + (student.workingDays?.[key] || 0);
-      }, 0);
-      return totalWorking > 0 && (totalPresent / totalWorking) * 100 < 75;
-    }).length;
-
-    return {
-      students,
-      safe: Math.max(students - below75, 0),
-      below75,
-    };
-  }, [filteredData]);
+  const summaryStats = useMemo(
+    () => ({
+      students: filteredData.length,
+    }),
+    [filteredData]
+  );
 
   const printAreaId = `print-area-${String(group || "group").replace(/\W+/g, "-")}-${String(
     yearOfStudy || "year"
@@ -141,10 +127,8 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
             <p className="mt-1 text-sm text-emerald-50">{collegeName}</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-1 gap-2 sm:gap-3">
             <StatCard label="Students" value={summaryStats.students} />
-            <StatCard label="Eligible" value={summaryStats.safe} />
-            <StatCard label="Below 75%" value={summaryStats.below75} />
           </div>
         </div>
       </div>
