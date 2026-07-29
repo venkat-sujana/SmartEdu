@@ -273,7 +273,7 @@ export default function AvailabilityTab() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
 
-      toast.success(`${data.count} availability records saved`)
+      toast.success(`${data.count} availability changes applied`)
       setPreviewMap({})
       await loadAll()
     } catch (err) {
@@ -395,7 +395,6 @@ export default function AvailabilityTab() {
               <option value="">All Sessions</option>
               <option value="FN">FN Only</option>
               <option value="AN">AN Only</option>
-              <option value="EN">EN Only</option>
             </select>
             <ChevronDown
               size={12}
@@ -480,7 +479,7 @@ export default function AvailabilityTab() {
                 const lid = String(l._id || l.id)
                 visibleSlots.forEach(slot => {
                   const key = `${lid}_${slot.date}_${slot.session}`
-                  preview[key] = status
+                  preview[key] = status === 'notset' ? null : status
                 })
               })
               setPreviewMap(preview)
@@ -488,8 +487,8 @@ export default function AvailabilityTab() {
             className="rounded-xl border border-slate-200 px-3 py-2"
           >
             <option value="available">Available</option>
-
             <option value="unavailable">Unavailable</option>
+            <option value="notset">Not Set</option>
           </select>
 
           <button

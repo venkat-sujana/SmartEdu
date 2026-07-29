@@ -92,13 +92,21 @@ export async function PUT(req) {
       return NextResponse.json({ message: 'No records', data: [] })
     }
 
-    const ops = records.map(({ lecturerId, date, session, status }) => ({
-      updateOne: {
-        filter: { lecturerId, date: new Date(date), session },
-        update: { $set: { lecturerId, date: new Date(date), session, status, reason: '' } },
-        upsert: true,
-      },
-    }))
+    const ops = records.map(({ lecturerId, date, session, status }) => {
+      const filter = { lecturerId, date: new Date(date), session }
+      if (!status || status === 'notset') {
+        return {
+          deleteOne: { filter },
+        }
+      }
+      return {
+        updateOne: {
+          filter,
+          update: { $set: { lecturerId, date: new Date(date), session, status, reason: '' } },
+          upsert: true,
+        },
+      }
+    })
 
     await LecturerAvailability.bulkWrite(ops)
 

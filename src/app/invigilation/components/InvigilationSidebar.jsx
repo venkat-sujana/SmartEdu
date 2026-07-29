@@ -49,7 +49,7 @@ export default function InvigilationSidebar({ role }) {
       label: 'Lecturer Availability',
     },
     {
-      href: '/invigilation/admin/dashboard/duty-load',
+      href: '/invigilation/admin/duty-load',
       label: 'Duty Load Dashboard',
     },
     {

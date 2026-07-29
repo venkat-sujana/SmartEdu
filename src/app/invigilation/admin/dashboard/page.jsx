@@ -23,7 +23,6 @@ import {
   ChevronDown,
   RefreshCw,
   Calendar,
-  Hash,
   GraduationCap,
   Search,
   School,
