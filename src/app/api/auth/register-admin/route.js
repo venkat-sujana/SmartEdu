@@ -1,3 +1,4 @@
+//src/app/api/auth/register-admin/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import User from "@/models/User";
@@ -16,26 +17,33 @@ export async function GET() {
 export async function POST(req) {
   try {
     await connectInvigilationDB();
-    const { name, email, password, setupKey } = await req.json();
+    const body = await req.json();
+    const name = String(body?.name || "").trim();
+    const email = String(body?.email || "").trim().toLowerCase();
+    const password = String(body?.password || "");
+    const setupKey = String(body?.setupKey || "").trim();
 
     if (!name || !email || !password) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
 
     const admins = await User.countDocuments({ role: "admin" });
-    const configuredSetupKey = process.env.ADMIN_SETUP_KEY;
-    if (admins > 0 && (!configuredSetupKey || setupKey !== configuredSetupKey)) {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    const configuredSetupKey = String(process.env.ADMIN_SETUP_KEY || "").trim();
+
+    // Allow setup to proceed when no setup key is configured.
+    // Only enforce the key when the project owner explicitly configured one.
+    if (admins > 0 && configuredSetupKey && setupKey !== configuredSetupKey) {
+      return NextResponse.json({ message: "Forbidden: invalid setup key" }, { status: 403 });
     }
 
-    const exists = await User.findOne({ email: email.trim().toLowerCase() });
+    const exists = await User.findOne({ email });
     if (exists) {
       return NextResponse.json({ message: "Email already exists" }, { status: 409 });
     }
 
     const user = await User.create({
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
+      name,
+      email,
       password: await hashPassword(password),
       role: "admin",
     });
