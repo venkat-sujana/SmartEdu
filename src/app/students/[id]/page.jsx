@@ -74,9 +74,20 @@ export default function StudentProfilePage() {
     return 0;
   };
 
+  const getSubjectMarks = (subjects) => {
+    if (Array.isArray(subjects)) {
+      return subjects.map((item) => item?.marks);
+    }
+    if (subjects && typeof subjects === "object") {
+      return Object.values(subjects);
+    }
+    return [];
+  };
+
   const isFail = (mark, max, stream, examType) => {
-    const m = mark === "A" || mark === "AB" ? 0 : Number(mark);
-    if (["A", "AB", 0].includes(mark)) return true;
+    if (mark === "A" || mark === "AB") return false;
+    const m = Number(mark);
+    if (mark === 0 || m === 0) return true;
 
     if (stream === "general") {
       if (["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"].includes(examType)) return m < 9;
@@ -125,32 +136,42 @@ export default function StudentProfilePage() {
 
     let sumPercentage = 0;
     let passCount = 0;
+    let absentCount = 0;
+    let evaluatedExams = 0;
 
     for (const exam of exams) {
-      const subjects = exam.generalSubjects || exam.vocationalSubjects || {};
+      const subjects = exam.generalSubjects || exam.vocationalSubjects || [];
+      const subjectMarks = getSubjectMarks(subjects);
       const maxMark = getMaxMarks(exam.examType, stream);
-      const marksArray = Object.values(subjects).map((m) =>
+      const isAbsentExam = subjectMarks.some((m) => m === "A" || m === "AB");
+      const marksArray = subjectMarks.map((m) =>
         m === "A" || m === "AB" ? 0 : Number(m)
       );
       const total = marksArray.reduce((a, b) => a + (Number.isNaN(b) ? 0 : b), 0);
       const denominator = subjectCount * maxMark;
       const percentage = denominator > 0 ? (total / denominator) * 100 : 0;
-      const hasFail = Object.entries(subjects).some(([, m]) =>
+      const hasFail = !isAbsentExam && subjectMarks.some((m) =>
         isFail(m, maxMark, stream, exam.examType)
       );
 
       sumPercentage += percentage;
+      if (isAbsentExam) {
+        absentCount += 1;
+        continue;
+      }
+      evaluatedExams += 1;
       if (!hasFail) passCount += 1;
     }
 
     const totalExams = exams.length;
-    const failCount = totalExams - passCount;
+    const failCount = Math.max(evaluatedExams - passCount, 0);
     return {
       totalExams,
       avgPercentage: (sumPercentage / totalExams).toFixed(2),
       passCount,
       failCount,
-      passRate: ((passCount / totalExams) * 100).toFixed(2),
+      absentCount,
+      passRate: evaluatedExams > 0 ? ((passCount / evaluatedExams) * 100).toFixed(2) : "0.00",
     };
   }, [exams, stream, subjectCount]);
 
@@ -259,12 +280,14 @@ export default function StudentProfilePage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {exams.map((e, i) => {
-            const subjects = e.generalSubjects || e.vocationalSubjects || {};
+            const subjects = e.generalSubjects || e.vocationalSubjects || [];
+            const subjectMarks = getSubjectMarks(subjects);
             const maxMark = getMaxMarks(e.examType, stream);
-            const marksArray = Object.values(subjects).map((m) => m === "A" || m === "AB" ? 0 : Number(m));
+            const marksArray = subjectMarks.map((m) => m === "A" || m === "AB" ? 0 : Number(m));
             const total = marksArray.reduce((a, b) => a + (isNaN(b) ? 0 : b), 0);
             const percentage = ((total / (subjectCount * maxMark)) * 100).toFixed(2);
-            const hasFail = Object.entries(subjects).some(([, m]) => isFail(m, maxMark, stream, e.examType));
+            const isAbsentExam = subjectMarks.some((m) => m === "A" || m === "AB");
+            const hasFail = !isAbsentExam && subjectMarks.some((m) => isFail(m, maxMark, stream, e.examType));
 
             return (
               <div key={i} className="border rounded-lg p-3 shadow bg-white">
@@ -272,8 +295,16 @@ export default function StudentProfilePage() {
                 <p><strong>Date:</strong> {new Date(e.examDate).toLocaleDateString()}</p>
                 <p><strong>Total:</strong> {total}</p>
                 <p><strong>Percentage:</strong> {percentage}%</p>
-                <p className={hasFail ? "text-red-600 font-semibold" : "text-green-600 font-semibold"}>
-                  {hasFail ? "FAIL" : "PASS"}
+                <p
+                  className={
+                    isAbsentExam
+                      ? "text-orange-500 font-semibold"
+                      : hasFail
+                        ? "text-red-600 font-semibold"
+                        : "text-green-600 font-semibold"
+                  }
+                >
+                  {isAbsentExam ? "ABSENT" : hasFail ? "FAIL" : "PASS"}
                 </p>
               </div>
             );

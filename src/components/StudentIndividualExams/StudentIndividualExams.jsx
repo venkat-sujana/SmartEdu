@@ -26,6 +26,10 @@ function getPassMark(examType, isGeneral) {
   return 0;
 }
 
+function isAbsentMark(mark) {
+  return mark === "A" || mark === "AB";
+}
+
 // Array of objects [{subject, marks, _id}] → computed result
 function computeExamStats(exam) {
   const isGeneral  = GENERAL_STREAMS.includes(exam.stream);
@@ -39,12 +43,19 @@ function computeExamStats(exam) {
 
   let obtained = 0;
   let result   = "Pass";
+  let hasAbsent = false;
 
   subjectsArr.forEach(({ marks }) => {
-    const m = (marks === "A" || marks === "AB") ? 0 : (parseInt(marks, 10) || 0);
+    const m = isAbsentMark(marks) ? 0 : (parseInt(marks, 10) || 0);
     obtained += m;
-    if (marks === "A" || marks === "AB" || m < passMark) result = "Fail";
+    if (isAbsentMark(marks)) {
+      hasAbsent = true;
+      return;
+    }
+    if (m < passMark) result = "Fail";
   });
+
+  if (hasAbsent) result = "Absent";
 
   const percentage = maxTotal > 0 ? (obtained / maxTotal) * 100 : 0;
 
@@ -194,8 +205,20 @@ export default function StudentIndividualExams({ studentId }) {
               <p>📊 Percentage: <span className="text-blue-700">{exam.percentage.toFixed(2)}%</span></p>
               <p>
                 🏁 Result:{" "}
-                <span className={exam.result === "Pass" ? "text-green-600" : "text-red-600"}>
-                  {exam.result === "Pass" ? "✅ Pass" : "❌ Fail"}
+                <span
+                  className={
+                    exam.result === "Pass"
+                      ? "text-green-600"
+                      : exam.result === "Absent"
+                        ? "text-orange-500"
+                        : "text-red-600"
+                  }
+                >
+                  {exam.result === "Pass"
+                    ? "✅ Pass"
+                    : exam.result === "Absent"
+                      ? "🟠 Absent"
+                      : "❌ Fail"}
                 </span>
               </p>
             </div>

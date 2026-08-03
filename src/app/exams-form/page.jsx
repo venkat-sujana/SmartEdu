@@ -1,3 +1,5 @@
+//src/
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -23,10 +25,15 @@ function buildSubjectPayload(subjects, examType) {
     .filter(([, marks]) => marks !== "" && marks !== null && marks !== undefined)
     .map(([subject, marks]) => ({
       subject,
-      marks: marks === "A" || marks === "AB" ? 0 : Number(marks),
+      marks: marks === "A" || marks === "AB" ? marks : Number(marks),
       maxMarks,
     }))
-    .filter((item) => Number.isFinite(item.marks));
+    .filter(
+      (item) =>
+        item.marks === "A" ||
+        item.marks === "AB" ||
+        Number.isFinite(item.marks)
+    );
 }
 
 function hasEnteredMarks(subjects) {

@@ -24,7 +24,10 @@ function normalizeExamStream(value) {
 
 export const subjectSchema = z.object({
   subject: z.string().min(1, "Subject name required").trim(),
-  marks: z.number().min(0).max(100, "Marks <= 100"),
+  marks: z.union([
+    z.number().min(0).max(100, "Marks <= 100"),
+    z.enum(["A", "AB"]),
+  ]),
   maxMarks: z.number().min(1, "Max marks > 0").default(100),
 });
 
@@ -99,8 +102,12 @@ export const examScheduleSchema = z.object({
 
 export function computePercentage(subjects) {
   if (!subjects || subjects.length === 0) return 0;
-  const totalMarks = subjects.reduce((sum, s) => sum + s.marks, 0);
-  const maxTotal = subjects.reduce((sum, s) => sum + s.maxMarks, 0);
+  const presentSubjects = subjects.filter(
+    (subject) => typeof subject?.marks === "number" && !Number.isNaN(subject.marks)
+  );
+  if (presentSubjects.length === 0) return 0;
+  const totalMarks = presentSubjects.reduce((sum, s) => sum + s.marks, 0);
+  const maxTotal = presentSubjects.reduce((sum, s) => sum + s.maxMarks, 0);
   return maxTotal > 0 ? Math.round((totalMarks / maxTotal) * 100) : 0;
 }
 

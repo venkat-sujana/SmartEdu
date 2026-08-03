@@ -7,6 +7,11 @@ import { useSession } from "next-auth/react";
 const GENERAL_STREAMS = ["MPC", "BIPC", "CEC", "HEC"];
 const UNIT_EXAMS = ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4"];
 
+function isAbsentMark(value) {
+  const normalized = String(value || "").trim().toUpperCase();
+  return normalized === "A" || normalized === "AB";
+}
+
 function generateAcademicYearOptions() {
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -157,7 +162,7 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
         const updatedSubjects = {
           ...prev.subjects,
           [subject]:
-            subjectValue === "A" || subjectValue === "AB"
+            isAbsentMark(subjectValue)
               ? subjectValue
               : Number.isNaN(Number(subjectValue))
               ? ""
@@ -222,7 +227,11 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
     const maxMarks = UNIT_EXAMS.includes(formData.examType) ? 25 : 50;
     const subjectsArray = Object.entries(formData.subjects)
       .filter(([, marks]) => marks !== "" && marks !== undefined)
-      .map(([subject, marks]) => ({ subject, marks, maxMarks }));
+      .map(([subject, marks]) => ({
+        subject,
+        marks: isAbsentMark(marks) ? String(marks).trim().toUpperCase() : marks,
+        maxMarks,
+      }));
 
     const payload = {
       studentId: formData.studentId,

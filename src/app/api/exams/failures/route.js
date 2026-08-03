@@ -5,6 +5,15 @@ import Exam from "@/models/Exam"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
+function isAbsentMark(mark) {
+  const value = String(mark || "").trim().toUpperCase()
+  return value === "A" || value === "AB"
+}
+
+function isExamAbsent(exam) {
+  const subjects = [...(exam.generalSubjects || []), ...(exam.vocationalSubjects || [])]
+  return subjects.length > 0 && subjects.some((subject) => isAbsentMark(subject?.marks))
+}
 
 export async function GET(req) {
   try {
@@ -29,12 +38,14 @@ export async function GET(req) {
 
     const exams = await Exam.find({ collegeId, examType }).populate("studentId", "name stream yearOfStudy")
 
-    const failedStudents = exams.filter((exam) => exam.percentage < PASS_MARK).map((exam) => ({
-      name: exam.studentId?.name || "Unknown",
-      stream: exam.stream,
-      yearOfStudy: exam.yearOfStudy,
-      percentage: exam.percentage,
-    }))
+    const failedStudents = exams
+      .filter((exam) => !isExamAbsent(exam) && exam.percentage < PASS_MARK)
+      .map((exam) => ({
+        name: exam.studentId?.name || "Unknown",
+        stream: exam.stream,
+        yearOfStudy: exam.yearOfStudy,
+        percentage: exam.percentage,
+      }))
 
     return NextResponse.json({
       success: true,

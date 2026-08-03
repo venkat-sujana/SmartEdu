@@ -84,6 +84,14 @@ function formatExamLabel(value) {
     .replace('UNIT-', 'Unit - ')
 }
 
+function getExamEventKey(report) {
+  return [report?.examType, report?.academicYear, report?.yearOfStudy].filter(Boolean).join('_')
+}
+
+function getStudentKey(report) {
+  return String(report?.studentId?._id || report?.studentId || report?.student?._id || report?._id || '')
+}
+
 function getDetailsFilterBadge(detailsFilter) {
   if (!detailsFilter) return null
 
@@ -195,11 +203,16 @@ function isAbsentMark(mark) {
   return value === 'A' || value === 'AB'
 }
 
+function isReportAbsent(report) {
+  const marks = getSubjectMarks(report)
+  return marks.length > 0 && marks.some(isAbsentMark)
+}
+
 function isReportPass(report) {
   const marks = getSubjectMarks(report)
 
   if (marks.length === 0) return false
-  if (marks.some(isAbsentMark)) return false
+  if (isReportAbsent(report)) return false
 
   for (const mark of marks) {
     const numericMark = Number(mark)
@@ -628,13 +641,14 @@ export default function ExamReportPage() {
     let upcoming = 0
     let completed = 0
     let passCounter = 0
+    let attendedCounter = 0
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
     filteredReports.forEach(report => {
       const examDay = formatDate(report.examDate)
-      const key = `${report.examType}_${examDay}`
+      const key = getExamEventKey(report)
 
       if (!uniqueExamEvents.has(key)) {
         uniqueExamEvents.add(key)
@@ -643,11 +657,14 @@ export default function ExamReportPage() {
         else completed += 1
       }
 
-      if (isReportPass(report)) passCounter += 1
+      if (!isReportAbsent(report)) {
+        attendedCounter += 1
+        if (isReportPass(report)) passCounter += 1
+      }
     })
 
     const avgPass =
-      filteredReports.length > 0 ? ((passCounter / filteredReports.length) * 100).toFixed(1) : '0.0'
+      attendedCounter > 0 ? ((passCounter / attendedCounter) * 100).toFixed(1) : '0.0'
 
     return {
       totalExamsConducted: uniqueExamEvents.size,
@@ -731,11 +748,10 @@ export default function ExamReportPage() {
             iconWrapClassName: 'bg-emerald-100',
           }
 
-      const uniqueExamEvents = new Set(
-        streamRows.map(report => `${report.examType}_${formatDate(report.examDate)}_${report.yearOfStudy || ''}`)
-      )
-      const passCount = streamRows.filter(isReportPass).length
-      const avgPass = streamRows.length > 0 ? ((passCount / streamRows.length) * 100).toFixed(1) : '0.0'
+      const uniqueExamEvents = new Set(streamRows.map(getExamEventKey))
+      const attendedRows = streamRows.filter(report => !isReportAbsent(report))
+      const passCount = attendedRows.filter(isReportPass).length
+      const avgPass = attendedRows.length > 0 ? ((passCount / attendedRows.length) * 100).toFixed(1) : '0.0'
 
       return [
         {
@@ -778,17 +794,22 @@ export default function ExamReportPage() {
   const unitPerformance = useMemo(() => {
     return UNIT_EXAMS.map(unit => {
       const unitReports = filteredReports.filter(r => r.examType === unit)
-      const totalStudents = unitReports.length
-      const passStudents = unitReports.filter(isReportPass).length
+      const uniqueStudents = new Set(unitReports.map(getStudentKey).filter(Boolean))
+      const attendedStudents = new Set(
+        unitReports.filter(report => !isReportAbsent(report)).map(getStudentKey).filter(Boolean)
+      )
+      const passStudents = new Set(
+        unitReports.filter(isReportPass).map(getStudentKey).filter(Boolean)
+      ).size
       const highestMarks = unitReports.reduce((max, row) => Math.max(max, getSubjectTotal(row)), 0)
       const maxMarksLabel = unitReports.length > 0 ? `${highestMarks}` : '-'
       const passPercent =
-        totalStudents > 0 ? `${((passStudents / totalStudents) * 100).toFixed(1)}%` : '0.0%'
+        attendedStudents.size > 0 ? `${((passStudents / attendedStudents.size) * 100).toFixed(1)}%` : '0.0%'
 
       return {
         examType: unit,
         unit: unit.replace('UNIT-', 'Unit - '),
-        totalStudents,
+        totalStudents: uniqueStudents.size,
         passPercent,
         highestMarks: maxMarksLabel,
       }
@@ -837,20 +858,31 @@ export default function ExamReportPage() {
 
     filteredReports.forEach(row => {
       const dateLabel = formatDate(row.examDate)
-      const key = `${row.examType}_${dateLabel}`
+      const key = getExamEventKey(row)
 
       if (!groups[key]) {
         groups[key] = {
           examName: row.examType,
+          academicYear: row.academicYear || '-',
+          yearOfStudy: row.yearOfStudy || '-',
           date: dateLabel,
           totalStudents: 0,
+          attendedStudents: 0,
           passCount: 0,
           lastCreatedAt: new Date(row.createdAt || row.examDate || Date.now()),
+          studentKeys: new Set(),
         }
       }
 
-      groups[key].totalStudents += 1
-      if (isReportPass(row)) groups[key].passCount += 1
+      const studentKey = getStudentKey(row)
+      if (studentKey && !groups[key].studentKeys.has(studentKey)) {
+        groups[key].studentKeys.add(studentKey)
+        groups[key].totalStudents += 1
+        if (!isReportAbsent(row)) {
+          groups[key].attendedStudents += 1
+          if (isReportPass(row)) groups[key].passCount += 1
+        }
+      }
 
       const currentCreated = new Date(row.createdAt || row.examDate || Date.now())
       if (currentCreated > groups[key].lastCreatedAt) {
@@ -868,11 +900,11 @@ export default function ExamReportPage() {
           .replace('PRE-PUBLIC-1', 'Pre-Public - 1')
           .replace('PRE-PUBLIC-2', 'Pre-Public - 2')
           .replace('UNIT-', 'Unit - '),
-        date: row.date,
+        date: formatDate(row.lastCreatedAt),
         totalStudents: row.totalStudents,
         passPercent:
-          row.totalStudents > 0
-            ? `${((row.passCount / row.totalStudents) * 100).toFixed(1)}%`
+          row.attendedStudents > 0
+            ? `${((row.passCount / row.attendedStudents) * 100).toFixed(1)}%`
             : '0.0%',
         sortDate: row.lastCreatedAt,
       }))

@@ -39,9 +39,24 @@ function getAllMarks(report) {
   return [...(report?.generalSubjects || []), ...(report?.vocationalSubjects || [])]
 }
 
+function getStudentKey(report) {
+  return String(report?.studentId?._id || report?.studentId || report?.student?._id || report?._id || '')
+}
+
+function isAbsentMark(mark) {
+  const value = String(mark || '').trim().toUpperCase()
+  return value === 'A' || value === 'AB'
+}
+
+function isReportAbsent(report) {
+  const subjects = getAllMarks(report)
+  return subjects.length > 0 && subjects.some(subject => isAbsentMark(subject?.marks))
+}
+
 function isReportPass(report) {
   const subjects = getAllMarks(report)
   if (subjects.length === 0) return false
+  if (isReportAbsent(report)) return false
 
   return subjects.every(subject => {
     const numericMark =
@@ -261,13 +276,26 @@ export default function GroupDashboardPage({
             present: 0,
             pass: 0,
             passPercent: '0.0%',
+            studentKeys: new Set(),
+            passStudentKeys: new Set(),
           }
+        }
+
+        const studentKey = getStudentKey(report)
+        if (!studentKey || acc[key].studentKeys.has(studentKey)) {
+          return acc
+        }
+
+        acc[key].studentKeys.add(studentKey)
+        if (isReportAbsent(report)) {
+          return acc
         }
 
         acc[key].attended += 1
         acc[key].present += 1
         if (isReportPass(report)) {
-          acc[key].pass += 1
+          acc[key].passStudentKeys.add(studentKey)
+          acc[key].pass = acc[key].passStudentKeys.size
         }
         return acc
       }, {})

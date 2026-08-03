@@ -1,3 +1,4 @@
+//src/components/exams/GroupExamDashboardPanel.jsx
 "use client";
 
 import { useMemo, useState } from "react";
@@ -50,6 +51,35 @@ function formatDate(value) {
   return date.toLocaleDateString("en-CA");
 }
 
+function normalizeAcademicYear(value) {
+  return String(value || "").trim().toUpperCase();
+}
+
+function normalizeYearOfStudy(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "first year" || normalized === "1st year" || normalized === "1 year") {
+    return "First Year";
+  }
+  if (normalized === "second year" || normalized === "2nd year" || normalized === "2 year") {
+    return "Second Year";
+  }
+  return String(value || "").trim();
+}
+
+function getExamEventKey(report) {
+  return [
+    String(report?.examType || "").trim().toUpperCase(),
+    normalizeAcademicYear(report?.academicYear),
+    normalizeYearOfStudy(report?.yearOfStudy),
+  ]
+    .filter(Boolean)
+    .join("_");
+}
+
+function getStudentKey(report) {
+  return String(report?.studentId?._id || report?.studentId || report?.student?._id || report?._id || "");
+}
+
 function getSubjectEntries(report) {
   const source = report?.generalSubjects || report?.vocationalSubjects || [];
 
@@ -75,13 +105,17 @@ function isAbsentMark(mark) {
   return value === "A" || value === "AB";
 }
 
+function isReportAbsent(report) {
+  const entries = getSubjectEntries(report);
+  return entries.length > 0 && entries.some(([, mark]) => isAbsentMark(mark));
+}
+
 function isReportPass(report) {
   const entries = getSubjectEntries(report);
   if (!entries.length) return false;
+  if (isReportAbsent(report)) return false;
 
   for (const [, mark] of entries) {
-    if (isAbsentMark(mark)) return false;
-
     const numericMark = Number(mark);
     if (!Number.isFinite(numericMark) || numericMark === 0) return false;
 
@@ -141,10 +175,9 @@ export default function GroupExamDashboardPanel({ groupName }) {
   }, [reports, selectedAcademicYear]);
 
   const summary = useMemo(() => {
-    const passCount = filteredReports.filter(isReportPass).length;
-    const examEvents = new Set(
-      filteredReports.map((row) => `${row.examType}_${row.yearOfStudy}_${formatDate(row.examDate)}`)
-    ).size;
+    const attendedReports = filteredReports.filter((row) => !isReportAbsent(row));
+    const passCount = attendedReports.filter(isReportPass).length;
+    const examEvents = new Set(filteredReports.map(getExamEventKey)).size;
     const topper = filteredReports.reduce((best, row) => {
       const currentPercentage = Number(row.percentage || 0);
       if (!best || currentPercentage > Number(best.percentage || 0)) {
@@ -157,8 +190,8 @@ export default function GroupExamDashboardPanel({ groupName }) {
       totalRecords: filteredReports.length,
       examEvents,
       passRate:
-        filteredReports.length > 0
-          ? `${((passCount / filteredReports.length) * 100).toFixed(1)}%`
+        attendedReports.length > 0
+          ? `${((passCount / attendedReports.length) * 100).toFixed(1)}%`
           : "0.0%",
       average: `${getAveragePercentage(filteredReports).toFixed(1)}%`,
       topperName: topper?.student?.name || topper?.studentId?.name || "-",
@@ -168,13 +201,14 @@ export default function GroupExamDashboardPanel({ groupName }) {
 
   const yearWiseSummary = useMemo(() => {
     return ["First Year", "Second Year"].map((year) => {
-      const rows = filteredReports.filter((row) => row.yearOfStudy === year);
-      const passCount = rows.filter(isReportPass).length;
+      const rows = filteredReports.filter((row) => normalizeYearOfStudy(row.yearOfStudy) === year);
+      const attendedRows = rows.filter((row) => !isReportAbsent(row));
+      const passCount = attendedRows.filter(isReportPass).length;
       return {
         year,
         total: rows.length,
         average: `${getAveragePercentage(rows).toFixed(1)}%`,
-        passRate: rows.length ? `${((passCount / rows.length) * 100).toFixed(1)}%` : "0.0%",
+        passRate: attendedRows.length ? `${((passCount / attendedRows.length) * 100).toFixed(1)}%` : "0.0%",
       };
     });
   }, [filteredReports]);
@@ -184,27 +218,45 @@ export default function GroupExamDashboardPanel({ groupName }) {
 
     filteredReports.forEach((row) => {
       const dateLabel = formatDate(row.examDate);
-      const key = `${row.examType}_${row.yearOfStudy}_${dateLabel}`;
+      const key = getExamEventKey(row);
 
       if (!grouped[key]) {
         grouped[key] = {
           examType: row.examType,
-          yearOfStudy: row.yearOfStudy,
+          academicYear: normalizeAcademicYear(row.academicYear) || "-",
+          yearOfStudy: normalizeYearOfStudy(row.yearOfStudy) || "-",
           date: dateLabel,
           totalStudents: 0,
+          attendedStudents: 0,
           passCount: 0,
           percentages: [],
           sortDate: new Date(row.examDate || row.createdAt || Date.now()).getTime(),
+          studentKeys: new Set(),
         };
       }
 
+      const studentKey = getStudentKey(row);
+      if (!studentKey || grouped[key].studentKeys.has(studentKey)) {
+        grouped[key].sortDate = Math.max(
+          grouped[key].sortDate,
+          new Date(row.examDate || row.createdAt || Date.now()).getTime()
+        );
+        grouped[key].date = grouped[key].date === "-" ? dateLabel : grouped[key].date;
+        return;
+      }
+
+      grouped[key].studentKeys.add(studentKey);
       grouped[key].totalStudents += 1;
-      if (isReportPass(row)) grouped[key].passCount += 1;
+      if (!isReportAbsent(row)) {
+        grouped[key].attendedStudents += 1;
+        if (isReportPass(row)) grouped[key].passCount += 1;
+      }
       grouped[key].percentages.push(Number(row.percentage || 0));
       grouped[key].sortDate = Math.max(
         grouped[key].sortDate,
         new Date(row.examDate || row.createdAt || Date.now()).getTime()
       );
+      grouped[key].date = grouped[key].date === "-" ? dateLabel : grouped[key].date;
     });
 
     return Object.values(grouped)
@@ -213,9 +265,10 @@ export default function GroupExamDashboardPanel({ groupName }) {
         averagePercentage: row.percentages.length
           ? `${(row.percentages.reduce((sum, value) => sum + value, 0) / row.percentages.length).toFixed(1)}%`
           : "0.0%",
-        passRate: row.totalStudents
-          ? `${((row.passCount / row.totalStudents) * 100).toFixed(1)}%`
+        passRate: row.attendedStudents
+          ? `${((row.passCount / row.attendedStudents) * 100).toFixed(1)}%`
           : "0.0%",
+        date: formatDate(row.sortDate),
       }))
       .sort((a, b) => b.sortDate - a.sortDate)
       .slice(0, 8);
@@ -223,7 +276,7 @@ export default function GroupExamDashboardPanel({ groupName }) {
 
   const strugglingStudents = useMemo(() => {
     return filteredReports
-      .filter((row) => !isReportPass(row))
+      .filter((row) => !isReportAbsent(row) && !isReportPass(row))
       .map((row) => ({
         id: row._id,
         studentName: row?.student?.name || row?.studentId?.name || "Unknown",
@@ -303,7 +356,7 @@ export default function GroupExamDashboardPanel({ groupName }) {
           icon={BarChart3}
           label="Exam Events"
           value={summary.examEvents}
-          hint="Unique exam/date/year combinations"
+          hint="Unique exam/year combinations"
         />
         <StatCard
           icon={TrendingUp}
@@ -365,7 +418,7 @@ export default function GroupExamDashboardPanel({ groupName }) {
             </thead>
             <tbody>
               {latestResults.map((row) => (
-                <tr key={`${row.examType}_${row.yearOfStudy}_${row.date}`} className="border-t border-slate-100">
+                <tr key={`${row.examType}_${row.academicYear}_${row.yearOfStudy}`} className="border-t border-slate-100">
                   <td className="px-4 py-3 font-semibold text-slate-900">{formatExamLabel(row.examType)}</td>
                   <td className="px-4 py-3 text-slate-700">{row.yearOfStudy}</td>
                   <td className="px-4 py-3 text-slate-700">{row.date}</td>
