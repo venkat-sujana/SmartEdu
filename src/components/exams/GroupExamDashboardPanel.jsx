@@ -4,6 +4,10 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { BarChart3, ClipboardList, Medal, TrendingUp } from "lucide-react";
+import {
+  isReportAbsent,
+  isReportPass,
+} from "@/lib/examUtils";
 
 const fetcher = async (url) => {
   const response = await fetch(url, { cache: "no-store" });
@@ -80,56 +84,12 @@ function getStudentKey(report) {
   return String(report?.studentId?._id || report?.studentId || report?.student?._id || report?._id || "");
 }
 
-function getSubjectEntries(report) {
-  const source = report?.generalSubjects || report?.vocationalSubjects || [];
 
-  if (Array.isArray(source)) {
-    return source
-      .map((item) => [item?.subject, item?.marks])
-      .filter(([subject]) => String(subject || "").trim());
-  }
 
-  if (source && typeof source === "object") {
-    return Object.entries(source);
-  }
 
-  return [];
-}
 
-function isVocational(stream) {
-  return ["M&AT", "CET", "MLT"].includes(normalizeExamStream(stream));
-}
 
-function isAbsentMark(mark) {
-  const value = String(mark || "").trim().toUpperCase();
-  return value === "A" || value === "AB";
-}
 
-function isReportAbsent(report) {
-  const entries = getSubjectEntries(report);
-  return entries.length > 0 && entries.some(([, mark]) => isAbsentMark(mark));
-}
-
-function isReportPass(report) {
-  const entries = getSubjectEntries(report);
-  if (!entries.length) return false;
-  if (isReportAbsent(report)) return false;
-
-  for (const [, mark] of entries) {
-    const numericMark = Number(mark);
-    if (!Number.isFinite(numericMark) || numericMark === 0) return false;
-
-    if (UNIT_EXAMS.includes(report.examType) && numericMark < 9) return false;
-    if (["QUARTERLY", "HALFYEARLY"].includes(report.examType) && numericMark < 18) return false;
-
-    if (["PRE-PUBLIC-1", "PRE-PUBLIC-2"].includes(report.examType)) {
-      if (isVocational(report.stream) && numericMark < 18) return false;
-      if (!isVocational(report.stream) && numericMark < 35) return false;
-    }
-  }
-
-  return true;
-}
 
 function getAveragePercentage(rows) {
   if (!rows.length) return 0;
@@ -155,10 +115,30 @@ function StatCard({ icon: Icon, label, value, hint }) {
 export default function GroupExamDashboardPanel({ groupName }) {
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("all");
   const normalizedGroup = normalizeExamStream(groupName);
+
   const { data, error, isLoading } = useSWR(
-    `/api/exams?stream=${encodeURIComponent(normalizedGroup)}`,
-    fetcher
-  );
+  `/api/exams?stream=${encodeURIComponent(normalizedGroup)}`,
+  fetcher
+);
+
+// ⭐ NEW
+const summaryUrl = `/api/exams/summary?stream=${encodeURIComponent(
+  normalizedGroup
+)}${
+  selectedAcademicYear !== "all"
+    ? `&academicYear=${encodeURIComponent(selectedAcademicYear)}`
+    : ""
+}`;
+
+const {
+  data: summaryData,
+  error: summaryError,
+  isLoading: summaryLoading,
+} = useSWR(summaryUrl, fetcher);
+
+const summary = summaryData?.summary;
+
+  
 
   const reports = useMemo(() => (Array.isArray(data?.data) ? data.data : []), [data]);
 
@@ -174,30 +154,7 @@ export default function GroupExamDashboardPanel({ groupName }) {
     return reports.filter((row) => row.academicYear === selectedAcademicYear);
   }, [reports, selectedAcademicYear]);
 
-  const summary = useMemo(() => {
-    const attendedReports = filteredReports.filter((row) => !isReportAbsent(row));
-    const passCount = attendedReports.filter(isReportPass).length;
-    const examEvents = new Set(filteredReports.map(getExamEventKey)).size;
-    const topper = filteredReports.reduce((best, row) => {
-      const currentPercentage = Number(row.percentage || 0);
-      if (!best || currentPercentage > Number(best.percentage || 0)) {
-        return row;
-      }
-      return best;
-    }, null);
-
-    return {
-      totalRecords: filteredReports.length,
-      examEvents,
-      passRate:
-        attendedReports.length > 0
-          ? `${((passCount / attendedReports.length) * 100).toFixed(1)}%`
-          : "0.0%",
-      average: `${getAveragePercentage(filteredReports).toFixed(1)}%`,
-      topperName: topper?.student?.name || topper?.studentId?.name || "-",
-      topperPercentage: topper ? `${Number(topper.percentage || 0).toFixed(1)}%` : "-",
-    };
-  }, [filteredReports]);
+  
 
   const yearWiseSummary = useMemo(() => {
     return ["First Year", "Second Year"].map((year) => {
@@ -344,33 +301,51 @@ export default function GroupExamDashboardPanel({ groupName }) {
           </select>
         </div>
       </div>
+<section className="grid grid-cols-2 gap-4 xl:grid-cols-6">
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          icon={ClipboardList}
-          label="Total Records"
-          value={summary.totalRecords}
-          hint="Entries available for the selected academic year"
-        />
-        <StatCard
-          icon={BarChart3}
-          label="Exam Events"
-          value={summary.examEvents}
-          hint="Unique exam/year combinations"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Average %"
-          value={summary.average}
-          hint={`Pass rate: ${summary.passRate}`}
-        />
-        <StatCard
-          icon={Medal}
-          label="Top Performer"
-          value={summary.topperPercentage}
-          hint={summary.topperName}
-        />
-      </section>
+  <StatCard
+    icon={ClipboardList}
+    label="Strength"
+    value={summary?.strength ?? 0}
+    hint="Active Students"
+  />
+
+  <StatCard
+    icon={BarChart3}
+    label="Appeared"
+    value={summary?.appeared ?? 0}
+    hint="Exam Attended"
+  />
+
+  <StatCard
+    icon={BarChart3}
+    label="Absent"
+    value={summary?.absent ?? 0}
+    hint="A / AB"
+  />
+
+  <StatCard
+    icon={TrendingUp}
+    label="Pass"
+    value={summary?.pass ?? 0}
+    hint="Passed Students"
+  />
+
+  <StatCard
+    icon={TrendingUp}
+    label="Fail"
+    value={summary?.fail ?? 0}
+    hint="Failed Students"
+  />
+
+  <StatCard
+    icon={Medal}
+    label="Pass %"
+    value={`${summary?.passPercentage ?? 0}%`}
+    hint="Overall Result"
+  />
+
+</section>
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         {yearWiseSummary.map((item) => (

@@ -346,7 +346,7 @@ export default function GroupDashboardSectionPage({
             title="Today's Absentees"
             description="Today absentee records are easier to scan in a dedicated page."
           >
-            <TodayAbsenteesTable groupFilter={groupName} header={false} />
+            <TodayAbsenteesTable groupFilter={groupName} header={true} collegeName={collegeName} />
           </SectionCard>
 
           <ConsecutiveAbsenteesCard

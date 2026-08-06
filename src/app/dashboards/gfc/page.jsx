@@ -15,7 +15,7 @@ export default function GFCDashboard() {
   const collegeName = user?.collegeName || 'College'
 const years = user?.yearsOfStudy || [1, 2]
 return (
-    <div className=" flex flex-col items-center gap-8 min-h-screen bg-gradient-to-b from-blue-50 to-blue-200">
+    <div className=" flex flex-col items-center gap-8 min-h-screen bg-linear-to-b from-blue-50 to-blue-200">
              {/* Lecturer Info Card */}
              <LecturerInfoCard  user={user}/>
 

@@ -1,3 +1,4 @@
+//src/app/dashboards/%5Bgroup%5D/%5Bsection%5D/page.jsx
 import { notFound } from 'next/navigation'
 import RestrictedGroupSectionPage from '../../components/RestrictedGroupSectionPage'
 import {

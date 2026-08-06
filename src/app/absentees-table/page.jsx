@@ -1,5 +1,4 @@
 //app/absentees-table/page.jsx
-
 "use client";
 import { useEffect, useState } from "react";
 import {
@@ -8,6 +7,7 @@ import {
   ClockIcon,
   ArrowTrendingDownIcon,
   AcademicCapIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/solid";
 
 const sessionLabels = {
@@ -81,6 +81,7 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
     <div className="max-w-5xl mx-auto my-4 p-5 rounded-3xl bg-linear-to-br from-sky-50 via-white to-emerald-50 shadow-xl border border-blue-200">
       {/* Header with icon + summary */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+
         <h2 className="flex items-center gap-2 rounded-2xl bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 px-4 py-2 text-sm md:text-base font-extrabold text-white shadow-md tracking-wide">
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/15">
             <UserIcon className="h-5 w-5" />
@@ -90,6 +91,14 @@ export default function TodayAbsenteesTable({ collegeId, groupFilter }) {
             (Session-wise)
           </span>
         </h2>
+
+        <button
+  onClick={exportTodayAbsenteesPDF}
+  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 transition"
+>
+  <ArrowDownTrayIcon className="h-5 w-5" />
+  Export PDF
+</button>
 
         {summary && (
           <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm">

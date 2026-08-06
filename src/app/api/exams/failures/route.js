@@ -5,15 +5,10 @@ import Exam from "@/models/Exam"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-function isAbsentMark(mark) {
-  const value = String(mark || "").trim().toUpperCase()
-  return value === "A" || value === "AB"
-}
 
-function isExamAbsent(exam) {
-  const subjects = [...(exam.generalSubjects || []), ...(exam.vocationalSubjects || [])]
-  return subjects.length > 0 && subjects.some((subject) => isAbsentMark(subject?.marks))
-}
+import {
+  isReportAbsent,
+} from "@/lib/examUtils";
 
 export async function GET(req) {
   try {
