@@ -128,7 +128,7 @@ export async function GET(req) {
     });
   } catch (error) {
     console.error("Exam Summary Error:", error);
-
+console.log(summary);
     return NextResponse.json(
       {
         success: false,

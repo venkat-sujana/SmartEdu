@@ -114,7 +114,7 @@ export default function ExamFailureTable({ reports = [], enableFilters = false }
   };
 
   return (
-    <div className="mt-2 bg-gradient-to-br from-red-50 via-white to-blue-50 p-6 rounded-2xl shadow-2xl max-w-7xl mx-auto">
+    <div className="mt-2 bg-linear-to-br from-red-50 via-white to-blue-50 p-6 rounded-2xl shadow-2xl max-w-7xl mx-auto">
       {/* Filters section */}
       {enableFilters && (
         <div className="flex flex-wrap gap-3 mb-4 items-center">
@@ -159,7 +159,7 @@ export default function ExamFailureTable({ reports = [], enableFilters = false }
       {/* Table */}
       <div className="overflow-x-auto bg-white rounded-2xl shadow-xl border mt-4">
         <table className="min-w-full border-none">
-          <thead className="bg-gradient-to-r from-red-400 via-orange-300 to-blue-200 text-white sticky top-0 z-10">
+          <thead className="bg-linear-to-r from-red-400 via-orange-300 to-blue-200 text-white sticky top-0 z-10">
             <tr>
               <th className="py-3 px-3">#</th>
               <th className="py-3 px-3 text-left">Exam</th>

@@ -50,7 +50,8 @@ export function isReportAbsent(report) {
 
   if (entries.length === 0) return false;
 
-  return entries.some(([, mark]) => isAbsentMark(mark));
+  // అన్ని subjects A/AB అయితే మాత్రమే Absent
+  return entries.every(([, mark]) => isAbsentMark(mark));
 }
 
 export function isReportPass(report) {
@@ -93,31 +94,35 @@ export function isReportPass(report) {
 }
 
 export function calculateSummary({
+  
   students = [],
   exams = [],
+
+
+  
 }) {
   const strength = students.length;
 
-  // Absent Records
   const absentRecords = exams.filter(isReportAbsent);
 
-  // Appeared Records
-  const appearedRecords = exams.filter(
-    (exam) => !isReportAbsent(exam)
+  const passRecords = exams.filter(
+    (exam) =>
+      !isReportAbsent(exam) &&
+      isReportPass(exam)
   );
 
-  // Pass Records
-  const passRecords = appearedRecords.filter(isReportPass);
-
-  // Fail Records
-  const failRecords = appearedRecords.filter(
-    (exam) => !isReportPass(exam)
+  const failRecords = exams.filter(
+    (exam) =>
+      !isReportAbsent(exam) &&
+      !isReportPass(exam)
   );
 
   const absent = absentRecords.length;
-  const appeared = appearedRecords.length;
   const pass = passRecords.length;
   const fail = failRecords.length;
+
+  // Appeared = Pass + Fail
+  const appeared = pass + fail;
 
   const passPercentage =
     appeared > 0
@@ -132,4 +137,5 @@ export function calculateSummary({
     fail,
     passPercentage,
   };
+  
 }

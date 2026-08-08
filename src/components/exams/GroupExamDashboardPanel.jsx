@@ -91,23 +91,30 @@ function getStudentKey(report) {
 
 
 
-function getAveragePercentage(rows) {
-  if (!rows.length) return 0;
-  const total = rows.reduce((sum, row) => sum + Number(row.percentage || 0), 0);
-  return Number((total / rows.length).toFixed(1));
-}
+function StatCard({ icon: Icon, label, value, hint, tone = "slate" }) {
+  const tones = {
+    slate: "border-slate-200 bg-white text-slate-700",
+    blue: "border-blue-100 bg-blue-50/70 text-blue-700",
+    amber: "border-amber-100 bg-amber-50/70 text-amber-700",
+    emerald: "border-emerald-100 bg-emerald-50/70 text-emerald-700",
+    rose: "border-rose-100 bg-rose-50/70 text-rose-700",
+    violet: "border-violet-100 bg-violet-50/70 text-violet-700",
+  };
 
-function StatCard({ icon: Icon, label, value, hint }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-        <div className="rounded-xl bg-slate-100 p-2 text-slate-700">
-          <Icon className="h-4 w-4" />
+    <div className={`rounded-xl border px-3 py-2.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:px-3.5 ${tones[tone] || tones.slate}`}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 sm:text-[11px]">
+          {label}
+        </p>
+        <div className="shrink-0 rounded-lg bg-white/80 p-1.5 shadow-sm">
+          <Icon className="h-3.5 w-3.5" />
         </div>
       </div>
-      <p className="mt-3 text-2xl font-black tracking-tight text-slate-900">{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{hint}</p>
+      <div className="mt-1.5 flex items-end justify-between gap-2">
+        <p className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl">{value}</p>
+        <p className="hidden text-[10px] text-slate-500 sm:block">{hint}</p>
+      </div>
     </div>
   );
 }
@@ -159,13 +166,34 @@ const summary = summaryData?.summary;
   const yearWiseSummary = useMemo(() => {
     return ["First Year", "Second Year"].map((year) => {
       const rows = filteredReports.filter((row) => normalizeYearOfStudy(row.yearOfStudy) === year);
-      const attendedRows = rows.filter((row) => !isReportAbsent(row));
-      const passCount = attendedRows.filter(isReportPass).length;
+      const uniqueStudents = new Set();
+      let attended = 0;
+      let absent = 0;
+      let pass = 0;
+      let fail = 0;
+
+      rows.forEach((row) => {
+        const studentKey = getStudentKey(row);
+        if (!studentKey || uniqueStudents.has(studentKey)) return;
+        uniqueStudents.add(studentKey);
+
+        if (isReportAbsent(row)) {
+          absent += 1;
+        } else {
+          attended += 1;
+          if (isReportPass(row)) pass += 1;
+          else fail += 1;
+        }
+      });
+
       return {
         year,
-        total: rows.length,
-        average: `${getAveragePercentage(rows).toFixed(1)}%`,
-        passRate: attendedRows.length ? `${((passCount / attendedRows.length) * 100).toFixed(1)}%` : "0.0%",
+        total: uniqueStudents.size,
+        attended,
+        absent,
+        pass,
+        fail,
+        passRate: attended ? `${((pass / attended) * 100).toFixed(1)}%` : "0.0%",
       };
     });
   }, [filteredReports]);
@@ -185,8 +213,9 @@ const summary = summaryData?.summary;
           date: dateLabel,
           totalStudents: 0,
           attendedStudents: 0,
+          absentCount: 0,
           passCount: 0,
-          percentages: [],
+          failCount: 0,
           sortDate: new Date(row.examDate || row.createdAt || Date.now()).getTime(),
           studentKeys: new Set(),
         };
@@ -204,11 +233,15 @@ const summary = summaryData?.summary;
 
       grouped[key].studentKeys.add(studentKey);
       grouped[key].totalStudents += 1;
-      if (!isReportAbsent(row)) {
+
+      if (isReportAbsent(row)) {
+        grouped[key].absentCount += 1;
+      } else {
         grouped[key].attendedStudents += 1;
         if (isReportPass(row)) grouped[key].passCount += 1;
+        else grouped[key].failCount += 1;
       }
-      grouped[key].percentages.push(Number(row.percentage || 0));
+
       grouped[key].sortDate = Math.max(
         grouped[key].sortDate,
         new Date(row.examDate || row.createdAt || Date.now()).getTime()
@@ -219,9 +252,6 @@ const summary = summaryData?.summary;
     return Object.values(grouped)
       .map((row) => ({
         ...row,
-        averagePercentage: row.percentages.length
-          ? `${(row.percentages.reduce((sum, value) => sum + value, 0) / row.percentages.length).toFixed(1)}%`
-          : "0.0%",
         passRate: row.attendedStudents
           ? `${((row.passCount / row.attendedStudents) * 100).toFixed(1)}%`
           : "0.0%",
@@ -264,7 +294,7 @@ const summary = summaryData?.summary;
   if (!reports.length) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Exam Module</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Exam Module</p>
         <h3 className="mt-1 text-xl font-black text-slate-900">{groupName} Exam Output</h3>
         <p className="mt-4 text-sm text-slate-500">No exam records are available for this group yet.</p>
       </div>
@@ -272,20 +302,20 @@ const summary = summaryData?.summary;
   }
 
   return (
-    <div className="space-y-6 rounded-2xl bg-white/95 p-4 shadow-sm md:p-6">
-      <div className="flex flex-col gap-4 border-b border-slate-200 pb-4 md:flex-row md:items-end md:justify-between">
+    <div className="space-y-3 rounded-2xl border border-slate-200/80 bg-white/95 p-2.5 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:p-3 md:space-y-4 md:p-4">
+      <div className="flex flex-col gap-2.5 border-b border-slate-200/80 pb-2.5 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Exam Module</p>
-          <h3 className="mt-1 text-2xl font-black tracking-tight text-slate-900">
+          <h3 className="mt-0.5 text-lg font-black tracking-tight text-slate-900 sm:text-xl">
             {groupName} Exam Output Dashboard
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-0.5 text-xs text-slate-500">
             Group-wise exam summary, pass rate, and latest result output.
           </p>
         </div>
 
-        <div className="w-full md:w-72">
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div className="w-full md:w-56">
+          <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
             Academic Year
           </label>
           <select
@@ -301,13 +331,14 @@ const summary = summaryData?.summary;
           </select>
         </div>
       </div>
-<section className="grid grid-cols-2 gap-4 xl:grid-cols-6">
+<section className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
 
   <StatCard
     icon={ClipboardList}
     label="Strength"
     value={summary?.strength ?? 0}
     hint="Active Students"
+    tone="slate"
   />
 
   <StatCard
@@ -315,6 +346,7 @@ const summary = summaryData?.summary;
     label="Appeared"
     value={summary?.appeared ?? 0}
     hint="Exam Attended"
+    tone="blue"
   />
 
   <StatCard
@@ -322,6 +354,7 @@ const summary = summaryData?.summary;
     label="Absent"
     value={summary?.absent ?? 0}
     hint="A / AB"
+    tone="amber"
   />
 
   <StatCard
@@ -329,6 +362,7 @@ const summary = summaryData?.summary;
     label="Pass"
     value={summary?.pass ?? 0}
     hint="Passed Students"
+    tone="emerald"
   />
 
   <StatCard
@@ -336,6 +370,7 @@ const summary = summaryData?.summary;
     label="Fail"
     value={summary?.fail ?? 0}
     hint="Failed Students"
+    tone="rose"
   />
 
   <StatCard
@@ -343,74 +378,109 @@ const summary = summaryData?.summary;
     label="Pass %"
     value={`${summary?.passPercentage ?? 0}%`}
     hint="Overall Result"
+    tone="violet"
   />
 
 </section>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <section className="grid grid-cols-1 gap-2.5 lg:grid-cols-2">
         {yearWiseSummary.map((item) => (
-          <div key={item.year} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <h4 className="text-lg font-bold text-slate-900">{item.year}</h4>
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm">
-                {item.total} records
+          <div
+            key={item.year}
+            className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 shadow-sm"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h4 className="text-sm font-black text-slate-900 sm:text-base">{item.year}</h4>
+              <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-slate-500 shadow-sm">
+                {item.total} students
               </span>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-white p-3 shadow-sm">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Average</p>
-                <p className="mt-1 text-xl font-black text-slate-900">{item.average}</p>
+
+            <div className="mt-2.5 grid grid-cols-4 gap-1.5">
+              <div className="rounded-lg bg-white px-2 py-2 shadow-sm">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Attended</p>
+                <p className="mt-0.5 text-base font-black text-blue-700">{item.attended}</p>
               </div>
-              <div className="rounded-xl bg-white p-3 shadow-sm">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Pass Rate</p>
-                <p className="mt-1 text-xl font-black text-slate-900">{item.passRate}</p>
+              <div className="rounded-lg bg-white px-2 py-2 shadow-sm">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Pass</p>
+                <p className="mt-0.5 text-base font-black text-emerald-700">{item.pass}</p>
               </div>
+              <div className="rounded-lg bg-white px-2 py-2 shadow-sm">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Fail</p>
+                <p className="mt-0.5 text-base font-black text-rose-700">{item.fail}</p>
+              </div>
+              <div className="rounded-lg bg-white px-2 py-2 shadow-sm">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Absent</p>
+                <p className="mt-0.5 text-base font-black text-amber-700">{item.absent}</p>
+              </div>
+            </div>
+
+            <div className="mt-2 flex items-center justify-between rounded-lg border border-slate-100 bg-white px-2.5 py-1.5">
+              <span className="text-[10px] font-semibold text-slate-500">Pass %</span>
+              <span className="text-xs font-black text-violet-700">{item.passRate}</span>
             </div>
           </div>
         ))}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+      <section className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 px-3 py-2.5 sm:px-4">
           <div>
-            <h4 className="text-lg font-bold text-slate-900">Latest Exam Results</h4>
-            <p className="text-xs text-slate-500">Recent output for {groupName} students</p>
+            <h4 className="text-sm font-black text-slate-900 sm:text-base">Latest Exam Results</h4>
+            <p className="text-[10px] text-slate-500 sm:text-xs">Recent output for {groupName} students</p>
           </div>
-          <span className="text-xs font-medium text-slate-500">{latestResults.length} rows</span>
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">
+            {latestResults.length} rows
+          </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className="min-w-[760px] w-full text-xs sm:text-sm">
             <thead>
-              <tr className="bg-slate-50 text-slate-600">
-                <th className="px-4 py-3 text-left font-semibold">Exam</th>
-                <th className="px-4 py-3 text-left font-semibold">Year</th>
-                <th className="px-4 py-3 text-left font-semibold">Date</th>
-                <th className="px-4 py-3 text-left font-semibold">Students</th>
-                <th className="px-4 py-3 text-left font-semibold">Avg %</th>
-                <th className="px-4 py-3 text-left font-semibold">Pass %</th>
+              <tr className="border-b border-slate-200 bg-slate-50/90 text-slate-500">
+                <th className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide">Exam</th>
+                <th className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide">Year</th>
+                <th className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide">Date</th>
+                <th className="px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wide">Students</th>
+                <th className="px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wide text-emerald-700">Pass</th>
+                <th className="px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wide text-rose-700">Fail</th>
+                <th className="px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wide text-amber-700">Absent</th>
+                <th className="px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wide text-violet-700">Pass %</th>
               </tr>
             </thead>
             <tbody>
-              {latestResults.map((row) => (
-                <tr key={`${row.examType}_${row.academicYear}_${row.yearOfStudy}`} className="border-t border-slate-100">
-                  <td className="px-4 py-3 font-semibold text-slate-900">{formatExamLabel(row.examType)}</td>
-                  <td className="px-4 py-3 text-slate-700">{row.yearOfStudy}</td>
-                  <td className="px-4 py-3 text-slate-700">{row.date}</td>
-                  <td className="px-4 py-3 text-slate-700">{row.totalStudents}</td>
-                  <td className="px-4 py-3 font-semibold text-slate-900">{row.averagePercentage}</td>
-                  <td className="px-4 py-3 font-semibold text-emerald-700">{row.passRate}</td>
+              {latestResults.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-3 py-6 text-center text-xs text-slate-500">
+                    No exam results available.
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                latestResults.map((row) => (
+                  <tr
+                    key={`${row.examType}_${row.academicYear}_${row.yearOfStudy}`}
+                    className="border-b border-slate-100 transition hover:bg-slate-50"
+                  >
+                    <td className="px-3 py-2.5 font-bold text-slate-900">{formatExamLabel(row.examType)}</td>
+                    <td className="px-3 py-2.5 text-slate-600">{row.yearOfStudy}</td>
+                    <td className="px-3 py-2.5 text-slate-600">{row.date}</td>
+                    <td className="px-3 py-2.5 text-right font-semibold text-slate-700">{row.totalStudents}</td>
+                    <td className="px-3 py-2.5 text-right font-black text-emerald-700">{row.passCount}</td>
+                    <td className="px-3 py-2.5 text-right font-black text-rose-700">{row.failCount}</td>
+                    <td className="px-3 py-2.5 text-right font-black text-amber-700">{row.absentCount}</td>
+                    <td className="px-3 py-2.5 text-right font-black text-violet-700">{row.passRate}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <section className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h4 className="text-lg font-bold text-slate-900">Students Needing Attention</h4>
+            <h4 className="text-sm font-black text-slate-900 sm:text-base">Students Needing Attention</h4>
             <p className="text-xs text-slate-500">Lowest recent exam outcomes in this dashboard</p>
           </div>
           <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm">

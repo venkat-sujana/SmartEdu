@@ -190,6 +190,57 @@ function getAverageReportPercentage(rows) {
   return total / rows.length
 }
 
+function getSubjectWiseStats(rows) {
+  const subjectMap = new Map()
+
+  rows.forEach(report => {
+    getSubjectEntries(report).forEach(([subject, mark]) => {
+      const subjectName = String(subject || '').trim()
+      if (!subjectName) return
+
+      if (!subjectMap.has(subjectName)) {
+        subjectMap.set(subjectName, {
+          subject: subjectName,
+          appeared: 0,
+          pass: 0,
+          fail: 0,
+          absent: 0,
+        })
+      }
+
+      const stats = subjectMap.get(subjectName)
+
+      if (isAbsentMark(mark)) {
+        stats.absent += 1
+        return
+      }
+
+      stats.appeared += 1
+
+      const numericMark = Number(mark)
+      let passed = Number.isFinite(numericMark)
+
+      if (passed) {
+        if (isUnitExam(report.examType) && numericMark < 9) passed = false
+        if (isPublicExam(report.examType) && numericMark < 18) passed = false
+      }
+
+      if (passed) stats.pass += 1
+      else stats.fail += 1
+    })
+  })
+
+  return Array.from(subjectMap.values())
+    .map(stats => ({
+      ...stats,
+      passPercentage:
+        stats.appeared > 0
+          ? Number(((stats.pass / stats.appeared) * 100).toFixed(2))
+          : 0,
+    }))
+    .sort((a, b) => a.subject.localeCompare(b.subject))
+}
+
 function getStudentName(report) {
   return report?.student?.name || report?.studentId?.name || 'Unknown'
 }
@@ -199,13 +250,16 @@ function getStudentGroup(report) {
 }
 
 function isAbsentMark(mark) {
-  const value = String(mark || '').toUpperCase()
+  const value = String(mark || '').trim().toUpperCase()
   return value === 'A' || value === 'AB'
 }
 
 function isReportAbsent(report) {
   const marks = getSubjectMarks(report)
-  return marks.length > 0 && marks.some(isAbsentMark)
+  // A student is absent only when ALL subjects are marked A/AB.
+  // If only one subject is absent and other subjects have marks,
+  // the student's overall result is Fail (not Absent).
+  return marks.length > 0 && marks.every(isAbsentMark)
 }
 
 function isReportPass(report) {
@@ -641,6 +695,8 @@ export default function ExamReportPage() {
     let upcoming = 0
     let completed = 0
     let passCounter = 0
+    let failCounter = 0
+    let absentCounter = 0
     let attendedCounter = 0
 
     const today = new Date()
@@ -657,9 +713,16 @@ export default function ExamReportPage() {
         else completed += 1
       }
 
-      if (!isReportAbsent(report)) {
+      if (isReportAbsent(report)) {
+        absentCounter += 1
+      } else {
         attendedCounter += 1
-        if (isReportPass(report)) passCounter += 1
+
+        if (isReportPass(report)) {
+          passCounter += 1
+        } else {
+          failCounter += 1
+        }
       }
     })
 
@@ -670,9 +733,18 @@ export default function ExamReportPage() {
       totalExamsConducted: uniqueExamEvents.size,
       upcomingExams: upcoming,
       completedExams: completed,
+      attendedCount: attendedCounter,
+      absentCount: absentCounter,
+      passCount: passCounter,
+      failCount: failCounter,
       averagePassPercentage: `${avgPass}%`,
     }
   }, [filteredReports])
+
+  const subjectWiseStats = useMemo(
+    () => getSubjectWiseStats(filteredReports),
+    [filteredReports]
+  )
 
   const summaryCards = useMemo(
     () => [
@@ -712,13 +784,46 @@ export default function ExamReportPage() {
       {
         title: 'Average Pass Percentage',
         value: summaryStats.averagePassPercentage,
-        hint: 'Across filtered records',
+        hint: 'Pass ÷ Attended × 100',
         icon: Users,
         iconClassName: 'text-violet-700',
         iconWrapClassName: 'bg-violet-100',
         titleClassName: 'text-violet-700',
         borderClassName: 'border-violet-100 hover:border-violet-300',
         gradientClassName: 'from-white via-violet-50 to-fuchsia-100/70',
+      },
+      {
+        title: 'Pass',
+        value: summaryStats.passCount,
+        hint: 'Passed Students',
+        icon: ClipboardCheck,
+        iconClassName: 'text-emerald-700',
+        iconWrapClassName: 'bg-emerald-100',
+        titleClassName: 'text-emerald-700',
+        borderClassName: 'border-emerald-100 hover:border-emerald-300',
+        gradientClassName: 'from-white via-emerald-50 to-teal-100/80',
+      },
+      {
+        title: 'Fail',
+        value: summaryStats.failCount,
+        hint: 'Failed Students',
+        icon: ClipboardCheck,
+        iconClassName: 'text-rose-700',
+        iconWrapClassName: 'bg-rose-100',
+        titleClassName: 'text-rose-700',
+        borderClassName: 'border-rose-100 hover:border-rose-300',
+        gradientClassName: 'from-white via-rose-50 to-rose-100/80',
+      },
+      {
+        title: 'Absent',
+        value: summaryStats.absentCount,
+        hint: 'All Subjects A / AB',
+        icon: Users,
+        iconClassName: 'text-amber-700',
+        iconWrapClassName: 'bg-amber-100',
+        titleClassName: 'text-amber-700',
+        borderClassName: 'border-amber-100 hover:border-amber-300',
+        gradientClassName: 'from-white via-amber-50 to-yellow-100/80',
       },
     ],
     [summaryStats]
@@ -1129,6 +1234,68 @@ export default function ExamReportPage() {
               </div>
             </section>
 
+            <section className="rounded-xl border border-indigo-100/70 bg-linear-to-br from-white via-indigo-50/70 to-cyan-100/50 px-4 py-4 shadow-sm">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 className="text-base font-semibold text-indigo-900">Subject-wise Pass %</h2>
+                  <p className="text-xs text-slate-500">
+                    Pass % = Subject Pass ÷ Subject Appeared × 100. Absent students are excluded.
+                  </p>
+                </div>
+                <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-semibold text-indigo-700">
+                  {subjectWiseStats.length} Subjects
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-white/80 text-slate-600">
+                      <th className="px-3 py-2 text-left font-medium">S.No</th>
+                      <th className="px-3 py-2 text-left font-medium">Subject</th>
+                      <th className="px-3 py-2 text-right font-medium">Appeared</th>
+                      <th className="px-3 py-2 text-right font-medium">Pass</th>
+                      <th className="px-3 py-2 text-right font-medium">Fail</th>
+                      <th className="px-3 py-2 text-right font-medium">Absent</th>
+                      <th className="px-3 py-2 text-right font-medium">Pass %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subjectWiseStats.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-3 py-6 text-center text-sm text-slate-500">
+                          No subject-wise exam data available.
+                        </td>
+                      </tr>
+                    ) : (
+                      subjectWiseStats.map((item, index) => (
+                        <tr
+                          key={item.subject}
+                          className="border-b border-slate-100 text-slate-700 transition hover:bg-indigo-50/40"
+                        >
+                          <td className="px-3 py-2">{index + 1}</td>
+                          <td className="px-3 py-2 font-medium text-slate-900">{item.subject}</td>
+                          <td className="px-3 py-2 text-right">{item.appeared}</td>
+                          <td className="px-3 py-2 text-right font-medium text-emerald-700">
+                            {item.pass}
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium text-rose-700">
+                            {item.fail}
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium text-amber-700">
+                            {item.absent}
+                          </td>
+                          <td className="px-3 py-2 text-right font-semibold text-indigo-700">
+                            {item.passPercentage.toFixed(2)}%
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
             <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               <StreamSummaryPanel
                 title="General Stream Summary"
@@ -1252,7 +1419,8 @@ export default function ExamReportPage() {
                         </tr>
                       ) : (
                         detailRows.map((row, index) => {
-                          const passed = isReportPass(row)
+                          const absent = isReportAbsent(row)
+                          const passed = !absent && isReportPass(row)
                           return (
                             <tr
                               key={row._id || `${row.studentId}_${row.examType}_${index}`}
@@ -1279,12 +1447,14 @@ export default function ExamReportPage() {
                                 <span
                                   className={[
                                     'rounded-full px-2 py-1 text-xs font-semibold',
-                                    passed
-                                      ? 'bg-emerald-100 text-emerald-700'
-                                      : 'bg-rose-100 text-rose-700',
+                                    absent
+                                      ? 'bg-amber-100 text-amber-700'
+                                      : passed
+                                        ? 'bg-emerald-100 text-emerald-700'
+                                        : 'bg-rose-100 text-rose-700',
                                   ].join(' ')}
                                 >
-                                  {passed ? 'Pass' : 'Fail'}
+                                  {absent ? 'Absent' : passed ? 'Pass' : 'Fail'}
                                 </span>
                               </td>
                               <td className="px-3 py-2">

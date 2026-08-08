@@ -50,7 +50,10 @@ function isAbsentMark(mark) {
 
 function isReportAbsent(report) {
   const subjects = getAllMarks(report)
-  return subjects.length > 0 && subjects.some(subject => isAbsentMark(subject?.marks))
+  // Overall Absent only when ALL subjects are A/AB.
+  // If one subject is absent but other subjects have marks,
+  // the student's overall result is Fail.
+  return subjects.length > 0 && subjects.every(subject => isAbsentMark(subject?.marks))
 }
 
 function isReportPass(report) {
@@ -67,6 +70,166 @@ function isReportPass(report) {
     if (isPublicExam(report.examType) && numericMark < 18) return false
     return numericMark >= 0
   })
+}
+
+function getSubjectWisePassRows(reports) {
+  const subjectMap = new Map()
+
+  reports.forEach(report => {
+    getAllMarks(report).forEach(subjectEntry => {
+      const subjectName = String(subjectEntry?.subject || '').trim()
+      if (!subjectName) return
+
+      if (!subjectMap.has(subjectName)) {
+        subjectMap.set(subjectName, {
+          subject: subjectName,
+          appeared: 0,
+          pass: 0,
+          fail: 0,
+          absent: 0,
+        })
+      }
+
+      const row = subjectMap.get(subjectName)
+      const mark = subjectEntry?.marks
+
+      // Subject-level absence: this subject only is Absent.
+      if (isAbsentMark(mark)) {
+        row.absent += 1
+        return
+      }
+
+      row.appeared += 1
+
+      const numericMark =
+        typeof mark === 'number' ? mark : Number(mark)
+
+      let passed = Number.isFinite(numericMark)
+
+      if (passed && isUnitExam(report.examType)) {
+        passed = numericMark >= 9
+      }
+
+      if (passed && isPublicExam(report.examType)) {
+        passed = numericMark >= 18
+      }
+
+      if (passed) {
+        row.pass += 1
+      } else {
+        row.fail += 1
+      }
+    })
+  })
+
+  return Array.from(subjectMap.values())
+    .map(row => ({
+      ...row,
+      passPercent:
+        row.appeared > 0
+          ? `${((row.pass / row.appeared) * 100).toFixed(1)}%`
+          : '0.0%',
+    }))
+    .sort((a, b) => a.subject.localeCompare(b.subject))
+}
+
+function SubjectWisePassTable({ rows, title }) {
+  return (
+    <div className="space-y-3 rounded-2xl border border-slate-200/80 bg-white p-2.5 shadow-sm sm:p-3">
+      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-black text-slate-900 sm:text-base">{title}</h3>
+          <p className="mt-0.5 hidden text-[10px] text-slate-500 sm:block">
+            Pass % = Pass ÷ Appeared × 100 • Subject Absent excluded
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600">
+          {rows.length} subjects
+        </span>
+      </div>
+
+      <div className="space-y-2 md:hidden">
+        {rows.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
+            No subject-wise data available.
+          </div>
+        ) : (
+          rows.map(row => (
+            <div
+              key={row.subject}
+              className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 shadow-sm"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <h4 className="truncate text-sm font-bold text-slate-900">{row.subject}</h4>
+                <span className="rounded-lg bg-cyan-50 px-2.5 py-1 text-sm font-black text-cyan-700">
+                  {row.passPercent}
+                </span>
+              </div>
+
+              <div className="mt-2 grid grid-cols-2 gap-1.5 text-sm">
+                <div className="rounded-lg bg-white px-2.5 py-1.5">
+                  <div className="text-xs text-slate-500">Appeared</div>
+                  <div className="font-bold text-slate-900">{row.appeared}</div>
+                </div>
+                <div className="rounded-lg bg-white px-2.5 py-1.5">
+                  <div className="text-xs text-slate-500">Pass</div>
+                  <div className="font-bold text-emerald-700">{row.pass}</div>
+                </div>
+                <div className="rounded-lg bg-white px-2.5 py-1.5">
+                  <div className="text-xs text-slate-500">Fail</div>
+                  <div className="font-bold text-rose-700">{row.fail}</div>
+                </div>
+                <div className="rounded-lg bg-white px-2.5 py-1.5">
+                  <div className="text-xs text-slate-500">Absent</div>
+                  <div className="font-bold text-amber-700">{row.absent}</div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-xl border border-slate-200/70 md:block">
+        <table className="min-w-full text-xs sm:text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50/80 text-slate-600">
+              <th className="px-2.5 py-2 text-left font-semibold">S.No</th>
+              <th className="px-2.5 py-2 text-left font-semibold">Subject</th>
+              <th className="px-2.5 py-2 text-right font-semibold">Appeared</th>
+              <th className="px-2.5 py-2 text-right font-semibold">Pass</th>
+              <th className="px-2.5 py-2 text-right font-semibold">Fail</th>
+              <th className="px-2.5 py-2 text-right font-semibold">Absent</th>
+              <th className="px-2.5 py-2 text-right font-semibold">Pass %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-3 py-6 text-center text-sm text-slate-500">
+                  No subject-wise data available.
+                </td>
+              </tr>
+            ) : (
+              rows.map((row, index) => (
+                <tr
+                  key={row.subject}
+                  className="border-b border-slate-100/80 text-slate-700 transition hover:bg-cyan-50/40"
+                >
+                  <td className="px-2.5 py-1.5">{index + 1}</td>
+                  <td className="px-2.5 py-1.5 font-semibold text-slate-900">{row.subject}</td>
+                  <td className="px-2.5 py-1.5 text-right">{row.appeared}</td>
+                  <td className="px-2.5 py-1.5 text-right font-semibold text-emerald-700">{row.pass}</td>
+                  <td className="px-2.5 py-1.5 text-right font-semibold text-rose-700">{row.fail}</td>
+                  <td className="px-2.5 py-1.5 text-right font-semibold text-amber-700">{row.absent}</td>
+                  <td className="px-2.5 py-1.5 text-right font-black text-cyan-700">{row.passPercent}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 }
 
 function OverviewCard({ title, value, note, className }) {
@@ -100,7 +263,7 @@ function HeaderActionLink({ href, label, theme, variant = 'theme' }) {
   return (
     <Link
       href={href}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-center text-sm font-semibold shadow-sm transition sm:px-4 ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-2.5 py-1.5 text-center text-sm font-semibold shadow-sm transition sm:px-4 ${className}`}
     >
       <UserPlus className="h-4 w-4" />
       {label}
@@ -111,7 +274,7 @@ function HeaderActionLink({ href, label, theme, variant = 'theme' }) {
 function CompactExamTable({ rows, loading }) {
   return (
     <>
-      <div className="space-y-3 md:hidden">
+      <div className="space-y-2 md:hidden">
         {!loading && rows.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
             No exam summary available.
@@ -129,7 +292,7 @@ function CompactExamTable({ rows, loading }) {
                   </p>
                   <h3 className="mt-1 text-sm font-bold text-slate-900">{row.examType}</h3>
                 </div>
-                <div className="rounded-2xl bg-white px-3 py-2 text-right shadow-sm">
+                <div className="rounded-2xl bg-white px-2.5 py-1.5 text-right shadow-sm">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                     Pass %
                   </div>
@@ -138,25 +301,29 @@ function CompactExamTable({ rows, loading }) {
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                <div className="rounded-2xl bg-white px-3 py-2">
+                <div className="rounded-2xl bg-white px-2.5 py-1.5">
                   <div className="text-xs text-slate-500">Enrolled</div>
                   <div className="font-bold text-slate-900">{row.enrolled}</div>
                 </div>
-                <div className="rounded-2xl bg-white px-3 py-2">
+                <div className="rounded-2xl bg-white px-2.5 py-1.5">
                   <div className="text-xs text-slate-500">Attended</div>
                   <div className="font-bold text-slate-900">{row.attended}</div>
                 </div>
-                <div className="rounded-2xl bg-white px-3 py-2">
+                <div className="rounded-2xl bg-white px-2.5 py-1.5">
                   <div className="text-xs text-slate-500">Absent</div>
                   <div className="font-bold text-rose-700">{row.absent}</div>
                 </div>
-                <div className="rounded-2xl bg-white px-3 py-2">
+                <div className="rounded-2xl bg-white px-2.5 py-1.5">
                   <div className="text-xs text-slate-500">Present</div>
                   <div className="font-bold text-emerald-700">{row.present}</div>
                 </div>
-                <div className="rounded-2xl bg-white px-3 py-2 col-span-2">
+                <div className="rounded-2xl bg-white px-2.5 py-1.5">
                   <div className="text-xs text-slate-500">Pass</div>
-                  <div className="font-bold text-slate-900">{row.pass}</div>
+                  <div className="font-bold text-emerald-700">{row.pass}</div>
+                </div>
+                <div className="rounded-2xl bg-white px-2.5 py-1.5">
+                  <div className="text-xs text-slate-500">Fail</div>
+                  <div className="font-bold text-rose-700">{row.fail}</div>
                 </div>
               </div>
             </div>
@@ -164,24 +331,25 @@ function CompactExamTable({ rows, loading }) {
         )}
       </div>
 
-      <div className="hidden overflow-x-auto md:block">
-        <table className="min-w-full text-sm">
+      <div className="hidden overflow-x-auto rounded-xl border border-slate-200/70 md:block">
+        <table className="min-w-full text-xs sm:text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-slate-600">
-              <th className="px-3 py-2 text-left font-medium">S.No</th>
-              <th className="px-3 py-2 text-left font-medium">Exam Type</th>
-              <th className="px-3 py-2 text-left font-medium">Enrolled</th>
-              <th className="px-3 py-2 text-left font-medium">Attended</th>
-              <th className="px-3 py-2 text-left font-medium">Absent</th>
-              <th className="px-3 py-2 text-left font-medium">Present</th>
-              <th className="px-3 py-2 text-left font-medium">Pass</th>
-              <th className="px-3 py-2 text-left font-medium">Pass %</th>
+              <th className="px-2.5 py-2 text-left font-semibold">S.No</th>
+              <th className="px-2.5 py-2 text-left font-semibold">Exam Type</th>
+              <th className="px-2.5 py-2 text-left font-semibold">Enrolled</th>
+              <th className="px-2.5 py-2 text-left font-semibold">Attended</th>
+              <th className="px-2.5 py-2 text-left font-semibold">Absent</th>
+              <th className="px-2.5 py-2 text-left font-semibold">Present</th>
+              <th className="px-2.5 py-2 text-left font-semibold">Pass</th>
+              <th className="px-2.5 py-2 text-left font-semibold">Fail</th>
+              <th className="px-2.5 py-2 text-left font-semibold">Pass %</th>
             </tr>
           </thead>
           <tbody>
             {!loading && rows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-3 py-6 text-center text-sm text-slate-500">
+                <td colSpan={9} className="px-3 py-6 text-center text-sm text-slate-500">
                   No exam summary available.
                 </td>
               </tr>
@@ -191,14 +359,15 @@ function CompactExamTable({ rows, loading }) {
                   key={row.examType}
                   className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                 >
-                  <td className="px-3 py-2">{index + 1}</td>
-                  <td className="px-3 py-2 font-medium">{row.examType}</td>
-                  <td className="px-3 py-2">{row.enrolled}</td>
-                  <td className="px-3 py-2">{row.attended}</td>
-                  <td className="px-3 py-2 text-rose-700">{row.absent}</td>
-                  <td className="px-3 py-2 text-emerald-700">{row.present}</td>
-                  <td className="px-3 py-2">{row.pass}</td>
-                  <td className="px-3 py-2 font-medium text-blue-700">{row.passPercent}</td>
+                  <td className="px-2.5 py-1.5">{index + 1}</td>
+                  <td className="px-2.5 py-1.5 font-medium">{row.examType}</td>
+                  <td className="px-2.5 py-1.5">{row.enrolled}</td>
+                  <td className="px-2.5 py-1.5">{row.attended}</td>
+                  <td className="px-2.5 py-1.5 text-rose-700">{row.absent}</td>
+                  <td className="px-2.5 py-1.5 text-emerald-700">{row.present}</td>
+                  <td className="px-2.5 py-1.5 text-emerald-700">{row.pass}</td>
+                  <td className="px-2.5 py-1.5 font-semibold text-rose-700">{row.fail}</td>
+                  <td className="px-2.5 py-1.5 font-medium text-blue-700">{row.passPercent}</td>
                 </tr>
               ))
             )}
@@ -211,7 +380,7 @@ function CompactExamTable({ rows, loading }) {
 
 function YearlyExamSummarySection({ title, rows, loading }) {
   return (
-    <div className="space-y-3 rounded-3xl border border-slate-200 bg-slate-50/70 p-3 sm:p-4">
+    <div className="space-y-3 rounded-2xl border border-slate-200/80 bg-white p-2.5 shadow-sm sm:p-3">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-black text-slate-900 sm:text-lg">{title}</h3>
         <span className="text-xs text-slate-500">
@@ -275,9 +444,11 @@ export default function GroupDashboardPage({
             absent: 0,
             present: 0,
             pass: 0,
+            fail: 0,
             passPercent: '0.0%',
             studentKeys: new Set(),
             passStudentKeys: new Set(),
+            failStudentKeys: new Set(),
           }
         }
 
@@ -296,11 +467,21 @@ export default function GroupDashboardPage({
         if (isReportPass(report)) {
           acc[key].passStudentKeys.add(studentKey)
           acc[key].pass = acc[key].passStudentKeys.size
+        } else {
+          // Attended but not passed = Fail.
+          acc[key].failStudentKeys.add(studentKey)
+          acc[key].fail = acc[key].failStudentKeys.size
         }
         return acc
       }, {})
+      
     )
+
+    
+
+
       .map(row => {
+      
         const absent = Math.max(row.enrolled - row.attended, 0)
         const passPercent =
           row.attended > 0 ? `${((row.pass / row.attended) * 100).toFixed(1)}%` : '0.0%'
@@ -321,6 +502,13 @@ export default function GroupDashboardPage({
     examReports.filter(report => report.yearOfStudy === 'Second Year'),
     secondYearEnrolled
   )
+  const firstYearSubjectWiseRows = getSubjectWisePassRows(
+    examReports.filter(report => report.yearOfStudy === 'First Year')
+  )
+  const secondYearSubjectWiseRows = getSubjectWisePassRows(
+    examReports.filter(report => report.yearOfStudy === 'Second Year')
+  )
+
   const overviewCards = [
     {
       title: 'First Year Fee',
@@ -340,20 +528,20 @@ export default function GroupDashboardPage({
   const footerAddress = [collegeDetails?.address, collegeDetails?.district].filter(Boolean).join(', ')
 
   return (
-    <div className={`min-h-screen bg-linear-to-br ${theme.shell} p-3 sm:p-4 md:p-6`}>
-      <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
+    <div className={`min-h-screen bg-linear-to-br ${theme.shell} px-2 py-3 sm:px-3 sm:py-4 md:px-4`}>
+      <div className="mx-auto max-w-6xl space-y-3 sm:space-y-4">
         <div
-          className={`flex flex-col gap-4 rounded-3xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-4 shadow-sm sm:p-5 lg:flex-row lg:items-center lg:justify-between`}
+          className={`flex flex-col gap-4 rounded-2xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-3 shadow-sm sm:p-4 lg:flex-row lg:items-center lg:justify-between`}
         >
           <div>
             
-            <h1 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">{groupName}</h1>
+            <h1 className="mt-1 text-lg font-black text-slate-900 sm:text-xl">{groupName}</h1>
             <p className="text-[11px] font-black text-slate-900 tracking-[0.2em] uppercase sm:text-xs">Lecturer Dashboard</p>
             <p className="mt-1 text-sm font-black text-slate-900">{collegeName}</p>
             
           </div>
 
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <HeaderActionLink href={addStudentHref} label="Add Student" theme={theme} />
             <HeaderActionLink
               href={`${baseDashboardHref}/attendance`}
@@ -365,7 +553,7 @@ export default function GroupDashboardPage({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-[250px_minmax(0,1fr)]">
           <div className="space-y-4">
             <GroupDashboardSidebar
               groupName={groupName}
@@ -389,22 +577,22 @@ export default function GroupDashboardPage({
               <GroupAttendanceCard groupName={groupName} />
             </div>
 
-            <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5 md:p-6">
-              <div className="mb-4 border-b border-slate-200 pb-3">
-                <h2 className="text-xl font-black text-slate-900 sm:text-2xl">Fee Overview</h2>
+            <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
+              <div className="mb-3 border-b border-slate-200/80 pb-2.5">
+                <h2 className="text-lg font-black text-slate-900 sm:text-xl">Fee Overview</h2>
                 
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {overviewCards.map(card => (
                   <OverviewCard key={card.title} {...card} />
                 ))}
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5 md:p-6">
-              <div className="mb-4 border-b border-slate-200 pb-3">
-                <h2 className="text-xl font-black text-slate-900 sm:text-2xl">Quick Links</h2>
+            <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
+              <div className="mb-3 border-b border-slate-200/80 pb-2.5">
+                <h2 className="text-lg font-black text-slate-900 sm:text-xl">Quick Links</h2>
                 
               </div>
 
@@ -459,10 +647,10 @@ export default function GroupDashboardPage({
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm sm:p-5 md:p-6">
+            <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
               <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 sm:text-2xl">Exam Summary</h2>
+                  <h2 className="text-lg font-black text-slate-900 sm:text-xl">Exam Summary</h2>
                   <p className="mt-1 text-xs text-slate-500">
                     Compact exam-wise performance snapshot by year
                   </p>
@@ -488,11 +676,33 @@ export default function GroupDashboardPage({
               </div>
             </section>
 
+            <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
+              <div className="mb-3 border-b border-slate-200/80 pb-2.5">
+                <h2 className="text-lg font-black text-slate-900 sm:text-xl">
+                  Subject-wise Pass %
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  Subject performance across the available exam records for this group
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <SubjectWisePassTable
+                  title="First Year"
+                  rows={firstYearSubjectWiseRows}
+                />
+                <SubjectWisePassTable
+                  title="Second Year"
+                  rows={secondYearSubjectWiseRows}
+                />
+              </div>
+            </section>
+
           </div>
         </div>
 
         <section
-          className={`rounded-xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} shadow-sm`}
+          className={`rounded-2xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} shadow-sm`}
         >
           <DashboardFooter
             collegeName={collegeDetails?.name || collegeName}
