@@ -10,7 +10,7 @@ import LecturerInfoCard from '@/components/dashboard/LecturerInfoCard'
 import GroupAttendanceCard from '@/components/OverallAttendanceMatrixCard/GroupAttendanceCard'
 import DashboardFooter from '@/components/layout/Footer'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
-import GroupDashboardSidebar from './GroupDashboardSidebar'
+// import GroupDashboardSidebar from './GroupDashboardSidebar'
 
 const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
@@ -232,12 +232,31 @@ function SubjectWisePassTable({ rows, title }) {
   )
 }
 
-function OverviewCard({ title, value, note, className }) {
+function OverviewCard({ title, value, className = '' }) {
   return (
-    <div className={`rounded-3xl p-4 text-white shadow-sm sm:p-5 ${className}`}>
-      <p className="text-xs text-white/80 sm:text-sm">{title}</p>
-      <p className="mt-2 text-xl font-black sm:text-2xl">{value}</p>
-      {note ? <p className="mt-2 text-xs text-white/75">{note}</p> : null}
+    <div
+      className={`
+        ${className}
+        min-h-[58px]
+        rounded-lg
+        px-2.5 py-2
+        text-white
+        shadow-sm
+        ring-1 ring-white/10
+        transition-all duration-200
+        hover:-translate-y-0.5
+        hover:shadow-md
+        sm:min-h-16
+        sm:px-3 sm:py-2.5
+      `}
+    >
+      <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-white/75 sm:text-[11px]">
+        {title}
+      </p>
+
+      <p className="mt-0.5 text-lg font-black leading-tight tracking-tight sm:text-xl">
+        {value}
+      </p>
     </div>
   )
 }
@@ -246,10 +265,33 @@ function QuickLinkCard({ href, title, description }) {
   return (
     <Link
       href={href}
-      className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:p-5"
+      className="
+        group flex min-h-11 items-center
+        rounded-lg
+        border border-slate-200/70
+        bg-white/95
+        px-2.5 py-1.5
+        shadow-sm
+        transition-all duration-200
+        hover:-translate-y-0.5
+        hover:border-slate-300
+        hover:shadow-md
+        active:scale-[0.99]
+        sm:min-h-12
+        sm:px-3 sm:py-2
+      "
     >
-      <p className="text-base font-bold text-slate-900 sm:text-lg">{title}</p>
-      {description ? <p className="mt-2 text-sm text-slate-600">{description}</p> : null}
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold text-slate-800 group-hover:text-slate-950 sm:text-sm">
+          {title}
+        </p>
+
+        {description ? (
+          <p className="mt-0.5 truncate text-[10px] leading-tight text-slate-500">
+            {description}
+          </p>
+        ) : null}
+      </div>
     </Link>
   )
 }
@@ -541,27 +583,50 @@ export default function GroupDashboardPage({
             
           </div>
 
+          <LecturerInfoCard user={user} groupName={groupName} />
+
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <HeaderActionLink href={addStudentHref} label="Add Student" theme={theme} />
             <HeaderActionLink
               href={`${baseDashboardHref}/attendance`}
-              label="Take Attendance"
+              label="Take Today's Attendance"
               theme={theme}
             />
             <HeaderActionLink href={marksPostingHref} label="Post Marks" theme={theme} />
+            <HeaderActionLink href={`${baseDashboardHref}/absentees`} label="Today's Absentees List" theme={theme} />
+            <HeaderActionLink  href={`${baseDashboardHref}/monthly`} label="Monthly Attendance " theme={theme} />
             <HeaderActionLink href={examDashboardHref} label="Exam Dashboard" theme={theme} />
+            <HeaderActionLink href={`${baseDashboardHref}/students`} label="Student Records" theme={theme} />
+            <HeaderActionLink href={`${baseDashboardHref}/edit`} label="Edit Attendance Entries" theme={theme} />
+            <HeaderActionLink href={`${baseDashboardHref}/fees`} label="Fee Dashboard" theme={theme} />
+            <HeaderActionLink  href={`${baseDashboardHref}/monthly`} label="Attendance below 75%" theme={theme} />
           </div>
         </div>
 
+
+        
+        <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
+              <div className="mb-3 border-b border-slate-200/80 pb-2.5">
+                <h2 className="text-lg font-black text-slate-900 sm:text-xl">Fee Overview</h2>
+                
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {overviewCards.map(card => (
+                  <OverviewCard key={card.title} {...card} />
+                ))}
+              </div>
+            </section>
+
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-[250px_minmax(0,1fr)]">
           <div className="space-y-4">
-            <GroupDashboardSidebar
+            {/* <GroupDashboardSidebar
               groupName={groupName}
               routeSegment={routeSegment}
               includeEditAttendance={includeEditAttendance}
               activeSection="overview"
-            />
-            <LecturerInfoCard user={user} groupName={groupName} />
+            /> */}
+            
             <div className="xl:hidden">
               <GroupAttendanceCard groupName={groupName} />
             </div>
@@ -577,75 +642,56 @@ export default function GroupDashboardPage({
               <GroupAttendanceCard groupName={groupName} />
             </div>
 
-            <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
-              <div className="mb-3 border-b border-slate-200/80 pb-2.5">
-                <h2 className="text-lg font-black text-slate-900 sm:text-xl">Fee Overview</h2>
-                
-              </div>
+            
 
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {overviewCards.map(card => (
-                  <OverviewCard key={card.title} {...card} />
-                ))}
-              </div>
-            </section>
+            {/* <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+  <QuickLinkCard
+    href={`${baseDashboardHref}/attendance`}
+    title="Take daily attendance"
+  />
 
-            <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
-              <div className="mb-3 border-b border-slate-200/80 pb-2.5">
-                <h2 className="text-lg font-black text-slate-900 sm:text-xl">Quick Links</h2>
-                
-              </div>
+  <QuickLinkCard
+    href={`${baseDashboardHref}/students`}
+    title="Student Records"
+  />
 
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <QuickLinkCard
-                  href={`${baseDashboardHref}/attendance`}
-                  title="Attendance"
-                  
-                />
-                <QuickLinkCard
-                  href={`${baseDashboardHref}/students`}
-                  title="Students"
-                  
-                />
-                <QuickLinkCard
-                  href={`${baseDashboardHref}/absentees`}
-                  title="Absentees"
-                  
-                />
-                <QuickLinkCard
-                  href={`${baseDashboardHref}/absentees`}
-                  title="Consecutive Absentees"
-                  
-                />
-                <QuickLinkCard
-                  href={`${baseDashboardHref}/monthly`}
-                  title="Monthly Reports"
-                  
-                />
-                <QuickLinkCard
-                  href={`${baseDashboardHref}/monthly`}
-                  title="<75% Attendance"
-                  
-                />
-                <QuickLinkCard
-                  href={`${baseDashboardHref}/exams`}
-                  title="Exam Dashboard"
-                  
-                />
-                <QuickLinkCard
-                  href={`${baseDashboardHref}/fees`}
-                  title="Fee Dashboard"
-                  
-                />
-                {includeEditAttendance ? (
-                  <QuickLinkCard
-                    href={`${baseDashboardHref}/edit`}
-                    title="Edit Attendance"
-                    
-                  />
-                ) : null}
-              </div>
-            </section>
+  <QuickLinkCard
+    href={`${baseDashboardHref}/absentees`}
+    title="Today's Absentees List"
+  />
+
+  <QuickLinkCard
+    href={`${baseDashboardHref}/absentees`}
+    title="Consecutive Absentees"
+  />
+
+  <QuickLinkCard
+    href={`${baseDashboardHref}/monthly`}
+    title="Monthly Attendance Report"
+  />
+
+  <QuickLinkCard
+    href={`${baseDashboardHref}/monthly`}
+    title="<75% Attendance"
+  />
+
+  <QuickLinkCard
+    href={`${baseDashboardHref}/exams`}
+    title="Exam Dashboard"
+  />
+
+  <QuickLinkCard
+    href={`${baseDashboardHref}/fees`}
+    title="Fee Dashboard"
+  />
+
+  {includeEditAttendance ? (
+    <QuickLinkCard
+      href={`${baseDashboardHref}/edit`}
+      title="Edit Attendance Entries"
+    />
+  ) : null}
+</div> */}
 
             <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
               <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">

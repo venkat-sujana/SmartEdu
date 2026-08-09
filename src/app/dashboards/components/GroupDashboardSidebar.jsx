@@ -1,3 +1,4 @@
+//src/app/dashboards/components/GroupDashboardSidebar.jsx
 'use client'
 
 import Link from 'next/link'
@@ -12,12 +13,12 @@ export default function GroupDashboardSidebar({
   const sections = getVisibleSections(includeEditAttendance)
 
   return (
-    <aside className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm">
+    <aside className="rounded-3xl border border-slate-200 bg-white/95 p-2 shadow-sm">
       
       <h2 className="mt-2 text-xl font-black text-slate-900">Sidebar Navigation</h2>
       
 
-      <nav className="mt-5 md:hidden">
+      <nav className="mt-2 md:hidden">
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
           {sections.map(section => {
             const Icon = section.icon
@@ -43,7 +44,7 @@ export default function GroupDashboardSidebar({
                       isActive ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-700'
                     }`}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-2 w-2" />
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold">{section.label}</span>
@@ -62,7 +63,7 @@ export default function GroupDashboardSidebar({
         </div>
       </nav>
 
-      <nav className="mt-5 hidden space-y-2 md:block">
+      <nav className="mt-2 hidden space-y-2 md:block">
         {sections.map(section => {
           const Icon = section.icon
           const href =
@@ -75,7 +76,7 @@ export default function GroupDashboardSidebar({
             <Link
               key={section.key}
               href={href}
-              className={`flex items-start gap-3 rounded-2xl border px-3 py-3 transition ${
+              className={`flex items-start gap-2 rounded-2xl border px-3 py-2 transition ${
                 isActive
                   ? 'border-slate-900 bg-slate-900 text-white'
                   : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'

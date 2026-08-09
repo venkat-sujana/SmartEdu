@@ -26,7 +26,7 @@ export default function ExternalLinks({ links = defaultLinks }) {
           className="w-full sm:w-auto"
         >
           <button
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-6 py-2 text-xs md:text-sm font-bold text-white shadow-md transition hover:scale-105"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-blue-500 to-cyan-400 px-6 py-2 text-xs md:text-sm font-bold text-white shadow-md transition hover:scale-105"
           >
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15">
               {link.icon === "doc" ? (
