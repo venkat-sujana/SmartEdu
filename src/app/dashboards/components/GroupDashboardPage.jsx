@@ -583,8 +583,7 @@ export default function GroupDashboardPage({
             
           </div>
 
-          <LecturerInfoCard user={user} groupName={groupName} />
-
+          
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <HeaderActionLink href={addStudentHref} label="Add Student" theme={theme} />
             <HeaderActionLink
@@ -603,6 +602,7 @@ export default function GroupDashboardPage({
           </div>
         </div>
 
+<LecturerInfoCard user={user} groupName={groupName} />
 
         
         <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">

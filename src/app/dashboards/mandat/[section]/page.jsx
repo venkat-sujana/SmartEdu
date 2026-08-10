@@ -1,3 +1,4 @@
+//src/app/dashboards/mandat/[section]/page.jsx
 import { notFound } from 'next/navigation'
 import RestrictedGroupSectionPage from '../../components/RestrictedGroupSectionPage'
 import { getVisibleSections } from '../../components/groupDashboardConfig'

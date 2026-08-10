@@ -1,5 +1,5 @@
+//src/app/dashboards/components/GroupDashboardSectionPage.jsx
 'use client'
-
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
