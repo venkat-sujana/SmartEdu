@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Printer, Search, Users2 } from "lucide-react";
+import { FileDown, Printer, Search, Users2 } from "lucide-react";
 import { getGroupTheme } from "@/components/dashboard/groupTheme";
 import { useSession } from "next-auth/react";
-
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 const months = [
   { label: "JUN", year: "2026" },
   { label: "JUL", year: "2026" },
@@ -25,10 +26,15 @@ export default function GroupAttendanceSummary({
   collegeName,
   refreshKey,
 }) {
+  const {data: session} = useSession();
+const resolvedCollegeName =
+    collegeName ||
+    session?.user?.collegeName ||
+    "College";
   const theme = getGroupTheme(group);
   const [summaryData, setSummaryData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: session } = useSession();
+  
 const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
   useEffect(() => {
     if (!group || !yearOfStudy) return;
@@ -80,6 +86,154 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
   const printAreaId = `print-area-${String(group || "group").replace(/\W+/g, "-")}-${String(
     yearOfStudy || "year"
   ).replace(/\W+/g, "-")}`;
+
+
+
+
+  const handleExportPDF = () => {
+  if (!filteredData.length) {
+    alert("No attendance data available to export.");
+    return;
+  }
+
+  const doc = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "a4",
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Title
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+
+  doc.text(resolvedCollegeName, pageWidth / 2, 12, {
+  align: "center",
+});
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text(
+    `Monthly Attendance Register - ${group} - ${yearOfStudy}`,
+    pageWidth / 2,
+    19,
+    { align: "center" }
+  );
+
+  doc.setFontSize(9);
+  doc.text(
+    `Generated: ${new Date().toLocaleDateString("en-IN")}`,
+    pageWidth - 12,
+    27,
+    { align: "right" }
+  );
+
+  const head = [
+    [
+      "S.No",
+      "Student Name",
+      ...months.map(month => month.label),
+      "Total",
+      "Shortage",
+      "Status",
+    ],
+  ];
+
+  const body = [];
+
+  filteredData.forEach((student, index) => {
+    const computed = getStudentTotals(student);
+
+    body.push([
+      index + 1,
+      student.name,
+
+      ...months.map(({ label, year }) => {
+        const key = `${label}-${year}`;
+        const present = student.present?.[key] || 0;
+        const working = student.workingDays?.[key] || 0;
+
+        if (working === 0) return "-";
+
+        const percent = ((present / working) * 100).toFixed(0);
+
+        return `${present}/${working} (${percent}%)`;
+      }),
+
+      `${computed.totalPresent}/${computed.totalWorking}`,
+
+      computed.isEligible
+        ? "No shortage"
+        : `${computed.shortage} Days`,
+
+      computed.isEligible
+        ? "Eligible"
+        : "Not Eligible",
+    ]);
+  });
+
+  autoTable(doc, {
+    startY: 32,
+    head,
+    body,
+
+    theme: "grid",
+
+    styles: {
+      fontSize: 6.5,
+      cellPadding: 2,
+      valign: "middle",
+      halign: "center",
+    },
+
+    headStyles: {
+      fontSize: 6.5,
+      fontStyle: "bold",
+      halign: "center",
+    },
+
+    columnStyles: {
+      0: {
+        cellWidth: 10,
+      },
+      1: {
+        cellWidth: 35,
+        halign: "left",
+      },
+    },
+
+    didParseCell: function (data) {
+      if (data.section !== "body") return;
+
+      // Status column
+      if (data.column.index === head[0].length - 1) {
+        if (String(data.cell.raw) === "Not Eligible") {
+          data.cell.styles.fontStyle = "bold";
+        }
+      }
+    },
+
+    margin: {
+      left: 8,
+      right: 8,
+    },
+  });
+
+  const safeGroup = String(group || "group").replace(
+    /[^a-zA-Z0-9]+/g,
+    "-"
+  );
+
+  const safeYear = String(yearOfStudy || "year").replace(
+    /[^a-zA-Z0-9]+/g,
+    "-"
+  );
+
+  doc.save(
+    `${safeGroup}-${safeYear}-Monthly-Attendance.pdf`
+  );
+};
 
   const handlePrint = () => {
     const printContent = document.getElementById(printAreaId)?.innerHTML || "";
@@ -145,7 +299,22 @@ const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
               className="w-full min-w-0 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
             />
           </label>
-
+          <button
+          onClick={handleExportPDF}
+          className="
+            inline-flex items-center justify-center gap-2
+            rounded-2xl bg-emerald-600
+            px-4 py-2.5
+            text-sm font-semibold text-white
+            transition
+            hover:bg-emerald-700
+            active:scale-[0.98]
+            sm:py-3
+          "
+        >
+          <FileDown className="h-4 w-4" />
+          Export PDF
+        </button>
           <button
             onClick={handlePrint}
             className={`inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition sm:py-3`}

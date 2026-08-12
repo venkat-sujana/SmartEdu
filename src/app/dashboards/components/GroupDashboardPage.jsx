@@ -598,7 +598,7 @@ export default function GroupDashboardPage({
             <HeaderActionLink href={`${baseDashboardHref}/students`} label="Student Records" theme={theme} />
             <HeaderActionLink href={`${baseDashboardHref}/edit`} label="Edit Attendance Entries" theme={theme} />
             <HeaderActionLink href={`${baseDashboardHref}/fees`} label="Fee Dashboard" theme={theme} />
-            <HeaderActionLink  href={`${baseDashboardHref}/monthly`} label="Attendance below 75%" theme={theme} />
+            <HeaderActionLink  href={`${baseDashboardHref}/attendance-below-75`} label="Attendance below 75%" theme={theme} />
           </div>
         </div>
 
