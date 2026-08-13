@@ -60,7 +60,7 @@ const StudentRow = memo(function StudentRow({ student, index, onEdit, onDelete, 
               loading="lazy"
             />
           ) : (
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center text-white font-bold">
+            <div className="h-10 w-10 rounded-full bg-linear-to-br from-slate-400 to-slate-500 flex items-center justify-center text-white font-bold">
               {student.name?.charAt(0)?.toUpperCase() || "?"}
             </div>
           )}

@@ -138,27 +138,304 @@ export default function GroupStudentTable({ groupName }) {
     setFilters({ caste: "", gender: "", yearOfStudy: "", status: "" });
   };
 
-  const handleExportPDF = () => {
-    const doc = new jsPDF({ orientation: "landscape" });
-    doc.text(`${collegeName} - ${groupName} Students`, 148, 14, { align: "center" });
-    autoTable(doc, {
-      startY: 22,
-      head: [["S.No", "Name", "Mobile", "Caste", "Gender", "Year"]],
-      body: filteredStudents.map((student, index) => [
-        index + 1,
-        student.name,
-        student.fatherName,
-        student.mobile,
-        student.caste,
-        student.gender,
-        student.yearOfStudy,
-        student.admissionNo,
-      ]),
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [15, 23, 42] },
+
+
+  const handleExportPDF = async () => {
+  if (!filteredStudents.length) {
+    toast.error("No students available to export");
+    return;
+  }
+
+  const doc = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "a4",
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(15);
+
+  doc.text(
+    `${collegeName} - ${groupName} Students`,
+    pageWidth / 2,
+    12,
+    { align: "center" }
+  );
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+
+  doc.text(
+    `Generated: ${new Date().toLocaleString("en-IN")}`,
+    pageWidth - 10,
+    19,
+    { align: "right" }
+  );
+
+  // ---------------------------------------
+  // Convert image URL → Data URL
+  // ---------------------------------------
+const imageCache = {};
+
+const loadImage = async url => {
+  if (!url) return null;
+
+  if (imageCache[url]) {
+    return imageCache[url];
+  }
+
+  try {
+    const response = await fetch(url, {
+      mode: "cors",
+      cache: "no-store",
     });
-    doc.save(`${groupName}_students.pdf`);
-  };
+
+    if (!response.ok) {
+      console.warn(
+        "Student photo fetch failed:",
+        response.status,
+        url
+      );
+      return null;
+    }
+
+    const blob = await response.blob();
+
+    if (!blob.type.startsWith("image/")) {
+      console.warn(
+        "Student photo is not an image:",
+        blob.type
+      );
+      return null;
+    }
+
+    const dataUrl = await new Promise(
+      (resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onloadend = () =>
+          resolve(reader.result);
+
+        reader.onerror = reject;
+
+        reader.readAsDataURL(blob);
+      }
+    );
+
+    imageCache[url] = dataUrl;
+
+    return dataUrl;
+  } catch (error) {
+    console.error(
+      "Student photo conversion failed:",
+      error
+    );
+
+    return null;
+  }
+};
+
+  // ---------------------------------------
+  // Preload student photos
+  // ---------------------------------------
+
+  const studentsWithPhotos = await Promise.all(
+    filteredStudents.map(async student => ({
+      ...student,
+      photoData: await loadImage(student.photo),
+    }))
+  );
+
+  // ---------------------------------------
+  // Table
+  // ---------------------------------------
+
+  const body = studentsWithPhotos.map(
+    (student, index) => [
+      index + 1,
+      "",
+      student.name || "-",
+      student.fatherName || "-",
+      student.mobile || "-",
+      student.caste || "-",
+      student.gender || "-",
+      student.yearOfStudy || "-",
+      student.admissionNo || "-",
+    ]
+  );
+
+  autoTable(doc, {
+    startY: 24,
+
+    head: [[
+      "S.No",
+      "Photo",
+      "Student Name",
+      "Father Name",
+      "Mobile",
+      "Caste",
+      "Gender",
+      "Year",
+      "Admission No",
+    ]],
+
+    body,
+
+    theme: "grid",
+
+    styles: {
+  fontSize: 7,
+  cellPadding: 2,
+  valign: "middle",
+  halign: "center",
+  minCellHeight: 20,
+},
+
+    headStyles: {
+      fillColor: [15, 23, 42],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      halign: "center",
+    },
+
+    columnStyles: {
+      0: {
+        cellWidth: 10,
+      },
+
+      1: {
+  cellWidth: 22,
+  minCellHeight: 20,
+},
+
+      2: {
+        cellWidth: 42,
+        halign: "left",
+      },
+
+      3: {
+        cellWidth: 38,
+        halign: "left",
+      },
+
+      4: {
+        cellWidth: 27,
+      },
+
+      5: {
+        cellWidth: 20,
+      },
+
+      6: {
+        cellWidth: 20,
+      },
+
+      7: {
+        cellWidth: 25,
+      },
+
+      8: {
+        cellWidth: 32,
+      },
+    },
+
+    didDrawCell: data => {
+      // Photo column
+      if (
+        data.section === "body" &&
+        data.column.index === 1
+      ) {
+        const student =
+          studentsWithPhotos[data.row.index];
+
+        if (!student?.photoData) {
+          return;
+        }
+
+        try {
+          const imageSize = 14;
+
+          doc.addImage(
+            student.photoData,
+            "JPEG",
+            data.cell.x +
+              (data.cell.width - imageSize) / 2,
+            data.cell.y +
+              (data.cell.height - imageSize) / 2,
+            imageSize,
+            imageSize
+          );
+        } catch (error) {
+          console.error(
+            "PDF photo rendering error:",
+            error
+          );
+        }
+      }
+    },
+
+    margin: {
+      left: 6,
+      right: 6,
+    },
+  });
+
+  // ---------------------------------------
+  // Footer
+  // ---------------------------------------
+
+  const totalPages =
+    doc.getNumberOfPages();
+
+  for (
+    let page = 1;
+    page <= totalPages;
+    page++
+  ) {
+    doc.setPage(page);
+
+    const pageHeight =
+      doc.internal.pageSize.getHeight();
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(120);
+
+    doc.text(
+      "Generated by OSRA ERP",
+      pageWidth / 2,
+      pageHeight - 7,
+      { align: "center" }
+    );
+
+    doc.text(
+      `Page ${page} of ${totalPages}`,
+      pageWidth - 8,
+      pageHeight - 7,
+      { align: "right" }
+    );
+  }
+
+  // ---------------------------------------
+  // Save
+  // ---------------------------------------
+
+  const safeGroup = String(groupName || "group")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  const date = new Date()
+    .toISOString()
+    .slice(0, 10);
+
+  doc.save(
+    `${safeGroup}_Student_Records_${date}.pdf`
+  );
+};
+
+
 
   const handleExportExcel = () => {
     const rows = filteredStudents.map((student, index) => ({

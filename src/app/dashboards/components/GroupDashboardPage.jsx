@@ -466,6 +466,8 @@ export default function GroupDashboardPage({
     user?.collegeId ? `/api/students?group=${encodeURIComponent(groupName)}&page=1&limit=1` : null,
     fetcher
   )
+
+  
   const feeSummary = groupDashboardData?.feeSummary?.[groupName] || {}
   const firstYearFee = feeSummary['First Year'] || { total: 0, paid: 0 }
   const secondYearFee = feeSummary['Second Year'] || { total: 0, paid: 0 }
