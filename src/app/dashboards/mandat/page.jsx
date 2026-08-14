@@ -1,3 +1,4 @@
+//src/app/dashboards/mandat/page.jsx
 import RestrictedGroupDashboardPage from "../components/RestrictedGroupDashboardPage";
 
 export default function MandATDashboard() {

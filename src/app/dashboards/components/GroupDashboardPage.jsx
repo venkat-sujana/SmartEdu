@@ -10,7 +10,7 @@ import LecturerInfoCard from '@/components/dashboard/LecturerInfoCard'
 import GroupAttendanceCard from '@/components/OverallAttendanceMatrixCard/GroupAttendanceCard'
 import DashboardFooter from '@/components/layout/Footer'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
-// import GroupDashboardSidebar from './GroupDashboardSidebar'
+
 
 const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
@@ -261,40 +261,7 @@ function OverviewCard({ title, value, className = '' }) {
   )
 }
 
-function QuickLinkCard({ href, title, description }) {
-  return (
-    <Link
-      href={href}
-      className="
-        group flex min-h-11 items-center
-        rounded-lg
-        border border-slate-200/70
-        bg-white/95
-        px-2.5 py-1.5
-        shadow-sm
-        transition-all duration-200
-        hover:-translate-y-0.5
-        hover:border-slate-300
-        hover:shadow-md
-        active:scale-[0.99]
-        sm:min-h-12
-        sm:px-3 sm:py-2
-      "
-    >
-      <div className="min-w-0">
-        <p className="truncate text-xs font-semibold text-slate-800 group-hover:text-slate-950 sm:text-sm">
-          {title}
-        </p>
 
-        {description ? (
-          <p className="mt-0.5 truncate text-[10px] leading-tight text-slate-500">
-            {description}
-          </p>
-        ) : null}
-      </div>
-    </Link>
-  )
-}
 
 function HeaderActionLink({ href, label, theme, variant = 'theme' }) {
   const className =
@@ -313,126 +280,9 @@ function HeaderActionLink({ href, label, theme, variant = 'theme' }) {
   )
 }
 
-function CompactExamTable({ rows, loading }) {
-  return (
-    <>
-      <div className="space-y-2 md:hidden">
-        {!loading && rows.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-            No exam summary available.
-          </div>
-        ) : (
-          rows.map((row, index) => (
-            <div
-              key={row.examType}
-              className="rounded-3xl border border-slate-200 bg-slate-50/90 p-4 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                    S.No {index + 1}
-                  </p>
-                  <h3 className="mt-1 text-sm font-bold text-slate-900">{row.examType}</h3>
-                </div>
-                <div className="rounded-2xl bg-white px-2.5 py-1.5 text-right shadow-sm">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                    Pass %
-                  </div>
-                  <div className="text-sm font-bold text-cyan-700">{row.passPercent}</div>
-                </div>
-              </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                <div className="rounded-2xl bg-white px-2.5 py-1.5">
-                  <div className="text-xs text-slate-500">Enrolled</div>
-                  <div className="font-bold text-slate-900">{row.enrolled}</div>
-                </div>
-                <div className="rounded-2xl bg-white px-2.5 py-1.5">
-                  <div className="text-xs text-slate-500">Attended</div>
-                  <div className="font-bold text-slate-900">{row.attended}</div>
-                </div>
-                <div className="rounded-2xl bg-white px-2.5 py-1.5">
-                  <div className="text-xs text-slate-500">Absent</div>
-                  <div className="font-bold text-rose-700">{row.absent}</div>
-                </div>
-                <div className="rounded-2xl bg-white px-2.5 py-1.5">
-                  <div className="text-xs text-slate-500">Present</div>
-                  <div className="font-bold text-emerald-700">{row.present}</div>
-                </div>
-                <div className="rounded-2xl bg-white px-2.5 py-1.5">
-                  <div className="text-xs text-slate-500">Pass</div>
-                  <div className="font-bold text-emerald-700">{row.pass}</div>
-                </div>
-                <div className="rounded-2xl bg-white px-2.5 py-1.5">
-                  <div className="text-xs text-slate-500">Fail</div>
-                  <div className="font-bold text-rose-700">{row.fail}</div>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
 
-      <div className="hidden overflow-x-auto rounded-xl border border-slate-200/70 md:block">
-        <table className="min-w-full text-xs sm:text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-slate-600">
-              <th className="px-2.5 py-2 text-left font-semibold">S.No</th>
-              <th className="px-2.5 py-2 text-left font-semibold">Exam Type</th>
-              <th className="px-2.5 py-2 text-left font-semibold">Enrolled</th>
-              <th className="px-2.5 py-2 text-left font-semibold">Attended</th>
-              <th className="px-2.5 py-2 text-left font-semibold">Absent</th>
-              <th className="px-2.5 py-2 text-left font-semibold">Present</th>
-              <th className="px-2.5 py-2 text-left font-semibold">Pass</th>
-              <th className="px-2.5 py-2 text-left font-semibold">Fail</th>
-              <th className="px-2.5 py-2 text-left font-semibold">Pass %</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!loading && rows.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="px-3 py-6 text-center text-sm text-slate-500">
-                  No exam summary available.
-                </td>
-              </tr>
-            ) : (
-              rows.map((row, index) => (
-                <tr
-                  key={row.examType}
-                  className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
-                >
-                  <td className="px-2.5 py-1.5">{index + 1}</td>
-                  <td className="px-2.5 py-1.5 font-medium">{row.examType}</td>
-                  <td className="px-2.5 py-1.5">{row.enrolled}</td>
-                  <td className="px-2.5 py-1.5">{row.attended}</td>
-                  <td className="px-2.5 py-1.5 text-rose-700">{row.absent}</td>
-                  <td className="px-2.5 py-1.5 text-emerald-700">{row.present}</td>
-                  <td className="px-2.5 py-1.5 text-emerald-700">{row.pass}</td>
-                  <td className="px-2.5 py-1.5 font-semibold text-rose-700">{row.fail}</td>
-                  <td className="px-2.5 py-1.5 font-medium text-blue-700">{row.passPercent}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </>
-  )
-}
 
-function YearlyExamSummarySection({ title, rows, loading }) {
-  return (
-    <div className="space-y-3 rounded-2xl border border-slate-200/80 bg-white p-2.5 shadow-sm sm:p-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-black text-slate-900 sm:text-lg">{title}</h3>
-        <span className="text-xs text-slate-500">
-          {loading ? 'Loading...' : `${rows.length} exams`}
-        </span>
-      </div>
-      <CompactExamTable rows={rows} loading={loading} />
-    </div>
-  )
-}
 
 export default function GroupDashboardPage({
   groupName,
@@ -520,10 +370,6 @@ export default function GroupDashboardPage({
       }, {})
       
     )
-
-    
-
-
       .map(row => {
       
         const absent = Math.max(row.enrolled - row.attended, 0)
@@ -586,22 +432,67 @@ export default function GroupDashboardPage({
           </div>
 
           
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <HeaderActionLink href={addStudentHref} label="Add Student" theme={theme} />
-            <HeaderActionLink
-              href={`${baseDashboardHref}/attendance`}
-              label="Take Today's Attendance"
-              theme={theme}
-            />
-            <HeaderActionLink href={marksPostingHref} label="Post Marks" theme={theme} />
-            <HeaderActionLink href={`${baseDashboardHref}/absentees`} label="Today's Absentees List" theme={theme} />
-            <HeaderActionLink  href={`${baseDashboardHref}/monthly`} label="Monthly Attendance " theme={theme} />
-            <HeaderActionLink href={examDashboardHref} label="Exam Dashboard" theme={theme} />
-            <HeaderActionLink href={`${baseDashboardHref}/students`} label="Student Records" theme={theme} />
-            <HeaderActionLink href={`${baseDashboardHref}/edit`} label="Edit Attendance Entries" theme={theme} />
-            <HeaderActionLink href={`${baseDashboardHref}/fees`} label="Fee Dashboard" theme={theme} />
-            <HeaderActionLink  href={`${baseDashboardHref}/attendance-below-75`} label="Attendance below 75%" theme={theme} />
-          </div>
+<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+  <HeaderActionLink
+    href={addStudentHref}
+    label="Add Student"
+    theme={theme}
+  />
+
+  <HeaderActionLink
+    href={`${baseDashboardHref}/attendance`}
+    label="Today's Attendance"
+    theme={theme}
+  />
+
+  <HeaderActionLink
+    href={marksPostingHref}
+    label="Post Marks"
+    theme={theme}
+  />
+
+  <HeaderActionLink
+    href={examDashboardHref}
+    label="Exam Dashboard"
+    theme={theme}
+  />
+
+  <HeaderActionLink
+    href={`${baseDashboardHref}/students`}
+    label="Student Records"
+    theme={theme}
+  />
+
+  <HeaderActionLink
+    href={`${baseDashboardHref}/absentees`}
+    label="Today's Absentees"
+    theme={theme}
+  />
+
+  <HeaderActionLink
+    href={`${baseDashboardHref}/monthly`}
+    label="Monthly Attendance"
+    theme={theme}
+  />
+
+  <HeaderActionLink
+    href={`${baseDashboardHref}/edit`}
+    label="Edit Attendance"
+    theme={theme}
+  />
+
+  <HeaderActionLink
+    href={`${baseDashboardHref}/fees`}
+    label="Fee Dashboard"
+    theme={theme}
+  />
+
+  <HeaderActionLink
+    href={`${baseDashboardHref}/attendance-below-75`}
+    label="Below 75% Attendance"
+    theme={theme}
+  />
+</div>
         </div>
 
 <LecturerInfoCard user={user} groupName={groupName} />
@@ -622,12 +513,7 @@ export default function GroupDashboardPage({
 
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-[250px_minmax(0,1fr)]">
           <div className="space-y-4">
-            {/* <GroupDashboardSidebar
-              groupName={groupName}
-              routeSegment={routeSegment}
-              includeEditAttendance={includeEditAttendance}
-              activeSection="overview"
-            /> */}
+            
             
             <div className="xl:hidden">
               <GroupAttendanceCard groupName={groupName} />
@@ -646,105 +532,297 @@ export default function GroupDashboardPage({
 
             
 
-            {/* <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-  <QuickLinkCard
-    href={`${baseDashboardHref}/attendance`}
-    title="Take daily attendance"
-  />
+          
 
-  <QuickLinkCard
-    href={`${baseDashboardHref}/students`}
-    title="Student Records"
-  />
+{/* Compact Exam Performance */}
+<section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
 
-  <QuickLinkCard
-    href={`${baseDashboardHref}/absentees`}
-    title="Today's Absentees List"
-  />
+  <div className="mb-3 flex items-center justify-between border-b border-slate-200 pb-2.5">
+    <div>
+      <h2 className="text-base font-black text-slate-900 sm:text-lg">
+        Exam Performance
+      </h2>
+      <p className="mt-0.5 text-[11px] text-slate-500">
+        Exam-wise and subject-wise performance snapshot
+      </p>
+    </div>
 
-  <QuickLinkCard
-    href={`${baseDashboardHref}/absentees`}
-    title="Consecutive Absentees"
-  />
+    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">
+      {examsLoading
+        ? 'Loading...'
+        : `${firstYearExamSummaryRows.length + secondYearExamSummaryRows.length} Exams`}
+    </span>
+  </div>
 
-  <QuickLinkCard
-    href={`${baseDashboardHref}/monthly`}
-    title="Monthly Attendance Report"
-  />
+  {/* Exam Summary */}
+  <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
 
-  <QuickLinkCard
-    href={`${baseDashboardHref}/monthly`}
-    title="<75% Attendance"
-  />
+    {/* First Year */}
+    <div className="overflow-hidden rounded-xl border border-slate-200">
 
-  <QuickLinkCard
-    href={`${baseDashboardHref}/exams`}
-    title="Exam Dashboard"
-  />
+      <div className="flex items-center justify-between bg-slate-50 px-3 py-2">
+        <h3 className="text-sm font-black text-slate-900">
+          First Year
+        </h3>
 
-  <QuickLinkCard
-    href={`${baseDashboardHref}/fees`}
-    title="Fee Dashboard"
-  />
+        <span className="text-[10px] text-slate-500">
+          {firstYearExamSummaryRows.length} exams
+        </span>
+      </div>
 
-  {includeEditAttendance ? (
-    <QuickLinkCard
-      href={`${baseDashboardHref}/edit`}
-      title="Edit Attendance Entries"
-    />
-  ) : null}
-</div> */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-[11px]">
+          <thead className="bg-slate-100 text-slate-600">
+            <tr>
+              <th className="px-2 py-1.5 text-left">Exam</th>
+              <th className="px-2 py-1.5 text-center">Attend</th>
+              <th className="px-2 py-1.5 text-center">Pass</th>
+              <th className="px-2 py-1.5 text-center">Fail</th>
+              <th className="px-2 py-1.5 text-center">Pass %</th>
+            </tr>
+          </thead>
 
-            <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
-              <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
-                <div>
-                  <h2 className="text-lg font-black text-slate-900 sm:text-xl">Exam Summary</h2>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Compact exam-wise performance snapshot by year
-                  </p>
-                </div>
-                <span className="text-xs text-slate-500">
-                  {examsLoading
-                    ? 'Loading...'
-                    : `${firstYearExamSummaryRows.length + secondYearExamSummaryRows.length} exams`}
-                </span>
-              </div>
+          <tbody>
+            {firstYearExamSummaryRows.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-3 py-4 text-center text-xs text-slate-500"
+                >
+                  No exam data
+                </td>
+              </tr>
+            ) : (
+              firstYearExamSummaryRows.map(row => (
+                <tr
+                  key={row.examType}
+                  className="border-t border-slate-100 hover:bg-slate-50"
+                >
+                  <td className="px-2 py-1.5 font-semibold text-slate-800">
+                    {row.examType}
+                  </td>
 
-              <div className="space-y-4">
-                <YearlyExamSummarySection
-                  title="First Year"
-                  rows={firstYearExamSummaryRows}
-                  loading={examsLoading}
-                />
-                <YearlyExamSummarySection
-                  title="Second Year"
-                  rows={secondYearExamSummaryRows}
-                  loading={examsLoading}
-                />
-              </div>
-            </section>
+                  <td className="px-2 py-1.5 text-center">
+                    {row.attended}
+                  </td>
 
-            <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
-              <div className="mb-3 border-b border-slate-200/80 pb-2.5">
-                <h2 className="text-lg font-black text-slate-900 sm:text-xl">
-                  Subject-wise Pass %
-                </h2>
-                <p className="mt-1 text-xs text-slate-500">
-                  Subject performance across the available exam records for this group
-                </p>
-              </div>
+                  <td className="px-2 py-1.5 text-center font-semibold text-emerald-700">
+                    {row.pass}
+                  </td>
 
-              <div className="space-y-4">
-                <SubjectWisePassTable
-                  title="First Year"
-                  rows={firstYearSubjectWiseRows}
-                />
-                <SubjectWisePassTable
-                  title="Second Year"
-                  rows={secondYearSubjectWiseRows}
-                />
-              </div>
-            </section>
+                  <td className="px-2 py-1.5 text-center font-semibold text-rose-700">
+                    {row.fail}
+                  </td>
+
+                  <td className="px-2 py-1.5 text-center font-black text-cyan-700">
+                    {row.passPercent}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {/* Second Year */}
+    <div className="overflow-hidden rounded-xl border border-slate-200">
+
+      <div className="flex items-center justify-between bg-slate-50 px-3 py-2">
+        <h3 className="text-sm font-black text-slate-900">
+          Second Year
+        </h3>
+
+        <span className="text-[10px] text-slate-500">
+          {secondYearExamSummaryRows.length} exams
+        </span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-[11px]">
+          <thead className="bg-slate-100 text-slate-600">
+            <tr>
+              <th className="px-2 py-1.5 text-left">Exam</th>
+              <th className="px-2 py-1.5 text-center">Attend</th>
+              <th className="px-2 py-1.5 text-center">Pass</th>
+              <th className="px-2 py-1.5 text-center">Fail</th>
+              <th className="px-2 py-1.5 text-center">Pass %</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {secondYearExamSummaryRows.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-3 py-4 text-center text-xs text-slate-500"
+                >
+                  No exam data
+                </td>
+              </tr>
+            ) : (
+              secondYearExamSummaryRows.map(row => (
+                <tr
+                  key={row.examType}
+                  className="border-t border-slate-100 hover:bg-slate-50"
+                >
+                  <td className="px-2 py-1.5 font-semibold text-slate-800">
+                    {row.examType}
+                  </td>
+
+                  <td className="px-2 py-1.5 text-center">
+                    {row.attended}
+                  </td>
+
+                  <td className="px-2 py-1.5 text-center font-semibold text-emerald-700">
+                    {row.pass}
+                  </td>
+
+                  <td className="px-2 py-1.5 text-center font-semibold text-rose-700">
+                    {row.fail}
+                  </td>
+
+                  <td className="px-2 py-1.5 text-center font-black text-cyan-700">
+                    {row.passPercent}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  {/* Subject-wise Pass % */}
+  <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
+
+    <div className="rounded-xl border border-slate-200 p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-sm font-black text-slate-900">
+          First Year — Subject Pass %
+        </h3>
+
+        <span className="text-[10px] text-slate-500">
+          {firstYearSubjectWiseRows.length} subjects
+        </span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-[11px]">
+          <thead className="bg-slate-50 text-slate-600">
+            <tr>
+              <th className="px-2 py-1.5 text-left">Subject</th>
+              <th className="px-2 py-1.5 text-center">Appeared</th>
+              <th className="px-2 py-1.5 text-center">Pass</th>
+              <th className="px-2 py-1.5 text-center">Pass %</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {firstYearSubjectWiseRows.map(row => (
+              <tr
+                key={row.subject}
+                className="border-t border-slate-100"
+              >
+                <td className="max-w-40 truncate px-2 py-1.5 font-semibold text-slate-800">
+                  {row.subject}
+                </td>
+
+                <td className="px-2 py-1.5 text-center">
+                  {row.appeared}
+                </td>
+
+                <td className="px-2 py-1.5 text-center font-semibold text-emerald-700">
+                  {row.pass}
+                </td>
+
+                <td className="px-2 py-1.5 text-center font-black text-cyan-700">
+                  {row.passPercent}
+                </td>
+              </tr>
+            ))}
+
+            {firstYearSubjectWiseRows.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-2 py-4 text-center text-xs text-slate-500"
+                >
+                  No subject data
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div className="rounded-xl border border-slate-200 p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-sm font-black text-slate-900">
+          Second Year — Subject Pass %
+        </h3>
+
+        <span className="text-[10px] text-slate-500">
+          {secondYearSubjectWiseRows.length} subjects
+        </span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-[11px]">
+          <thead className="bg-slate-50 text-slate-600">
+            <tr>
+              <th className="px-2 py-1.5 text-left">Subject</th>
+              <th className="px-2 py-1.5 text-center">Appeared</th>
+              <th className="px-2 py-1.5 text-center">Pass</th>
+              <th className="px-2 py-1.5 text-center">Pass %</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {secondYearSubjectWiseRows.map(row => (
+              <tr
+                key={row.subject}
+                className="border-t border-slate-100"
+              >
+                <td className="max-w-40 truncate px-2 py-1.5 font-semibold text-slate-800">
+                  {row.subject}
+                </td>
+
+                <td className="px-2 py-1.5 text-center">
+                  {row.appeared}
+                </td>
+
+                <td className="px-2 py-1.5 text-center font-semibold text-emerald-700">
+                  {row.pass}
+                </td>
+
+                <td className="px-2 py-1.5 text-center font-black text-cyan-700">
+                  {row.passPercent}
+                </td>
+              </tr>
+            ))}
+
+            {secondYearSubjectWiseRows.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-2 py-4 text-center text-xs text-slate-500"
+                >
+                  No subject data
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</section>
 
           </div>
         </div>
