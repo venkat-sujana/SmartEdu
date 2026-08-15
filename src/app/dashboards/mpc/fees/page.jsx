@@ -1,4 +1,4 @@
-//src/app/dashboards/mandat/fees/page.jsx
+//src/app/dashboards/mpc/fees/page.jsx
 'use client'
 
 import { useMemo, useState } from 'react'
@@ -59,8 +59,8 @@ export default function FeeDashboardPage() {
 
   const user = session?.user
 
-  const groupName = 'M&AT'
-  const routeSegment = 'mandat'
+  const groupName = 'MPC'
+  const routeSegment = 'mpc'
   const theme = getGroupTheme(groupName)
 
   const dashboardReturnUrl = `/dashboards/${routeSegment}`

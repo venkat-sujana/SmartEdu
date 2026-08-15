@@ -1,20 +1,18 @@
-//src/app/dashboards/mandat/monthly/page.jsx
+//src/app/dashboards/mpc/attendance-below-75/page.jsx
 'use client'
-
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-
-import GroupAttendanceSummary from '@/components/attendance/GroupAttendanceSummary'
+import { useSession } from 'next-auth/react'
+import GroupShortageSummary from '@/components/attendance/GroupShortageSummary'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
-
 const YEARS = ['First Year', 'Second Year']
 
-export default function MonthlyAttendancePage() {
-  const groupName = 'M&AT'
-  const routeSegment = 'mandat'
+export default function AttendanceBelow75Page() {
+  const { data: session } = useSession()
+  const groupName = 'MPC'
+  const routeSegment = 'mpc'
   const dashboardReturnUrl = `/dashboards/${routeSegment}`
   const theme = getGroupTheme(groupName)
-
   return (
     <main
       className={`min-h-screen bg-linear-to-br ${theme.shell} px-2 py-3 sm:px-3 sm:py-4 md:px-4`}
@@ -39,11 +37,11 @@ export default function MonthlyAttendancePage() {
               </p>
 
               <h1 className="mt-0.5 text-base font-black tracking-tight text-slate-900 sm:text-lg">
-                Monthly Attendance
+                Attendance Below 75%
               </h1>
 
               <p className="mt-0.5 text-[11px] text-slate-500">
-                {groupName} • Monthly Attendance Register
+                {groupName} • Attendance Shortage
               </p>
             </div>
 
@@ -72,15 +70,15 @@ export default function MonthlyAttendancePage() {
           </div>
         </header>
 
-        {/* Monthly Attendance */}
-        <section className="rounded-xl border border-slate-200/80 bg-white shadow-sm">
-          <div className="border-b border-slate-100 px-3 py-2.5 sm:px-4 sm:py-3">
-            <h2 className="text-sm font-black text-slate-900 sm:text-base">
-              Monthly Attendance Register
+        {/* Attendance Shortage */}
+        <section className="rounded-xl border border-rose-200 bg-white shadow-sm">
+          <div className="border-b border-rose-100 bg-rose-50/60 px-3 py-2.5 sm:px-4 sm:py-3">
+            <h2 className="text-sm font-black text-rose-900 sm:text-base">
+              Students Below 75% Attendance
             </h2>
 
-            <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">
-              Full attendance register for each academic year.
+            <p className="mt-0.5 text-[11px] text-rose-700 sm:text-xs">
+              Attendance shortage students are shown separately for each year.
             </p>
           </div>
 
@@ -97,10 +95,13 @@ export default function MonthlyAttendancePage() {
                 </div>
 
                 <div className="overflow-x-auto p-1.5 sm:p-2">
-                  <GroupAttendanceSummary
-                    group={groupName}
-                    yearOfStudy={year}
-                  />
+                  <GroupShortageSummary
+                  key={year}
+                  group={groupName}
+                  year={year}
+                  collegeId={session?.user?.collegeId}
+                  collegeName={session?.user?.collegeName}
+                />
                 </div>
               </div>
             ))}

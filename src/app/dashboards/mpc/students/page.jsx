@@ -1,4 +1,4 @@
-//src/app/dashboards/mandat/students/page.jsx
+//src/app/dashboards/mpc/students/page.jsx
 'use client'
 
 import Link from 'next/link'
@@ -8,8 +8,8 @@ import GroupStudentTable from '@/components/tables/GroupStudentTable'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
 
 export default function StudentRecordsPage() {
-  const groupName = 'M&AT'
-  const routeSegment = 'mandat'
+  const groupName = 'MPC'
+  const routeSegment = 'mpc'
   const dashboardReturnUrl = `/dashboards/${routeSegment}`
   const theme = getGroupTheme(groupName)
 

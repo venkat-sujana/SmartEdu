@@ -1,15 +1,15 @@
-//src/app/dashboards/mandat/students/page.jsx
+//src/app/dashboards/mpc/edit/page.jsx
 'use client'
 
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
-import GroupStudentTable from '@/components/tables/GroupStudentTable'
+import IndividualReport from '@/components/attendance/IndividualReport'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
 
-export default function StudentRecordsPage() {
-  const groupName = 'M&AT'
-  const routeSegment = 'mandat'
+export default function EditAttendancePage() {
+  const groupName = 'MPC'
+  const routeSegment = 'mpc'
   const dashboardReturnUrl = `/dashboards/${routeSegment}`
   const theme = getGroupTheme(groupName)
 
@@ -37,11 +37,11 @@ export default function StudentRecordsPage() {
               </p>
 
               <h1 className="mt-0.5 text-base font-black tracking-tight text-slate-900 sm:text-lg">
-                Student Records
+                Edit Attendance Entries
               </h1>
 
               <p className="mt-0.5 text-[11px] text-slate-500">
-                {groupName} • Complete Student Records
+                {groupName} • Update or correct attendance entries
               </p>
             </div>
 
@@ -72,25 +72,24 @@ export default function StudentRecordsPage() {
           </div>
         </header>
 
-        {/* Student Records */}
+        {/* Existing Edit Attendance Component */}
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
 
           <div className="border-b border-slate-100 bg-slate-50/70 px-3 py-2.5 sm:px-4 sm:py-3">
             <h2 className="text-sm font-black text-slate-900 sm:text-base">
-              {groupName} Student Records
+              Edit Attendance
             </h2>
 
             <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">
-              Browse and manage the complete student list.
+              Update or correct attendance entries from a focused screen.
             </p>
           </div>
 
           <div className="min-w-0 p-2 sm:p-3 md:p-4">
-            <div className="min-w-0 overflow-x-auto">
-              <GroupStudentTable
-                groupName={groupName}
-              />
-            </div>
+            <IndividualReport
+              groupName={groupName}
+              showTitle={false}
+            />
           </div>
 
         </section>

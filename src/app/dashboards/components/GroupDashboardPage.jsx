@@ -50,9 +50,7 @@ function isAbsentMark(mark) {
 
 function isReportAbsent(report) {
   const subjects = getAllMarks(report)
-  // Overall Absent only when ALL subjects are A/AB.
-  // If one subject is absent but other subjects have marks,
-  // the student's overall result is Fail.
+  
   return subjects.length > 0 && subjects.every(subject => isAbsentMark(subject?.marks))
 }
 
@@ -468,6 +466,12 @@ export default function GroupDashboardPage({
     label="Today's Absentees"
     theme={theme}
   />
+
+  <HeaderActionLink
+  href={`${baseDashboardHref}/consecutive-absentees`}
+  label="Consecutive Absentees"
+  theme={theme}
+/>
 
   <HeaderActionLink
     href={`${baseDashboardHref}/monthly`}

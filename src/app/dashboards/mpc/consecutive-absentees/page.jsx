@@ -1,25 +1,51 @@
-//src/app/dashboards/mandat/monthly/page.jsx
+//src/app/dashboards/mpc/consecutive-absentees/page.jsx
 'use client'
 
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import useSWR from 'swr'
 
-import GroupAttendanceSummary from '@/components/attendance/GroupAttendanceSummary'
+import ConsecutiveAbsenteesCard from '@/components/attendance/cards/ConsecutiveAbsenteesCard'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
 
-const YEARS = ['First Year', 'Second Year']
+const fetcher = async url => {
+  const response = await fetch(url)
 
-export default function MonthlyAttendancePage() {
-  const groupName = 'M&AT'
-  const routeSegment = 'mandat'
+  if (!response.ok) {
+    throw new Error('Failed to fetch consecutive absentees')
+  }
+
+  return response.json()
+}
+
+export default function ConsecutiveAbsenteesPage() {
+  const { data: session } = useSession()
+
+  const groupName = 'MPC'
+  const routeSegment = 'mpc'
   const dashboardReturnUrl = `/dashboards/${routeSegment}`
   const theme = getGroupTheme(groupName)
+
+  const collegeId = session?.user?.collegeId
+  const collegeName = session?.user?.collegeName || 'College'
+
+  const { data: consecutiveData, error, isLoading } = useSWR(
+    collegeId
+      ? `/api/attendance/consecutive-absentees?collegeId=${collegeId}`
+      : null,
+    fetcher
+  )
+
+  const consecutiveAbsentees = (consecutiveData?.absentees || []).filter(
+    student => student.group === groupName
+  )
 
   return (
     <main
       className={`min-h-screen bg-linear-to-br ${theme.shell} px-2 py-3 sm:px-3 sm:py-4 md:px-4`}
     >
-      <div className="mx-auto w-full max-w-7xl space-y-2.5 sm:space-y-3">
+      <div className="mx-auto w-full max-w-6xl space-y-2.5 sm:space-y-3">
 
         {/* Page Header */}
         <header
@@ -39,11 +65,11 @@ export default function MonthlyAttendancePage() {
               </p>
 
               <h1 className="mt-0.5 text-base font-black tracking-tight text-slate-900 sm:text-lg">
-                Monthly Attendance
+                Consecutive Absentees
               </h1>
 
               <p className="mt-0.5 text-[11px] text-slate-500">
-                {groupName} • Monthly Attendance Register
+                {groupName} • {collegeName}
               </p>
             </div>
 
@@ -72,38 +98,25 @@ export default function MonthlyAttendancePage() {
           </div>
         </header>
 
-        {/* Monthly Attendance */}
-        <section className="rounded-xl border border-slate-200/80 bg-white shadow-sm">
-          <div className="border-b border-slate-100 px-3 py-2.5 sm:px-4 sm:py-3">
-            <h2 className="text-sm font-black text-slate-900 sm:text-base">
-              Monthly Attendance Register
-            </h2>
+        {/* Consecutive Absentees */}
+        <section className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
+          <div className="p-2 sm:p-3 md:p-4">
 
-            <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">
-              Full attendance register for each academic year.
-            </p>
-          </div>
-
-          <div className="space-y-3 p-2 sm:p-3 md:p-4">
-            {YEARS.map(year => (
-              <div
-                key={year}
-                className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/60"
-              >
-                <div className="border-b border-slate-200 bg-white px-3 py-2">
-                  <h3 className="text-xs font-bold text-slate-800 sm:text-sm">
-                    {year}
-                  </h3>
-                </div>
-
-                <div className="overflow-x-auto p-1.5 sm:p-2">
-                  <GroupAttendanceSummary
-                    group={groupName}
-                    yearOfStudy={year}
-                  />
-                </div>
+            {error ? (
+              <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-4 text-center">
+                <p className="text-sm font-semibold text-rose-700">
+                  Unable to load consecutive absentees.
+                </p>
               </div>
-            ))}
+            ) : (
+              <ConsecutiveAbsenteesCard
+                data={consecutiveAbsentees}
+                title={`${groupName} Consecutive Absentees`}
+                loading={isLoading}
+                showViewAll={false}
+              />
+            )}
+
           </div>
         </section>
 

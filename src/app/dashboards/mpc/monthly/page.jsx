@@ -1,15 +1,17 @@
-//src/app/dashboards/mandat/students/page.jsx
+//src/app/dashboards/mpc/monthly/page.jsx
 'use client'
 
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
-import GroupStudentTable from '@/components/tables/GroupStudentTable'
+import GroupAttendanceSummary from '@/components/attendance/GroupAttendanceSummary'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
 
-export default function StudentRecordsPage() {
-  const groupName = 'M&AT'
-  const routeSegment = 'mandat'
+const YEARS = ['First Year', 'Second Year']
+
+export default function MonthlyAttendancePage() {
+  const groupName = 'MPC'
+  const routeSegment = 'mpc'
   const dashboardReturnUrl = `/dashboards/${routeSegment}`
   const theme = getGroupTheme(groupName)
 
@@ -17,7 +19,7 @@ export default function StudentRecordsPage() {
     <main
       className={`min-h-screen bg-linear-to-br ${theme.shell} px-2 py-3 sm:px-3 sm:py-4 md:px-4`}
     >
-      <div className="mx-auto w-full max-w-7xl space-y-3">
+      <div className="mx-auto w-full max-w-7xl space-y-2.5 sm:space-y-3">
 
         {/* Page Header */}
         <header
@@ -37,21 +39,19 @@ export default function StudentRecordsPage() {
               </p>
 
               <h1 className="mt-0.5 text-base font-black tracking-tight text-slate-900 sm:text-lg">
-                Student Records
+                Monthly Attendance
               </h1>
 
               <p className="mt-0.5 text-[11px] text-slate-500">
-                {groupName} • Complete Student Records
+                {groupName} • Monthly Attendance Register
               </p>
             </div>
 
             <Link
               href={dashboardReturnUrl}
               className="
-                inline-flex min-h-9 shrink-0
-                items-center justify-center
-                gap-1.5
-                rounded-lg
+                inline-flex min-h-9 shrink-0 items-center justify-center
+                gap-1.5 rounded-lg
                 border border-slate-200
                 bg-white
                 px-3 py-1.5
@@ -72,27 +72,39 @@ export default function StudentRecordsPage() {
           </div>
         </header>
 
-        {/* Student Records */}
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-
-          <div className="border-b border-slate-100 bg-slate-50/70 px-3 py-2.5 sm:px-4 sm:py-3">
+        {/* Monthly Attendance */}
+        <section className="rounded-xl border border-slate-200/80 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-3 py-2.5 sm:px-4 sm:py-3">
             <h2 className="text-sm font-black text-slate-900 sm:text-base">
-              {groupName} Student Records
+              Monthly Attendance Register
             </h2>
 
             <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">
-              Browse and manage the complete student list.
+              Full attendance register for each academic year.
             </p>
           </div>
 
-          <div className="min-w-0 p-2 sm:p-3 md:p-4">
-            <div className="min-w-0 overflow-x-auto">
-              <GroupStudentTable
-                groupName={groupName}
-              />
-            </div>
-          </div>
+          <div className="space-y-3 p-2 sm:p-3 md:p-4">
+            {YEARS.map(year => (
+              <div
+                key={year}
+                className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/60"
+              >
+                <div className="border-b border-slate-200 bg-white px-3 py-2">
+                  <h3 className="text-xs font-bold text-slate-800 sm:text-sm">
+                    {year}
+                  </h3>
+                </div>
 
+                <div className="overflow-x-auto p-1.5 sm:p-2">
+                  <GroupAttendanceSummary
+                    group={groupName}
+                    yearOfStudy={year}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
       </div>
