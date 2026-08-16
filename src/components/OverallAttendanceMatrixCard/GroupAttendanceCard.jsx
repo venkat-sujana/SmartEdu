@@ -1,6 +1,6 @@
 //src/components/OverallAttendanceMatrixCard/GroupAttendanceCard.jsx
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import useSWR from 'swr'
 import { useSession } from 'next-auth/react'
 import { Activity, CheckCircle2, Clock3, Users, XCircle } from 'lucide-react'
@@ -16,11 +16,12 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
   const { data: session } = useSession()
   const normalizedGroupName = normalizeAttendanceGroup(groupName)
   const theme = getGroupTheme(normalizedGroupName)
-  const { data: absApiData } = useSWR('/api/attendance/today-absentees', fetcher)
+  const { data: absApiData, mutate: mutateAbsentees, } = useSWR('/api/attendance/today-absentees', fetcher)
   const sessionWisePresent = absApiData?.sessionWisePresent || {}
   const sessionWiseAbsentees = absApiData?.sessionWiseAbsentees || {}
   const today = new Date().toISOString().slice(0, 10)
-  const { data: groupWiseData } = useSWR(
+
+  const { data: groupWiseData, mutate: mutateGroupWise, } = useSWR(
     session?.user?.collegeId
       ? `/api/attendance/group-wise-today?collegeId=${session.user.collegeId}&date=${today}`
       : null,
@@ -28,21 +29,141 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
   )
 
   const { data: studentsData } = useSWR(
-    `/api/students?group=${encodeURIComponent(normalizedGroupName)}&limit=1`,
-    fetcher
-  )
+  `/api/students?group=${encodeURIComponent(normalizedGroupName)}&status=all&limit=500`,
+  fetcher
+)
+
   const { data: firstYearStudentsData } = useSWR(
-    `/api/students?group=${encodeURIComponent(normalizedGroupName)}&yearOfStudy=${encodeURIComponent('First Year')}&limit=1`,
-    fetcher
-  )
+  `/api/students?group=${encodeURIComponent(normalizedGroupName)}&yearOfStudy=${encodeURIComponent('First Year')}&status=all&limit=500`,
+  fetcher
+)
+
   const { data: secondYearStudentsData } = useSWR(
-    `/api/students?group=${encodeURIComponent(normalizedGroupName)}&yearOfStudy=${encodeURIComponent('Second Year')}&limit=1`,
-    fetcher
-  )
+  `/api/students?group=${encodeURIComponent(normalizedGroupName)}&yearOfStudy=${encodeURIComponent('Second Year')}&status=all&limit=500`,
+  fetcher
+)
+
   const groupStrength = studentsData?.totalStudents || 0
   const firstYearStrength = firstYearStudentsData?.totalStudents || 0
   const secondYearStrength = secondYearStudentsData?.totalStudents || 0
+  const [unmarkedPanel, setUnmarkedPanel] = useState(null)
+  const [savingUnmarked, setSavingUnmarked] = useState(false)
 
+
+
+
+function getUnmarkedStudents(year, sessionName) {
+  const students =
+    year === 'First Year'
+      ? firstYearStudentsData?.data || []
+      : secondYearStudentsData?.data || []
+
+  const presentNames = new Set(
+    (sessionWisePresent[sessionName] || [])
+      .filter(
+        student =>
+          normalizeAttendanceGroup(student.group) === normalizedGroupName &&
+          student.yearOfStudy === year
+      )
+      .map(student => String(student.name || '').trim().toLowerCase())
+      .filter(Boolean)
+  )
+
+  const absentNames = new Set(
+    (sessionWiseAbsentees[sessionName] || [])
+      .filter(
+        student =>
+          normalizeAttendanceGroup(student.group) === normalizedGroupName &&
+          student.yearOfStudy === year
+      )
+      .map(student => String(student.name || '').trim().toLowerCase())
+      .filter(Boolean)
+  )
+
+  const markedNames = new Set([
+    ...presentNames,
+    ...absentNames,
+  ])
+
+  return students.filter(student => {
+    const name = String(student.name || '').trim().toLowerCase()
+
+    return name && !markedNames.has(name)
+  })
+}
+
+
+
+
+
+
+
+async function markUnmarkedStudent(student, year, sessionName, status) {
+  if (!session?.user?.collegeId) return
+
+  try {
+    setSavingUnmarked(true)
+
+    const date = today
+    const dateObj = new Date(`${date}T00:00:00`)
+    const month = dateObj.toLocaleString('en-US', { month: 'long' })
+    const yearNumber = dateObj.getFullYear()
+
+    const lecturerId =
+      session.user._id ||
+      session.user.id ||
+      session.user.userId ||
+      ''
+
+    const lecturerName =
+      session.user.name ||
+      session.user.username ||
+      'Lecturer'
+
+    const payload = [
+      {
+        studentId: student._id,
+        date,
+        status,
+        group: normalizedGroupName,
+        month,
+        yearOfStudy: year,
+        lecturerId,
+        lecturerName,
+        collegeId: session.user.collegeId,
+        year: yearNumber,
+        session: sessionName,
+      },
+    ]
+
+    const response = await fetch('/api/attendance?mode=unmarked-correction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok || result?.status !== 'success') {
+      alert(result?.message || `Unable to mark ${status}.`)
+      return
+    }
+
+    await Promise.all([
+      mutateAbsentees(),
+      mutateGroupWise(),
+    ])
+
+  } catch (error) {
+    console.error('Failed to mark unmarked student:', error)
+    alert('Unable to save attendance. Please try again.')
+  } finally {
+    setSavingUnmarked(false)
+  }
+}
 
 
   function stats(year, session) {
@@ -182,12 +303,12 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
                 </thead>
 
                 <tbody>
-                  {sessions.map(session => {
-                    const current = stats(year, session)
+                  {sessions.map(sessionName => {
+                    const current = stats(year, sessionName)
 
                     return (
-                      <tr key={`${year}-${session}`} className="hover:bg-slate-50">
-                        <td className="border border-slate-200 px-2 py-1.5 font-semibold">{session}</td>
+                      <tr key={`${year}-${sessionName}`} className="hover:bg-slate-50">
+                        <td className="border border-slate-200 px-2 py-1.5 font-semibold">{sessionName}</td>
 
                         <td className="border border-slate-200 px-2 py-1.5 text-center font-bold text-emerald-600">
                           {current.present}
@@ -198,10 +319,25 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
                         </td>
 
                         <td className="border border-slate-200 px-2 py-1.5 text-center font-bold text-amber-500">
-                          {' '}
-                          {/* ✅ new */}
-                          {current.unmarked}
-                        </td>
+  <button
+    type="button"
+    disabled={current.unmarked === 0}
+    onClick={() =>
+      current.unmarked > 0 &&
+      setUnmarkedPanel({
+        year,
+        session: sessionName,
+      })
+    }
+    className={
+      current.unmarked > 0
+        ? 'rounded-lg bg-amber-50 px-3 py-1 text-amber-700 underline decoration-dotted underline-offset-2 transition hover:bg-amber-100'
+        : 'cursor-default text-emerald-600'
+    }
+  >
+    {current.unmarked}
+  </button>
+</td>
 
                         <td className="border border-slate-200 px-2 py-1.5 text-center font-bold">{current.total}</td>
 
@@ -240,16 +376,16 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
 
             {/* Mobile version */}
             <div className="mt-2 space-y-2 md:hidden">
-              {sessions.map(session => {
-                const current = stats(year, session)
+              {sessions.map(sessionName => {
+                const current = stats(year, sessionName)
 
                 return (
                   <div
-                    key={`${year}-${session}`}
+                    key={`${year}-${sessionName}`}
                     className="rounded-lg border border-slate-200/80 bg-white p-2 shadow-sm"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-slate-900">{session}</span>
+                      <span className="text-sm font-semibold text-slate-900">{sessionName}</span>
 
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-semibold ${theme.pill}`}
@@ -280,10 +416,23 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
                         <p className="text-sm font-black text-rose-600">{current.absent}</p>
                       </div>
 
-                      <div className="rounded-lg bg-slate-50/90 px-2 py-1.5">
-                        <p className="text-[10px] text-slate-500">Unmarked</p>
-                        <p className="text-sm font-black text-amber-500">{current.unmarked}</p>
-                      </div>
+<button
+  type="button"
+  disabled={current.unmarked === 0}
+  onClick={() =>
+    current.unmarked > 0 &&
+    setUnmarkedPanel({
+      year,
+      session: sessionName,
+    })
+  }
+  className="rounded-lg bg-amber-50/80 px-2 py-1.5 text-left transition hover:bg-amber-100 disabled:cursor-default"
+>
+  <p className="text-[10px] text-amber-700">Unmarked</p>
+  <p className="text-sm font-black text-amber-600">
+    {current.unmarked}
+  </p>
+</button>
 
                       <div className="rounded-lg bg-slate-50/90 px-2 py-1.5">
                         <p className="text-[10px] text-slate-500">Total</p>
@@ -324,8 +473,105 @@ export default function GroupAttendanceCard({ groupName, compact = false }) {
           </article>
         ))}
       </div>
+      {unmarkedPanel && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3">
+    <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+        <div>
+          <h3 className="text-base font-black text-slate-900">
+            ⚠️ Unmarked Students
+          </h3>
+
+          <p className="mt-0.5 text-xs text-slate-500">
+            {unmarkedPanel.year} • {unmarkedPanel.session}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setUnmarkedPanel(null)}
+          className="rounded-lg px-3 py-1.5 text-sm font-bold text-slate-500 hover:bg-slate-100"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="max-h-[60vh] space-y-2 overflow-y-auto p-3">
+        
+        {getUnmarkedStudents(
+          unmarkedPanel.year,
+          unmarkedPanel.session
+        ).map((student, index) => (
+          <div
+            key={student._id}
+            className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50/50 p-3 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-slate-900">
+                {index + 1}. {student.name}
+              </p>
+
+              <p className="mt-0.5 text-xs text-slate-500">
+                {student.admissionNo ||
+                  student.rollNumber ||
+                  'Roll No. not available'}
+              </p>
+            </div>
+
+            <div className="flex shrink-0 gap-2">
+              <button
+                type="button"
+                disabled={savingUnmarked}
+                onClick={() =>
+                  markUnmarkedStudent(
+                    student,
+                    unmarkedPanel.year,
+                    unmarkedPanel.session,
+                    'Present'
+                  )
+                }
+                className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+              >
+                ✓ Present
+              </button>
+
+              <button
+                type="button"
+                disabled={savingUnmarked}
+                onClick={() =>
+                  markUnmarkedStudent(
+                    student,
+                    unmarkedPanel.year,
+                    unmarkedPanel.session,
+                    'Absent'
+                  )
+                }
+                className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
+              >
+                ✕ Absent
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {getUnmarkedStudents(
+          unmarkedPanel.year,
+          unmarkedPanel.session
+        ).length === 0 && (
+          <div className="rounded-xl bg-emerald-50 px-4 py-6 text-center text-sm font-bold text-emerald-700">
+            ✓ All students are marked.
+          </div>
+        )}
+
+        
+      </div>
+    </div>
+  </div>
+)}
     </section>
-  )
+    )
+
+  
 }
 
 function TopStat({ icon, label, value }) {

@@ -42,6 +42,9 @@ export async function POST(req) {
 
     const records = await req.json()
 
+    const { searchParams } = new URL(req.url)
+    const isUnmarkedCorrection = searchParams.get('mode') === 'unmarked-correction'
+
     if (!Array.isArray(records) || records.length === 0) {
       return NextResponse.json({ message: 'Invalid data', status: 'error' }, { status: 400 })
     }
@@ -84,13 +87,28 @@ export async function POST(req) {
     const nextDate = new Date(selectedDate)
     nextDate.setDate(nextDate.getDate() + 1)
 
-    const alreadyMarked = await Attendance.findOne({
-      collegeId,
-      group: selectedGroup,
-      yearOfStudy: selectedYearOfStudy,
-      date: { $gte: selectedDate, $lt: nextDate },
-      session: selectedSession,
-    })
+
+    let alreadyMarked = null
+
+if (isUnmarkedCorrection) {
+  const studentId = markedRecords[0]?.studentId
+
+  alreadyMarked = await Attendance.findOne({
+    collegeId,
+    studentId,
+    date: { $gte: selectedDate, $lt: nextDate },
+    session: selectedSession,
+  })
+} else {
+  alreadyMarked = await Attendance.findOne({
+    collegeId,
+    group: selectedGroup,
+    yearOfStudy: selectedYearOfStudy,
+    date: { $gte: selectedDate, $lt: nextDate },
+    session: selectedSession,
+  })
+}
+
 
     // 🟢 UPDATED ERROR MESSAGE WITH LECTURER NAME
     if (alreadyMarked) {
