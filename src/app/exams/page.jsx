@@ -587,25 +587,38 @@ export default function ExamReportPage() {
   const [detailsFilter, setDetailsFilter] = useState(null)
   const [activeSidebarKey, setActiveSidebarKey] = useState('dashboard')
   const detailsSectionRef = useRef(null)
-  const dashboardReturnUrl = searchParams.get('returnUrl')
 
-  const loadReports = useCallback(async () => {
-    try {
-      setLoading(true)
-      const res = await fetch('/api/exams', { cache: 'no-store' })
-      const data = await res.json()
-      if (data?.success) {
-        setReports(Array.isArray(data.data) ? data.data : [])
-      } else {
-        setReports([])
-      }
-    } catch (error) {
-      console.error('Failed to load exam reports', error)
+  const dashboardReturnUrl = searchParams.get('returnUrl')
+const selectedStream = normalizeStreamValue(searchParams.get('stream'))
+
+const loadReports = useCallback(async () => {
+  try {
+    setLoading(true)
+
+    const url = selectedStream
+      ? `/api/exams?stream=${encodeURIComponent(selectedStream)}`
+      : '/api/exams'
+
+    const res = await fetch(url, {
+      cache: 'no-store',
+    })
+
+    const data = await res.json()
+
+    if (data?.success) {
+      setReports(Array.isArray(data.data) ? data.data : [])
+    } else {
       setReports([])
-    } finally {
-      setLoading(false)
     }
-  }, [])
+  } catch (error) {
+    console.error('Failed to load exam reports', error)
+    setReports([])
+  } finally {
+    setLoading(false)
+  }
+}, [selectedStream])
+
+
 
 // 3. useEffect లో call మాత్రమే
   useEffect(() => {

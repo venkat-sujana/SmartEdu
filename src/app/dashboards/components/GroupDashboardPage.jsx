@@ -296,7 +296,9 @@ export default function GroupDashboardPage({
   const baseDashboardHref = `/dashboards/${routeSegment}`
   const addStudentHref = `/register?group=${encodeURIComponent(groupName)}&returnUrl=${encodeURIComponent(baseDashboardHref)}`
   const marksPostingHref = `/exams-form?returnUrl=${encodeURIComponent(baseDashboardHref)}`
-  const examDashboardHref = `/exams?returnUrl=${encodeURIComponent(baseDashboardHref)}`
+  
+const examDashboardHref =
+  `/exams?stream=${encodeURIComponent(groupName)}&returnUrl=${encodeURIComponent(baseDashboardHref)}`
 
   const { data: collegeDetails } = useSWR(
     user?.collegeId ? `/api/colleges/${user.collegeId}` : null,
