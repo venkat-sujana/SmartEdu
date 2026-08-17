@@ -76,22 +76,38 @@ function AppShell({ children }) {
           </div>
         )}
 
-        {isLecturer && drawerOpen && (
-          <div className="fixed inset-0 z-50 flex">
-            <div className="fixed inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
-            <div className="relative z-50 h-full w-72 bg-white shadow-md">
-              <div className="p-3">
-                <button
-                  onClick={() => setDrawerOpen(false)}
-                  className="mb-2 rounded-md border px-2 py-1 text-sm"
-                >
-                  Close
-                </button>
-                <Sidebar onClose={() => setDrawerOpen(false)} />
-              </div>
-            </div>
-          </div>
-        )}
+{isLecturer && drawerOpen && (
+  <div className="fixed inset-0 z-50 flex">
+    {/* Overlay */}
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-[1px]"
+      onClick={() => setDrawerOpen(false)}
+    />
+
+    {/* Mobile Sidebar Drawer */}
+    <div className="relative z-50 h-full w-[18rem] max-w-[88vw] overflow-hidden bg-slate-950 shadow-2xl">
+      <div className="flex h-full flex-col">
+
+        {/* Close Button */}
+        <div className="shrink-0 border-b border-white/10 bg-slate-950 px-3 py-2">
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(false)}
+            className="w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-white transition hover:bg-white/15"
+          >
+            ✕ Close Menu
+          </button>
+        </div>
+
+        {/* Sidebar */}
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <Sidebar onClose={() => setDrawerOpen(false)} />
+        </div>
+
+      </div>
+    </div>
+  </div>
+)}
 
         <main className={`flex-1 ${isAdminPanel ? 'p-0 md:p-0' : 'p-4 md:p-6'}`}>{children}</main>
       </div>

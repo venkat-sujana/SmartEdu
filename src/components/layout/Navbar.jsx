@@ -82,7 +82,7 @@ export default function Navbar({ onOpenDrawer }) {
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className="fixed inset-x-0 mt-10 top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl"
+        className="fixed inset-x-0 mt-3 top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl"
       >
         <div className="mx-auto  flex max-w-full items-center justify-between gap-4 bg-emerald-600 px-3 py-2 text-white sm:px-5">
           <div className="flex items-center gap-3">
