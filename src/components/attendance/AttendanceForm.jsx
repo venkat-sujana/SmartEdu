@@ -736,7 +736,7 @@ export default function AttendanceForm({
 
                 {unmarkedStudents.length === 0
                   ? "✓ All Marked"
-                  : `⚠ Unmarked: ${unmarkedStudents.length}`}
+                  : `👉 Unmarked: ${unmarkedStudents.length}`}
 
                 {unmarkedStudents.length > 0 && (
                   <span>

@@ -282,11 +282,11 @@ async function markUnmarkedStudent(student, year, sessionName, status) {
                   <tr className="bg-slate-100">
                     <th className="border border-slate-200 px-2 py-1.5 text-left font-bold">Session</th>
 
-                    <th className="border border-slate-200 px-2 py-1.5 text-center font-bold">Present</th>
+                    <th className="border border-slate-200 px-2 py-1.5 text-center font-bold">🟢Present</th>
 
-                    <th className="border border-slate-200 px-2 py-1.5 text-center font-bold">Absent</th>
+                    <th className="border border-slate-200 px-2 py-1.5 text-center font-bold">🔴Absent</th>
 
-                    <th className="border border-slate-200 px-2 py-1.5 text-center font-bold">Unmarked</th>
+                    <th className="border border-slate-200 px-2 py-1.5 text-center font-bold">🟡Unmarked</th>
 
                     <th className="border border-slate-200 px-2 py-1.5 text-center font-bold">Total</th>
 
@@ -430,7 +430,7 @@ async function markUnmarkedStudent(student, year, sessionName, status) {
 >
   <p className="text-[10px] text-amber-700">Unmarked</p>
   <p className="text-sm font-black text-amber-600">
-    {current.unmarked}
+     {current.unmarked}
   </p>
 </button>
 
@@ -479,7 +479,7 @@ async function markUnmarkedStudent(student, year, sessionName, status) {
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <div>
           <h3 className="text-base font-black text-slate-900">
-            ⚠️ Unmarked Students
+            👉 Unmarked Students
           </h3>
 
           <p className="mt-0.5 text-xs text-slate-500">

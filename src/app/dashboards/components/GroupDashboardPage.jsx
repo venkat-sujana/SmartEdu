@@ -435,67 +435,67 @@ const examDashboardHref =
 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
   <HeaderActionLink
     href={addStudentHref}
-    label="Add Student"
+    label="👨‍🎓Add Student"
     theme={theme}
   />
 
   <HeaderActionLink
     href={`${baseDashboardHref}/attendance`}
-    label="Today's Attendance"
+    label=" ✏Today's Attendance"
     theme={theme}
   />
 
   <HeaderActionLink
     href={marksPostingHref}
-    label="Post Marks"
+    label="📝Post Marks"
     theme={theme}
   />
 
   <HeaderActionLink
     href={examDashboardHref}
-    label="Exam Dashboard"
+    label="📝Exam Dashboard"
     theme={theme}
   />
 
   <HeaderActionLink
     href={`${baseDashboardHref}/students`}
-    label="Student Records"
+    label="👨‍🎓Student Records"
     theme={theme}
   />
 
   <HeaderActionLink
     href={`${baseDashboardHref}/absentees`}
-    label="Today's Absentees"
+    label=" ✕ Today's Absentees"
     theme={theme}
   />
 
   <HeaderActionLink
   href={`${baseDashboardHref}/consecutive-absentees`}
-  label="Consecutive Absentees"
+  label="✕ Consecutive Absentees"
   theme={theme}
 />
 
   <HeaderActionLink
     href={`${baseDashboardHref}/monthly`}
-    label="Monthly Attendance"
+    label="📅Monthly Attendance"
     theme={theme}
   />
 
   <HeaderActionLink
     href={`${baseDashboardHref}/edit`}
-    label="Edit Attendance"
+    label="📝Update Attendance"
     theme={theme}
   />
 
   <HeaderActionLink
     href={`${baseDashboardHref}/fees`}
-    label="Fee Dashboard"
+    label="💰Fee Dashboard"
     theme={theme}
   />
 
   <HeaderActionLink
     href={`${baseDashboardHref}/attendance-below-75`}
-    label="Below 75% Attendance"
+    label="📝Below 75% Attendance"
     theme={theme}
   />
 </div>
