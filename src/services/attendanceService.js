@@ -1045,3 +1045,157 @@ export async function getConsecutiveAbsentees(
   );
 }
 
+// ============================================================
+// STUDENT TODAY ATTENDANCE
+// Existing attendance functions are NOT changed.
+// ============================================================
+
+export async function getTodayStudentAttendance(
+  collegeId,
+  studentId,
+  date = new Date()
+) {
+  try {
+    if (!collegeId || !studentId) {
+      return {
+        date,
+        FN: {
+          status: "Not Marked",
+          markedAt: null,
+          lecturerName: "",
+        },
+        AN: {
+          status: "Not Marked",
+          markedAt: null,
+          lecturerName: "",
+        },
+        dayStatus: "Not Marked",
+      };
+    }
+
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // --------------------------------------------------------
+    // Fetch ONLY this student's attendance for today
+    // --------------------------------------------------------
+
+    const records = await Attendance.find({
+      collegeId,
+      studentId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+      ...buildAttendanceSessionReadFilter(),
+    })
+      .select(
+        "date status session lecturerName markedAt updatedAt createdAt"
+      )
+      .sort({
+        session: 1,
+        markedAt: -1,
+        updatedAt: -1,
+        createdAt: -1,
+      })
+      .lean();
+
+    // --------------------------------------------------------
+    // Default FN / AN
+    // --------------------------------------------------------
+
+    const result = {
+      date: startOfDay,
+
+      FN: {
+        status: "Not Marked",
+        markedAt: null,
+        lecturerName: "",
+      },
+
+      AN: {
+        status: "Not Marked",
+        markedAt: null,
+        lecturerName: "",
+      },
+
+      dayStatus: "Not Marked",
+    };
+
+    // --------------------------------------------------------
+    // Fill FN / AN
+    // --------------------------------------------------------
+
+    for (const record of records) {
+      const session = normalizeAttendanceSession(
+        record.session
+      );
+
+      if (session !== "FN" && session !== "AN") {
+        continue;
+      }
+
+      // First valid record for a session wins
+      // because records are sorted newest first.
+      if (
+        result[session].status === "Not Marked"
+      ) {
+        result[session] = {
+          status: record.status || "Not Marked",
+
+          markedAt:
+            record.markedAt ||
+            record.updatedAt ||
+            record.createdAt ||
+            null,
+
+          lecturerName:
+            record.lecturerName || "",
+        };
+      }
+    }
+
+    // --------------------------------------------------------
+    // DAY-LEVEL STATUS
+    //
+    // FN Present + AN Present  → Present
+    // FN Absent  + AN Absent   → Absent
+    // One Present + other Absent/Not Marked → Present
+    // Nothing marked           → Not Marked
+    // --------------------------------------------------------
+
+    const fnStatus = result.FN.status;
+    const anStatus = result.AN.status;
+
+    if (
+      fnStatus === "Not Marked" &&
+      anStatus === "Not Marked"
+    ) {
+      result.dayStatus = "Not Marked";
+    } else if (
+      fnStatus === "Absent" &&
+      anStatus === "Absent"
+    ) {
+      result.dayStatus = "Absent";
+    } else if (
+      fnStatus === "Present" ||
+      anStatus === "Present"
+    ) {
+      result.dayStatus = "Present";
+    } else {
+      result.dayStatus = "Not Marked";
+    }
+
+    return result;
+  } catch (error) {
+    console.error(
+      "getTodayStudentAttendance error:",
+      error
+    );
+
+    throw error;
+  }
+}

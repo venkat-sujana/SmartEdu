@@ -4,7 +4,7 @@
 
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
-
+import StudentTodayAttendance from '@/components/StudentTodayAttendance/StudentTodayAttendance'
 import StudentIndividualExams from '@/components/StudentIndividualExams/StudentIndividualExams'
 import StudentMonthlyAttendanceSummary from '@/components/StudentMonthlyAttendanceSummary/StudentMonthlyAttendanceSummary'
 import StudentAttendanceAlert from '@/components/StudentAttendanceAlert/StudentAttendanceAlert'
@@ -159,6 +159,13 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── Today's FN / AN Attendance ── */}
+<section>
+  <StudentTodayAttendance studentId={studentId} />
+</section>
+
+
 
       {/* ── Attendance Alert ── */}
       <section>
