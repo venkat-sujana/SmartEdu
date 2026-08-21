@@ -1,7 +1,6 @@
 // src/app/student/dashboard/page.jsx
 
 'use client'
-
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import StudentTodayAttendance from '@/components/StudentTodayAttendance/StudentTodayAttendance'
@@ -10,6 +9,9 @@ import StudentMonthlyAttendanceSummary from '@/components/StudentMonthlyAttendan
 import StudentAttendanceAlert from '@/components/StudentAttendanceAlert/StudentAttendanceAlert'
 import StudentLateComingHistory from '@/components/StudentLateComingHistory/StudentLateComingHistory'
 import StudentFeeStatus from '@/components/StudentFeeStatus/StudentFeeStatus'
+import StudentLeave from '@/components/StudentLeave/StudentLeave'
+import StudentLeaveRequests from '@/components/StudentLeave/StudentLeaveRequests'
+
 
 export default function StudentDashboard() {
   const { data: session, status } = useSession()
@@ -165,7 +167,15 @@ export default function StudentDashboard() {
   <StudentTodayAttendance studentId={studentId} />
 </section>
 
+{/* ── Apply Leave ── */}
+<section>
+  <StudentLeave />
+</section>
 
+{/* ── My Leave Requests ── */}
+<section>
+  <StudentLeaveRequests />
+</section>
 
       {/* ── Attendance Alert ── */}
       <section>

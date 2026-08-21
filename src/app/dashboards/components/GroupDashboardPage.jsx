@@ -10,7 +10,7 @@ import LecturerInfoCard from '@/components/dashboard/LecturerInfoCard'
 import GroupAttendanceCard from '@/components/OverallAttendanceMatrixCard/GroupAttendanceCard'
 import DashboardFooter from '@/components/layout/Footer'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
-
+import LecturerLeaveRequests from '@/components/LecturerLeaveRequests/LecturerLeaveRequests'
 
 const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
@@ -419,6 +419,8 @@ const examDashboardHref =
 
   return (
     <div className={`min-h-screen bg-linear-to-br ${theme.shell} px-2 py-3 sm:px-3 sm:py-4 md:px-4`}>
+
+      <LecturerInfoCard user={user} groupName={groupName} />
       <div className="mx-auto max-w-6xl space-y-3 sm:space-y-4">
         <div
           className={`flex flex-col gap-4 rounded-2xl border ${theme.softBorder} bg-linear-to-r ${theme.soft} p-3 shadow-sm sm:p-4 lg:flex-row lg:items-center lg:justify-between`}
@@ -501,8 +503,11 @@ const examDashboardHref =
 </div>
         </div>
 
-<LecturerInfoCard user={user} groupName={groupName} />
 
+{/* ── Student Leave Requests ── */}
+<section>
+  <LecturerLeaveRequests />
+</section>
         
         <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
               <div className="mb-3 border-b border-slate-200/80 pb-2.5">
@@ -519,6 +524,9 @@ const examDashboardHref =
 
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-[250px_minmax(0,1fr)]">
           <div className="space-y-4">
+
+
+            
             
             
             <div className="xl:hidden">
