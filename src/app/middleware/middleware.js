@@ -7,6 +7,7 @@ const LOGIN_PATHS = [
   "/auth/login",
   "/admin/login",
   "/lecturer/login",
+  "/office/login",
   "/principal/login",
   "/student/login",
 ];
@@ -14,8 +15,20 @@ const LOGIN_PATHS = [
 function getRoleHome(role) {
   if (role === "admin") return "/admin-panel";
   if (role === "lecturer") return "/dashboards";
+  if (role === "office") return "/office/dashboard";
   if (role === "principal") return "/principal/dashboard";
   if (role === "student") return "/student/dashboard";
+  return "/auth/login";
+}
+
+function getLoginPath(pathname) {
+  if (pathname.startsWith("/student")) return "/student/login";
+  if (pathname.startsWith("/principal")) return "/principal/login";
+  if (pathname.startsWith("/lecturer") || pathname.startsWith("/dashboards")) {
+    return "/lecturer/login";
+  }
+  if (pathname.startsWith("/office")) return "/office/login";
+  if (pathname.startsWith("/admin-panel")) return "/admin/login";
   return "/auth/login";
 }
 
@@ -66,7 +79,7 @@ export async function middleware(req) {
   });
 
   if (!token) {
-    return NextResponse.redirect(new URL("/auth/login", req.url));
+    return NextResponse.redirect(new URL(getLoginPath(pathname), req.url));
   }
 
   if (token.role === "admin") {
@@ -82,6 +95,10 @@ export async function middleware(req) {
   }
 
   if (pathname.startsWith("/student") && token.role !== "student") {
+    return NextResponse.redirect(new URL(getRoleHome(token.role), req.url));
+  }
+
+  if (pathname.startsWith("/office") && token.role !== "office") {
     return NextResponse.redirect(new URL(getRoleHome(token.role), req.url));
   }
 
@@ -101,10 +118,10 @@ export const config = {
     "/lecturer/:path*",
     "/principal/:path*",
     "/student/:path*",
+    "/office/:path*",
     "/dashboards/:path*",
     "/admin-panel/:path*",
     "/invigilation/:path*",
     "/timetable-management/:path*",
   ],
 };
-

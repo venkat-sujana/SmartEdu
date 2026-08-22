@@ -67,6 +67,8 @@ export async function POST(req) {
     await connectMongoDB();
     const body = await req.json();
 
+    const isSecondYear = body.yearOfStudy === "Second Year";
+
     const requiredFields = [
       "name",
       "fatherName",
@@ -78,10 +80,13 @@ export async function POST(req) {
       "yearOfStudy",
       "admissionYear",
       "address",
-      "admissionNo",
       "collegeId",
       
     ];
+
+    if (!isSecondYear) {
+      requiredFields.push("admissionNo");
+    }
 
     const missing = requiredFields.filter((field) => !String(body[field] || "").trim());
     if (missing.length) {
@@ -91,9 +96,13 @@ export async function POST(req) {
       );
     }
 
-    const exists = await Student.findOne({ admissionNo: body.admissionNo.trim().toUpperCase() });
-    if (exists) {
-      return NextResponse.json({ error: "Admission number already exists" }, { status: 409 });
+    const normalizedAdmissionNo = String(body.admissionNo || "").trim().toUpperCase();
+
+    if (normalizedAdmissionNo) {
+      const exists = await Student.findOne({ admissionNo: normalizedAdmissionNo });
+      if (exists) {
+        return NextResponse.json({ error: "Admission number already exists" }, { status: 409 });
+      }
     }
 
     const student = await Student.create({
@@ -107,7 +116,7 @@ export async function POST(req) {
       yearOfStudy: body.yearOfStudy,
       admissionYear: Number(body.admissionYear),
       address: body.address.trim(),
-      admissionNo: body.admissionNo.trim().toUpperCase(),
+      admissionNo: normalizedAdmissionNo,
       collegeId: body.collegeId,
 
       password: body.password?.trim()

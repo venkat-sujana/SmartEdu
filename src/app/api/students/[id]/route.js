@@ -22,6 +22,11 @@ function getPublicIdFromUrl(url) {
   }
 }
 
+function normalizeAdmissionNo(value) {
+  if (value == null) return "";
+  return String(value).trim().toUpperCase();
+}
+
 // ✅ Session + CollegeId ఆధారంగా చెక్ చేసే helper
 async function getStudentByIdWithAuth(id) {
   const session = await getServerSession(authOptions);
@@ -92,6 +97,26 @@ export async function PUT(req, context) {
 
     if (body.password === undefined || body.password === "") {
       delete body.password;
+    }
+
+    if (body.admissionNo !== undefined) {
+      const normalizedAdmissionNo = normalizeAdmissionNo(body.admissionNo);
+      body.admissionNo = normalizedAdmissionNo;
+
+      if (normalizedAdmissionNo) {
+        const duplicateStudent = await Student.findOne({
+          _id: { $ne: id },
+          admissionNo: normalizedAdmissionNo,
+          collegeId: existingStudent.collegeId,
+        }).select("_id");
+
+        if (duplicateStudent) {
+          return NextResponse.json(
+            { message: "Admission number already exists" },
+            { status: 409 }
+          );
+        }
+      }
     }
 
 

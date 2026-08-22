@@ -573,15 +573,12 @@ export default function RegisterPage() {
                     value={formData.admissionNo}
                     onChange={handleChange}
                     placeholder="e.g., 24MPC018"
-                    disabled={isSecondYear}
-                    className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
+                    className={modernInputClass}
                     required={!isSecondYear}
                   />
-                  {isSecondYear ? (
-                    <p className="mt-1.5 text-xs font-medium text-slate-500">
-                      Admission number is disabled for second-year students.
-                    </p>
-                  ) : null}
+                  <p className="mt-1.5 text-xs font-medium text-slate-500">
+                    For second-year students this can stay empty until the office confirms the original admission number.
+                  </p>
                 </div>
 
                 <div>

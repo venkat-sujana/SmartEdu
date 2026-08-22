@@ -4,6 +4,11 @@ import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
 import { getAdminSession } from "@/lib/requireAdminSession";
 
+function normalizeAdmissionNo(value) {
+  if (value == null) return "";
+  return String(value).trim().toUpperCase();
+}
+
 export async function PUT(req, context) {
   try {
     const session = await getAdminSession();
@@ -14,6 +19,18 @@ export async function PUT(req, context) {
     await connectMongoDB();
     const { id } = await context.params;
     const body = await req.json();
+    const normalizedAdmissionNo = normalizeAdmissionNo(body.admissionNo);
+
+    if (normalizedAdmissionNo) {
+      const duplicate = await Student.findOne({
+        _id: { $ne: id },
+        admissionNo: normalizedAdmissionNo,
+      }).select("_id");
+
+      if (duplicate) {
+        return NextResponse.json({ error: "Admission number already exists" }, { status: 409 });
+      }
+    }
 
     const update = {
       name: body.name?.trim(),
@@ -26,7 +43,7 @@ export async function PUT(req, context) {
       yearOfStudy: body.yearOfStudy,
       admissionYear: body.admissionYear ? Number(body.admissionYear) : undefined,
       address: body.address?.trim(),
-      admissionNo: body.admissionNo?.trim().toUpperCase(),
+      admissionNo: normalizedAdmissionNo || undefined,
       collegeId: body.collegeId,
       status: body.status,
       dob: body.dob || null,

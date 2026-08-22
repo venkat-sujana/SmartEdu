@@ -184,8 +184,8 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} bg-slate-50 antialiased`}
       >
         <SessionProvider
-          baseUrl={process.env.NEXTAUTH_URL || 'http://localhost:3000'}
-          refetchInterval={60 * 1000}
+          refetchOnWindowFocus={false}
+          refetchInterval={5 * 60}
         >
           <Toaster />
           <AppShell>{children}</AppShell>

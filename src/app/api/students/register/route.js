@@ -34,7 +34,7 @@ export async function POST(req) {
     const yearOfStudy = formData.get("yearOfStudy");
     const admissionYear = parseInt(formData.get("admissionYear"));
     const dateOfJoining = formData.get("dateOfJoining");
-    const password = formData.get("password") || "default123";
+    const password = String(formData.get("password") || "").trim();
     const address = formData.get("address");
     const collegeId = formData.get("collegeId");
     const photoUrl = formData.get("photoUrl") || "";
@@ -73,8 +73,7 @@ export async function POST(req) {
       }
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
 
     // ✅ Bug 2 Fix — dob తీసేశాం, dateOfJoining మాత్రమే
     const student = new Student({

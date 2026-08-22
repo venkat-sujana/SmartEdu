@@ -1767,10 +1767,6 @@ onClick={() => {
                               editingRecord && field.name === 'password'
                                 ? 'New Password (optional)'
                                 : field.label,
-                            disabled:
-                              entity === 'students' &&
-                              field.name === 'admissionNo' &&
-                              form.yearOfStudy === 'Second Year',
                             required:
                               entity === 'students' &&
                               field.name === 'admissionNo' &&
@@ -2106,9 +2102,9 @@ function Field({
     <label className="text-sm font-medium text-slate-700">
       {field.label}
       <input {...commonProps} type={field.type || 'text'} />
-      {field.name === 'admissionNo' && field.disabled ? (
+      {field.name === 'admissionNo' && value === '' ? (
         <div className="mt-2 text-xs text-slate-500">
-          Admission No is disabled for second-year students.
+          Admission No can be added later when the office confirms the original number.
         </div>
       ) : null}
     </label>

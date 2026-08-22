@@ -80,7 +80,9 @@ const studentSchema = new mongoose.Schema(
 
   admissionNo: {
     type: String,
-    required: true,
+    required: function requiredAdmissionNo() {
+      return this.yearOfStudy !== "Second Year";
+    },
     trim: true,
     uppercase: true
   },

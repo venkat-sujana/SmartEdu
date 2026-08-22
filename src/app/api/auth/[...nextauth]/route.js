@@ -99,8 +99,9 @@ async function authenticateLecturer(email, password) {
 
 async function authenticateStudent(admissionNo, password) {
   await connectMongoDB();
+  const normalizedAdmissionNo = admissionNo.trim().toUpperCase();
   
-  const key = `login:${admissionNo.trim()}`;
+  const key = `login:${normalizedAdmissionNo}`;
   if (process.env.NODE_ENV !== 'development') {
     try {
       await loginRateLimiter.consume(key);
@@ -110,7 +111,7 @@ async function authenticateStudent(admissionNo, password) {
     }
   }
   
-  const student = await Student.findOne({ admissionNo: admissionNo.trim() }).populate(
+  const student = await Student.findOne({ admissionNo: normalizedAdmissionNo }).populate(
     "collegeId",
     "name"
   );

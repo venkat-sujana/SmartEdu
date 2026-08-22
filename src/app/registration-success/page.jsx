@@ -13,7 +13,7 @@ export default function RegistrationSuccessPage() {
           Your account has been created successfully. You can now login using your credentials.
         </p>
         <Link
-          href="lecturer/login"
+          href="/student/login"
           className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
         >
           🔑 Go to Login
