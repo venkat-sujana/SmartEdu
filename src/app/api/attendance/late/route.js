@@ -8,6 +8,39 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
 
+function normalizeYearOfStudy(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+
+  if (!normalized) return "";
+  if (normalized === "1" || normalized === "1st year" || normalized === "first year" || normalized === "first") {
+    return "First Year";
+  }
+  if (normalized === "2" || normalized === "2nd year" || normalized === "second year" || normalized === "second") {
+    return "Second Year";
+  }
+
+  return String(value || "").trim();
+}
+
+function buildYearFilter(value) {
+  const normalized = normalizeYearOfStudy(value);
+  if (!normalized) return null;
+  return new RegExp(`^${normalized}$`, "i");
+}
+
+function formatLateTimeFromDate(value) {
+  if (!value) return "";
+
+  return new Date(value).toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+function resolveLateTime(record) {
+  return record?.lateTime || formatLateTimeFromDate(record?.markedAt);
+}
 
 
 
@@ -25,9 +58,10 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const date = searchParams.get("date");
     const group = searchParams.get("group");
-    const yearOfStudy = searchParams.get("yearOfStudy");
+    const yearOfStudy = normalizeYearOfStudy(searchParams.get("yearOfStudy"));
+    const yearFilter = buildYearFilter(yearOfStudy);
 
-    if (!date || !group || !yearOfStudy) {
+    if (!date || !group || !yearOfStudy || !yearFilter) {
       return NextResponse.json({ status: "error", message: "Missing params" }, { status: 400 });
     }
 
@@ -41,14 +75,14 @@ export async function GET(req) {
     const students = await Student.find({
       collegeId: session.user.collegeId,
       group: normalizedGroup,
-      yearOfStudy,
+      yearOfStudy: yearFilter,
     }).sort({ admissionNo: 1 }).lean();
 
     // ఆ date లో attendance records
     const records = await Attendance.find({
       collegeId: session.user.collegeId,
       group: normalizedGroup,
-      yearOfStudy,
+      yearOfStudy: yearFilter,
       date: {
         $gte: startOfDay,
         $lte: endOfDay,
@@ -89,7 +123,7 @@ export async function GET(req) {
         photo: student.photo || null,
         status: record?.status || "N/A",
         lateComer: record?.lateComer || false,
-        lateTime: record?.lateTime || "",
+        lateTime: resolveLateTime(record),
       };
     });
      
@@ -151,6 +185,18 @@ if (!student) {
 
 const attendanceDate = new Date(date);
 attendanceDate.setHours(0, 0, 0, 0);
+const normalizedYearOfStudy = normalizeYearOfStudy(yearOfStudy || student.yearOfStudy);
+const normalizedGroup = normalizeAttendanceGroup(group || student.group);
+
+if (!normalizedYearOfStudy || !["First Year", "Second Year"].includes(normalizedYearOfStudy)) {
+  return NextResponse.json(
+    {
+      status: "error",
+      message: "Invalid year of study",
+    },
+    { status: 400 }
+  );
+}
 
 const resolvedLateTime =
   lateTime ||
@@ -176,8 +222,8 @@ const result = await Attendance.findOneAndUpdate(
       lateComer: true,
       lateTime: resolvedLateTime,
 
-      group: group || student.group,
-      yearOfStudy: yearOfStudy || student.yearOfStudy,
+      group: normalizedGroup,
+      yearOfStudy: normalizedYearOfStudy,
 
       lecturerName: session.user.name,
       lecturerId: session.user.id,
@@ -207,7 +253,7 @@ return NextResponse.json({
     studentId,
     status: result.status,
     lateComer: result.lateComer,
-    lateTime: result.lateTime || resolvedLateTime,
+    lateTime: resolveLateTime(result) || resolvedLateTime,
   },
 });
   } catch (err) {

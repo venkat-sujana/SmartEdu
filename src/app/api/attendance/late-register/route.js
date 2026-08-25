@@ -6,6 +6,16 @@ import connectMongoDB from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+function formatLateTimeFromDate(value) {
+  if (!value) return "";
+
+  return new Date(value).toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
 export async function GET(req) {
   await connectMongoDB();
 
@@ -46,7 +56,7 @@ export async function GET(req) {
     group: r.group,
     year: r.yearOfStudy,
     status: r.status,
-    lateTime: r.lateTime,
+    lateTime: r.lateTime || formatLateTimeFromDate(r.markedAt),
     lecturer: r.lecturerName,
   }));
 

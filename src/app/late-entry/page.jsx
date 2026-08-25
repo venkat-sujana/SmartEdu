@@ -21,6 +21,17 @@ function getCurrentTime() {
   })
 }
 
+function buildCurrentTimeMap(items) {
+  const currentTime = getCurrentTime()
+  const nextMap = {}
+
+  items.forEach(student => {
+    nextMap[student.studentId] = student.lateTime || currentTime
+  })
+
+  return nextMap
+}
+
 export default function LateEntryPage() {
   const { data: session } = useSession()
   const [group, setGroup] = useState('')
@@ -50,16 +61,9 @@ export default function LateEntryPage() {
       .then(data => {
         if (data.status === 'success') {
           const nextStudents = data.data || []
-          const times = {}
-
-          nextStudents.forEach(student => {
-            if (student.lateTime) {
-              times[student.studentId] = student.lateTime
-            }
-          })
 
           setStudents(nextStudents)
-          setLateTimeMap(times)
+          setLateTimeMap(buildCurrentTimeMap(nextStudents))
         } else {
           setStudents([])
           setLateTimeMap({})
@@ -69,7 +73,7 @@ export default function LateEntryPage() {
   }, [group, yearOfStudy, date])
 
   async function handleMarkLate(studentId) {
-    const lateTime = lateTimeMap[studentId] || ''
+    const lateTime = lateTimeMap[studentId] || getCurrentTime()
     setSavingId(studentId)
 
     const res = await fetch('/api/attendance/late', {

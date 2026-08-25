@@ -500,6 +500,34 @@ const examDashboardHref =
     label="📝Below 75% Attendance"
     theme={theme}
   />
+
+  <HeaderActionLink
+  href="/late-entry"
+  label="⏰ Late Entry"
+  theme={theme}
+  />
+
+ <HeaderActionLink
+  href="/late-entry-register"
+  label="📋 Late Entry Register"
+  theme={theme}
+ />
+
+ <HeaderActionLink
+  href="/attendance-records/attendance-calendar"
+  label="📋 Calender View"
+  theme={theme}
+ />
+
+ <HeaderActionLink
+  href="/invigilation/login"
+  label="📋 Invigilation Login"
+  theme={theme}
+ />
+
+
+
+
 </div>
         </div>
 
