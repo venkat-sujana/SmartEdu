@@ -1,3 +1,4 @@
+//src/app/profile/page.jsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -13,7 +14,7 @@ export default function ProfilePage() {
         {/* Profile Photo */}
         <div className="relative w-28 h-28 rounded-full overflow-hidden border">
         <Image
-            src="/images/profile.jpg"   // 👈 public/images path
+            src="/images/venkat-paint.png"   // 👈 public/images path
             alt="Profile Photo"
             fill
             className="object-cover"

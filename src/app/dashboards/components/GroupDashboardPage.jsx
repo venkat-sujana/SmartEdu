@@ -525,7 +525,18 @@ const examDashboardHref =
   theme={theme}
  />
 
+<HeaderActionLink
+  href="/timetable/dashboard"
+  label="📋 Timetable Dashboard"
+  theme={theme}
+ />
 
+ <HeaderActionLink
+  href="/timetable/lecturer"
+  label="📋 Timetable Lecturer"
+  theme={theme}
+ />
+ 
 
 
 </div>

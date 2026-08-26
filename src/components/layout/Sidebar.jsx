@@ -220,13 +220,7 @@ export default function Sidebar({ onClose }) {
             <CalendarDaysIcon className="h-4 w-4 text-cyan-500" />
           ),
         },
-        {
-          href: '/timetable/student',
-          label: 'Student Time Table',
-          icon: (
-            <CalendarDaysIcon className="h-4 w-4 text-cyan-500" />
-          ),
-        },
+        
       ]
     : isOffice
       ? [

@@ -97,7 +97,7 @@ export default function Page() {
 
             <div className="relative overflow-hidden rounded-4xl border border-white/10 bg-white/10 shadow-2xl backdrop-blur-xl">
               <Image
-                src="/images/students-1.jpg"
+                src="/images/osra_logo_v2.webp"
                 alt="OSRA Student Management"
                 width={700}
                 height={500}
@@ -180,7 +180,7 @@ export default function Page() {
 
           <div className="overflow-hidden rounded-[30px] shadow-2xl">
             <Image
-              src="/images/college-edu.jpg"
+              src="/images/classroombg.jpg"
               alt="Education Platform"
               width={700}
               height={450}

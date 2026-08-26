@@ -1,9 +1,10 @@
 //app/components/about/page.jsx
 import React from 'react'
+import Image from 'next/image'
 import { AcademicCapIcon, UserGroupIcon } from '@heroicons/react/24/outline'
 
 export default function AboutPage() {
-  const imageSrc = '/images/profile.jpg'
+  const imageSrc = '/images/venkat-profile.png'
 
   return (
     <main className="min-h-screen bg-linear-to-b from-indigo-100 via-white to-indigo-50 flex items-center justify-center p-6 mt-20">
@@ -11,9 +12,11 @@ export default function AboutPage() {
         {/* Profile */}
         <div className="col-span-1 flex flex-col items-center text-center">
           <div className="w-48 h-48 rounded-full overflow-hidden shadow-lg ring-4 ring-indigo-200">
-            <img
+            <Image
               src={imageSrc}
               alt="Venkataiah Embeti photo"
+              width={192}
+              height={192}
               className="w-full h-full object-cover"
             />
           </div>
