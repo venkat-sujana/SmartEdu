@@ -9,11 +9,22 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 function formatLateTimeFromDate(value) {
   if (!value) return "";
 
-  return new Date(value).toLocaleTimeString("en-IN", {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  });
+  }).formatToParts(date);
+
+  const hour = parts.find((part) => part.type === "hour")?.value;
+  const minute = parts.find((part) => part.type === "minute")?.value;
+
+  if (!hour || !minute) return "";
+
+  return `${hour}:${minute}`;
 }
 
 export async function GET(req) {

@@ -14,19 +14,28 @@ function getTodayStr() {
 }
 
 function getCurrentTime() {
-  return new Date().toLocaleTimeString('en-IN', {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  })
+  }).formatToParts(new Date())
+
+  const hour = parts.find(part => part.type === 'hour')?.value
+  const minute = parts.find(part => part.type === 'minute')?.value
+
+  if (!hour || !minute) return ''
+
+  return `${hour}:${minute}`
 }
 
 function buildCurrentTimeMap(items) {
-  const currentTime = getCurrentTime()
   const nextMap = {}
 
   items.forEach(student => {
-    nextMap[student.studentId] = student.lateTime || currentTime
+    if (student.lateTime) {
+      nextMap[student.studentId] = student.lateTime
+    }
   })
 
   return nextMap

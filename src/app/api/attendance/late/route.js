@@ -31,15 +31,26 @@ function buildYearFilter(value) {
 function formatLateTimeFromDate(value) {
   if (!value) return "";
 
-  return new Date(value).toLocaleTimeString("en-IN", {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  });
+  }).formatToParts(date);
+
+  const hour = parts.find((part) => part.type === "hour")?.value;
+  const minute = parts.find((part) => part.type === "minute")?.value;
+
+  if (!hour || !minute) return "";
+
+  return `${hour}:${minute}`;
 }
 
 function resolveLateTime(record) {
-  return record?.lateTime || formatLateTimeFromDate(record?.markedAt);
+  return formatLateTimeFromDate(record?.markedAt) || record?.lateTime || "";
 }
 
 
@@ -198,53 +209,62 @@ if (!normalizedYearOfStudy || !["First Year", "Second Year"].includes(normalized
   );
 }
 
-const resolvedLateTime =
-  lateTime ||
-  new Date().toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+const attendanceFilter = {
+  collegeId: session.user.collegeId,
+  studentId: new mongoose.Types.ObjectId(studentId),
+  date: {
+    $gte: startOfDay,
+    $lte: endOfDay,
+  },
+  session: attendanceSession,
+};
 
-const result = await Attendance.findOneAndUpdate(
-  {
+const existingRecord = await Attendance.findOne(attendanceFilter)
+  .select("markedAt lateTime")
+  .lean();
+
+const now = new Date();
+const markedAt = existingRecord?.markedAt || now;
+const resolvedLateTime =
+  formatLateTimeFromDate(markedAt) ||
+  existingRecord?.lateTime ||
+  lateTime ||
+  formatLateTimeFromDate(now);
+
+const update = {
+  $set: {
+    status: "Present",
+    lateComer: true,
+    lateTime: resolvedLateTime,
+
+    group: normalizedGroup,
+    yearOfStudy: normalizedYearOfStudy,
+
+    lecturerName: session.user.name,
+    lecturerId: session.user.id,
+
+    month,
+    year,
+
+    date: attendanceDate,
+  },
+  $setOnInsert: {
     collegeId: session.user.collegeId,
     studentId: new mongoose.Types.ObjectId(studentId),
-    date: {
-      $gte: startOfDay,
-      $lte: endOfDay,
-    },
     session: attendanceSession,
   },
-  {
-    $set: {
-      status: "Present",
-      lateComer: true,
-      lateTime: resolvedLateTime,
+};
 
-      group: normalizedGroup,
-      yearOfStudy: normalizedYearOfStudy,
+if (!existingRecord) {
+  update.$setOnInsert.markedAt = markedAt;
+} else if (!existingRecord.markedAt) {
+  update.$set.markedAt = markedAt;
+}
 
-      lecturerName: session.user.name,
-      lecturerId: session.user.id,
-
-      month,
-      year,
-
-      date: attendanceDate,
-      markedAt: new Date(),
-    },
-    $setOnInsert: {
-      collegeId: session.user.collegeId,
-      studentId: new mongoose.Types.ObjectId(studentId),
-      session: attendanceSession,
-    },
-  },
-  {
-    new: true,
-    upsert: true,
-  }
-);
+const result = await Attendance.findOneAndUpdate(attendanceFilter, update, {
+  new: true,
+  upsert: true,
+});
 
 return NextResponse.json({
   status: "success",
