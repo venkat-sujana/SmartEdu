@@ -50,7 +50,9 @@ function formatLateTimeFromDate(value) {
 }
 
 function resolveLateTime(record) {
-  return formatLateTimeFromDate(record?.markedAt) || record?.lateTime || "";
+  // Late Entry time is the actual time the student entered.
+  // It must NOT be taken from attendance markedAt.
+  return record?.lateTime || "";
 }
 
 
@@ -224,11 +226,18 @@ const existingRecord = await Attendance.findOne(attendanceFilter)
   .lean();
 
 const now = new Date();
+
+// markedAt belongs to attendance marking.
+// Never use markedAt as Late Entry time.
 const markedAt = existingRecord?.markedAt || now;
+
+// Priority:
+// 1. User-entered lateTime
+// 2. Already saved lateTime
+// 3. Current time when using "Present + Late"
 const resolvedLateTime =
-  formatLateTimeFromDate(markedAt) ||
-  existingRecord?.lateTime ||
   lateTime ||
+  existingRecord?.lateTime ||
   formatLateTimeFromDate(now);
 
 const update = {
