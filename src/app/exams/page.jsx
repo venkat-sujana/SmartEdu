@@ -24,6 +24,8 @@ const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
 
+const EXAM_TYPE_ORDER = [...UNIT_EXAMS, ...PUBLIC_EXAMS]
+
 const GENERAL_STREAMS = ['MPC', 'BIPC', 'CEC', 'HEC']
 
 const VOCATIONAL_STREAMS = ['M&AT', 'CET', 'MLT']
@@ -239,6 +241,104 @@ function getSubjectWiseStats(rows) {
           : 0,
     }))
     .sort((a, b) => a.subject.localeCompare(b.subject))
+}
+
+function SubjectWiseExamTable({ examType, rows }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-indigo-100 bg-white/80">
+      <div className="flex items-center justify-between border-b border-indigo-100 bg-indigo-50/70 px-3 py-2">
+        <h3 className="text-sm font-semibold text-indigo-900">{formatExamLabel(examType)}</h3>
+        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-indigo-700">
+          {rows.length} Subjects
+        </span>
+      </div>
+      <table className="min-w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200 bg-white/80 text-slate-600">
+            <th className="px-3 py-2 text-left font-medium">S.No</th>
+            <th className="px-3 py-2 text-left font-medium">Subject</th>
+            <th className="px-3 py-2 text-right font-medium">Appeared</th>
+            <th className="px-3 py-2 text-right font-medium">Pass</th>
+            <th className="px-3 py-2 text-right font-medium">Fail</th>
+            <th className="px-3 py-2 text-right font-medium">Absent</th>
+            <th className="px-3 py-2 text-right font-medium">Pass %</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((item, index) => (
+            <tr
+              key={item.subject}
+              className="border-b border-slate-100 text-slate-700 transition hover:bg-indigo-50/40"
+            >
+              <td className="px-3 py-2">{index + 1}</td>
+              <td className="px-3 py-2 font-medium text-slate-900">{item.subject}</td>
+              <td className="px-3 py-2 text-right">{item.appeared}</td>
+              <td className="px-3 py-2 text-right font-medium text-emerald-700">{item.pass}</td>
+              <td className="px-3 py-2 text-right font-medium text-rose-700">{item.fail}</td>
+              <td className="px-3 py-2 text-right font-medium text-amber-700">{item.absent}</td>
+              <td className="px-3 py-2 text-right font-semibold text-indigo-700">
+                {item.passPercentage.toFixed(2)}%
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function RecentExamResultsTable({ title, rows, onView }) {
+  return (
+    <section className="overflow-x-auto rounded-lg border border-slate-200 bg-white/80">
+      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
+        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+        <span className="text-xs text-slate-500">{rows.length} exams</span>
+      </div>
+      <table className="min-w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200 bg-slate-50 text-slate-600">
+            <th className="px-3 py-2 text-left font-medium">S.No</th>
+            <th className="px-3 py-2 text-left font-medium">Exam Name</th>
+            <th className="px-3 py-2 text-left font-medium">Date</th>
+            <th className="px-3 py-2 text-left font-medium">Total Students</th>
+            <th className="px-3 py-2 text-left font-medium">Pass %</th>
+            <th className="px-3 py-2 text-left font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="px-3 py-6 text-center text-sm text-slate-500">
+                No exam data available for this year.
+              </td>
+            </tr>
+          ) : (
+            rows.map((row, index) => (
+              <tr
+                key={`${row.examName}_${row.date}_${index}`}
+                className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
+              >
+                <td className="px-3 py-2">{index + 1}</td>
+                <td className="px-3 py-2 font-medium">{row.examName}</td>
+                <td className="px-3 py-2">{row.date}</td>
+                <td className="px-3 py-2">{row.totalStudents}</td>
+                <td className="px-3 py-2 font-medium text-blue-700">{row.passPercent}</td>
+                <td className="px-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() => onView(row)}
+                    className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                  >
+                    View
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </section>
+  )
 }
 
 function getStudentName(report) {
@@ -754,10 +854,30 @@ const loadReports = useCallback(async () => {
     }
   }, [filteredReports])
 
-  const subjectWiseStats = useMemo(
-    () => getSubjectWiseStats(filteredReports),
-    [filteredReports]
-  )
+  const subjectWiseStatsByExam = useMemo(() => {
+    const reportsByExam = filteredReports.reduce((groups, report) => {
+      const examType = String(report.examType || '').trim()
+      if (!examType) return groups
+
+      if (!groups.has(examType)) groups.set(examType, [])
+      groups.get(examType).push(report)
+      return groups
+    }, new Map())
+
+    return Array.from(reportsByExam.entries())
+      .sort(([firstExam], [secondExam]) => {
+        const firstIndex = EXAM_TYPE_ORDER.indexOf(firstExam)
+        const secondIndex = EXAM_TYPE_ORDER.indexOf(secondExam)
+        const firstOrder = firstIndex === -1 ? Number.MAX_SAFE_INTEGER : firstIndex
+        const secondOrder = secondIndex === -1 ? Number.MAX_SAFE_INTEGER : secondIndex
+
+        return firstOrder - secondOrder || firstExam.localeCompare(secondExam)
+      })
+      .map(([examType, examReports]) => ({
+        examType,
+        rows: getSubjectWiseStats(examReports),
+      }))
+  }, [filteredReports])
 
   const summaryCards = useMemo(
     () => [
@@ -1012,6 +1132,7 @@ const loadReports = useCallback(async () => {
       .map((row, index) => ({
         id: index + 1,
         examType: row.examName,
+        yearOfStudy: row.yearOfStudy,
         examName: row.examName
           .replace('HALFYEARLY', 'Half Yearly')
           .replace('QUARTERLY', 'Quarterly')
@@ -1027,8 +1148,28 @@ const loadReports = useCallback(async () => {
         sortDate: row.lastCreatedAt,
       }))
       .sort((a, b) => b.sortDate - a.sortDate)
-      .slice(0, 12)
   }, [filteredReports])
+
+  const recentExamRowsByYear = useMemo(() => {
+    const yearOrder = ['First Year', 'Second Year']
+    const groupedRows = recentExamRows.reduce((groups, row) => {
+      const yearOfStudy = row.yearOfStudy || 'Other Year'
+      if (!groups.has(yearOfStudy)) groups.set(yearOfStudy, [])
+      groups.get(yearOfStudy).push(row)
+      return groups
+    }, new Map())
+
+    return Array.from(groupedRows.entries())
+      .sort(([firstYear], [secondYear]) => {
+        const firstIndex = yearOrder.indexOf(firstYear)
+        const secondIndex = yearOrder.indexOf(secondYear)
+        return (firstIndex === -1 ? 99 : firstIndex) - (secondIndex === -1 ? 99 : secondIndex)
+      })
+      .map(([yearOfStudy, rows]) => ({
+        yearOfStudy,
+        rows: rows.slice(0, 12),
+      }))
+  }, [recentExamRows])
 
   const streamSidebarSections = useMemo(() => {
     const buildItems = streamCategory => {
@@ -1250,63 +1391,27 @@ const loadReports = useCallback(async () => {
             <section className="rounded-xl border border-indigo-100/70 bg-linear-to-br from-white via-indigo-50/70 to-cyan-100/50 px-4 py-4 shadow-sm">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-base font-semibold text-indigo-900">Subject-wise Pass %</h2>
+                  <h2 className="text-base font-semibold text-indigo-900">Subject-wise Pass % by Exam</h2>
                   <p className="text-xs text-slate-500">
                     Pass % = Subject Pass ÷ Subject Appeared × 100. Absent students are excluded.
                   </p>
                 </div>
                 <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-semibold text-indigo-700">
-                  {subjectWiseStats.length} Subjects
+                  {subjectWiseStatsByExam.length} Exams
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-white/80 text-slate-600">
-                      <th className="px-3 py-2 text-left font-medium">S.No</th>
-                      <th className="px-3 py-2 text-left font-medium">Subject</th>
-                      <th className="px-3 py-2 text-right font-medium">Appeared</th>
-                      <th className="px-3 py-2 text-right font-medium">Pass</th>
-                      <th className="px-3 py-2 text-right font-medium">Fail</th>
-                      <th className="px-3 py-2 text-right font-medium">Absent</th>
-                      <th className="px-3 py-2 text-right font-medium">Pass %</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {subjectWiseStats.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="px-3 py-6 text-center text-sm text-slate-500">
-                          No subject-wise exam data available.
-                        </td>
-                      </tr>
-                    ) : (
-                      subjectWiseStats.map((item, index) => (
-                        <tr
-                          key={item.subject}
-                          className="border-b border-slate-100 text-slate-700 transition hover:bg-indigo-50/40"
-                        >
-                          <td className="px-3 py-2">{index + 1}</td>
-                          <td className="px-3 py-2 font-medium text-slate-900">{item.subject}</td>
-                          <td className="px-3 py-2 text-right">{item.appeared}</td>
-                          <td className="px-3 py-2 text-right font-medium text-emerald-700">
-                            {item.pass}
-                          </td>
-                          <td className="px-3 py-2 text-right font-medium text-rose-700">
-                            {item.fail}
-                          </td>
-                          <td className="px-3 py-2 text-right font-medium text-amber-700">
-                            {item.absent}
-                          </td>
-                          <td className="px-3 py-2 text-right font-semibold text-indigo-700">
-                            {item.passPercentage.toFixed(2)}%
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              {subjectWiseStatsByExam.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-indigo-200 bg-white/70 px-3 py-6 text-center text-sm text-slate-500">
+                  No subject-wise exam data available.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 2xl:grid-cols-2">
+                  {subjectWiseStatsByExam.map(({ examType, rows }) => (
+                    <SubjectWiseExamTable key={examType} examType={examType} rows={rows} />
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -1505,62 +1610,34 @@ const loadReports = useCallback(async () => {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-600">
-                      <th className="px-3 py-2 text-left font-medium">S.No</th>
-                      <th className="px-3 py-2 text-left font-medium">Exam Name</th>
-                      <th className="px-3 py-2 text-left font-medium">Date</th>
-                      <th className="px-3 py-2 text-left font-medium">Total Students</th>
-                      <th className="px-3 py-2 text-left font-medium">Pass %</th>
-                      <th className="px-3 py-2 text-left font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {!loading && recentExamRows.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-3 py-6 text-center text-sm text-slate-500">
-                          No exam data available for selected academic year.
-                        </td>
-                      </tr>
-                    ) : (
-                      recentExamRows.map((row, idx) => (
-                        <tr
-                          key={`${row.examName}_${row.date}_${idx}`}
-                          className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
-                        >
-                          <td className="px-3 py-2">{idx + 1}</td>
-                          <td className="px-3 py-2 font-medium">{row.examName}</td>
-                          <td className="px-3 py-2">{row.date}</td>
-                          <td className="px-3 py-2">{row.totalStudents}</td>
-                          <td className="px-3 py-2 font-medium text-blue-700">{row.passPercent}</td>
-                          <td className="px-3 py-2">
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  {
-                                    setActiveSidebarKey('dashboard')
-                                    setDetailsFilter({
-                                      examType: row.examType,
-                                      date: row.date,
-                                      title: `${row.examName} - ${row.date}`,
-                                    })
-                                  }
-                                }
-                                className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-                              >
-                                View
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              {loading ? (
+                <div className="rounded-lg border border-dashed border-slate-300 bg-white/70 px-3 py-6 text-center text-sm text-slate-500">
+                  Loading exam results...
+                </div>
+              ) : recentExamRowsByYear.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-300 bg-white/70 px-3 py-6 text-center text-sm text-slate-500">
+                  No exam data available for selected academic year.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recentExamRowsByYear.map(({ yearOfStudy, rows }) => (
+                    <RecentExamResultsTable
+                      key={yearOfStudy}
+                      title={yearOfStudy}
+                      rows={rows}
+                      onView={row => {
+                        setActiveSidebarKey('dashboard')
+                        setDetailsFilter({
+                          examType: row.examType,
+                          date: row.date,
+                          yearOfStudy: row.yearOfStudy,
+                          title: `${row.yearOfStudy} - ${row.examName} - ${row.date}`,
+                        })
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </section>
           </div>
           {editExamData && (
