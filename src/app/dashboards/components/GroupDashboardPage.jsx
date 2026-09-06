@@ -14,6 +14,7 @@ import LecturerLeaveRequests from '@/components/LecturerLeaveRequests/LecturerLe
 
 const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
+const EXAM_TYPE_ORDER = [...UNIT_EXAMS, ...PUBLIC_EXAMS]
 
 const fetcher = async url => {
   const response = await fetch(url)
@@ -129,6 +130,31 @@ function getSubjectWisePassRows(reports) {
           : '0.0%',
     }))
     .sort((a, b) => a.subject.localeCompare(b.subject))
+}
+
+function getSubjectWisePassRowsByExam(reports) {
+  const reportsByExam = reports.reduce((groups, report) => {
+    const examType = String(report?.examType || '').trim()
+    if (!examType) return groups
+
+    if (!groups.has(examType)) groups.set(examType, [])
+    groups.get(examType).push(report)
+    return groups
+  }, new Map())
+
+  return Array.from(reportsByExam.entries())
+    .sort(([firstExam], [secondExam]) => {
+      const firstIndex = EXAM_TYPE_ORDER.indexOf(firstExam)
+      const secondIndex = EXAM_TYPE_ORDER.indexOf(secondExam)
+      const firstOrder = firstIndex === -1 ? Number.MAX_SAFE_INTEGER : firstIndex
+      const secondOrder = secondIndex === -1 ? Number.MAX_SAFE_INTEGER : secondIndex
+
+      return firstOrder - secondOrder || firstExam.localeCompare(secondExam)
+    })
+    .map(([examType, examReports]) => ({
+      examType,
+      rows: getSubjectWisePassRows(examReports),
+    }))
 }
 
 function SubjectWisePassTable({ rows, title }) {
@@ -392,10 +418,10 @@ const examDashboardHref =
     examReports.filter(report => report.yearOfStudy === 'Second Year'),
     secondYearEnrolled
   )
-  const firstYearSubjectWiseRows = getSubjectWisePassRows(
+  const firstYearSubjectWiseByExam = getSubjectWisePassRowsByExam(
     examReports.filter(report => report.yearOfStudy === 'First Year')
   )
-  const secondYearSubjectWiseRows = getSubjectWisePassRows(
+  const secondYearSubjectWiseByExam = getSubjectWisePassRowsByExam(
     examReports.filter(report => report.yearOfStudy === 'Second Year')
   )
 
@@ -749,6 +775,53 @@ const examDashboardHref =
   </div>
 
   {/* Subject-wise Pass % */}
+  <div className="mt-3 space-y-5">
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-sm font-black text-slate-900">First Year — Subject Pass % by Exam</h3>
+        <span className="text-[10px] text-slate-500">{firstYearSubjectWiseByExam.length} exams</span>
+      </div>
+      {firstYearSubjectWiseByExam.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
+          No subject-wise exam data available.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+          {firstYearSubjectWiseByExam.map(({ examType, rows }) => (
+            <SubjectWisePassTable
+              key={examType}
+              rows={rows}
+              title={`${formatExamLabel(examType)} — Subject Pass %`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-sm font-black text-slate-900">Second Year — Subject Pass % by Exam</h3>
+        <span className="text-[10px] text-slate-500">{secondYearSubjectWiseByExam.length} exams</span>
+      </div>
+      {secondYearSubjectWiseByExam.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-6 text-center text-sm text-slate-500">
+          No subject-wise exam data available.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+          {secondYearSubjectWiseByExam.map(({ examType, rows }) => (
+            <SubjectWisePassTable
+              key={examType}
+              rows={rows}
+              title={`${formatExamLabel(examType)} — Subject Pass %`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+
+  {/*
   <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
 
     <div className="rounded-xl border border-slate-200 p-3">
@@ -875,6 +948,7 @@ const examDashboardHref =
 
   </div>
 
+  */}
 </section>
 
           </div>
