@@ -140,7 +140,7 @@ console.log("All Students yearOfStudy values:", allStudents.map(s => s.yearOfStu
     console.log("Student Query:", studentQuery);
     const students = await Student.find(studentQuery)
       .select("name group yearOfStudy dateOfJoining")
-      .sort({ name: 1 })
+      .sort({ createdAt: 1, _id: 1 })
       .lean();
 
     console.log("Students Found:", students.length);
@@ -260,5 +260,4 @@ console.log("All Students yearOfStudy values:", allStudents.map(s => s.yearOfStu
     );
   }
 }
-
 

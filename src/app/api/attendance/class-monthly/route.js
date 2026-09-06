@@ -40,7 +40,7 @@ export async function GET(req) {
       group: normalizedGroup,
       yearOfStudy,
     })
-      .sort({ admissionNo: 1 })
+      .sort({ createdAt: 1, _id: 1 })
       .lean();
 
     if (!studentsList.length) {

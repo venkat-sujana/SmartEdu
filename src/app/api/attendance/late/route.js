@@ -89,7 +89,7 @@ export async function GET(req) {
       collegeId: session.user.collegeId,
       group: normalizedGroup,
       yearOfStudy: yearFilter,
-    }).sort({ admissionNo: 1 }).lean();
+    }).sort({ createdAt: 1, _id: 1 }).lean();
 
     // ఆ date లో attendance records
     const records = await Attendance.find({

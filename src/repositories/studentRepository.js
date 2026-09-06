@@ -9,7 +9,8 @@ export async function findStudents(filter, skip, limit) {
 
   return await Student.find(filter)
     .select(projection)
-    .sort({ createdAt: -1 })
+    // Keep admissions in registration order: oldest student first.
+    .sort({ createdAt: 1, _id: 1 })
     .skip(skip)
     .limit(limit)
     .lean({ virtuals: false })

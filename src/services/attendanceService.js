@@ -1001,6 +1001,7 @@ export async function getConsecutiveAbsentees(
     .select(
       "name admissionNo group yearOfStudy parentMobile"
     )
+    .sort({ createdAt: 1, _id: 1 })
     .lean();
 
   const result = [];

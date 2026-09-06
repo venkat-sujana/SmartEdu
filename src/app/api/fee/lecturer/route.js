@@ -26,7 +26,7 @@ export async function GET(req) {
       group,
     })
       .select("name admissionNo group yearOfStudy")
-      .sort({ name: 1 })
+      .sort({ createdAt: 1, _id: 1 })
       .lean();
 
     // Fee Records
