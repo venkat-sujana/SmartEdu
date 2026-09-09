@@ -153,6 +153,8 @@ export default function GroupStudentTable({ groupName }) {
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pdfTableWidth = 250;
+  const pdfTableMargin = (pageWidth - pdfTableWidth) / 2;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(15);
@@ -259,10 +261,14 @@ const loadImage = async url => {
       student.name || "-",
       student.fatherName || "-",
       student.mobile || "-",
+      student.parentMobile || "-",
       student.caste || "-",
       student.gender || "-",
       student.yearOfStudy || "-",
       student.admissionNo || "-",
+      normalizeDate(student.dob) || "-",
+      normalizeDate(student.dateOfJoining) || "-",
+      student.address || "-",
     ]
   );
 
@@ -275,23 +281,28 @@ const loadImage = async url => {
       "Student Name",
       "Father Name",
       "Mobile",
+      "Parent Mobile",
       "Caste",
       "Gender",
       "Year",
       "Admission No",
+      "DOB",
+      "Date of Joining",
+      "Address",
     ]],
 
     body,
 
     theme: "grid",
+    tableWidth: "wrap",
 
     styles: {
-  fontSize: 7,
-  cellPadding: 2,
-  valign: "middle",
-  halign: "center",
-  minCellHeight: 20,
-},
+      fontSize: 6,
+      cellPadding: 1.2,
+      valign: "middle",
+      halign: "center",
+      minCellHeight: 13,
+    },
 
     headStyles: {
       fillColor: [15, 23, 42],
@@ -302,26 +313,26 @@ const loadImage = async url => {
 
     columnStyles: {
       0: {
-        cellWidth: 10,
+        cellWidth: 8,
       },
 
       1: {
-  cellWidth: 22,
-  minCellHeight: 20,
-},
+        cellWidth: 14,
+        minCellHeight: 13,
+      },
 
       2: {
-        cellWidth: 42,
+        cellWidth: 28,
         halign: "left",
       },
 
       3: {
-        cellWidth: 38,
+        cellWidth: 25,
         halign: "left",
       },
 
       4: {
-        cellWidth: 27,
+        cellWidth: 20,
       },
 
       5: {
@@ -329,15 +340,32 @@ const loadImage = async url => {
       },
 
       6: {
-        cellWidth: 20,
+        cellWidth: 13,
       },
 
       7: {
-        cellWidth: 25,
+        cellWidth: 13,
       },
 
       8: {
+        cellWidth: 16,
+      },
+
+      9: {
+        cellWidth: 20,
+      },
+
+      10: {
+        cellWidth: 19,
+      },
+
+      11: {
+        cellWidth: 22,
+      },
+
+      12: {
         cellWidth: 32,
+        halign: "left",
       },
     },
 
@@ -355,7 +383,7 @@ const loadImage = async url => {
         }
 
         try {
-          const imageSize = 14;
+          const imageSize = 10;
 
           doc.addImage(
             student.photoData,
@@ -377,8 +405,8 @@ const loadImage = async url => {
     },
 
     margin: {
-      left: 6,
-      right: 6,
+      left: pdfTableMargin,
+      right: pdfTableMargin,
     },
   });
 
@@ -1092,6 +1120,4 @@ function InfoChip({ label, value }) {
     </div>
   );
 }
-
-
 

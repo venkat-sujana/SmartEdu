@@ -757,6 +757,7 @@ const loadReports = useCallback(async () => {
   }
 
   const [editExamData, setEditExamData] = useState(null)
+  const [selectedMarksReport, setSelectedMarksReport] = useState(null)
 
   const academicYearOptions = useMemo(() => {
     const options = Array.from(new Set(reports.map(r => r.academicYear).filter(Boolean))).sort(
@@ -1521,7 +1522,7 @@ const loadReports = useCallback(async () => {
                         <th className="px-3 py-2 text-left font-medium">Year</th>
                         <th className="px-3 py-2 text-left font-medium">Exam</th>
                         <th className="px-3 py-2 text-left font-medium">Date</th>
-                        <th className="px-3 py-2 text-left font-medium">Subjects</th>
+                        <th className="px-3 py-2 text-left font-medium">Subject-wise Marks</th>
                         <th className="px-3 py-2 text-left font-medium">Total</th>
                         <th className="px-3 py-2 text-left font-medium">%</th>
                         <th className="px-3 py-2 text-left font-medium">Result</th>
@@ -1552,10 +1553,14 @@ const loadReports = useCallback(async () => {
                               <td className="px-3 py-2">{row.yearOfStudy || '-'}</td>
                               <td className="px-3 py-2">{formatExamLabel(row.examType)}</td>
                               <td className="px-3 py-2">{formatDate(row.examDate)}</td>
-                              <td className="max-w-[320px] px-3 py-2 text-xs">
-                                {getSubjectEntries(row)
-                                  .map(([subject, marks]) => `${subject}: ${marks}`)
-                                  .join(', ') || '-'}
+                              <td className="px-3 py-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedMarksReport(row)}
+                                  className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
+                                >
+                                  View Marks
+                                </button>
                               </td>
                               <td className="px-3 py-2">{getSubjectTotal(row)}</td>
                               <td className="px-3 py-2 font-medium text-blue-700">
@@ -1640,6 +1645,63 @@ const loadReports = useCallback(async () => {
               )}
             </section>
           </div>
+          {selectedMarksReport && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
+              <div className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl">
+                <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-3">
+                  <div>
+                    <h2 className="text-base font-semibold text-slate-900">Subject-wise Marks</h2>
+                    <p className="mt-1 text-sm text-slate-600">{getStudentName(selectedMarksReport)}</p>
+                    <p className="text-xs text-slate-500">
+                      {formatExamLabel(selectedMarksReport.examType)} · {selectedMarksReport.yearOfStudy || '-'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMarksReport(null)}
+                    className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {getSubjectEntries(selectedMarksReport).length === 0 ? (
+                    <p className="text-sm text-slate-500">No subject marks available.</p>
+                  ) : (
+                    getSubjectEntries(selectedMarksReport).map(([subject, marks]) => {
+                      const isSubjectAbsent = isAbsentMark(marks)
+
+                      return (
+                        <span
+                          key={`${subject}-${marks}`}
+                          className={[
+                            'inline-flex items-center overflow-hidden rounded-md border text-sm shadow-sm',
+                            isSubjectAbsent
+                              ? 'border-amber-200 bg-amber-50 text-amber-800'
+                              : 'border-blue-100 bg-blue-50 text-slate-700',
+                          ].join(' ')}
+                        >
+                          <span className="px-2.5 py-1.5 font-medium">{subject}</span>
+                          <span
+                            className={[
+                              'border-l px-2.5 py-1.5 font-bold',
+                              isSubjectAbsent
+                                ? 'border-amber-200 bg-amber-100 text-amber-800'
+                                : 'border-blue-100 bg-white text-blue-700',
+                            ].join(' ')}
+                          >
+                            {marks}
+                          </span>
+                        </span>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {editExamData && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
               <div className="max-h-screen w-full max-w-xl overflow-y-auto rounded-xl">
