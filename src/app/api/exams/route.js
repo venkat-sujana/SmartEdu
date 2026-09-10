@@ -138,7 +138,7 @@ export async function GET(req) {
     }
 
     const examsQuery = Exam.find(query)
-      .populate("studentId", "name yearOfStudy status group admissionNo")
+      .populate("studentId", "name yearOfStudy status group admissionNo mobile")
       .sort({ examDate: -1, createdAt: -1 });
 
     if (limitParam > 0) {
@@ -156,6 +156,7 @@ export async function GET(req) {
         name: exam.studentId?.name || "Unknown",
         group: exam.studentId?.group || exam.stream,
         admissionNo: exam.studentId?.admissionNo || "",
+        mobile: exam.studentId?.mobile || "",
       },
     }));
 

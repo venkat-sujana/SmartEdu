@@ -4,6 +4,9 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import {
   ArrowLeft,
   ChevronDown,
@@ -25,6 +28,14 @@ const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
 
 const EXAM_TYPE_ORDER = [...UNIT_EXAMS, ...PUBLIC_EXAMS]
+
+const PDF_SUBJECT_COLUMNS = [
+  { label: 'GFC', aliases: ['GFC'] },
+  { label: 'ENG', aliases: ['ENG', 'ENGLISH'] },
+  { label: 'V1/V4', aliases: ['V1/V4'] },
+  { label: 'V2/V5', aliases: ['V2/V5'] },
+  { label: 'V3/V6', aliases: ['V3/V6'] },
+]
 
 const GENERAL_STREAMS = ['MPC', 'BIPC', 'CEC', 'HEC']
 
@@ -94,6 +105,10 @@ function getStudentKey(report) {
   return String(report?.studentId?._id || report?.studentId || report?.student?._id || report?._id || '')
 }
 
+function getStudentMobile(report) {
+  return report?.student?.mobile || report?.studentId?.mobile || '-'
+}
+
 function getDetailsFilterBadge(detailsFilter) {
   if (!detailsFilter) return null
 
@@ -149,6 +164,15 @@ function getSubjectEntries(report) {
   }
 
   return []
+}
+
+function getSubjectMarkForPdf(report, aliases) {
+  const normalizedAliases = aliases.map(alias => String(alias).replace(/\s+/g, '').toUpperCase())
+  const subjectEntry = getSubjectEntries(report).find(([subject]) =>
+    normalizedAliases.includes(String(subject || '').replace(/\s+/g, '').toUpperCase())
+  )
+
+  return subjectEntry ? String(subjectEntry[1] ?? '-') : '-'
 }
 
 function getSubjectMarks(report) {
@@ -677,6 +701,7 @@ function PublicExamCard({ item, onViewDetails }) {
 
 export default function ExamReportPage() {
   const searchParams = useSearchParams()
+  const { data: session } = useSession()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -690,6 +715,7 @@ export default function ExamReportPage() {
 
   const dashboardReturnUrl = searchParams.get('returnUrl')
 const selectedStream = normalizeStreamValue(searchParams.get('stream'))
+  const collegeName = session?.user?.collegeName || 'College'
 
 const loadReports = useCallback(async () => {
   try {
@@ -803,6 +829,84 @@ const loadReports = useCallback(async () => {
   }, [detailsFilter, filteredReports])
 
   const detailsFilterBadge = useMemo(() => getDetailsFilterBadge(detailsFilter), [detailsFilter])
+
+  const handleExportDetailsPdf = useCallback(() => {
+    if (!detailRows.length) return
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+    const reportTitle = detailsFilter?.title || 'Exam Details'
+    const academicYearLabel = academicYear === 'all' ? 'All Academic Years' : formatAcademicYearLabel(academicYear)
+    const groupLabel = Array.from(new Set(detailRows.map(getStudentGroup).filter(Boolean))).join(', ') || '-'
+    const studyYearLabel = Array.from(
+      new Set(detailRows.map(report => report.yearOfStudy).filter(Boolean))
+    ).join(', ') || '-'
+    const appearedStudents = detailRows.filter(report => !isReportAbsent(report))
+    const passCount = appearedStudents.filter(isReportPass).length
+    const passPercentage =
+      appearedStudents.length > 0 ? ((passCount / appearedStudents.length) * 100).toFixed(1) : '0.0'
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(15)
+    doc.text(collegeName, 105, 10, { align: 'center' })
+    doc.setFontSize(12)
+    doc.text('Exam Student Marks Report', 105, 16, { align: 'center' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.text(`Group: ${groupLabel} | Year: ${studyYearLabel}`, 105, 21, { align: 'center' })
+    doc.text(`${reportTitle} | ${academicYearLabel}`, 105, 26, { align: 'center' })
+
+    autoTable(doc, {
+      startY: 31,
+      head: [[
+        'S.No',
+        'Student Name',
+        'Mobile No',
+        ...PDF_SUBJECT_COLUMNS.map(column => column.label),
+        'Pass/Fail',
+      ]],
+      body: detailRows.map((report, index) => [
+        index + 1,
+        getStudentName(report),
+        getStudentMobile(report),
+        ...PDF_SUBJECT_COLUMNS.map(column => getSubjectMarkForPdf(report, column.aliases)),
+        isReportAbsent(report) ? 'Absent' : isReportPass(report) ? 'Pass' : 'Fail',
+      ]),
+      theme: 'grid',
+      styles: {
+        fontSize: 6.5,
+        cellPadding: 1.4,
+        halign: 'center',
+        valign: 'middle',
+        lineColor: [203, 213, 225],
+        lineWidth: 0.2,
+      },
+      headStyles: {
+        fillColor: [30, 64, 175],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        1: { cellWidth: 35, halign: 'left' },
+        2: { cellWidth: 24 },
+        3: { cellWidth: 13 },
+        4: { cellWidth: 13 },
+        5: { cellWidth: 13 },
+        6: { cellWidth: 13 },
+        7: { cellWidth: 13 },
+        8: { cellWidth: 18 },
+      },
+    })
+
+    const summaryStartY = (doc.lastAutoTable?.finalY || 31) + 8
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.text(`Students Appeared: ${appearedStudents.length}`, 14, summaryStartY)
+    doc.text(`Pass Percentage: ${passPercentage}%`, 14, summaryStartY + 6)
+
+    const fileName = `exam-marks-${reportTitle.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`
+    doc.save(fileName)
+  }, [academicYear, collegeName, detailRows, detailsFilter])
 
   const summaryStats = useMemo(() => {
     const uniqueExamEvents = new Set()
@@ -1503,13 +1607,24 @@ const loadReports = useCallback(async () => {
                       {academicYear !== 'all' ? ` - ${formatAcademicYearLabel(academicYear)}` : ''}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setDetailsFilter(null)}
-                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
-                  >
-                    Close
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleExportDetailsPdf}
+                      disabled={detailRows.length === 0}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Export PDF
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDetailsFilter(null)}
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
