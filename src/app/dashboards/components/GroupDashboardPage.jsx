@@ -499,7 +499,7 @@ const examDashboardHref =
 
   <HeaderActionLink
   href={`${baseDashboardHref}/consecutive-absentees`}
-  label="✕ Consecutive Absentees"
+  label="✕ Long Absentees"
   theme={theme}
 />
 

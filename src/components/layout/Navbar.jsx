@@ -1,12 +1,12 @@
 //src/components/layout/Navbar.jsx
 'use client'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import {
   CircleHelp,
   CircleUserRound,
-  GraduationCap,
   Home,
   LogOut,
   Menu,
@@ -95,9 +95,15 @@ export default function Navbar({ onOpenDrawer }) {
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
 
-            <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white">
-                <GraduationCap className="h-5 w-5" />
+            <Link href="/" aria-label="OSRA home" className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 shadow-md ring-1 ring-white/70 sm:h-12 sm:w-12">
+                <img
+                  src="/images/OSRA-LOGO.png"
+                  alt="OSRA logo"
+                  width="1254"
+                  height="1254"
+                  className="h-full w-full object-contain"
+                />
               </div>
 
               <div className="hidden sm:block">
