@@ -2,15 +2,18 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, Download } from 'lucide-react'
 import ExternalLinks from '@/components/ExternalLinks'
 import LecturerInfoCard from '@/components/dashboard/LecturerInfoCard'
 import GroupAttendanceCard from '@/components/OverallAttendanceMatrixCard/GroupAttendanceCard'
 import DashboardFooter from '@/components/layout/Footer'
 import { getGroupTheme } from '@/components/dashboard/groupTheme'
 import LecturerLeaveRequests from '@/components/LecturerLeaveRequests/LecturerLeaveRequests'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
@@ -316,6 +319,7 @@ export default function GroupDashboardPage({
  
 }) {
   const { data: session } = useSession()
+  const [isExportingSubjectWisePDF, setIsExportingSubjectWisePDF] = useState(false)
   const user = session?.user
   const theme = getGroupTheme(groupName)
   const collegeName = user?.collegeName || 'College'
@@ -442,6 +446,94 @@ const examDashboardHref =
   ]
 
   const footerAddress = [collegeDetails?.address, collegeDetails?.district].filter(Boolean).join(', ')
+
+  const exportSubjectWisePDF = () => {
+    if (isExportingSubjectWisePDF) return
+
+    setIsExportingSubjectWisePDF(true)
+
+    try {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+    const pageWidth = doc.internal.pageSize.getWidth()
+
+    // Title
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(14)
+    doc.text(collegeName, pageWidth / 2, 10, { align: 'center' })
+    doc.setFontSize(11)
+    doc.text(`${groupName} — Subject Wise Pass % Report`, pageWidth / 2, 16, { align: 'center' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.text('Pass % = Pass ÷ Appeared × 100 | Absent students excluded from pass % calculation', pageWidth / 2, 21, { align: 'center' })
+
+    let yPos = 28
+
+    const buildSection = (label, byExamData) => {
+      if (yPos > 180) {
+        doc.addPage()
+        yPos = 15
+      }
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.text(label, 14, yPos)
+      yPos += 7
+
+      byExamData.forEach(({ examType, rows }) => {
+        if (rows.length === 0) return
+
+        if (yPos > 190) {
+          doc.addPage()
+          yPos = 15
+        }
+
+        doc.setFont('helvetica', 'italic')
+        doc.setFontSize(8)
+        doc.text(formatExamLabel(examType), 14, yPos)
+        yPos += 5
+
+        const head = [['S.No', 'Subject', 'Appeared', 'Pass', 'Fail', 'Absent', 'Pass %']]
+        const body = rows.map((row, idx) => [
+          String(idx + 1),
+          row.subject,
+          String(row.appeared),
+          String(row.pass),
+          String(row.fail),
+          String(row.absent),
+          row.passPercent,
+        ])
+
+        autoTable(doc, {
+          startY: yPos,
+          head,
+          body,
+          theme: 'grid',
+          styles: { fontSize: 7, cellPadding: 1.2, halign: 'center', lineWidth: 0.1 },
+          headStyles: { fillColor: [30, 64, 175], textColor: [255, 255, 255], fontStyle: 'bold' },
+          columnStyles: {
+            0: { cellWidth: 10 },
+            1: { cellWidth: 70, halign: 'left' },
+            2: { cellWidth: 22 },
+            3: { cellWidth: 18 },
+            4: { cellWidth: 18 },
+            5: { cellWidth: 18 },
+            6: { cellWidth: 25 },
+          },
+        })
+
+        yPos = doc.lastAutoTable?.finalY + 5 || yPos + 20
+      })
+    }
+
+    buildSection('First Year — Subject Pass % by Exam', firstYearSubjectWiseByExam)
+    buildSection('Second Year — Subject Pass % by Exam', secondYearSubjectWiseByExam)
+
+    const fileName = `${groupName.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-subject-wise-pass.pdf`
+      doc.save(fileName)
+    } finally {
+      setIsExportingSubjectWisePDF(false)
+    }
+  }
 
   return (
     <div className={`min-h-screen bg-linear-to-br ${theme.shell} px-2 py-3 sm:px-3 sm:py-4 md:px-4`}>
@@ -574,7 +666,7 @@ const examDashboardHref =
   <LecturerLeaveRequests />
 </section>
         
-        <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
+        {/* <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
               <div className="mb-3 border-b border-slate-200/80 pb-2.5">
                 <h2 className="text-lg font-black text-slate-900 sm:text-xl">Fee Overview</h2>
                 
@@ -585,7 +677,7 @@ const examDashboardHref =
                   <OverviewCard key={card.title} {...card} />
                 ))}
               </div>
-            </section>
+            </section> */}
 
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-[250px_minmax(0,1fr)]">
           <div className="space-y-4">
@@ -626,15 +718,16 @@ const examDashboardHref =
       </p>
     </div>
 
-    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">
-      {examsLoading
-        ? 'Loading...'
-        : `${firstYearExamSummaryRows.length + secondYearExamSummaryRows.length} Exams`}
-    </span>
+    <Link
+      href={`${baseDashboardHref}/exam-performance`}
+      className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-slate-700"
+    >
+      View Performance
+    </Link>
   </div>
 
   {/* Exam Summary */}
-  <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+  <div className="hidden">
 
     {/* First Year */}
     <div className="overflow-hidden rounded-xl border border-slate-200">
@@ -775,7 +868,22 @@ const examDashboardHref =
   </div>
 
   {/* Subject-wise Pass % */}
-  <div className="mt-3 space-y-5">
+  <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h3 className="text-sm font-black text-slate-900">Subject-wise Pass %</h3>
+      <p className="mt-0.5 text-[11px] text-slate-500">
+        Open the complete first- and second-year report by exam.
+      </p>
+    </div>
+    <Link
+      href={`${baseDashboardHref}/subject-pass`}
+      className="inline-flex min-h-10 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+    >
+      <Download className="h-4 w-4" aria-hidden="true" />
+      View Subject Pass %
+    </Link>
+  </div>
+  <div className="hidden mt-3 space-y-5">
     <div>
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-sm font-black text-slate-900">First Year — Subject Pass % by Exam</h3>

@@ -71,7 +71,6 @@ export async function GET(req, context) {
 
 // 📌 PUT
 export async function PUT(req, context) {
-  console.log("🔄 PUT request received for student update");
   try {
   
     const { id } = await context.params;
@@ -80,10 +79,6 @@ export async function PUT(req, context) {
     if (error) return NextResponse.json({ message: error }, { status });
 
     let body = await req.json();
-
-      // 🐞 Debug logs
-    console.log("📥 Incoming body:", body);
-    console.log("📅 Raw dateOfJoining value:", body.dateOfJoining);
       // 📅 dateOfJoining ఉంటే Date object గా మార్చడం
     if (body.dateOfJoining) {
       body.dateOfJoining = new Date(body.dateOfJoining);
@@ -120,16 +115,11 @@ export async function PUT(req, context) {
     }
 
 
-    console.log("📥 Incoming body:", body);
-console.log("📅 dateOfJoining type:", typeof body.dateOfJoining, body.dateOfJoining);
-
-
     // 🖼️ ఫోటో మారితే పాత ఫోటోని Cloudinary లో డిలీట్ చేయడం
     if (body.photo && existingStudent.photo !== body.photo) {
       const publicId = getPublicIdFromUrl(existingStudent.photo);
       if (publicId) {
         try {
-          console.log("🗑️ Deleting old image with publicId:", publicId);
           await cloudinary.uploader.destroy(publicId);
         } catch (e) {
           console.error("Failed to delete old image:", e);
