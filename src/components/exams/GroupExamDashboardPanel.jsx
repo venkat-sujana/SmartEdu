@@ -3,11 +3,14 @@
 
 import { useMemo, useState } from "react";
 import useSWR from "swr";
+import { useSession } from "next-auth/react";
 import { BarChart3, ClipboardList, Medal, TrendingUp } from "lucide-react";
 import {
   isReportAbsent,
   isReportPass,
 } from "@/lib/examUtils";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const fetcher = async (url) => {
   const response = await fetch(url, { cache: "no-store" });
@@ -122,6 +125,11 @@ function StatCard({ icon: Icon, label, value, hint, tone = "slate" }) {
 export default function GroupExamDashboardPanel({ groupName }) {
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("all");
   const normalizedGroup = normalizeExamStream(groupName);
+  const { data: session } = useSession();
+  const collegeName =
+    session?.user?.collegeName ||
+    session?.user?.college?.name ||
+    "College";
 
   const { data, error, isLoading } = useSWR(
   `/api/exams?stream=${encodeURIComponent(normalizedGroup)}`,
@@ -274,6 +282,70 @@ const summary = summaryData?.summary;
       .sort((a, b) => a.percentage - b.percentage)
       .slice(0, 6);
   }, [filteredReports]);
+
+  const exportLatestResultsToPdf = () => {
+    if (!latestResults.length) return;
+
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const academicYearLabel =
+      selectedAcademicYear === "all" ? "All Academic Years" : selectedAcademicYear;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(collegeName, pageWidth / 2, 12, { align: "center" });
+
+    doc.setFontSize(14);
+    doc.text("Exam Output Dashboard - Latest Results", pageWidth / 2, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Group: ${groupName || "All Groups"} | Academic Year: ${academicYearLabel}`, pageWidth / 2, 27, {
+      align: "center",
+    });
+    doc.text(`Generated On: ${new Date().toLocaleDateString("en-CA")}`, pageWidth / 2, 32, {
+      align: "center",
+    });
+
+    autoTable(doc, {
+      startY: 38,
+      head: [["Exam", "Year", "Date", "Students", "Pass", "Fail", "Absent", "Pass %"]],
+      body: latestResults.map((row) => [
+        formatExamLabel(row.examType),
+        row.yearOfStudy,
+        row.date,
+        row.totalStudents,
+        row.passCount,
+        row.failCount,
+        row.absentCount,
+        row.passRate,
+      ]),
+      theme: "grid",
+      styles: {
+        fontSize: 8,
+        halign: "center",
+        valign: "middle",
+        lineColor: [203, 213, 225],
+        lineWidth: 0.2,
+      },
+      headStyles: {
+        fillColor: [30, 64, 175],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      columnStyles: {
+        0: { cellWidth: 48, halign: "left" },
+        1: { cellWidth: 34 },
+        2: { cellWidth: 34 },
+        3: { cellWidth: 28 },
+        4: { cellWidth: 26 },
+        5: { cellWidth: 26 },
+        6: { cellWidth: 28 },
+        7: { cellWidth: 30 },
+      },
+    });
+
+    doc.save(`latest-exam-results-${normalizeExamStream(groupName) || "group"}.pdf`);
+  };
 
   if (isLoading) {
     return (
@@ -474,10 +546,18 @@ const summary = summaryData?.summary;
               )}
             </tbody>
           </table>
-        </div>
-      </section>
+      </div>
+      <div className="flex items-center justify-end gap-3 mt-3">
+        <button
+          onClick={exportLatestResultsToPdf}
+          className="rounded-xl bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 transition duration-200 hover:bg-rose-100"
+        >
+          Export to PDF
+        </button>
+      </div>
+    </section>
 
-      <section className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 shadow-sm">
+    <section className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h4 className="text-sm font-black text-slate-900 sm:text-base">Students Needing Attention</h4>
