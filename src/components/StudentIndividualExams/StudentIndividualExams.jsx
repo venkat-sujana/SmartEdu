@@ -55,7 +55,13 @@ function computeExamStats(exam) {
     if (m < passMark) result = "Fail";
   });
 
-  if (hasAbsent) result = "Absent";
+  // Compute result: only mark as "Absent" if ALL subjects are absent;
+  // partial absence = Fail regardless of marks in attended subjects
+  if (subjectsArr.length > 0 && subjectsArr.every(({ marks }) => isAbsentMark(marks))) {
+    result = "Absent";
+  } else if (hasAbsent) {
+    result = "Fail";
+  }
 
   const percentage = maxTotal > 0 ? (obtained / maxTotal) * 100 : 0;
 

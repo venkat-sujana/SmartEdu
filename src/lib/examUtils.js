@@ -62,6 +62,9 @@ export function isReportPass(report) {
   if (isReportAbsent(report)) return false;
 
   for (const [, mark] of entries) {
+    // Any absent mark (A/AB) means the student fails overall
+    if (isAbsentMark(mark)) return false;
+
     const numericMark = Number(mark);
 
     if (!Number.isFinite(numericMark)) return false;

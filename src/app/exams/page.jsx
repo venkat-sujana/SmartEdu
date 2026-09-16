@@ -394,7 +394,8 @@ function isReportPass(report) {
 
   for (const mark of marks) {
     const numericMark = Number(mark)
-    if (Number.isNaN(numericMark)) continue
+    // Any absent mark (A/AB) means the student fails overall
+    if (Number.isNaN(numericMark)) return false
 
     if (numericMark === 0) return false
 
@@ -1626,6 +1627,39 @@ const loadReports = useCallback(async () => {
                     </button>
                   </div>
                 </div>
+
+                {/* ── Pass / Fail / Absent Summary for this filter ── */}
+                {(() => {
+                  const pCount = detailRows.filter(r => !isReportAbsent(r) && isReportPass(r)).length
+                  const fCount = detailRows.filter(r => !isReportAbsent(r) && !isReportPass(r)).length
+                  const aCount = detailRows.filter(isReportAbsent).length
+                  const appeared = pCount + fCount
+                  const passRate = appeared > 0 ? ((pCount / appeared) * 100).toFixed(1) : '0.0'
+                  return (
+                    <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                      <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">Pass</p>
+                        <p className="text-lg font-bold text-emerald-700">{pCount}</p>
+                      </div>
+                      <div className="rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-600">Fail</p>
+                        <p className="text-lg font-bold text-rose-700">{fCount}</p>
+                      </div>
+                      <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-600">Absent</p>
+                        <p className="text-lg font-bold text-amber-700">{aCount}</p>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-600">Appeared</p>
+                        <p className="text-lg font-bold text-slate-700">{appeared}</p>
+                      </div>
+                      <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-600">Pass Rate</p>
+                        <p className="text-lg font-bold text-blue-700">{passRate}%</p>
+                      </div>
+                    </div>
+                  )
+                })()}
 
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-sm">

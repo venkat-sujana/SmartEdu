@@ -8,6 +8,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 import {
   isReportAbsent,
+  isReportPass,
 } from "@/lib/examUtils";
 
 export async function GET(req) {
@@ -28,13 +29,10 @@ export async function GET(req) {
       return NextResponse.json({ success: false, message: "examType required" }, { status: 400 })
     }
 
-    // 🔹 Pass mark fix (example: < 35 fail)
-    const PASS_MARK = 35
-
     const exams = await Exam.find({ collegeId, examType }).populate("studentId", "name stream yearOfStudy")
 
     const failedStudents = exams
-      .filter((exam) => !isExamAbsent(exam) && exam.percentage < PASS_MARK)
+      .filter((exam) => !isReportAbsent(exam) && !isReportPass(exam))
       .map((exam) => ({
         name: exam.studentId?.name || "Unknown",
         stream: exam.stream,
