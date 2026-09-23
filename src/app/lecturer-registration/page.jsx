@@ -80,7 +80,7 @@ export default function LecturerRegister() {
       const data = await res.json();
 
       if (res.ok) {
-        window.location.href = "/registration-success";
+        window.location.href = "/lecturer/login";
         setForm({ name: '', email: '', password: '', collegeId: '', subject: '', collegeName: '', photo: '' });
         setPhotoFile(null);
         setPhotoPreview('');

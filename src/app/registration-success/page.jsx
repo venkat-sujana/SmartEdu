@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function RegistrationSuccessPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-100 via-emerald-100 to-teal-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-r from-green-100 via-emerald-100 to-teal-100 px-4">
       <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center border border-gray-200">
         <h1 className="text-3xl font-bold text-green-700 mb-4">🎉 Registration Successful!</h1>
         <p className="text-gray-700 mb-6">
