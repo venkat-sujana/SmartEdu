@@ -110,23 +110,63 @@ export default function ExamsForm({
       })
     : []
 
+
+
   const subjectsToRender = useMemo(() => {
-    if (!formData.stream) return []
-    if (generalStreams.includes(formData.stream)) {
-      return [
-        'Telugu/Sanskrit/Hindi',
-        'English',
-        'Maths/Botany/Civics',
-        'Maths/Zoology/History',
-        'Physics/Economics',
-        'Chemistry/Commerce',
-      ]
-    }
-    if (vocationalStreams.includes(formData.stream)) {
-      return ['GFC', 'English', 'V1/V4', 'V2/V5', 'V3/V6']
-    }
-    return []
-  }, [formData.stream])
+  if (!formData.stream) return []
+
+  // General streams - group-specific subjects
+  const generalSubjects = {
+    MPC: [
+      'Telugu/Sanskrit/Hindi',
+      'English',
+      'Maths',
+      'Physics',
+      'Chemistry',
+    ],
+
+    BIPC: [
+      'Telugu/Sanskrit/Hindi',
+      'English',
+      'Botany',
+      'Zoology',
+      'Physics',
+      'Chemistry',
+    ],
+
+    CEC: [
+      'Telugu/Sanskrit/Hindi',
+      'English',
+      'Commerce',
+      'Economics',
+      'Civics',
+    ],
+
+    HEC: [
+      'Telugu/Sanskrit/Hindi',
+      'English',
+      'History',
+      'Economics',
+      'Civics',
+    ],
+  }
+
+  // General stream
+  if (generalStreams.includes(formData.stream)) {
+    return generalSubjects[formData.stream] || []
+  }
+
+  // Vocational streams - keep existing subjects unchanged
+  if (vocationalStreams.includes(formData.stream)) {
+    return ['GFC', 'English', 'V1/V4', 'V2/V5', 'V3/V6']
+  }
+
+  return []
+}, [formData.stream])
+
+
+
+
 
   useEffect(() => {
     setBulkMarks({})

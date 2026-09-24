@@ -330,9 +330,9 @@ export default function PrincipalDashboard() {
           </Card>
         </section>
 
-        <GroupPerformanceCard groups={groupPerformance || []} />
+        {/* <GroupPerformanceCard groups={groupPerformance || []} /> */}
 
-        <section>
+        {/* <section>
           <div className="grid grid-cols-1 gap-4 py-4 lg:grid-cols-2">
             <AttendanceHealthScoreCard
               attendancePercentage={todayAttendancePercentage}
@@ -354,7 +354,7 @@ export default function PrincipalDashboard() {
             />
             <AttendanceAlertsCard alerts={attendanceAlerts} />
           </div>
-        </section>
+        </section> */}
 
         <section className="space-y-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -417,30 +417,30 @@ export default function PrincipalDashboard() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        {/* <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
           <GroupDashboard />
-        </section>
+        </section> */}
 
-        <section className="space-y-6 p-2">
+        {/* <section className="space-y-6 p-2">
           <ConsecutiveAbsenteesCard
             data={consecutiveAbsentees}
             title="Students At Risk"
             loading={!consecutiveData}
             showViewAll={true}
           />
-        </section>
+        </section> */}
 
         <ActiveLecturersCard title="Currently Active Lecturers" />
 
-        <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-2xl transition-all duration-500">
+        {/* <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-2xl transition-all duration-500">
           <AnalyticsDashboard
             stats={analyticsStats}
             loading={analyticsLoading}
             error={analyticsError}
           />
-        </section>
+        </section> */}
 
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        {/* <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           <Card className="group hover:shadow-3xl rounded-3xl border-emerald-200/50 bg-linear-to-br from-emerald-50/90 via-white to-teal-50 shadow-2xl backdrop-blur-sm transition-all duration-500 hover:-translate-y-1">
             <CardContent className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <div className="flex items-start gap-5">
@@ -470,11 +470,11 @@ export default function PrincipalDashboard() {
               </Link>
             </CardContent>
           </Card>
-        </section>
+        </section> */}
 
-        <AttendanceSmsCard />
-        <AttendanceSmsHistoryCard endpoint="/api/attendance/shortage-summary/sms-logs?limit=8" />
-        <PromotionCard />
+        {/* <AttendanceSmsCard /> */}
+        {/* <AttendanceSmsHistoryCard endpoint="/api/attendance/shortage-summary/sms-logs?limit=8" /> */}
+        {/* <PromotionCard /> */}
 
         <footer className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col items-center justify-between gap-4 px-6 py-5 md:flex-row">
