@@ -1,5 +1,5 @@
+//src/app/assignments/page.jsx
 "use client";
-
 import { useEffect, useState } from "react";
 import { getSubjectsForStream } from "@/utils/examSubjects";
 import { useSession } from "next-auth/react";
@@ -818,136 +818,197 @@ export default function AssignmentsPage() {
 
             {/* Assignment Marks Table */}
 
-            {students.length === 0 ? (
-              <div className="text-center text-sm text-gray-500 py-8">
-                No students found for the selected year and group.
-              </div>
-            ) : (
-              <div className="w-full overflow-x-auto rounded-lg border border-gray-200">
+            {/* Assignment Marks Table */}
 
-                <table className="min-w-[1120px] w-full text-xs sm:text-sm border-collapse">
+{students.length === 0 ? (
+  <div className="text-center text-sm text-gray-500 py-8">
+    No students found for the selected year and group.
+  </div>
+) : (
+  <>
+    {/* =====================================================
+        MOBILE VIEW
+    ====================================================== */}
 
-                  <thead>
-                    <tr className="bg-gray-50 border-b">
+    <div className="md:hidden space-y-4">
 
-                      <th className="sticky left-0 z-20 bg-gray-50 text-left px-2 sm:px-3 py-3 whitespace-nowrap">
-                        S.No
-                      </th>
+      {students.map((student, studentIndex) => (
+        <div
+          key={student._id}
+          className="border border-gray-200 rounded-xl bg-white p-3 shadow-sm"
+        >
 
-                      <th className="sticky left-[45px] z-20 bg-gray-50 text-left px-2 sm:px-3 py-3 min-w-[220px] sm:min-w-[260px] whitespace-nowrap">
-                        Student Name
-                      </th>
+          {/* Student Header */}
 
-                      {Array.from(
-                        { length: 10 },
-                        (_, index) =>
-                          index + 1
-                      ).map(
-                        (number) => (
-                          <th
-                            key={number}
-                            className="text-center px-2 py-3 min-w-20 sm:min-w-[90px] whitespace-nowrap"
-                          >
-                            A{number}
-                          </th>
-                        )
-                      )}
+          <div className="flex items-center gap-3 mb-3 pb-3 border-b">
+            <div className="shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-semibold">
+              {studentIndex + 1}
+            </div>
 
-                    </tr>
-                  </thead>
+            <div className="min-w-0">
+              <p className="font-semibold text-sm text-gray-900 truncate">
+                {student.name}
+              </p>
 
-                  <tbody>
+              {student.admissionNo && (
+                <p className="text-xs text-gray-500">
+                  Admission No: {student.admissionNo}
+                </p>
+              )}
+            </div>
+          </div>
 
-                    {students.map(
-                      (
-                        student,
-                        index
-                      ) => (
-                        <tr
-                          key={student._id}
-                          className="border-b last:border-b-0 hover:bg-gray-50"
-                        >
+          {/* Assignment Marks */}
 
-                          <td className="sticky left-0 z-10 bg-white px-2 sm:px-3 py-2.5 sm:py-3 whitespace-nowrap">
-                            {index + 1}
-                          </td>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
 
-                          <td className="sticky left-[45px] z-10 bg-white px-2 sm:px-3 py-2.5 sm:py-3 font-medium min-w-[220px] sm:min-w-[260px] whitespace-nowrap">
-                            {student.name}
-                          </td>
+            {Array.from(
+              { length: 10 },
+              (_, index) => index + 1
+            ).map((number) => (
+              <div
+                key={number}
+                className="border border-gray-200 rounded-lg p-2 bg-gray-50"
+              >
 
-                          {Array.from(
-                            {
-                              length: 10,
-                            },
-                            (
-                              _,
-                              index
-                            ) =>
-                              index + 1
-                          ).map(
-                            (number) => (
-                              <td
-                                key={
-                                  number
-                                }
-                                className="px-2 py-2 text-center"
-                              >
-                                <input
-                                  type="number"
-                                  min="0"
-                                  max="10"
-                                  step="0.5"
-                                  inputMode="decimal"
-                                  aria-label={`${student.name} Assignment ${number}`}
-                                  className="w-[68px] sm:w-20 h-9 sm:h-10 border border-gray-300 rounded-lg px-1 sm:px-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  value={
-                                    marks[
-                                      student
-                                        ._id
-                                    ]?.[
-                                      `assignment${number}`
-                                    ] ??
-                                    ""
-                                  }
-                                  onChange={(
-                                    e
-                                  ) => {
-                                    setMarks(
-                                      (
-                                        prev
-                                      ) => ({
-                                        ...prev,
-                                        [student._id]:
-                                          {
-                                            ...prev[
-                                              student
-                                                ._id
-                                            ],
-                                            [`assignment${number}`]:
-                                              e
-                                                .target
-                                                .value,
-                                          },
-                                      })
-                                    );
-                                  }}
-                                />
-                              </td>
-                            )
-                          )}
+                <label className="block text-[11px] font-semibold text-gray-600 mb-1 text-center">
+                  A{number}
+                </label>
 
-                        </tr>
-                      )
-                    )}
-
-                  </tbody>
-
-                </table>
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.5"
+                  inputMode="decimal"
+                  aria-label={`${student.name} Assignment ${number}`}
+                  className="w-full h-9 border border-gray-300 rounded-md px-1 text-center text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={
+                    marks[student._id]?.[
+                      `assignment${number}`
+                    ] ?? ""
+                  }
+                  onChange={(e) => {
+                    setMarks((prev) => ({
+                      ...prev,
+                      [student._id]: {
+                        ...prev[student._id],
+                        [`assignment${number}`]:
+                          e.target.value,
+                      },
+                    }));
+                  }}
+                />
 
               </div>
-            )}
+            ))}
 
+          </div>
+
+        </div>
+      ))}
+    </div>
+
+
+    {/* =====================================================
+        DESKTOP VIEW
+    ====================================================== */}
+
+    <div className="hidden md:block w-full overflow-x-auto rounded-lg border border-gray-200">
+
+      <table className="w-full text-sm border-collapse">
+
+        <thead>
+          <tr className="bg-gray-50 border-b">
+
+            <th className="w-[55px] text-left px-3 py-3 whitespace-nowrap">
+              S.No
+            </th>
+
+            <th className="text-left px-3 py-3 min-w-60 whitespace-nowrap">
+              Student Name
+            </th>
+
+            {Array.from(
+              { length: 10 },
+              (_, index) => index + 1
+            ).map((number) => (
+              <th
+                key={number}
+                className="text-center px-2 py-3 min-w-[85px] whitespace-nowrap"
+              >
+                A{number}
+              </th>
+            ))}
+
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {students.map(
+            (student, index) => (
+              <tr
+                key={student._id}
+                className="border-b last:border-b-0 hover:bg-gray-50"
+              >
+
+                <td className="px-3 py-3 whitespace-nowrap">
+                  {index + 1}
+                </td>
+
+                <td className="px-3 py-3 font-medium whitespace-nowrap">
+                  {student.name}
+                </td>
+
+                {Array.from(
+                  { length: 10 },
+                  (_, index) => index + 1
+                ).map((number) => (
+                  <td
+                    key={number}
+                    className="px-2 py-2 text-center"
+                  >
+
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
+                      inputMode="decimal"
+                      aria-label={`${student.name} Assignment ${number}`}
+                      className="w-20 h-10 border border-gray-300 rounded-lg px-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={
+                        marks[student._id]?.[
+                          `assignment${number}`
+                        ] ?? ""
+                      }
+                      onChange={(e) => {
+                        setMarks((prev) => ({
+                          ...prev,
+                          [student._id]: {
+                            ...prev[student._id],
+                            [`assignment${number}`]:
+                              e.target.value,
+                          },
+                        }));
+                      }}
+                    />
+
+                  </td>
+                ))}
+
+              </tr>
+            )
+          )}
+
+        </tbody>
+
+      </table>
+
+    </div>
+  </>
+)}
             {/* Action Buttons */}
 
             {students.length > 0 && (
