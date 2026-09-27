@@ -572,6 +572,12 @@ const examDashboardHref =
   />
 
   <HeaderActionLink
+  href="/assignments"
+  label="📝 Assignment Marks"
+  theme={theme}
+/>
+
+  <HeaderActionLink
     href={examDashboardHref}
     label="📝Exam Dashboard"
     theme={theme}

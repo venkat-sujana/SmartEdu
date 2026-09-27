@@ -1,7 +1,6 @@
-// This is a client-side rendered component for entering exam marks, supporting both single and bulk entry modes. --- IGNORE ---
+
 //src/components/exams/ExamsForm.jsx
 'use client'
-
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeft,
@@ -14,10 +13,17 @@ import {
   School,
   Rows3,
 } from 'lucide-react'
+
 import Link from 'next/link'
 
-const generalStreams = ['MPC', 'BIPC', 'CEC', 'HEC']
-const vocationalStreams = ['M&AT', 'CET', 'MLT']
+import {
+  GENERAL_STREAMS,
+  VOCATIONAL_STREAMS,
+  getSubjectsForStream,
+} from '@/utils/examSubjects'
+
+const generalStreams = GENERAL_STREAMS
+const vocationalStreams = VOCATIONAL_STREAMS
 
 function normalizeGroup(value) {
   return String(value || '')
@@ -111,57 +117,8 @@ export default function ExamsForm({
     : []
 
 
-
-  const subjectsToRender = useMemo(() => {
-  if (!formData.stream) return []
-
-  // General streams - group-specific subjects
-  const generalSubjects = {
-    MPC: [
-      'Telugu/Sanskrit/Hindi',
-      'English',
-      'Maths',
-      'Physics',
-      'Chemistry',
-    ],
-
-    BIPC: [
-      'Telugu/Sanskrit/Hindi',
-      'English',
-      'Botany',
-      'Zoology',
-      'Physics',
-      'Chemistry',
-    ],
-
-    CEC: [
-      'Telugu/Sanskrit/Hindi',
-      'English',
-      'Commerce',
-      'Economics',
-      'Civics',
-    ],
-
-    HEC: [
-      'Telugu/Sanskrit/Hindi',
-      'English',
-      'History',
-      'Economics',
-      'Civics',
-    ],
-  }
-
-  // General stream
-  if (generalStreams.includes(formData.stream)) {
-    return generalSubjects[formData.stream] || []
-  }
-
-  // Vocational streams - keep existing subjects unchanged
-  if (vocationalStreams.includes(formData.stream)) {
-    return ['GFC', 'English', 'V1/V4', 'V2/V5', 'V3/V6']
-  }
-
-  return []
+const subjectsToRender = useMemo(() => {
+  return getSubjectsForStream(formData.stream)
 }, [formData.stream])
 
 

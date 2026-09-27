@@ -23,6 +23,12 @@ import {
 } from 'lucide-react'
 import EditExamForm from '../edit-exam-form/page'
 
+
+import {
+  GENERAL_STREAMS,
+  VOCATIONAL_STREAMS,
+} from '@/utils/examSubjects'
+
 const UNIT_EXAMS = ['UNIT-1', 'UNIT-2', 'UNIT-3', 'UNIT-4']
 
 const PUBLIC_EXAMS = ['QUARTERLY', 'HALFYEARLY', 'PRE-PUBLIC-1', 'PRE-PUBLIC-2']
@@ -37,9 +43,7 @@ const PDF_SUBJECT_COLUMNS = [
   { label: 'V3/V6', aliases: ['V3/V6'] },
 ]
 
-const GENERAL_STREAMS = ['MPC', 'BIPC', 'CEC', 'HEC']
 
-const VOCATIONAL_STREAMS = ['M&AT', 'CET', 'MLT']
 
 function isUnitExam(examType) {
   return UNIT_EXAMS.includes(examType)

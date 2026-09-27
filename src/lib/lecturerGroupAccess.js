@@ -1,7 +1,8 @@
 export function getLecturerGroupFromSubject(subject) {
   switch (subject) {
     case "MandAT":
-      return "M&AT";
+case "M&AT":
+  return "M&AT";
     case "CET":
       return "CET";
     case "MLT":
@@ -30,6 +31,34 @@ export function canLecturerAccessGroup(session, groupName) {
     return true;
   }
 
-  const allowedGroup = getLecturerGroupFromSubject(session?.user?.subject);
-  return allowedGroup === groupName;
+  const allowedGroup = getLecturerGroupFromSubject(
+    session?.user?.subject
+  );
+
+  const normalizeGroup = (value) => {
+    if (!value) return "";
+
+    const normalized = String(value)
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "");
+
+    if (
+      normalized === "M&AT" ||
+      normalized === "MANDAT"
+    ) {
+      return "M&AT";
+    }
+
+    if (normalized === "BIPC") {
+      return "BiPC";
+    }
+
+    return String(value).trim();
+  };
+
+  return (
+    normalizeGroup(allowedGroup) ===
+    normalizeGroup(groupName)
+  );
 }
