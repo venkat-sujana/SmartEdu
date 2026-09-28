@@ -386,10 +386,12 @@ export default function AssignmentsPage() {
       doc.setFont(undefined, "bold");
 
       doc.text(
+
         session?.user?.collegeName ||
-          "College Name",
+          "S.K.R GOVERNMENT JUNIOR COLLEGE-GUDUR",
         pageWidth / 2,
         15,
+        
         {
           align: "center",
         }
@@ -537,6 +539,27 @@ export default function AssignmentsPage() {
 
         showHead: "everyPage",
       });
+
+
+      const finalY = doc.lastAutoTable.finalY;
+
+doc.setFontSize(9);
+doc.setFont(undefined, "bold");
+
+doc.text(
+  "Principal Signature",
+  25,
+  finalY + 20
+);
+
+doc.text(
+  "Lecturer Signature",
+  pageWidth - 25,
+  finalY + 20,
+  {
+    align: "right",
+  }
+);
 
       const safeSubject =
         subject.replace(

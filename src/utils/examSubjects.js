@@ -40,12 +40,21 @@ export const GENERAL_STREAM_SUBJECTS = {
 export function getSubjectsForStream(stream) {
   if (!stream) return [];
 
-  if (GENERAL_STREAMS.includes(stream)) {
-    return GENERAL_STREAM_SUBJECTS[stream] || [];
+  const normalizedStream =
+    stream === "BiPC" ? "BIPC" : stream;
+
+  if (GENERAL_STREAMS.includes(normalizedStream)) {
+    return GENERAL_STREAM_SUBJECTS[normalizedStream] || [];
   }
 
   if (VOCATIONAL_STREAMS.includes(stream)) {
-    return ["GFC", "English", "V1/V4", "V2/V5", "V3/V6"];
+    return [
+      "GFC",
+      "English",
+      "V1/V4",
+      "V2/V5",
+      "V3/V6",
+    ];
   }
 
   return [];
