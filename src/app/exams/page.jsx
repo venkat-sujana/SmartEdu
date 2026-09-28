@@ -43,6 +43,26 @@ const PDF_SUBJECT_COLUMNS = [
   { label: 'V3/V6', aliases: ['V3/V6'] },
 ]
 
+function getPdfSubjectColumns(stream) {
+  const normalizedStream = normalizeStreamValue(stream)
+
+  if (GENERAL_STREAMS.includes(normalizedStream)) {
+    const subjects = {
+      MPC: ['Telugu/Sanskrit/Hindi', 'English', 'Maths', 'Physics', 'Chemistry'],
+      BIPC: ['Telugu/Sanskrit/Hindi', 'English', 'Botany', 'Zoology', 'Physics', 'Chemistry'],
+      CEC: ['Telugu/Sanskrit/Hindi', 'English', 'Commerce', 'Economics', 'Civics'],
+      HEC: ['Telugu/Sanskrit/Hindi', 'English', 'History', 'Economics', 'Civics'],
+    }
+
+    return (subjects[normalizedStream] || []).map(subject => ({
+      label: subject,
+      aliases: [subject, subject.toUpperCase()],
+    }))
+  }
+
+  return PDF_SUBJECT_COLUMNS
+}
+
 
 
 function isUnitExam(examType) {
@@ -601,7 +621,7 @@ function SummaryCard({
   return (
     <article
       className={[
-        'rounded-lg border bg-linear-to-br px-4 py-3 shadow-sm transition hover:-translate-y-0.5',
+        'rounded-xl border bg-linear-to-br px-3.5 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
         borderClassName,
         gradientClassName,
       ].join(' ')}
@@ -612,7 +632,9 @@ function SummaryCard({
           <Icon className={['h-4 w-4', iconClassName].join(' ')} />
         </span>
       </div>
-      <p className="mt-2 text-2xl font-semibold text-slate-900">{value}</p>
+      <p className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">
+  {value}
+</p>
       <p className="mt-1 text-xs text-slate-500">{hint}</p>
     </article>
   )
@@ -842,13 +864,56 @@ const loadReports = useCallback(async () => {
     const reportTitle = detailsFilter?.title || 'Exam Details'
     const academicYearLabel = academicYear === 'all' ? 'All Academic Years' : formatAcademicYearLabel(academicYear)
     const groupLabel = Array.from(new Set(detailRows.map(getStudentGroup).filter(Boolean))).join(', ') || '-'
+
+    const pdfStream = normalizeStreamValue(
+      selectedStream || detailsFilter?.group || getStudentGroup(detailRows[0])
+    )
+    
+    const pdfGeneralSubjects = {
+  MPC: [
+    { label: 'Telugu/Sanskrit/Hindi', aliases: ['Telugu/Sanskrit/Hindi'] },
+    { label: 'English', aliases: ['English', 'ENG'] },
+    { label: 'Maths', aliases: ['Maths'] },
+    { label: 'Physics', aliases: ['Physics'] },
+    { label: 'Chemistry', aliases: ['Chemistry'] },
+  ],
+  BIPC: [
+    { label: 'Telugu/Sanskrit/Hindi', aliases: ['Telugu/Sanskrit/Hindi'] },
+    { label: 'English', aliases: ['English', 'ENG'] },
+    { label: 'Botany', aliases: ['Botany'] },
+    { label: 'Zoology', aliases: ['Zoology'] },
+    { label: 'Physics', aliases: ['Physics'] },
+    { label: 'Chemistry', aliases: ['Chemistry'] },
+  ],
+  CEC: [
+    { label: 'Telugu/Sanskrit/Hindi', aliases: ['Telugu/Sanskrit/Hindi'] },
+    { label: 'English', aliases: ['English', 'ENG'] },
+    { label: 'Commerce', aliases: ['Commerce'] },
+    { label: 'Economics', aliases: ['Economics'] },
+    { label: 'Civics', aliases: ['Civics'] },
+  ],
+  HEC: [
+    { label: 'Telugu/Sanskrit/Hindi', aliases: ['Telugu/Sanskrit/Hindi'] },
+    { label: 'English', aliases: ['English', 'ENG'] },
+    { label: 'History', aliases: ['History'] },
+    { label: 'Economics', aliases: ['Economics'] },
+    { label: 'Civics', aliases: ['Civics'] },
+  ],
+}
+
+const pdfSubjectColumns =
+  pdfGeneralSubjects[pdfStream] || PDF_SUBJECT_COLUMNS
+
     const studyYearLabel = Array.from(
       new Set(detailRows.map(report => report.yearOfStudy).filter(Boolean))
     ).join(', ') || '-'
+
     const appearedStudents = detailRows.filter(report => !isReportAbsent(report))
     const passCount = appearedStudents.filter(isReportPass).length
     const passPercentage =
       appearedStudents.length > 0 ? ((passCount / appearedStudents.length) * 100).toFixed(1) : '0.0'
+
+    const failCount = appearedStudents.length - passCount
 
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(15)
@@ -866,14 +931,14 @@ const loadReports = useCallback(async () => {
         'S.No',
         'Student Name',
         'Mobile No',
-        ...PDF_SUBJECT_COLUMNS.map(column => column.label),
+        ...pdfSubjectColumns.map(column => column.label),
         'Pass/Fail',
       ]],
       body: detailRows.map((report, index) => [
         index + 1,
         getStudentName(report),
         getStudentMobile(report),
-        ...PDF_SUBJECT_COLUMNS.map(column => getSubjectMarkForPdf(report, column.aliases)),
+        ...pdfSubjectColumns.map(column => getSubjectMarkForPdf(report, column.aliases)),
         isReportAbsent(report) ? 'Absent' : isReportPass(report) ? 'Pass' : 'Fail',
       ]),
       theme: 'grid',
@@ -890,28 +955,66 @@ const loadReports = useCallback(async () => {
         textColor: [255, 255, 255],
         fontStyle: 'bold',
       },
+
       columnStyles: {
-        0: { cellWidth: 10 },
-        1: { cellWidth: 35, halign: 'left' },
-        2: { cellWidth: 24 },
-        3: { cellWidth: 13 },
-        4: { cellWidth: 13 },
-        5: { cellWidth: 13 },
-        6: { cellWidth: 13 },
-        7: { cellWidth: 13 },
-        8: { cellWidth: 18 },
-      },
+  0: { cellWidth: 10 },
+  1: { cellWidth: 35, halign: 'left' },
+  2: { cellWidth: 24 },
+
+  ...Object.fromEntries(
+    pdfSubjectColumns.map((_, index) => [
+      index + 3,
+      { cellWidth: 13 },
+    ])
+  ),
+
+  [pdfSubjectColumns.length + 3]: {
+    cellWidth: 18,
+  },
+},
     })
 
     const summaryStartY = (doc.lastAutoTable?.finalY || 31) + 8
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
-    doc.text(`Students Appeared: ${appearedStudents.length}`, 14, summaryStartY)
-    doc.text(`Pass Percentage: ${passPercentage}%`, 14, summaryStartY + 6)
 
-    const fileName = `exam-marks-${reportTitle.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`
+doc.setFont('helvetica', 'bold')
+doc.setFontSize(9)
+
+doc.text(
+  `Students Appeared: ${appearedStudents.length}`,
+  14,
+  summaryStartY
+)
+
+doc.text(
+  `Pass: ${passCount}`,
+  14,
+  summaryStartY + 6
+)
+
+doc.text(
+  `Fail: ${failCount}`,
+  14,
+  summaryStartY + 12
+)
+
+doc.text(
+  `Pass Percentage: ${passPercentage}%`,
+  14,
+  summaryStartY + 18
+)
+
+const fileName = `exam-marks-${reportTitle.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`
+
+const signatureY = summaryStartY + 32
+
+doc.setFont('helvetica', 'normal')
+doc.setFontSize(9)
+
+doc.text('Principal Signature', 14, signatureY)
+doc.text('Lecturer Signature', 196, signatureY, { align: 'right' })
+
     doc.save(fileName)
-  }, [academicYear, collegeName, detailRows, detailsFilter])
+  }, [academicYear, collegeName, detailRows, detailsFilter, selectedStream])
 
   const summaryStats = useMemo(() => {
     const uniqueExamEvents = new Set()
@@ -1367,7 +1470,7 @@ const loadReports = useCallback(async () => {
   const contentPadding = isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
 
   return (
-    <div className="h-screen overflow-hidden bg-linear-to-br from-sky-100 via-slate-100 to-cyan-100">
+    <div className="min-h-screen bg-slate-100">
       <Sidebar
         collapsed={isSidebarCollapsed}
         mobileOpen={isMobileSidebarOpen}
@@ -1382,8 +1485,8 @@ const loadReports = useCallback(async () => {
       <div
         className={[contentPadding, 'flex h-full flex-col mt-10 transition-all duration-300'].join(' ')}
       >
-        <header className="sticky top-0 z-20 border-b border-white/60 bg-linear-to-r from-white via-sky-50 to-cyan-50 px-4 py-3 shadow-sm backdrop-blur">
-          <div className="flex flex-wrap items-center gap-3">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <button
               type="button"
               className="rounded-lg border border-slate-200 p-2 text-slate-600 lg:hidden"
@@ -1393,8 +1496,20 @@ const loadReports = useCallback(async () => {
               <Menu className="h-5 w-5" />
             </button>
 
-            <div className="min-w-[220px]">
-              
+            <div className="w-full sm:w-auto sm:min-w-[220px] lg:w-[220px]">
+              <div className="min-w-0 flex-1">
+  <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+    {collegeName}
+  </p>
+
+  <h1 className="text-lg font-bold text-slate-900 sm:text-xl">
+    Exam Dashboard
+  </h1>
+
+  <p className="hidden text-xs text-slate-500 sm:block">
+    Examination performance & results overview
+  </p>
+</div>
               <select
                 value={academicYear}
                 onChange={e => {
@@ -1410,7 +1525,9 @@ const loadReports = useCallback(async () => {
                 ))}
               </select>
             </div>
-            <div>
+
+            
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
               {dashboardReturnUrl ? (
                 <Link
                   href={dashboardReturnUrl}
@@ -1428,7 +1545,7 @@ const loadReports = useCallback(async () => {
                     ? `/exams-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
                     : '/exams-form'
                 }
-                className="mr-2 inline-flex rounded-lg bg-linear-to-r from-blue-600 to-cyan-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:from-blue-700 hover:to-cyan-700"
+                className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
               >
                 Marks Post Here
               </Link>
@@ -1438,7 +1555,7 @@ const loadReports = useCallback(async () => {
                     ? `/register?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
                     : '/register'
                 }
-                className="mr-2 inline-flex rounded-lg border border-emerald-300 bg-linear-to-r from-white to-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 shadow-sm transition hover:from-emerald-50 hover:to-emerald-100"
+                className="inline-flex items-center justify-center rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-medium text-emerald-700 shadow-sm transition hover:bg-emerald-50"
               >
                 Add Student
               </Link>
@@ -1448,7 +1565,7 @@ const loadReports = useCallback(async () => {
                     ? `/attendance-form?returnUrl=${encodeURIComponent(dashboardReturnUrl)}`
                     : '/attendance-form'
                 }
-                className="mr-2 inline-flex rounded-lg border border-indigo-300 bg-linear-to-r from-white to-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm transition hover:from-indigo-50 hover:to-indigo-100"
+                className="inline-flex items-center justify-center rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm font-medium text-indigo-700 shadow-sm transition hover:bg-indigo-50"
               >
                 Mark Attendance
               </Link>
@@ -1487,16 +1604,19 @@ const loadReports = useCallback(async () => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 py-4">
+        <main className="flex-1 overflow-y-auto px-3 py-4 sm:px-4 lg:px-6 lg:py-5">
           <div className="space-y-5">
             <section>
-              <h2 className="mb-3 text-base font-semibold text-slate-900">Exam Summary</h2>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-                {summaryCards.map(card => (
-                  <SummaryCard key={card.title} {...card} />
-                ))}
-              </div>
-            </section>
+  <h2 className="mb-3 text-base font-semibold text-slate-900">
+    Exam Summary
+  </h2>
+
+  <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    {summaryCards.map(card => (
+      <SummaryCard key={card.title} {...card} />
+    ))}
+  </div>
+</section>
 
             <section className="rounded-xl border border-indigo-100/70 bg-linear-to-br from-white via-indigo-50/70 to-cyan-100/50 px-4 py-4 shadow-sm">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -1516,7 +1636,7 @@ const loadReports = useCallback(async () => {
                   No subject-wise exam data available.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 2xl:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   {subjectWiseStatsByExam.map(({ examType, rows }) => (
                     <SubjectWiseExamTable key={examType} examType={examType} rows={rows} />
                   ))}
@@ -1569,7 +1689,7 @@ const loadReports = useCallback(async () => {
                   View All Units
                 </button>
               </div>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {unitPerformance.map(item => (
                   <UnitCard key={item.unit} item={item} onViewDetails={setDetailsFilter} />
                 ))}
@@ -1578,7 +1698,7 @@ const loadReports = useCallback(async () => {
 
             <section className="rounded-xl border border-violet-100/70 bg-linear-to-br from-white/70 via-violet-50/80 to-cyan-100/50 px-3 py-3 shadow-sm">
               <h2 className="mb-3 text-base font-semibold text-violet-900">Public Exams</h2>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {publicExamCards.map(item => (
                   <PublicExamCard key={item.name} item={item} onViewDetails={setDetailsFilter} />
                 ))}
