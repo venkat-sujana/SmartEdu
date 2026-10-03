@@ -229,6 +229,16 @@ export default function RegisterPage() {
     ? derivedSecondYearJoiningDate
     : formData.dateOfJoining
 
+  useEffect(() => {
+    if (!isSecondYear) return
+
+    setFormData(prev => {
+      if (!prev.admissionNo && !prev.dateOfJoining) return prev
+
+      return { ...prev, admissionNo: '', dateOfJoining: '' }
+    })
+  }, [isSecondYear])
+
   const handleChange = e => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
@@ -283,7 +293,7 @@ export default function RegisterPage() {
     form.append('fatherName', formData.fatherName)
     form.append('mobile', formData.mobile)
     form.append('parentMobile', formData.parentMobile)
-    form.append('admissionNo', formData.admissionNo)
+    form.append('admissionNo', isSecondYear ? '' : formData.admissionNo)
     form.append('group', formData.group)
     form.append('caste', formData.caste)
     form.append('gender', formData.gender)
@@ -573,12 +583,19 @@ export default function RegisterPage() {
                     value={formData.admissionNo}
                     onChange={handleChange}
                     placeholder="e.g., 24MPC018"
-                    className={modernInputClass}
+                    disabled={isSecondYear}
+                    className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
                     required={!isSecondYear}
                   />
-                  <p className="mt-1.5 text-xs font-medium text-slate-500">
-                    For second-year students this can stay empty until the office confirms the original admission number.
-                  </p>
+                  {isSecondYear ? (
+                    <p className="mt-1.5 text-xs font-medium text-slate-500">
+                      Admission number applies only to first-year students.
+                    </p>
+                  ) : (
+                    <p className="mt-1.5 text-xs font-medium text-slate-500">
+                      Enter the admission number issued by the college.
+                    </p>
+                  )}
                 </div>
 
                 <div>
