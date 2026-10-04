@@ -161,7 +161,7 @@ export default function AttendanceForm({ defaultGroup = '', returnUrl = '/lectur
       console.error('Failed to fetch students:', error)
       setStudents([])
     }
-  }, [formState.selectedGroup, collegeId])
+  }, [collegeId, formState])
 
   // Effects with proper dependencies
   useEffect(() => {
@@ -188,7 +188,7 @@ export default function AttendanceForm({ defaultGroup = '', returnUrl = '/lectur
     } else {
       setFilteredStudents([])
     }
-  }, [formState.selectedGroup, formState.selectedYearOfStudy, students])
+  }, [students, formState])
 
   // Memoized handlers
   const handleFormChange = useCallback((field, value) => {

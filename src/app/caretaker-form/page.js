@@ -1,6 +1,7 @@
 
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import { buildStudentPdfFileName } from "@/utils/buildPdfFilename";
 
 const generateCaretakerCertificatePDF = async (student) => {
     const { jsPDF } = await import("jspdf");
@@ -214,6 +215,6 @@ const generateCaretakerCertificatePDF = async (student) => {
       doc.text("Photo not provided", 160, 70);
     }
 
-    doc.save(`caretaker-form-${student.name}.pdf`);
+    doc.save(buildStudentPdfFileName("caretaker-form", student));
   };
   export default generateCaretakerCertificatePDF;

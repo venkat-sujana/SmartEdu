@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import { buildStudentPdfFileName } from "@/utils/buildPdfFilename";
 const generateStudyCertificatePDF = (student) => {
   const doc = new jsPDF();
 
@@ -80,6 +81,6 @@ y += 10;
   doc.setFont("times", "normal");
   doc.text("(Principal/Head of Institution)", 120, y + 7);
 
-  doc.save(`study-certificate-${student.name}.pdf`);
+  doc.save(buildStudentPdfFileName("study-certificate", student));
 };
 export default generateStudyCertificatePDF;

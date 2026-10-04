@@ -132,7 +132,7 @@ export default function SubjectWisePassReportPage({ groupName, routeSegment }) {
     session?.user?.collegeId ? `/api/exams?stream=${encodeURIComponent(groupName)}` : null,
     fetcher
   )
-  const reports = Array.isArray(data?.data) ? data.data : []
+  const reports = useMemo(() => (Array.isArray(data?.data) ? data.data : []), [data?.data])
   const firstYear = useMemo(() => getRowsByExam(reports.filter(report => report.yearOfStudy === 'First Year')), [reports])
   const secondYear = useMemo(() => getRowsByExam(reports.filter(report => report.yearOfStudy === 'Second Year')), [reports])
   const hasRows = firstYear.some(item => item.rows.length) || secondYear.some(item => item.rows.length)

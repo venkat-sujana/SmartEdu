@@ -54,6 +54,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "baseline-browser-mapping": "^2.11.27",
     "cypress": "^15.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",

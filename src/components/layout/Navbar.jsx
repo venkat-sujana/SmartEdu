@@ -97,11 +97,11 @@ export default function Navbar({ onOpenDrawer }) {
 
             <Link href="/" aria-label="OSRA home" className="flex min-w-0 items-center gap-2 sm:gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 shadow-md ring-1 ring-white/70 sm:h-12 sm:w-12">
-                <img
+                <Image
                   src="/images/OSRA-LOGO.png"
                   alt="OSRA logo"
-                  width="1254"
-                  height="1254"
+                  width={1254}
+                  height={1254}
                   className="h-full w-full object-contain"
                 />
               </div>

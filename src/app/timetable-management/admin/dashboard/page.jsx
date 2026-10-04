@@ -1,6 +1,6 @@
 //src/app/timetable-management/admin/dashboard/page.jsx
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { utils, writeFile } from "xlsx";
 import jsPDF from "jspdf";
@@ -119,7 +119,7 @@ export default function TimeTableAdminDashboard() {
   const [manualForm,   setManualForm]   = useState({ day: "Monday", period: 1, subjectId: "", lecturerId: "" });
 
   // ── Fetch ─────────────────────────────────────────────────────────
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
       const [lRes, sRes, gRes] = await Promise.all([
@@ -137,9 +137,9 @@ export default function TimeTableAdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.year, filters.semester, filters.classroom]);
 
-  useEffect(() => { fetchAll(); }, [filters.year, filters.semester, filters.classroom]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   // ── Handlers ──────────────────────────────────────────────────────
   const createLecturer = async (e) => {

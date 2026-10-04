@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import { buildStudentPdfFileName } from "@/utils/buildPdfFilename";
 
 const generateAdmissionCertificatePDF = async (student) => {
   const doc = new jsPDF();
@@ -141,7 +142,7 @@ const generateAdmissionCertificatePDF = async (student) => {
   doc.text("(Principal/Head of Institution)", 130, y + 7);
 
   // 6. PDFని సేవ్ చేయడం
-  doc.save(`admission-certificate-${student.name}.pdf`);
+  doc.save(buildStudentPdfFileName("admission-certificate", student));
 };
 
 export default generateAdmissionCertificatePDF;

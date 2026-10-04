@@ -180,7 +180,7 @@ export default function Page() {
 
           <div className="overflow-hidden rounded-[30px] shadow-2xl">
             <Image
-              src="/images/classroombg.jpg"
+              src="/images/classroom.png"
               alt="Education Platform"
               width={700}
               height={450}

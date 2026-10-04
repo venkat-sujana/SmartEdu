@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# generated pdf artifacts (client-side downloads with undefined values)
+/*-undefined.pdf
+/build.log
