@@ -24,7 +24,7 @@ export default function Page() {
   }
 
   return (
-    <main className="min-h-screen mt-15 overflow-hidden bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
+    <main className="min-h-screen pt-16 overflow-x-hidden overscroll-none bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
       <Navbar />
 
       {/* ================= HERO ================= */}
@@ -80,7 +80,7 @@ export default function Page() {
                   rel="noopener noreferrer"
                   className="rounded-2xl bg-white px-8 py-4 font-semibold text-slate-900 transition hover:scale-105"
                 >
-                  Visit Portal
+                  Voc Question paper Portal
                 </a>
               </div>
             </motion.div>
