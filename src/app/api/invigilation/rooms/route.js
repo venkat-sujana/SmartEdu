@@ -2,10 +2,12 @@
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import InvigilationRoom from "@/models/InvigilationRoom";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
+
+
 
 export async function GET(req) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin", "lecturer"]);
+  const { user, error } = await requireOsraAuth(req, ["admin", "lecturer"]);
   if (error) return error;
 
   await connectInvigilationDB();
@@ -28,8 +30,11 @@ export async function GET(req) {
   return NextResponse.json({ role: user.role, data: rooms });
 }
 
+
+
+
 export async function POST(req) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin"]);
+  const { user, error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
 
   try {

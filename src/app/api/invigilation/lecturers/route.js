@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server'
 import { connectInvigilationDB } from '@/lib/mongodb-invigilation'
 import User from '@/models/User'
 import LecturerProfile from '@/models/LecturerProfile'
-import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
+import { requireOsraAuth } from "@/lib/osra-api-guard"
 
 export async function GET(req) {
-  const { user: admin, error } = await requireInvigilationAuth(req, ['admin'])
+  const { user: admin, error } = await requireOsraAuth(req, ['admin'])
   if (error) return error
 
   try {

@@ -4,7 +4,7 @@ import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import InvigilationRoom from "@/models/InvigilationRoom";
 import ExamSchedule from "@/models/ExamSchedule";
 import DutyAssignment from "@/models/DutyAssignment";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 
 function canAccessByCollege(doc, user) {
   if (!doc) return false;
@@ -32,7 +32,7 @@ export async function PUT(
     await context.params;
 
   const { user, error } =
-    await requireInvigilationAuth(
+    await requireOsraAuth(
       req,
       ["admin"]
     );
@@ -166,7 +166,7 @@ export async function DELETE(
     await context.params;
 
   const { user, error } =
-    await requireInvigilationAuth(
+    await requireOsraAuth(
       req,
       ["admin"]
     );

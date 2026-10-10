@@ -190,7 +190,7 @@ const isOffice = role === 'office'
         },
         
         {
-      href: '/invigilation/login',
+      href: '/invigilation',
       label: 'Invigilation',
       icon: <ShieldCheckIcon className="h-4 w-4" />,
       accent: 'text-cyan-600',

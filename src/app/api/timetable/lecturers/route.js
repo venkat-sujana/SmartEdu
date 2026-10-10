@@ -1,10 +1,10 @@
 //src/app/api/timetable/lecturer-summary/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 import User from "@/models/User";
 import TimetableLecturer from "@/models/TimetableLecturer";
-import { hashPassword } from "@/lib/invigilation-auth";
+import { hashPassword } from "@/lib/password";
 import TimeSlot from "@/models/TimeSlot";
 
 function normalizeName(name = "") {
@@ -30,7 +30,7 @@ async function getUniqueLoginEmail(rawName, preferredEmail) {
 }
 
 export async function GET(req) {
-  const { error } = await requireInvigilationAuth(req, ["admin", "lecturer"]);
+  const { error } = await requireOsraAuth(req, ["admin", "lecturer"]);
   if (error) return error;
   await connectInvigilationDB();
 
@@ -56,7 +56,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  const { error } = await requireInvigilationAuth(req, ["admin"]);
+  const { error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
   try {
     await connectInvigilationDB();

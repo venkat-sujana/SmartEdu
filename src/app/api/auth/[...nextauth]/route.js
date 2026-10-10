@@ -52,10 +52,6 @@ async function authenticateAdmin(email, password) {
   };
 }
 
-
-
-
-
 async function authenticateLecturer(email, password) {
   await connectMongoDB();
   
@@ -144,9 +140,6 @@ async function authenticateStudent(admissionNo, password) {
     address: student.address,
   };
 }
-
-
-
 
 
 async function authenticatePrincipal(email, password) {
@@ -239,6 +232,47 @@ async function authenticateOfficeStaff(email, password) {
   }
 }
 
+async function authenticateInvigilationLecturer(email, password) {
+  await connectMongoDB();
+
+  const key = `login:${email.toLowerCase()}`;
+  if (process.env.NODE_ENV !== 'development') {
+    try {
+      await loginRateLimiter.consume(key);
+    } catch {
+      console.error(`[AUTH INVIGILATION LECTURER RATE LIMIT] ${email}`);
+      return null;
+    }
+  }
+
+  const lecturer = await User.findOne({
+    email: email.trim().toLowerCase(),
+    role: "lecturer",
+  });
+
+  if (!lecturer) {
+    console.error(`[AUTH INVIGILATION LECTURER NOT FOUND] ${email}`);
+    return null;
+  }
+
+  const isValid = await bcrypt.compare(password.trim(), lecturer.password);
+  if (!isValid) {
+    console.error(`[AUTH INVIGILATION LECTURER INVALID PASS] ${email}`);
+    return null;
+  }
+
+  return {
+    id: lecturer._id.toString(),
+    name: lecturer.name,
+    email: lecturer.email,
+    role: "lecturer",
+    collegeId: lecturer.collegeId?.toString() || null,
+    collegeName: null,
+    subject: "",
+    photo: "",
+  };
+}
+
 
 
 
@@ -246,6 +280,7 @@ const authOptions = {
   session: {
     strategy: "jwt",
   },
+
   providers: [
     CredentialsProvider({
       id: "admin-login",
@@ -322,6 +357,24 @@ CredentialsProvider({
     );
   },
 }),
+CredentialsProvider({
+  id: "invigilation-lecturer-login",
+  name: "Invigilation Lecturer Login",
+  credentials: {
+    email: { label: "Email", type: "email" },
+    password: { label: "Password", type: "password" },
+  },
+  async authorize(credentials) {
+    if (!credentials?.email || !credentials?.password) {
+      return null;
+    }
+
+    return authenticateInvigilationLecturer(
+      credentials.email,
+      credentials.password
+    );
+  },
+}),
 
   ],
 
@@ -385,9 +438,9 @@ CredentialsProvider({
       if (token.role === "principal") session.user.photo = token.photo;
 
       if (token.role === "office") {
-  session.user.designation = token.designation;
-  session.user.photo = token.photo;
-}
+      session.user.designation = token.designation;
+      session.user.photo = token.photo;
+      }
 
       return session;
     },

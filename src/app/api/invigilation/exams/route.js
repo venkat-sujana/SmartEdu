@@ -4,7 +4,7 @@ import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import ExamSchedule from "@/models/ExamSchedule";
 import InvigilationRoom from "@/models/InvigilationRoom";
 import DutyAssignment from "@/models/DutyAssignment";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 
 const EXAM_TYPES = ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4", "QUARTERLY", "HALFYEARLY", "PRE-PUBLIC-1", "PRE-PUBLIC-2"];
 
@@ -68,12 +68,8 @@ function getDateRange(fromDate, toDate) {
   return dates;
 }
 
-
-
-
-
 export async function GET(req) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin", "lecturer"]);
+  const { user, error } = await requireOsraAuth(req, ["admin", "lecturer"]);
   if (error) return error;
 
   await connectInvigilationDB();
@@ -102,18 +98,46 @@ if (examType) {
 }
 
   const exams = await ExamSchedule.find(filter)
-    .sort({ date: 1, session: 1 })
+  
+  .sort({ date: 1, session: 1 })
     .populate("createdBy", "name role")
     .populate("roomId", "name block capacity")
     .lean();
+console.log("LECTURER SESSION COLLEGE:", user.collegeId);
+console.log("EXAM FILTER:", filter);
+
+console.log(
+  "EXAM COLLEGE IDS:",
+  exams.map((exam) => ({
+    id: exam._id,
+    collegeId: exam.collegeId,
+  }))
+);
+
+
+const roomIds = [...new Set(
+  exams.map((exam) => String(exam.roomId?._id || exam.roomId))
+)];
+
+const rooms = await InvigilationRoom.find({
+  _id: { $in: roomIds },
+})
+  .select("_id name block collegeId")
+  .lean();
+
+console.log("ROOM COLLEGE IDS:", rooms);
+
 
   return NextResponse.json({ role: user.role, data: exams });
 }
 
 
 
+
+
+
 export async function POST(req) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin"]);
+  const { user, error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
 
   try {
@@ -121,6 +145,11 @@ export async function POST(req) {
     const payload = await req.json();
     const { date, session, subject, hallNo, collegeId, examType, fromDate, toDate, roomIds } = payload;
     const resolvedCollegeId = user.collegeId || collegeId || undefined;
+    
+console.log("ADMIN SESSION COLLEGE:", user.collegeId);
+console.log("REQUEST COLLEGE ID:", collegeId);
+console.log("RESOLVED COLLEGE ID:", resolvedCollegeId);
+
     const normalizedExamType = normalizeExamType(examType);
 
     if (!session || !normalizedExamType || !EXAM_TYPES.includes(normalizedExamType)) {
@@ -221,7 +250,7 @@ export async function POST(req) {
 }
 
 export async function DELETE(req) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin"]);
+  const { user, error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
 
   try {

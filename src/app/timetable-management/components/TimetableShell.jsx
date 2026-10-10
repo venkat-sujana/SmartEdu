@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { invigilationLogoutAction } from "@/app/invigilation/actions";
+import { signOut } from "next-auth/react";
 
 function LinkItem({ href, label }) {
   const pathname = usePathname();
@@ -38,11 +38,13 @@ export default function TimetableShell({ user, title, children }) {
             <h1 className="text-lg font-semibold text-slate-900">{title}</h1>
             <p className="text-sm text-slate-600">{name}</p>
           </div>
-          <form action={invigilationLogoutAction}>
-            <button className="rounded-lg bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-700">
-              Logout
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/auth/login" })}
+            className="rounded-lg bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-700"
+          >
+            Logout
+          </button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-[260px_1fr]">

@@ -644,9 +644,9 @@ const examDashboardHref =
  />
 
  <HeaderActionLink
-  href="/invigilation/login"
-  label="📋 Invigilation Login"
-  theme={theme}
+href="/invigilation/admin/dashboard"
+   label="Invigilation"
+   theme={theme}
  />
 
 <HeaderActionLink
@@ -668,9 +668,9 @@ const examDashboardHref =
 
 
 {/* ── Student Leave Requests ── */}
-<section>
+{/* <section>
   <LecturerLeaveRequests />
-</section>
+</section> */}
         
         {/* <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
               <div className="mb-3 border-b border-slate-200/80 pb-2.5">

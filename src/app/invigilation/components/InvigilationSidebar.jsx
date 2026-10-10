@@ -40,6 +40,11 @@ export default function InvigilationSidebar({ role }) {
     },
 
     {
+      href: '/invigilation/admin/mappings',
+      label: 'Lecturer Mappings',
+    },
+
+    {
       href: '/invigilation/admin/exams',
       label: 'Exam Schedule',
     },

@@ -3,11 +3,11 @@ import { connectInvigilationDB } from '@/lib/mongodb-invigilation'
 import DutyAssignment from '@/models/DutyAssignment'
 import LecturerAvailability from '@/models/LecturerAvailability'
 import User from '@/models/User'
-import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
+import { requireOsraAuth } from "@/lib/osra-api-guard"
 
 export async function GET(req) {
   const { user, error } =
-    await requireInvigilationAuth(
+    await requireOsraAuth(
       req,
       ['admin']
     )

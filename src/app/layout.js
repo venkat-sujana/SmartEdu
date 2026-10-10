@@ -28,9 +28,8 @@ function AppShell({ children }) {
   const isAuthPage = useMemo(() => {
     const isModuleAuthPage =
       pathname === '/invigilation' ||
-      pathname === '/invigilation/login' ||
-      pathname === '/timetable-management' ||
-      pathname === '/timetable-management/login'
+      pathname === '/invigilation/setup' ||
+      pathname === '/timetable-management'
 
     return (
       pathname === '/' ||

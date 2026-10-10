@@ -2,7 +2,7 @@
 "use client";
 
 import InvigilationSidebar from "@/app/invigilation/components/InvigilationSidebar";
-import { invigilationLogoutAction } from "@/app/invigilation/actions";
+import { signOut } from "next-auth/react";
 
 export default function InvigilationShell({ user, title, children }) {
   const safeUser = user || {};
@@ -24,11 +24,13 @@ export default function InvigilationShell({ user, title, children }) {
               {institutionName ? ` | ${institutionName}` : ""}
             </p>
           </div>
-          <form action={invigilationLogoutAction}>
-            <button className="rounded-lg bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-700">
-              Logout
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/auth/login" })}
+            className="rounded-lg bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-700"
+          >
+            Logout
+          </button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-[260px_1fr]">

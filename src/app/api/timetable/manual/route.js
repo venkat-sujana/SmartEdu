@@ -1,14 +1,14 @@
 //src/app/api/timetable/auto/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 import TimeTable from "@/models/TimeTable";
 import TimeSlot from "@/models/TimeSlot";
 import TimetableSubject from "@/models/TimetableSubject";
 import TimetableLecturer from "@/models/TimetableLecturer";
 
 export async function GET(req) {
-  const { error } = await requireInvigilationAuth(req, ["admin", "lecturer"]);
+  const { error } = await requireOsraAuth(req, ["admin", "lecturer"]);
   if (error) return error;
   await connectInvigilationDB();
 
@@ -34,7 +34,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin"]);
+  const { user, error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
   try {
     await connectInvigilationDB();
@@ -93,7 +93,7 @@ export async function POST(req) {
 }
 
 export async function DELETE(req) {
-  const { error } = await requireInvigilationAuth(req, ["admin"]);
+  const { error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
   try {
     await connectInvigilationDB();

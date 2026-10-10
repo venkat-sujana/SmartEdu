@@ -180,6 +180,20 @@ const ENTITY_CONFIG = {
   },
 },
 
+  invigilation: {
+    label: "Invigilation",
+    icon: ShieldCheck,
+    route: "/invigilation/admin/dashboard",
+    hasCollegeFilter: false,
+    accent: {
+      badge: "bg-violet-100 text-violet-800 border-violet-200",
+      button: "bg-violet-600 hover:bg-violet-700",
+      soft: "from-violet-500/20 via-indigo-500/10 to-white",
+      icon: "bg-violet-500/15 text-violet-700",
+      activeCard: "border-violet-300 bg-violet-50 text-violet-950",
+    },
+  },
+
 
   lecturers: {
     label: 'Lecturers',

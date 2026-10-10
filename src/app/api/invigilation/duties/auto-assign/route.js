@@ -5,7 +5,7 @@ import DutyAssignment from '@/models/DutyAssignment'
 import ExamSchedule from '@/models/ExamSchedule'
 import User from '@/models/User'
 import LecturerAvailability from '@/models/LecturerAvailability'
-import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
+import { requireOsraAuth } from "@/lib/osra-api-guard"
 
 function toDateKey(value) {
   if (!value) return ''
@@ -28,7 +28,7 @@ function hasDateClash(existingSlots, exam, sameDayNoRepeat) {
 }
 
 export async function POST(req) {
-  const { user, error } = await requireInvigilationAuth(req, ['admin'])
+  const { user, error } = await requireOsraAuth(req, ['admin'])
   if (error) return error
 
   try {

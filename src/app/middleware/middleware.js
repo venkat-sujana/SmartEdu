@@ -1,7 +1,6 @@
 //src/app/middleware/middleware.js
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { jwtVerify } from "jose";
 
 const LOGIN_PATHS = [
   "/auth/login",
@@ -38,35 +37,36 @@ export async function middleware(req) {
   if (pathname.startsWith("/invigilation") || pathname.startsWith("/timetable-management")) {
     const isInvigilationRoute = pathname.startsWith("/invigilation");
     const moduleBase = isInvigilationRoute ? "/invigilation" : "/timetable-management";
-    const loginPath = `${moduleBase}/login`;
+    const loginPath = "/auth/login";
 
-    if (pathname === loginPath || pathname === moduleBase) {
+    // The module roots and the first-run admin bootstrap page are public.
+    // `/invigilation/setup` is protected server-side by ADMIN_SETUP_KEY in
+    // /api/auth/register-admin, mirroring the public `/admin/setup` page.
+    if (
+      pathname === moduleBase ||
+      pathname === "/invigilation/setup" ||
+      pathname === "/timetable-management/setup"
+    ) {
       return NextResponse.next();
     }
 
-    const token = req.cookies.get("invigilation_token")?.value;
-    if (!token) {
+    const moduleToken = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!moduleToken) {
       return NextResponse.redirect(new URL(loginPath, req.url));
     }
 
-    const invigilationSecret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
-    if (!invigilationSecret) {
-      return NextResponse.redirect(new URL(loginPath, req.url));
+    const role = moduleToken.role;
+    if (pathname.startsWith(`${moduleBase}/admin`) && role !== "admin") {
+      return NextResponse.redirect(new URL(getRoleHome(role), req.url));
     }
-
-    try {
-      const { payload } = await jwtVerify(token, new TextEncoder().encode(invigilationSecret));
-      const role = payload?.role;
-      if (pathname.startsWith(`${moduleBase}/admin`) && role !== "admin") {
-        return NextResponse.redirect(new URL(loginPath, req.url));
-      }
-      if (pathname.startsWith(`${moduleBase}/lecturer`) && role !== "lecturer") {
-        return NextResponse.redirect(new URL(loginPath, req.url));
-      }
-      return NextResponse.next();
-    } catch {
-      return NextResponse.redirect(new URL(loginPath, req.url));
+    if (pathname.startsWith(`${moduleBase}/lecturer`) && role !== "lecturer") {
+      return NextResponse.redirect(new URL(getRoleHome(role), req.url));
     }
+    return NextResponse.next();
   }
 
   if (LOGIN_PATHS.includes(pathname)) {

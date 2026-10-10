@@ -1,7 +1,7 @@
 //src/app/api/timetable/auto/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 import TimeTable from "@/models/TimeTable";
 import TimeSlot from "@/models/TimeSlot";
 import TimetableSubject from "@/models/TimetableSubject";
@@ -13,7 +13,7 @@ function slotKey(day, period) {
 }
 
 export async function POST(req) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin"]);
+  const { user, error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
 
   try {

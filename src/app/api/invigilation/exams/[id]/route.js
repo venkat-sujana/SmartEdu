@@ -4,7 +4,7 @@ import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import ExamSchedule from "@/models/ExamSchedule";
 import DutyAssignment from "@/models/DutyAssignment";
 import InvigilationRoom from "@/models/InvigilationRoom";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 
 function parseDateOnly(value) {
   if (!value) return null;
@@ -14,7 +14,7 @@ function parseDateOnly(value) {
 }
 
 export async function PUT(req, { params }) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin"]);
+  const { user, error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
 
   try {
@@ -59,7 +59,7 @@ export async function PUT(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-  const { user, error } = await requireInvigilationAuth(req, ["admin"]);
+  const { user, error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
 
   try {

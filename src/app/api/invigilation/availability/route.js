@@ -2,10 +2,11 @@
 import { NextResponse } from 'next/server'
 import { connectInvigilationDB } from '@/lib/mongodb-invigilation'
 import LecturerAvailability from '@/models/LecturerAvailability'
-import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
+import { requireOsraAuth } from "@/lib/osra-api-guard"
+import LecturerUserMapping from "@/models/LecturerUserMapping";
 
 export async function GET(req) {
-  const { user, error } = await requireInvigilationAuth(req, ['admin', 'lecturer'])
+  const { user, error } = await requireOsraAuth(req, ['admin', 'lecturer'])
   if (error) return error
 
   try {
@@ -13,9 +14,17 @@ export async function GET(req) {
 
     const filter = {}
 
-    if (user.role === 'lecturer') {
-      filter.lecturerId = user._id
-    } else {
+if (user.role === 'lecturer') {
+  const mapping = await LecturerUserMapping.findOne({
+    lecturerId: user.id,
+  }).lean();
+
+  if (!mapping) {
+    return NextResponse.json({ data: [] });
+  }
+
+  filter.lecturerId = mapping.userId;
+} else {
       if (user.collegeId) filter.collegeId = user.collegeId
       const { searchParams } = new URL(req.url)
       if (searchParams.get('lecturerId')) filter.lecturerId = searchParams.get('lecturerId')
@@ -46,7 +55,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  const { user, error } = await requireInvigilationAuth(req, ['admin', 'lecturer'])
+  const { user, error } = await requireOsraAuth(req, ['admin', 'lecturer'])
   if (error) return error
 
   try {
@@ -60,9 +69,24 @@ export async function POST(req) {
       )
     }
 
-    const lecturerId = user.role === 'admin'
-      ? (bodyLid || user._id)
-      : user._id
+let lecturerId;
+
+if (user.role === 'admin') {
+  lecturerId = bodyLid || user._id;
+} else {
+  const mapping = await LecturerUserMapping.findOne({
+    lecturerId: user.id,
+  }).lean();
+
+  if (!mapping) {
+    return NextResponse.json(
+      { message: 'Lecturer mapping not found' },
+      { status: 404 }
+    );
+  }
+
+  lecturerId = mapping.userId;
+}
 
     const record = await LecturerAvailability.findOneAndUpdate(
       { lecturerId, date: new Date(date), session },
@@ -81,7 +105,7 @@ export async function POST(req) {
 }
 
 export async function PUT(req) {
-  const { user, error } = await requireInvigilationAuth(req, ['admin', 'lecturer'])
+  const { user, error } = await requireOsraAuth(req, ['admin', 'lecturer'])
   if (error) return error
 
   try {

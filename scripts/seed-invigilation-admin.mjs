@@ -1,3 +1,5 @@
+
+//src/scripts/seed-invigilation-admin.mjs
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";

@@ -1,20 +1,70 @@
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import DutyAssignment from "@/models/DutyAssignment";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
-
+import { requireOsraAuth } from "@/lib/osra-api-guard";
+import LecturerUserMapping from "@/models/LecturerUserMapping";
+import User from "@/models/User";
 export async function GET(req) {
-  const { user, error } = await requireInvigilationAuth(req, ["lecturer", "admin"]);
+  const { user, error } = await requireOsraAuth(req, ["lecturer", "admin"]);
   if (error) return error;
 
   await connectInvigilationDB();
   const { searchParams } = new URL(req.url);
   const lecturerId = searchParams.get("lecturerId");
 
-  const targetLecturerId = user.role === "lecturer" ? String(user._id) : lecturerId;
-  if (!targetLecturerId) {
-    return NextResponse.json({ message: "lecturerId is required for admin summary" }, { status: 400 });
+  
+let targetLecturerId = lecturerId;
+
+if (user.role === "lecturer") {
+  const accountFilters = [];
+  if (user.email) {
+    accountFilters.push({
+      email: user.email.trim().toLowerCase(),
+    });
   }
+  if (user.name?.trim()) {
+    accountFilters.push({ name: user.name.trim() });
+  }
+
+  const [mappings, matchingUsers] = await Promise.all([
+    LecturerUserMapping.find({
+      $or: [
+        { lecturerId: user.id },
+        { userId: user.id },
+      ],
+    }).lean(),
+    accountFilters.length > 0
+      ? User.find({
+          role: "lecturer",
+          ...(user.collegeId ? { collegeId: user.collegeId } : {}),
+          $or: accountFilters,
+        })
+          .select("_id")
+          .lean()
+      : [],
+  ]);
+
+  const lecturerIds = [
+    user.id,
+    ...matchingUsers.map((matchingUser) => matchingUser._id.toString()),
+    ...mappings.flatMap((mapping) => [
+      mapping.lecturerId?.toString(),
+      mapping.userId?.toString(),
+    ]),
+  ].filter(Boolean);
+
+  targetLecturerId = {
+    $in: [...new Set(lecturerIds)],
+  };
+}
+
+if (!targetLecturerId) {
+  return NextResponse.json(
+    { message: "lecturerId is required for admin summary" },
+    { status: 400 }
+  );
+}
+
 
   const duties = await DutyAssignment.find({ lecturerId: targetLecturerId })
     .populate("examScheduleId")

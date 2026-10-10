@@ -27,7 +27,7 @@ export default function InvigilationSetupPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to create admin");
       toast.success("Admin account created. Please login.");
-      router.replace("/invigilation/login");
+      router.replace("/auth/login");
     } catch (err) {
       toast.error(err.message || "Setup failed");
     } finally {

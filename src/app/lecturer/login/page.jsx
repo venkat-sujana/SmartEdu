@@ -41,9 +41,20 @@ export default function LecturerLogin() {
     });
 
     if (res?.error) {
-      setError("Invalid lecturer credentials");
-      setLoading(false);
-      return;
+      // Invigilation / Timetable lecturers live in the `User` collection
+      // instead of `Lecturer`. Both are OSRA roles and both authenticate
+      // through the same centralized NextAuth session.
+      const moduleRes = await signIn("invigilation-lecturer-login", {
+        redirect: false,
+        email: email.trim().toLowerCase(),
+        password: password.trim(),
+      });
+
+      if (moduleRes?.error) {
+        setError("Invalid lecturer credentials");
+        setLoading(false);
+        return;
+      }
     }
 
     router.push("/dashboards");

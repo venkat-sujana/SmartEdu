@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
 import DutyAssignment from "@/models/DutyAssignment";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 
 export async function PATCH(req, { params }) {
-  const { user, error } = await requireInvigilationAuth(req, ["lecturer"]);
+  const { user, error } = await requireOsraAuth(req, ["lecturer"]);
   if (error) return error;
 
   try {

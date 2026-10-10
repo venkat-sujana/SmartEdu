@@ -171,6 +171,13 @@ export default function Sidebar({ onClose }) {
       ),
     },
     {
+      href: '/invigilation/admin/dashboard',
+      label: 'Invigilation Dashboard',
+      icon: (
+        <ShieldCheckIcon className="h-4 w-4 text-violet-500" />
+      ),
+    },
+    {
       href: '/student-table',
       label: 'Student Table',
       icon: (
@@ -440,7 +447,7 @@ export default function Sidebar({ onClose }) {
 
   const toolLinks = [
     {
-      href: '/invigilation/login',
+      href: '/invigilation',
       label: 'Invigilation',
       icon: (
         <ShieldCheckIcon className="h-4 w-4 text-cyan-500" />

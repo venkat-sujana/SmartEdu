@@ -1,13 +1,13 @@
-//src/app/api/timetable/auto/route.js
+//src/app/api/timetable/lecturer-summary/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 import TimetableLecturer from "@/models/TimetableLecturer";
 import TimetableSubject from "@/models/TimetableSubject";
 import TimeSlot from "@/models/TimeSlot";
 
 export async function GET(req) {
-  const { user, error } = await requireInvigilationAuth(req, ["lecturer"]);
+  const { user, error } = await requireOsraAuth(req, ["lecturer"]);
   if (error) return error;
   await connectInvigilationDB();
 

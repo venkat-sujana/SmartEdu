@@ -1,12 +1,12 @@
 //src/app/api/timetable/lecturer-summary/route.js
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 import TimetableLecturer from "@/models/TimetableLecturer";
 import User from "@/models/User";
 
 export async function PATCH(req, { params }) {
-  const { error } = await requireInvigilationAuth(req, ["admin"]);
+  const { error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
   try {
     await connectInvigilationDB();
@@ -32,7 +32,7 @@ export async function PATCH(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-  const { error } = await requireInvigilationAuth(req, ["admin"]);
+  const { error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
   try {
     await connectInvigilationDB();

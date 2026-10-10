@@ -2,11 +2,11 @@
 import { NextResponse } from 'next/server'
 import { connectInvigilationDB } from '@/lib/mongodb-invigilation'
 import LecturerAvailability from '@/models/LecturerAvailability'
-import { requireInvigilationAuth } from '@/lib/invigilation-api-guard'
+import { requireOsraAuth } from "@/lib/osra-api-guard"
 
 // GET — admin: all records | lecturer: own records
 export async function GET(req, { params }) {
-  const { user, error } = await requireInvigilationAuth(req, ['admin', 'lecturer'])
+  const { user, error } = await requireOsraAuth(req, ['admin', 'lecturer'])
   if (error) return error
 
   try {
@@ -37,7 +37,7 @@ export async function GET(req, { params }) {
 
 // POST — lecturer submits / updates availability (upsert)
 export async function POST(req) {
-  const { user, error } = await requireInvigilationAuth(req, ['admin', 'lecturer'])
+  const { user, error } = await requireOsraAuth(req, ['admin', 'lecturer'])
   if (error) return error
 
   try {
@@ -75,7 +75,7 @@ export async function PUT(
   const {
     user,
     error,
-  } = await requireInvigilationAuth(
+  } = await requireOsraAuth(
     req,
     ['admin']
   )
@@ -147,7 +147,7 @@ export async function DELETE(
   const {
     user,
     error,
-  } = await requireInvigilationAuth(
+  } = await requireOsraAuth(
     req,
     ['admin']
   )

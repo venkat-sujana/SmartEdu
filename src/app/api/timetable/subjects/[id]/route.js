@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { connectInvigilationDB } from "@/lib/mongodb-invigilation";
-import { requireInvigilationAuth } from "@/lib/invigilation-api-guard";
+import { requireOsraAuth } from "@/lib/osra-api-guard";
 import TimetableSubject from "@/models/TimetableSubject";
 
 export async function PATCH(req, { params }) {
-  const { error } = await requireInvigilationAuth(req, ["admin"]);
+  const { error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
   try {
     await connectInvigilationDB();
@@ -30,7 +30,7 @@ export async function PATCH(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-  const { error } = await requireInvigilationAuth(req, ["admin"]);
+  const { error } = await requireOsraAuth(req, ["admin"]);
   if (error) return error;
   try {
     await connectInvigilationDB();

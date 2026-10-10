@@ -1,3 +1,4 @@
+//src/models/InvigilationRoom.js
 import mongoose from "mongoose";
 
 const invigilationRoomSchema = new mongoose.Schema(
