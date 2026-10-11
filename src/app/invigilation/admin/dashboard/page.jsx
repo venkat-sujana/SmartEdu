@@ -1470,11 +1470,11 @@ export default function AdminInvigilationDashboardPage() {
     <InvigilationGuard allowRoles={['admin']}>
       {user => (
         <InvigilationShell user={user} title="Admin · Invigilation">
-          <div className="min-h-screen bg-slate-50">
+          <div className="min-h-screen min-w-0 max-w-full bg-slate-50">
             {/* ── Page Header ── */}
-            <div className="border-b border-slate-200 bg-white px-6 py-5">
-              <div className="mx-auto flex max-w-screen-2xl items-center justify-between">
-                <div className="flex items-center gap-4">
+            <div className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 sm:py-5">
+              <div className="mx-auto flex max-w-screen-2xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600">
                     <Shield size={22} className="text-white" />
                   </div>
@@ -1487,19 +1487,19 @@ export default function AdminInvigilationDashboardPage() {
                     </p>
                   </div>
                 </div>
-                <Btn variant="outline" onClick={() => fetchAll(filters)} loading={loading}>
+                <Btn variant="outline" onClick={() => fetchAll(filters)} loading={loading} className="w-full justify-center sm:w-auto">
                   <RefreshCw size={14} />
                   Refresh
                 </Btn>
               </div>
 
               {/* Tab Navigation */}
-              <div className="mx-auto mt-5 flex max-w-screen-2xl gap-1">
+              <div className="mx-auto mt-4 flex max-w-screen-2xl gap-1 overflow-x-auto pb-1">
                 {tabs.map(t => (
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`relative flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${activeTab === t.id ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
+                    className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold transition-all sm:px-4 ${activeTab === t.id ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
                   >
                     {t.icon}
                     {t.label}
@@ -1516,11 +1516,11 @@ export default function AdminInvigilationDashboardPage() {
             </div>
 
             {/* ── Tab Content ── */}
-            <div className="mx-auto max-w-screen-2xl space-y-6 p-6">
+            <div className="mx-auto max-w-screen-2xl space-y-5 p-4 sm:space-y-6 sm:p-6">
               {/* ══════════ OVERVIEW TAB ══════════ */}
               {activeTab === 'overview' && (
                 <>
-                  <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
                     <StatCard
                       label="Lecturers"
                       value={lecturers.length}
@@ -1547,7 +1547,7 @@ export default function AdminInvigilationDashboardPage() {
                     />
                   </div>
 
-                  <div className="grid gap-5 xl:grid-cols-3">
+                  <div className="grid gap-4 sm:gap-5 xl:grid-cols-3">
                     {/* Quick assign */}
                     <Card className="xl:col-span-1">
                       <SectionHeader
@@ -1555,7 +1555,7 @@ export default function AdminInvigilationDashboardPage() {
                         title="Manual Duty Assignment"
                         subtitle="Map a lecturer to an exam slot"
                       />
-                      <form onSubmit={onAssignDuty} className="space-y-4 p-5">
+                      <form onSubmit={onAssignDuty} className="space-y-4 p-4 sm:p-5">
                         <Field label="Exam Slot">
                           <Select
                             icon={<Calendar size={14} />}
@@ -1604,7 +1604,7 @@ export default function AdminInvigilationDashboardPage() {
                         title="Room Management"
                         subtitle="Add and manage exam halls"
                       />
-                      <form onSubmit={onCreateRoom} className="space-y-4 p-5">
+                      <form onSubmit={onCreateRoom} className="space-y-4 p-4 sm:p-5">
                         <div className="grid gap-3 sm:grid-cols-3">
                           <Field label="Room Name">
                             <Input
@@ -1631,7 +1631,7 @@ export default function AdminInvigilationDashboardPage() {
                             />
                           </Field>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2 sm:flex-row">
                           <Btn type="submit" variant="emerald">
                             <School size={14} />
                             {editingRoomId ? 'Update Room' : 'Add Room'}
@@ -1705,7 +1705,7 @@ export default function AdminInvigilationDashboardPage() {
                     title="Generate Exam Schedule"
                     subtitle="Bulk-create exam slots across all selected rooms and date range"
                   />
-                  <form onSubmit={onCreateSchedule} className="space-y-6 p-6">
+                  <form onSubmit={onCreateSchedule} className="space-y-6 p-4 sm:p-6">
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                       <Field label="From Date">
                         <Input
@@ -2235,7 +2235,7 @@ export default function AdminInvigilationDashboardPage() {
               {activeTab === 'lecturers' && (
                 <>
                   {/* Summary stats */}
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5">
                       <p className="text-xs font-semibold tracking-wide text-blue-500 uppercase">
                         Lecturers
@@ -2262,18 +2262,18 @@ export default function AdminInvigilationDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
                     <Btn variant="outline" onClick={exportLecturerRegisterExcel}>
                       <FileSpreadsheet size={14} />
                       Export Register Excel
                     </Btn>
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
                       <Btn variant="outline" onClick={exportLecturerRegisterExcel}>
                         <FileSpreadsheet size={14} />
                         Export Excel
                       </Btn>
 
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <select
                           value={selectedPdfExam}
                           onChange={e => setSelectedPdfExam(e.target.value)}

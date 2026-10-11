@@ -35,7 +35,7 @@ export default function InvigilationShell({ user, title, children }) {
 
         <div className="grid gap-4 md:grid-cols-[260px_1fr]">
           <InvigilationSidebar role={role} />
-          <main className="rounded-xl border bg-white p-4 shadow-sm">{children}</main>
+          <main className="min-w-0 rounded-xl border bg-white p-3 shadow-sm sm:p-4">{children}</main>
         </div>
       </div>
     </div>

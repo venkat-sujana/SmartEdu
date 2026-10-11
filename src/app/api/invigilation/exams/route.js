@@ -80,7 +80,13 @@ export async function GET(req) {
 
   const filter = {};
   if (user.collegeId) {
-    filter.collegeId = user.collegeId;
+    // Older invigilation schedules were created before collegeId was stored.
+    // Lecturers must still be able to mark availability against those slots.
+    filter.$or = [
+      { collegeId: user.collegeId },
+      { collegeId: { $exists: false } },
+      { collegeId: null },
+    ];
   }
   if (date) {
     const start = parseDateOnly(date);

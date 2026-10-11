@@ -29,6 +29,8 @@ function weekDay(dateStr) {
   return d.toLocaleDateString('en-IN', { weekday: 'short' })
 }
 
+const SESSION_ORDER = { FN: 0, AN: 1, EN: 2 }
+
 // ── Status Cell ───────────────────────────────────────────────────────────────
 function StatusCell({ status, onClick, loading }) {
   if (loading) {
@@ -136,7 +138,12 @@ export default function AvailabilityTab() {
           slots.push({ date: dateStr, session: e.session })
         }
       })
-      slots.sort((a, b) => a.date.localeCompare(b.date) || a.session.localeCompare(b.session))
+      slots.sort(
+        (a, b) =>
+          a.date.localeCompare(b.date) ||
+          (SESSION_ORDER[a.session] ?? Number.MAX_SAFE_INTEGER) -
+            (SESSION_ORDER[b.session] ?? Number.MAX_SAFE_INTEGER)
+      )
       setExamSlots(slots)
 
       // if (slots.length === 0) {
@@ -510,7 +517,7 @@ export default function AvailabilityTab() {
 
       {/* ── Matrix Table ── */}
       <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-        <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-3">
+        <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-5">
           <Calendar size={15} className="text-slate-500" />
           <h3 className="text-sm font-bold text-slate-700">Lecturer × Date Availability Matrix</h3>
           {notSetCount > 0 && (
@@ -530,7 +537,55 @@ export default function AvailabilityTab() {
             <p className="text-sm font-medium text-slate-500">No lecturers found</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          <div className="divide-y divide-slate-100 sm:hidden">
+            {lecturers.map((lecturer, li) => {
+              const lid = String(lecturer._id || lecturer.id)
+              return (
+                <section key={`${lid}_${li}`} className="p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-black text-indigo-700">
+                      {lecturer.name?.[0]?.toUpperCase() || '?'}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-slate-700">{lecturer.name}</p>
+                      <p className="truncate text-xs text-slate-400">{lecturer.designation || 'Lecturer'}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    {visibleSlots.map(({ date, session }) => {
+                      const cellKey = `${lid}_${date}_${session}`
+                      const status = previewMap[cellKey] ?? availMap[cellKey]?.status ?? null
+                      return (
+                        <div key={cellKey} className="grid grid-cols-[1fr_minmax(108px,0.9fr)] items-center gap-2 rounded-xl bg-slate-50 p-2">
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-semibold text-slate-700">{shortDate(date)}</p>
+                            <span className={`mt-1 inline-block rounded px-2 py-0.5 text-[10px] font-bold ${
+                              session === 'FN'
+                                ? 'bg-amber-100 text-amber-700'
+                                : session === 'AN'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-violet-100 text-violet-700'
+                            }`}>
+                              {session}
+                            </span>
+                          </div>
+                          <StatusCell
+                            status={status}
+                            loading={cellLoading === cellKey}
+                            onClick={() => onCellClick(lecturer, date, session)}
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </section>
+              )
+            })}
+          </div>
+
+          <div className="hidden overflow-x-auto sm:block">
             <table className="min-w-full border-collapse text-sm">
               <thead>
                 {/* Row 1 — Dates */}
@@ -624,6 +679,7 @@ export default function AvailabilityTab() {
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {/* Footer summary */}

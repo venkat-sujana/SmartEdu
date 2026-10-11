@@ -123,7 +123,7 @@ export default function LecturerAvailabilityPage() {
 
     setSaving(true)
     try {
-      await Promise.all(
+      const responses = await Promise.all(
         dirtyKeys.map(key => {
           const [date, session] = key.split('_')
           const entry = availMap[key]
@@ -138,6 +138,11 @@ export default function LecturerAvailabilityPage() {
           })
         })
       )
+      const failedResponse = responses.find(response => !response.ok)
+      if (failedResponse) {
+        const result = await failedResponse.json().catch(() => ({}))
+        throw new Error(result.message || 'Failed to save availability')
+      }
       toast.success(`${dirtyKeys.length} slot${dirtyKeys.length > 1 ? 's' : ''} saved!`)
       setDirty({})
       loadData()

@@ -4,6 +4,52 @@ import { connectInvigilationDB } from '@/lib/mongodb-invigilation'
 import LecturerAvailability from '@/models/LecturerAvailability'
 import { requireOsraAuth } from "@/lib/osra-api-guard"
 import LecturerUserMapping from "@/models/LecturerUserMapping";
+import User from "@/models/User";
+
+async function getLecturerAccountIds(user) {
+  const [mappings, matchingUser] = await Promise.all([
+    LecturerUserMapping.find({
+      $or: [{ lecturerId: user.id }, { userId: user.id }],
+    }).lean(),
+    user.email
+      ? User.findOne({
+          email: user.email.trim().toLowerCase(),
+          role: "lecturer",
+        })
+          .select("_id")
+          .lean()
+      : null,
+  ]);
+
+  return [
+    user.id,
+    matchingUser?._id?.toString(),
+    ...mappings.flatMap((mapping) => [
+      mapping.lecturerId?.toString(),
+      mapping.userId?.toString(),
+    ]),
+  ].filter(Boolean);
+}
+
+async function getAvailabilityOwnerId(user) {
+  const mapping = await LecturerUserMapping.findOne({
+    lecturerId: user.id,
+  }).lean();
+
+  if (mapping?.userId) return mapping.userId.toString();
+
+  if (user.email) {
+    const matchingUser = await User.findOne({
+      email: user.email.trim().toLowerCase(),
+      role: "lecturer",
+    })
+      .select("_id")
+      .lean();
+    if (matchingUser?._id) return matchingUser._id.toString();
+  }
+
+  return user.id;
+}
 
 export async function GET(req) {
   const { user, error } = await requireOsraAuth(req, ['admin', 'lecturer'])
@@ -15,15 +61,7 @@ export async function GET(req) {
     const filter = {}
 
 if (user.role === 'lecturer') {
-  const mapping = await LecturerUserMapping.findOne({
-    lecturerId: user.id,
-  }).lean();
-
-  if (!mapping) {
-    return NextResponse.json({ data: [] });
-  }
-
-  filter.lecturerId = mapping.userId;
+  filter.lecturerId = { $in: [...new Set(await getLecturerAccountIds(user))] };
 } else {
       if (user.collegeId) filter.collegeId = user.collegeId
       const { searchParams } = new URL(req.url)
@@ -74,18 +112,7 @@ let lecturerId;
 if (user.role === 'admin') {
   lecturerId = bodyLid || user._id;
 } else {
-  const mapping = await LecturerUserMapping.findOne({
-    lecturerId: user.id,
-  }).lean();
-
-  if (!mapping) {
-    return NextResponse.json(
-      { message: 'Lecturer mapping not found' },
-      { status: 404 }
-    );
-  }
-
-  lecturerId = mapping.userId;
+  lecturerId = await getAvailabilityOwnerId(user);
 }
 
     const record = await LecturerAvailability.findOneAndUpdate(
