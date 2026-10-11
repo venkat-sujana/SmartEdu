@@ -67,12 +67,7 @@ export default function Page() {
                   <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
                 </Link>
 
-                <Link
-                  href="#features"
-                  className="rounded-2xl border border-white/20 bg-white/10 px-8 py-4 font-medium backdrop-blur-md transition hover:bg-white/20"
-                >
-                  Explore Features
-                </Link>
+                
 
                 <a
                   href="https://skr-learn-portal.netlify.app/"

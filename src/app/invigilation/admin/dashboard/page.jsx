@@ -498,18 +498,27 @@ export default function AdminInvigilationDashboardPage() {
     }
     setScheduleLoading(true)
     try {
-      const res = await fetch('/api/invigilation/exams', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(scheduleForm),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
+      // FN+AN అయితే రెండు sessions కోసం వేర్వేరు API calls చేయడం
+      const sessions =
+        scheduleForm.session === 'FN+AN' ? ['FN', 'AN'] : [scheduleForm.session]
+      let totalCreated = 0
+      let totalSkipped = 0
+      for (const session of sessions) {
+        const res = await fetch('/api/invigilation/exams', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...scheduleForm, session }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message)
+        totalCreated += data.createdCount || 0
+        totalSkipped += data.skippedCount || 0
+      }
       toast.success(
-        `${data.message} | Created: ${data.createdCount || 0} | Skipped: ${data.skippedCount || 0}`
+        `Schedules created | Created: ${totalCreated} | Skipped: ${totalSkipped}`
       )
       fetchAll(filters)
-      return data
+      return { createdCount: totalCreated, skippedCount: totalSkipped }
     } catch (err) {
       toast.error(err.message || 'Failed')
       return null
@@ -604,7 +613,8 @@ export default function AdminInvigilationDashboardPage() {
         body: JSON.stringify({
           fromDate: snap.fromDate,
           toDate: snap.toDate,
-          session: snap.session,
+          // FN+AN అయితే session filter లేకుండా రెండూ auto-assign అవుతాయి
+          session: snap.session === 'FN+AN' ? undefined : snap.session,
           examType: snap.examType,
           maxDutiesPerLecturer: Number(snap.maxDutiesPerLecturer || 0) || undefined,
           sameDayNoRepeat: snap.sameDayNoRepeat,
@@ -1744,6 +1754,7 @@ export default function AdminInvigilationDashboardPage() {
                           value={scheduleForm.session}
                           onChange={e => setScheduleForm(s => ({ ...s, session: e.target.value }))}
                         >
+                          <option value="FN+AN">FN+AN · Both</option>
                           <option value="FN">FN · Forenoon</option>
                           <option value="AN">AN · Afternoon</option>
                           <option value="EN">EN · Evening</option>
