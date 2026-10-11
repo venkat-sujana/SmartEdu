@@ -645,7 +645,7 @@ const examDashboardHref =
 
  <HeaderActionLink
 href="/invigilation/admin/dashboard"
-   label="Invigilation"
+   label="View Invigilation Duties"
    theme={theme}
  />
 
