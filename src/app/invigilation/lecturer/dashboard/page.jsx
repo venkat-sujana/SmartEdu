@@ -61,15 +61,15 @@ function SectionHeader({ icon, title, subtitle, action }) {
 
 function StatCard({ icon, label, value, color }) {
   const palette = {
-    blue: { bg: 'bg-blue-50', icon: 'bg-blue-100 text-blue-600', val: 'text-blue-700' },
-    emerald: { bg: 'bg-emerald-50', icon: 'bg-emerald-100 text-emerald-600', val: 'text-emerald-700' },
-    rose: { bg: 'bg-rose-50', icon: 'bg-rose-100 text-rose-600', val: 'text-rose-700' },
-    amber: { bg: 'bg-amber-50', icon: 'bg-amber-100 text-amber-600', val: 'text-amber-700' },
-    violet: { bg: 'bg-violet-50', icon: 'bg-violet-100 text-violet-600', val: 'text-violet-700' },
+    primary: { bg: 'bg-indigo-50', icon: 'bg-indigo-100 text-indigo-600', val: 'text-indigo-700' },
+    success: { bg: 'bg-emerald-50', icon: 'bg-emerald-100 text-emerald-600', val: 'text-emerald-700' },
+    warning: { bg: 'bg-amber-50', icon: 'bg-amber-100 text-amber-600', val: 'text-amber-700' },
+    danger: { bg: 'bg-rose-50', icon: 'bg-rose-100 text-rose-600', val: 'text-rose-700' },
+    neutral: { bg: 'bg-slate-50', icon: 'bg-slate-100 text-slate-600', val: 'text-slate-700' },
   }
-  const p = palette[color] || palette.blue
+  const p = palette[color] || palette.primary
   return (
-    <div className={`rounded-2xl border border-white p-5 ${p.bg}`}>
+    <div className={`rounded-2xl border border-slate-100 p-5 ${p.bg}`}>
       <div className="mb-3 flex items-center justify-between">
         <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">{label}</p>
         <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${p.icon}`}>
@@ -191,6 +191,57 @@ function Btn({ children, onClick, disabled, variant = 'primary', size = 'md', cl
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function LecturerInvigilationDashboardPage() {
+  // Responsive table-to-cards CSS
+  useEffect(() => {
+    const style = document.createElement('style')
+    style.textContent = `
+      @media (max-width: 1023px) {
+        .responsive-table thead { display: none !important; }
+        .responsive-table tbody,
+        .responsive-table tr,
+        .responsive-table td { display: block !important; width: 100% !important; }
+        .responsive-table tr { 
+          border: 1px solid #e2e8f0; 
+          border-radius: 0.75rem; 
+          margin-bottom: 0.75rem; 
+          background: white;
+          box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .responsive-table tr:nth-child(even) { background: #f8fafc; }
+        .responsive-table td { 
+          padding: 0.75rem 1rem !important; 
+          border: none !important; 
+          border-bottom: 1px solid #f1f5f9 !important;
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          min-height: 2.5rem;
+        }
+        .responsive-table td:last-child { border-bottom: none !important; }
+        .responsive-table td::before { 
+          content: attr(data-label); 
+          font-weight: 600; 
+          font-size: 0.7rem; 
+          text-transform: uppercase; 
+          letter-spacing: 0.05em; 
+          color: #64748b; 
+          margin-right: 1rem;
+          flex-shrink: 0;
+        }
+        .responsive-table td[data-label="Actions"] { 
+          justify-content: flex-end !important; 
+          padding-top: 1rem !important; 
+          border-top: 1px solid #e2e8f0 !important;
+          background: #f8fafc;
+          border-radius: 0 0 0.75rem 0.75rem;
+        }
+        .responsive-table td[data-label="Actions"]::before { display: none !important; }
+        .responsive-table .footer-row { display: none !important; }
+      }
+    `
+    document.head.appendChild(style)
+    return () => document.head.removeChild(style)
+  }, [])
   const [availabilityDate, setAvailabilityDate] = useState('')
   const [availabilitySession, setAvailabilitySession] = useState('FN')
   const [availabilityReason, setAvailabilityReason] = useState('')
@@ -293,7 +344,7 @@ export default function LecturerInvigilationDashboardPage() {
   return (
     <InvigilationGuard allowRoles={['lecturer']}>
       {user => (
-        <InvigilationShell user={user} title="Lecturer · Invigilation">
+        <InvigilationShell user={user} title="Lecturer · Invigilation" backUrl="/lecturer/dashboard">
           <div className="min-h-screen bg-slate-50">
 
             {/* ── Page Header ── */}
@@ -323,10 +374,10 @@ export default function LecturerInvigilationDashboardPage() {
 
               {/* ── Stat Cards ── */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-                <StatCard label="Total Duties" value={totalDuties} icon={<ClipboardList size={16} />} color="blue" />
-                <StatCard label="Available" value={availableDuties} icon={<CheckCircle2 size={16} />} color="emerald" />
-                <StatCard label="Not Available" value={notAvailDuties} icon={<XCircle size={16} />} color="rose" />
-                <StatCard label="Pending" value={pendingDuties} icon={<AlertCircle size={16} />} color="amber" />
+                <StatCard label="Total Duties" value={totalDuties} icon={<ClipboardList size={16} />} color="primary" />
+                <StatCard label="Available" value={availableDuties} icon={<CheckCircle2 size={16} />} color="success" />
+                <StatCard label="Not Available" value={notAvailDuties} icon={<XCircle size={16} />} color="danger" />
+                <StatCard label="Pending" value={pendingDuties} icon={<AlertCircle size={16} />} color="warning" />
               </div>
 
               {/* ── Manage Availability ── */}
@@ -425,8 +476,8 @@ export default function LecturerInvigilationDashboardPage() {
                 {/* Table View (Active on Desktop or when Table selected) */}
                 {effectiveView === 'table' && (
                   <div className="overflow-x-auto">
-                    <table className="w-full min-w-[700px] text-sm">
-                      <thead>
+                    <table className="w-full min-w-[700px] text-sm responsive-table" role="table">
+                      <thead className="hidden lg:table-header-group">
                         <tr className="border-b border-slate-100 bg-slate-50/80">
                           {['#', 'Date', 'Session', 'Subject', 'Hall', 'Availability', 'Actions'].map(h => (
                             <th key={h} className="px-5 py-3 text-left text-xs font-bold tracking-wide whitespace-nowrap text-slate-400 uppercase">
@@ -449,30 +500,30 @@ export default function LecturerInvigilationDashboardPage() {
                           </tr>
                         ) : (
                           duties.map((d, i) => (
-                            <tr key={d._id} className={`transition-colors hover:bg-slate-50 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
-                              <td className="px-5 py-3 text-xs font-bold text-slate-400">{i + 1}</td>
-                              <td className="px-5 py-3 font-semibold whitespace-nowrap text-slate-700">
+                            <tr key={d._id} className={`transition-colors hover:bg-slate-50 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} lg:table-row`}>
+                              <td className="px-5 py-3 text-xs font-bold text-slate-400 lg:table-cell" data-label="#">{i + 1}</td>
+                              <td className="px-5 py-3 font-semibold whitespace-nowrap text-slate-700 lg:table-cell" data-label="Date">
                                 <span className="inline-flex items-center gap-1.5">
                                   <CalendarDays size={13} className="text-indigo-400" />
                                   {d.examScheduleId?.date ? formatDate(d.examScheduleId.date) : '—'}
                                 </span>
                               </td>
-                              <td className="px-5 py-3 whitespace-nowrap">
+                              <td className="px-5 py-3 whitespace-nowrap lg:table-cell" data-label="Session">
                                 <SessionChip session={d.examScheduleId?.session || '—'} />
                               </td>
-                              <td className="px-5 py-3 font-medium text-slate-700 max-w-xs truncate" title={d.examScheduleId?.subject || ''}>
+                              <td className="px-5 py-3 font-medium text-slate-700 max-w-xs truncate lg:table-cell" data-label="Subject" title={d.examScheduleId?.subject || ''}>
                                 {d.examScheduleId?.subject || '—'}
                               </td>
-                              <td className="px-5 py-3 whitespace-nowrap">
+                              <td className="px-5 py-3 whitespace-nowrap lg:table-cell" data-label="Hall">
                                 <span className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-xs font-semibold text-slate-700">
                                   <MapPin size={11} className="text-slate-400" />
                                   {d.examScheduleId?.hallNo || '—'}
                                 </span>
                               </td>
-                              <td className="px-5 py-3 whitespace-nowrap">
+                              <td className="px-5 py-3 whitespace-nowrap lg:table-cell" data-label="Availability">
                                 <AvailChip value={d.availability} />
                               </td>
-                              <td className="px-5 py-3 whitespace-nowrap">
+                              <td className="px-5 py-3 whitespace-nowrap lg:table-cell" data-label="Actions">
                                 <div className="flex items-center gap-2">
                                   <Btn size="sm" variant="emerald" onClick={() => markAvailability(d._id, 'Available')}>
                                     <CheckCircle2 size={12} />
@@ -490,7 +541,7 @@ export default function LecturerInvigilationDashboardPage() {
                       </tbody>
                     </table>
                     {duties.length > 0 && (
-                      <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-3 text-xs font-medium text-slate-400">
+                      <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-3 text-xs font-medium text-slate-400 hidden lg:block footer-row">
                         Showing {duties.length} duty {duties.length === 1 ? 'assignment' : 'assignments'}
                       </div>
                     )}

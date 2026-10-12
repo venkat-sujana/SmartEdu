@@ -4,7 +4,7 @@
 import InvigilationSidebar from "@/app/invigilation/components/InvigilationSidebar";
 import { signOut } from "next-auth/react";
 
-export default function InvigilationShell({ user, title, children }) {
+export default function InvigilationShell({ user, title, children, backUrl }) {
   const safeUser = user || {};
   const role = safeUser.role || "user";
   const name = safeUser.name || "User";
@@ -24,13 +24,23 @@ export default function InvigilationShell({ user, title, children }) {
               {institutionName ? ` | ${institutionName}` : ""}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => signOut({ callbackUrl: "/auth/login" })}
-            className="rounded-lg bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-700"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-2">
+            {backUrl && (
+              <a
+                href={backUrl}
+                className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 transition"
+              >
+                Back to Dashboard
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/auth/login" })}
+              className="rounded-lg bg-rose-600 px-3 py-2 text-sm font-medium text-white hover:bg-rose-700"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-[260px_1fr]">
