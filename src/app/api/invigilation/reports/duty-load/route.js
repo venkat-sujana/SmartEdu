@@ -9,7 +9,7 @@ export async function GET(req) {
   const { user, error } =
     await requireOsraAuth(
       req,
-      ['admin']
+      ['admin', 'principal']
     )
 
   if (error) return error

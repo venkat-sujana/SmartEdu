@@ -9,6 +9,7 @@ import { useMemo, useState, useEffect } from 'react'
 import ActiveLecturersCard from '@/components/dashboard/ActiveLecturersCard'
 import AttendanceSmsHistoryCard from '@/components/attendance/AttendanceSmsHistoryCard'
 import AnalyticsDashboard from '@/app/invigilation/components/AnalyticsDashboard'
+
 import {
   FileSpreadsheet,
   GraduationCap,
@@ -19,7 +20,16 @@ import {
   Users,
   Download,
   FileText,
+  ClipboardList,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  CalendarDays,
+  Shield,
 } from 'lucide-react'
+
+
+
 import { normalizeAttendanceGroup } from '@/utils/attendanceGroup'
 import AttendanceSmsCard from './AttendanceSmsCard'
 import PromotionCard from './PromotionCard'
@@ -305,6 +315,19 @@ export default function PrincipalDashboard() {
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [analyticsError, setAnalyticsError] = useState(null)
 
+  const [dutyStats, setDutyStats] = useState({
+    totalDuties: 0,
+    available: 0,
+    unavailable: 0,
+    pending: 0,
+    totalLecturers: 0,
+    totalRooms: 0,
+    totalExams: 0,
+  })
+  const [dutyLoading, setDutyLoading] = useState(true)
+  const [dutyError, setDutyError] = useState(null)
+  const [dutyDetails, setDutyDetails] = useState([])
+
   useEffect(() => {
     const loadAnalytics = async () => {
       try {
@@ -335,6 +358,46 @@ export default function PrincipalDashboard() {
     }
 
     loadAnalytics()
+  }, [])
+
+  useEffect(() => {
+    const loadDutyStats = async () => {
+      setDutyLoading(true)
+      try {
+        const [dRes, lRes, rRes, eRes, ddRes] = await Promise.all([
+          fetch('/api/invigilation/duties', { cache: 'no-store' }),
+          fetch('/api/invigilation/lecturers', { cache: 'no-store' }),
+          fetch('/api/invigilation/rooms', { cache: 'no-store' }),
+          fetch('/api/invigilation/exams', { cache: 'no-store' }),
+          fetch('/api/invigilation/duties?populate=true', { cache: 'no-store' }),
+        ])
+        const [dData, lData, rData, eData, ddData] = await Promise.all([
+          dRes.json(), lRes.json(), rRes.json(), eRes.json(), ddRes.json()
+        ])
+        if (!dRes.ok || !lRes.ok || !rRes.ok || !eRes.ok) {
+          throw new Error(dData.message || lData.message || rData.message || eData.message || 'Failed to load duty stats')
+        }
+        const duties = dData.data || []
+        const available = duties.filter(d => d.availability?.toLowerCase() === 'available').length
+        const unavailable = duties.filter(d => d.availability?.toLowerCase() === 'not available' || d.availability?.toLowerCase() === 'unavailable').length
+        const pending = duties.length - available - unavailable
+        setDutyStats({
+          totalDuties: duties.length,
+          available,
+          unavailable,
+          pending,
+          totalLecturers: (lData.data || []).length,
+          totalRooms: (rData.data || []).length,
+          totalExams: (eData.data || []).length,
+        })
+        setDutyDetails(ddData.data || [])
+      } catch (err) {
+        setDutyError(err.message)
+      } finally {
+        setDutyLoading(false)
+      }
+    }
+    loadDutyStats()
   }, [])
 
   const { data: dashboardOverview, error: dashboardOverviewError } = useSWR(
@@ -906,6 +969,7 @@ const [selectedGroup, setSelectedGroup] = useState('')
     ))}
   </div>
 
+  
   {/* Year-wise Attendance Tables */}
   <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
     <AttendanceOverviewTable
@@ -929,6 +993,299 @@ const [selectedGroup, setSelectedGroup] = useState('')
 
 </section>
 
+        {/* Invigilation Duties Overview */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <Shield className="h-5 w-5 text-indigo-600" />
+                Invigilation Duties Overview
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                College-wide invigilation schedule, assignments & availability status
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="bg-white border-slate-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Duties</p>
+                    <p className="mt-1 text-2xl font-black text-slate-900">{dutyStats.totalDuties}</p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+                    <ClipboardList size={20} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-slate-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Available</p>
+                    <p className="mt-1 text-2xl font-black text-emerald-700">{dutyStats.available}</p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                    <CheckCircle2 size={20} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-slate-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Not Available</p>
+                    <p className="mt-1 text-2xl font-black text-rose-700">{dutyStats.unavailable}</p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
+                    <XCircle size={20} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-slate-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending</p>
+                    <p className="mt-1 text-2xl font-black text-amber-700">{dutyStats.pending}</p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                    <AlertCircle size={20} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <Card className="bg-white border-slate-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Lecturers</p>
+                    <p className="mt-1 text-2xl font-black text-slate-900">{dutyStats.totalLecturers}</p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
+                    <Users size={20} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-slate-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Rooms</p>
+                    <p className="mt-1 text-2xl font-black text-slate-900">{dutyStats.totalRooms}</p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                    <CalendarDays size={20} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-slate-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Exam Schedules</p>
+                    <p className="mt-1 text-2xl font-black text-slate-900">{dutyStats.totalExams}</p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-100 text-teal-600">
+                    <FileText size={20} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {dutyError && (
+            <Card className="border-rose-200 bg-rose-50">
+              <CardContent className="p-4">
+                <p className="text-sm text-rose-700">Failed to load duty stats: {dutyError}</p>
+              </CardContent>
+            </Card>
+          )}
+          {dutyLoading && !dutyError && (
+            <Card className="border-slate-200 bg-slate-50">
+              <CardContent className="p-4 text-center text-slate-500">
+                Loading invigilation duties...
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Duty Assignments Table */}
+          {!dutyLoading && dutyDetails.length > 0 && (
+            <section className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <ClipboardList className="h-4 w-4 text-indigo-600" />
+                    Assigned Duties
+                  </h2>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {dutyDetails.filter(d => d.lecturerId).length} duties with assigned lecturers, grouped by exam date
+                  </p>
+                </div>
+              </div>
+              <Card className="bg-white border-slate-200">
+                <CardContent className="p-0">
+                  {(() => {
+                    // Group duties by date
+                    const assignedDuties = dutyDetails.filter(d => d.lecturerId)
+                    const dutiesByDate = assignedDuties.reduce((acc, duty) => {
+                      const dateKey = duty.examScheduleId?.date 
+                        ? new Date(duty.examScheduleId.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                        : 'Unknown Date'
+                      if (!acc[dateKey]) acc[dateKey] = []
+                      acc[dateKey].push(duty)
+                      return acc
+                    }, {})
+                    
+                    // Sort dates chronologically
+                    const sortedDates = Object.keys(dutiesByDate).sort((a, b) => {
+                      if (a === 'Unknown Date') return 1
+                      if (b === 'Unknown Date') return -1
+                      return new Date(a.split(' ').reverse().join('-')) - new Date(b.split(' ').reverse().join('-'))
+                    })
+
+                    // Session order: FN, AN, EN
+                    const sessionOrder = ['FN', 'AN', 'EN']
+
+                    return (
+                      <div className="divide-y divide-slate-200">
+                        {sortedDates.map((dateKey, dateIndex) => {
+                          const dayDuties = dutiesByDate[dateKey]
+                          // Further group by session within the date
+                          const dutiesBySession = dayDuties.reduce((acc, duty) => {
+                            const session = duty.examScheduleId?.session || 'Unknown'
+                            if (!acc[session]) acc[session] = []
+                            acc[session].push(duty)
+                            return acc
+                          }, {})
+                          // Sort sessions: FN first, then AN, then EN, then others
+                          const sortedSessions = Object.keys(dutiesBySession).sort((a, b) => {
+                            const aIndex = sessionOrder.indexOf(a)
+                            const bIndex = sessionOrder.indexOf(b)
+                            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+                            if (aIndex !== -1) return -1
+                            if (bIndex !== -1) return 1
+                            return a.localeCompare(b)
+                          })
+                          
+                          return (
+                            <div key={dateKey} className={dateIndex > 0 ? 'border-t border-slate-200' : ''}>
+                              {/* Date Header */}
+                              <div className="bg-slate-50 px-3 py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
+                                    <CalendarDays size={14} />
+                                  </div>
+                                  <div>
+                                    <p className="text-base font-bold text-slate-900">{dateKey}</p>
+                                    <p className="text-[10px] text-slate-500">
+                                      {dayDuties.length} duty{dayDuties.length !== 1 ? 's' : ''} across {sortedSessions.length} session{sortedSessions.length !== 1 ? 's' : ''}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Sessions */}
+                              <div className="px-2 py-1.5">
+                                {sortedSessions.map((session, sessionIndex) => {
+                                  const sessionDuties = dutiesBySession[session]
+                                  // Get unique exam types for this session
+                                  const examTypes = [...new Set(sessionDuties.map(d => d.examScheduleId?.examType).filter(Boolean))]
+                                  return (
+                                    <div key={session} className={sessionIndex > 0 ? 'mt-2' : ''}>
+                                      {/* Session Sub-header with Exam Type */}
+                                      <div className="mb-1 flex items-center gap-1.5 px-1 flex-wrap">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-100 text-indigo-700">
+                                          {session}
+                                        </span>
+                                        {examTypes.length > 0 && (
+                                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-100 text-violet-700">
+                                            {examTypes.join(', ')}
+                                          </span>
+                                        )}
+                                        <span className="text-[10px] text-slate-500">
+                                          {sessionDuties.length} exam{sessionDuties.length !== 1 ? 's' : ''}
+                                        </span>
+                                      </div>
+                                      
+                                      {/* Table for this session */}
+                                      <div className="overflow-x-auto">
+                                        <table className="min-w-full divide-y divide-slate-100 text-sm">
+                                          <thead className="bg-slate-50/50">
+                                            <tr>
+                                              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">S.No</th>
+                                              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Lecturer Name</th>
+                                              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Room No</th>
+                                              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Availability</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody className="bg-white divide-y divide-slate-100">
+                                            {sessionDuties.map((duty, index) => (
+                                              <tr key={duty._id} className="hover:bg-slate-50">
+                                                <td className="px-2 py-1.5 text-[11px] text-slate-500">{index + 1}</td>
+                                                <td className="px-2 py-1.5 text-[11px] font-medium text-slate-900">
+                                                  {duty.lecturerId?.name || '—'}
+                                                </td>
+                                                <td className="px-2 py-1.5 text-[11px] text-slate-700 font-mono">
+                                                  {duty.examScheduleId?.hallNo || duty.examScheduleId?.roomId?.name || '—'}
+                                                </td>
+                                                <td className="px-2 py-1.5 text-[11px]">
+                                                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
+                                                    duty.availability?.toLowerCase() === 'available' ? 'bg-emerald-100 text-emerald-700' :
+                                                    duty.availability?.toLowerCase() === 'not available' || duty.availability?.toLowerCase() === 'unavailable' ? 'bg-rose-100 text-rose-700' :
+                                                    'bg-amber-100 text-amber-700'
+                                                  }`}>
+                                                    {duty.availability || 'Pending'}
+                                                  </span>
+                                                </td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )
+                        })}
+                        {sortedDates.length === 0 && (
+                          <div className="p-4 text-center text-slate-500 text-sm">
+                            No assigned duties found
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
+                </CardContent>
+              </Card>
+            </section>
+          )}
+
+          {!dutyLoading && dutyDetails.length === 0 && !dutyError && (
+            <Card className="border-slate-200 bg-slate-50">
+              <CardContent className="p-6 text-center text-slate-500">
+                No duty assignments found
+              </CardContent>
+            </Card>
+          )}
+        </section>
 
         {/* Exam Performance Section — Group-wise */}
         <section className="space-y-6">

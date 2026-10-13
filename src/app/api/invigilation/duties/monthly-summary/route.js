@@ -5,7 +5,7 @@ import { requireOsraAuth } from "@/lib/osra-api-guard";
 import LecturerUserMapping from "@/models/LecturerUserMapping";
 import User from "@/models/User";
 export async function GET(req) {
-  const { user, error } = await requireOsraAuth(req, ["lecturer", "admin"]);
+  const { user, error } = await requireOsraAuth(req, ["lecturer", "admin", "principal"]);
   if (error) return error;
 
   await connectInvigilationDB();

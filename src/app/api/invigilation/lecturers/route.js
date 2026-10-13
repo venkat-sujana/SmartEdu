@@ -6,7 +6,7 @@ import LecturerProfile from '@/models/LecturerProfile'
 import { requireOsraAuth } from "@/lib/osra-api-guard"
 
 export async function GET(req) {
-  const { user: admin, error } = await requireOsraAuth(req, ['admin'])
+  const { user: admin, error } = await requireOsraAuth(req, ['admin', 'principal'])
   if (error) return error
 
   try {

@@ -52,7 +52,7 @@ async function getAvailabilityOwnerId(user) {
 }
 
 export async function GET(req) {
-  const { user, error } = await requireOsraAuth(req, ['admin', 'lecturer'])
+  const { user, error } = await requireOsraAuth(req, ['admin', 'lecturer', 'principal'])
   if (error) return error
 
   try {

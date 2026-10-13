@@ -16,6 +16,7 @@ export async function GET(req) {
   const { user, error } = await requireOsraAuth(req, [
     "admin",
     "lecturer",
+    "principal",
   ]);
 
   if (error) return error;
