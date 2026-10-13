@@ -25,14 +25,7 @@ export default function InvigilationShell({ user, title, children, backUrl }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {backUrl && (
-              <a
-                href={backUrl}
-                className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 transition"
-              >
-                Back to Dashboard
-              </a>
-            )}
+            
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/auth/login" })}

@@ -344,7 +344,7 @@ export default function LecturerInvigilationDashboardPage() {
   return (
     <InvigilationGuard allowRoles={['lecturer']}>
       {user => (
-        <InvigilationShell user={user} title="Lecturer · Invigilation" backUrl="/lecturer/dashboard">
+        <InvigilationShell user={user} title="Lecturer · Invigilation" >
           <div className="min-h-screen bg-slate-50">
 
             {/* ── Page Header ── */}

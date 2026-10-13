@@ -23,22 +23,25 @@ import TodayAbsenteesTable from '@/app/absentees-table/page'
 import OverallStrengthCard from '@/components/dashboard/OverallStrengthCard'
 import MainLinks from '@/components/MainLinks'
 
-export default function LecturerDashboard() {
-  const { data: shortageApiData } = useSWR('/api/attendance/shortage-summary', fetcher)
-  const { data: absApiData } = useSWR('/api/attendance/today-absentees', fetcher)
 
-  const { data: consecutiveData } = useSWR(
-  session?.user?.collegeId
-    ? `/api/attendance/consecutive-absentees?collegeId=${session.user.collegeId}`
-    : null,
-  fetcher
-)
+export default function LecturerDashboard() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  const { data: shortageApiData } = useSWR(
+    '/api/attendance/shortage-summary',
+    fetcher
+  )
+
+  const { data: absApiData } = useSWR(
+    '/api/attendance/today-absentees',
+    fetcher
+  )
+
 
   const shortageData = shortageApiData?.data || []
   const sessionWisePresent = absApiData?.sessionWisePresent || {}
   const sessionWiseAbsentees = absApiData?.sessionWiseAbsentees || {}
-  const { data: session, status } = useSession()
-  const router = useRouter()
 
   const { data: activeLecturersData, error: activeLecturersError } = useSWR(
     '/api/lecturers/active',
