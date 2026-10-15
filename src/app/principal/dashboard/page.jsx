@@ -1,4 +1,4 @@
-//app/principal/dashboard/page.jsx
+﻿//app/principal/dashboard/page.jsx
 'use client'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
@@ -189,7 +189,7 @@ function SubjectWisePassTable({ rows, title }) {
         <div className="min-w-0">
           <h3 className="truncate text-sm font-black text-slate-900 sm:text-base">{title}</h3>
           <p className="mt-0.5 hidden text-[10px] text-slate-500 sm:block">
-            Pass % = Pass ÷ Appeared × 100 • Subject Absent excluded
+            Pass % = Pass Ã· Appeared Ã— 100 â€¢ Subject Absent excluded
           </p>
         </div>
         <span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600">
@@ -425,7 +425,7 @@ export default function PrincipalDashboard() {
     }
   )
 
-  const atRiskStudents = consecutiveData?.length || 0
+  const atRiskStudents = consecutiveData?.count ?? consecutiveData?.absentees?.length ?? 0
 
   const { data: trendData } = useSWR('/api/attendance/trend?days=7', fetcher, {
     refreshInterval: 60000,
@@ -707,13 +707,13 @@ const [selectedGroup, setSelectedGroup] = useState('')
       doc.setFontSize(14)
       doc.text(collegeName, pageWidth / 2, 10, { align: 'center' })
       doc.setFontSize(11)
-      doc.text(`${groupNameForFile} — Exam Performance Report`, pageWidth / 2, 16, {
+      doc.text(`${groupNameForFile} â€” Exam Performance Report`, pageWidth / 2, 16, {
         align: 'center',
       })
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(8)
       doc.text(
-        'Pass % = Pass ÷ Appeared × 100 | Absent students excluded from pass % calculation',
+        'Pass % = Pass Ã· Appeared Ã— 100 | Absent students excluded from pass % calculation',
         pageWidth / 2,
         21,
         { align: 'center' }
@@ -780,11 +780,11 @@ const [selectedGroup, setSelectedGroup] = useState('')
 
       if (selectedGroupData) {
         buildSection(
-          'First Year — Subject Pass % by Exam',
+          'First Year â€” Subject Pass % by Exam',
           selectedGroupData.firstYearSubjectWiseByExam
         )
         buildSection(
-          'Second Year — Subject Pass % by Exam',
+          'Second Year â€” Subject Pass % by Exam',
           selectedGroupData.secondYearSubjectWiseByExam
         )
       }
@@ -885,31 +885,67 @@ const [selectedGroup, setSelectedGroup] = useState('')
 
 </section>
 
-        {/* <GroupPerformanceCard groups={groupPerformance || []} /> */}
+       
+<section className="space-y-4 py-4">
+  <div>
+    <h2 className="text-lg font-bold text-slate-800 sm:text-xl">
+      Student Follow-up & Group Performance
+    </h2>
+    <p className="mt-1 text-sm text-slate-500">
+      Monitor consecutive absentees and compare group attendance
+    </p>
+  </div>
 
-        {/* <section>
-          <div className="grid grid-cols-1 gap-4 py-4 lg:grid-cols-2">
-            <AttendanceHealthScoreCard
-              attendancePercentage={todayAttendancePercentage}
-              totalStudents={todayTotal}
-              presentStudents={todayPresent}
-              absentStudents={todayAbsent}
-            />
+  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <GroupPerformanceCard groups={groupPerformance || []} />
 
-            <AttendanceTrendCard title="College Attendance Trend" trendData={trendData || []} />
-          </div>
+    <ConsecutiveAbsenteesCard
+      data={consecutiveAbsentees}
+      title="Students At Risk"
+      loading={!consecutiveData}
+      showViewAll={true}
+    />
+  </div>
+</section>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <AttendanceInsightsCard
-              attendancePercentage={todayAttendancePercentage}
-              previousAttendancePercentage={previousAttendancePercentage}
-              totalAbsent={todayAbsent}
-              totalPresent={todayPresent}
-              bestGroup={bestGroup}
-            />
-            <AttendanceAlertsCard alerts={attendanceAlerts} />
-          </div>
-        </section> */}
+
+        
+<section className="space-y-4 py-4">
+  <div>
+    <h2 className="text-lg font-bold text-slate-800 sm:text-xl">
+      Attendance Analytics
+    </h2>
+    <p className="mt-1 text-sm text-slate-500">
+      College attendance health, trends, insights and alerts
+    </p>
+  </div>
+
+  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <AttendanceHealthScoreCard
+      attendancePercentage={todayAttendancePercentage}
+      totalStudents={todayTotal}
+      presentStudents={todayPresent}
+      absentStudents={todayAbsent}
+    />
+
+    <AttendanceTrendCard
+      title="College Attendance Trend"
+      trendData={trendData || []}
+    />
+  </div>
+
+  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <AttendanceInsightsCard
+      attendancePercentage={todayAttendancePercentage}
+      previousAttendancePercentage={previousAttendancePercentage}
+      totalAbsent={todayAbsent}
+      bestGroup={bestGroup}
+    />
+
+    <AttendanceAlertsCard alerts={attendanceAlerts} />
+  </div>
+</section>
+
 
         <section className="space-y-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -1239,10 +1275,10 @@ const [selectedGroup, setSelectedGroup] = useState('')
                                               <tr key={duty._id} className="hover:bg-slate-50">
                                                 <td className="px-2 py-1.5 text-[11px] text-slate-500">{index + 1}</td>
                                                 <td className="px-2 py-1.5 text-[11px] font-medium text-slate-900">
-                                                  {duty.lecturerId?.name || '—'}
+                                                  {duty.lecturerId?.name || 'â€”'}
                                                 </td>
                                                 <td className="px-2 py-1.5 text-[11px] text-slate-700 font-mono">
-                                                  {duty.examScheduleId?.hallNo || duty.examScheduleId?.roomId?.name || '—'}
+                                                  {duty.examScheduleId?.hallNo || duty.examScheduleId?.roomId?.name || 'â€”'}
                                                 </td>
                                                 <td className="px-2 py-1.5 text-[11px]">
                                                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
@@ -1287,7 +1323,7 @@ const [selectedGroup, setSelectedGroup] = useState('')
           )}
         </section>
 
-        {/* Exam Performance Section — Group-wise */}
+        {/* Exam Performance Section â€” Group-wise */}
         <section className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -1326,7 +1362,7 @@ const [selectedGroup, setSelectedGroup] = useState('')
                 <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm">
                   <div className="mb-3 flex items-center justify-between border-b border-slate-200/80 pb-3">
                     <h3 className="text-lg font-black text-slate-900">
-                      {selectedGroupData.group} — First Year Exam Summary
+                      {selectedGroupData.group} â€” First Year Exam Summary
                     </h3>
                     <span className="text-xs text-slate-500">
                       {selectedGroupData.firstYearExamSummaryRows.length} exams
@@ -1389,7 +1425,7 @@ const [selectedGroup, setSelectedGroup] = useState('')
                 <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm">
                   <div className="mb-3 flex items-center justify-between border-b border-slate-200/80 pb-3">
                     <h3 className="text-lg font-black text-slate-900">
-                      {selectedGroupData.group} — Second Year Exam Summary
+                      {selectedGroupData.group} â€” Second Year Exam Summary
                     </h3>
                     <span className="text-xs text-slate-500">
                       {selectedGroupData.secondYearExamSummaryRows.length} exams
@@ -1455,7 +1491,7 @@ const [selectedGroup, setSelectedGroup] = useState('')
                 <div className="mb-4">
                   <h3 className="text-lg font-black text-slate-900">Subject-wise Pass % by Exam</h3>
                   <p className="mt-1 text-sm text-slate-500">
-                    {selectedGroupData.group} — Detailed subject performance breakdown for each exam
+                    {selectedGroupData.group} â€” Detailed subject performance breakdown for each exam
                     type
                   </p>
                 </div>
@@ -1473,7 +1509,7 @@ const [selectedGroup, setSelectedGroup] = useState('')
                           <SubjectWisePassTable
                             key={examType}
                             rows={rows}
-                            title={`${formatExamLabel(examType)} — Subject Pass %`}
+                            title={`${formatExamLabel(examType)} â€” Subject Pass %`}
                           />
                         ))}
                       </div>
@@ -1492,7 +1528,7 @@ const [selectedGroup, setSelectedGroup] = useState('')
                           <SubjectWisePassTable
                             key={examType}
                             rows={rows}
-                            title={`${formatExamLabel(examType)} — Subject Pass %`}
+                            title={`${formatExamLabel(examType)} â€” Subject Pass %`}
                           />
                         ))}
                       </div>
@@ -1512,14 +1548,26 @@ const [selectedGroup, setSelectedGroup] = useState('')
           <GroupDashboard />
         </section> */}
 
-        {/* <section className="space-y-6 p-2">
-          <ConsecutiveAbsenteesCard
-            data={consecutiveAbsentees}
-            title="Students At Risk"
-            loading={!consecutiveData}
-            showViewAll={true}
-          />
-        </section> */}
+        
+<section className="space-y-4 py-4">
+  <div>
+    <h2 className="text-lg font-bold text-slate-800 sm:text-xl">
+      Invigilation Analytics
+    </h2>
+    <p className="mt-1 text-sm text-slate-500">
+      Exam sessions, duties, lecturer availability and invigilation reports
+    </p>
+  </div>
+
+  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <AnalyticsDashboard
+      stats={analyticsStats}
+      loading={analyticsLoading}
+      error={analyticsError}
+    />
+  </div>
+</section>
+
 
         <ActiveLecturersCard title="Currently Active Lecturers" />
 
@@ -1583,7 +1631,7 @@ const [selectedGroup, setSelectedGroup] = useState('')
               <p className="text-sm font-medium text-slate-700">Principal Dashboard</p>
 
               <p className="text-xs text-slate-500">
-                © {new Date().getFullYear()} All Rights Reserved
+                Â© {new Date().getFullYear()} All Rights Reserved
               </p>
             </div>
           </div>
