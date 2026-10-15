@@ -7,7 +7,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import InvigilationGuard from '@/app/invigilation/components/InvigilationGuard'
 import InvigilationShell from '@/app/invigilation/components/InvigilationShell'
-
+import { isExcludedExamDay } from "@/lib/examHolidays";
 import {
   CalendarRange,
   ClipboardCheck,
@@ -36,6 +36,7 @@ import {
   UserSquare2,
   Settings2,
   CalendarCheck,
+  Info,
 } from 'lucide-react'
 import AvailabilityTab from '../dashboard/AvailabilityTab'
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -92,6 +93,36 @@ function getDayCount(fromDate, toDate) {
   const end = parseDateKey(toDate)
   if (isNaN(start) || isNaN(end) || start > end) return 0
   return Math.floor((end - start) / 86400000) + 1
+}
+
+function isSecondSaturday(date) {
+  const d = new Date(date)
+  if (d.getDay() !== 6) return false
+  const firstDay = new Date(d.getFullYear(), d.getMonth(), 1)
+  const firstSaturday = 6 - firstDay.getDay()
+  const secondSaturday = firstSaturday + 7
+  return d.getDate() === secondSaturday
+}
+
+function isExcludedDay(date) {
+  return isExcludedExamDay(new Date(date));
+}
+
+function getValidDates(fromDate, toDate) {
+  if (!fromDate || !toDate) return []
+  const start = parseDateKey(fromDate)
+  const end = parseDateKey(toDate)
+  if (isNaN(start) || isNaN(end) || start > end) return []
+  const dates = []
+  const current = new Date(start)
+  while (current <= end) {
+    const dateStr = formatDate(current)
+    if (!isExcludedDay(current)) {
+      dates.push(dateStr)
+    }
+    current.setDate(current.getDate() + 1)
+  }
+  return dates
 }
 
 // ─── Design System ────────────────────────────────────────────────────────────
@@ -367,6 +398,7 @@ export default function AdminInvigilationDashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [unavailCount, setUnavailCount] = useState(0)
   const [dutyLoadData, setDutyLoadData] = useState([])
+  const [colleges, setColleges] = useState([])
   const [roomForm, setRoomForm] = useState({ name: '', block: '', capacity: '' })
   const [scheduleForm, setScheduleForm] = useState({
     fromDate: '',
@@ -376,6 +408,7 @@ export default function AdminInvigilationDashboardPage() {
     roomIds: [],
     maxDutiesPerLecturer: '2',
     sameDayNoRepeat: true,
+    collegeId: '',
   })
   const [editingRoomId, setEditingRoomId] = useState('')
   const [editingScheduleId, setEditingScheduleId] = useState('')
@@ -390,6 +423,7 @@ export default function AdminInvigilationDashboardPage() {
   const [filters, setFilters] = useState({ fromDate: '', toDate: '', lecturerId: '', session: '' })
   const [allDuties, setAllDuties] = useState([])
   const [selectedPdfExam, setSelectedPdfExam] = useState('ALL')
+  const [userCollegeId, setUserCollegeId] = useState(null)
   // ── Data fetching (unchanged) ─────────────────────────────────────────────
   const fetchAll = useCallback(
     async (activeFilters = { date: '', lecturerId: '', session: '' }) => {
@@ -414,12 +448,23 @@ export default function AdminInvigilationDashboardPage() {
 
         const responses = await Promise.all(requests)
         const [lRes, rRes, eRes, dRes, allDRes] = responses
+        
+        // Parse JSON with error handling for 500 responses that return HTML
+        const parseJson = async (res, label) => {
+          const text = await res.text()
+          try {
+            return JSON.parse(text)
+          } catch {
+            return { message: `${label} API error: ${res.status} ${res.statusText}`, data: [] }
+          }
+        }
+        
         const [lData, rData, eData, dData, allDData] = await Promise.all([
-          lRes.json(),
-          rRes.json(),
-          eRes.json(),
-          dRes.json(),
-          allDRes ? allDRes.json() : Promise.resolve(null),
+          parseJson(lRes, 'Lecturers'),
+          parseJson(rRes, 'Rooms'),
+          parseJson(eRes, 'Exams'),
+          parseJson(dRes, 'Duties'),
+          allDRes ? parseJson(allDRes, 'AllDuties') : Promise.resolve(null),
         ])
 
         if (!lRes.ok || !rRes.ok || !eRes.ok || !dRes.ok)
@@ -449,6 +494,19 @@ export default function AdminInvigilationDashboardPage() {
   useEffect(() => {
     fetchAll()
   }, [fetchAll])
+
+  // Fetch colleges for system admins
+  useEffect(() => {
+    if (!userCollegeId) {
+      fetch('/api/colleges', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+          console.log('Colleges fetched:', data)
+          if (Array.isArray(data)) setColleges(data)
+        })
+        .catch(err => console.error('Colleges fetch error:', err))
+    }
+  }, [userCollegeId])
 
   const fetchAllDuties = useCallback(async () => {
     try {
@@ -496,26 +554,58 @@ export default function AdminInvigilationDashboardPage() {
       toast.error('Select at least one room')
       return null
     }
+    const effectiveCollegeId = scheduleForm.collegeId || userCollegeId
+    console.log('Schedule form:', scheduleForm)
+    console.log('User college ID:', userCollegeId)
+    console.log('Effective college ID:', effectiveCollegeId)
+    if (!effectiveCollegeId) {
+      toast.error('College ID not found. Please select a college or refresh the page.')
+      return null
+    }
+    const validDates = getValidDates(scheduleForm.fromDate, scheduleForm.toDate)
+    if (validDates.length === 0) {
+      toast.error('No valid exam dates in range (Sundays & 2nd Saturdays excluded)')
+      return null
+    }
+    // Build roomId -> hallNo map
+    const roomMap = new Map(rooms.map(r => [r._id, r.name]))
     setScheduleLoading(true)
     try {
-      // FN+AN అయితే రెండు sessions కోసం వేర్వేరు API calls చేయడం
       const sessions =
         scheduleForm.session === 'FN+AN' ? ['FN', 'AN'] : [scheduleForm.session]
       let totalCreated = 0
       let totalSkipped = 0
-      for (const session of sessions) {
-        const res = await fetch('/api/invigilation/exams', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...scheduleForm, session }),
-        })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.message)
-        totalCreated += data.createdCount || 0
-        totalSkipped += data.skippedCount || 0
+      for (const date of validDates) {
+        for (const session of sessions) {
+          for (const roomId of scheduleForm.roomIds) {
+            const hallNo = roomMap.get(roomId)
+            if (!hallNo) continue
+            const res = await fetch('/api/invigilation/exams', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                date,
+                session,
+                examType: scheduleForm.examType,
+                hallNo,  // API expects hallNo (room name), not roomId
+                collegeId: effectiveCollegeId,
+                maxDutiesPerLecturer: scheduleForm.maxDutiesPerLecturer,
+                sameDayNoRepeat: scheduleForm.sameDayNoRepeat,
+              }),
+            })
+            const text = await res.text()
+            console.log('API response status:', res.status, 'body:', text)
+            let data = {}
+            try { data = JSON.parse(text) } catch { data = { message: text || 'Invalid response' } }
+            if (!res.ok) throw new Error(data.message)
+            totalCreated += data.createdCount || 0
+            totalSkipped += data.skippedCount || 0
+          }
+        }
       }
+      const excludedCount = getDayCount(scheduleForm.fromDate, scheduleForm.toDate) - validDates.length
       toast.success(
-        `Schedules created | Created: ${totalCreated} | Skipped: ${totalSkipped}`
+        `Schedules created | Created: ${totalCreated} | Skipped: ${totalSkipped} | Excluded days: ${excludedCount}`
       )
       fetchAll(filters)
       return { createdCount: totalCreated, skippedCount: totalSkipped }
@@ -588,6 +678,8 @@ export default function AdminInvigilationDashboardPage() {
           session: filters.session || undefined,
           maxDutiesPerLecturer: Number(scheduleForm.maxDutiesPerLecturer || 0) || undefined,
           sameDayNoRepeat: scheduleForm.sameDayNoRepeat,
+          randomize: true,
+          collegeId: scheduleForm.collegeId || userCollegeId,
         }),
       })
       const data = await res.json()
@@ -601,7 +693,7 @@ export default function AdminInvigilationDashboardPage() {
     }
   }
 
-  const onGenerateAndAssign = async () => {
+const onGenerateAndAssign = async () => {
     const snap = { ...scheduleForm }
     const ok = await createScheduleBatch()
     if (!ok) return
@@ -618,6 +710,7 @@ export default function AdminInvigilationDashboardPage() {
           examType: snap.examType,
           maxDutiesPerLecturer: Number(snap.maxDutiesPerLecturer || 0) || undefined,
           sameDayNoRepeat: snap.sameDayNoRepeat,
+          randomize: true,
         }),
       })
       const data = await res.json()
@@ -797,7 +890,12 @@ export default function AdminInvigilationDashboardPage() {
     () => getDayCount(scheduleForm.fromDate, scheduleForm.toDate),
     [scheduleForm.fromDate, scheduleForm.toDate]
   )
-  const schedulePreviewCount = totalDays * scheduleForm.roomIds.length
+  const validDates = useMemo(
+    () => getValidDates(scheduleForm.fromDate, scheduleForm.toDate),
+    [scheduleForm.fromDate, scheduleForm.toDate]
+  )
+  const validDaysCount = validDates.length
+  const schedulePreviewCount = validDaysCount * scheduleForm.roomIds.length
   const selectedRooms = useMemo(
     () => rooms.filter(r => scheduleForm.roomIds.includes(r._id)),
     [rooms, scheduleForm.roomIds]
@@ -807,10 +905,10 @@ export default function AdminInvigilationDashboardPage() {
     [selectedRooms]
   )
   const dailySeatCapacity = totalSelectedCapacity
-  const rangeSeatCapacity = dailySeatCapacity * totalDays
+  const rangeSeatCapacity = dailySeatCapacity * validDaysCount
   const workloadLimit = Number(scheduleForm.maxDutiesPerLecturer || 0)
   const effectiveLecturerLimit = scheduleForm.sameDayNoRepeat
-    ? Math.min(workloadLimit || totalDays, totalDays)
+    ? Math.min(workloadLimit || validDaysCount, validDaysCount)
     : workloadLimit
   const lecturerCoverage = lecturers.length * (effectiveLecturerLimit || 0)
   const hasCoverageGap = workloadLimit > 0 && lecturerCoverage < schedulePreviewCount
@@ -1478,439 +1576,510 @@ export default function AdminInvigilationDashboardPage() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <InvigilationGuard allowRoles={['admin']}>
-      {user => (
-        <InvigilationShell user={user} title="Admin · Invigilation">
-          <div className="min-h-screen min-w-0 max-w-full bg-slate-50">
-            {/* ── Page Header ── */}
-            <div className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 sm:py-5">
-              <div className="mx-auto flex max-w-screen-2xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600">
-                    <Shield size={22} className="text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-lg leading-none font-black text-slate-800">
-                      Invigilation Management
-                    </h1>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Generate schedules · Assign duties · Track availability
-                    </p>
-                  </div>
-                </div>
-                <Btn variant="outline" onClick={() => fetchAll(filters)} loading={loading} className="w-full justify-center sm:w-auto">
-                  <RefreshCw size={14} />
-                  Refresh
-                </Btn>
-              </div>
+      {user => {
+        if (user && !userCollegeId) {
+          const cid =
+            user.collegeId ||
+            user.institutionId ||
+            user.college_id ||
+            user.institution_id ||
+            user.organizationId ||
+            user.organization_id ||
+            user.college?.id ||
+            user.institution?.id ||
+            user.organization?.id
 
-              {/* Tab Navigation */}
-              <div className="mx-auto mt-4 flex max-w-screen-2xl gap-1 overflow-x-auto pb-1">
-                {tabs.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveTab(t.id)}
-                    className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold transition-all sm:px-4 ${activeTab === t.id ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
+          if (cid) {
+            setUserCollegeId(cid)
+          } else {
+            console.log('User object keys:', Object.keys(user))
+            console.log('Full user object:', user)
+            // Try to fetch from /api/auth/me as fallback
+            fetch('/api/auth/me', { cache: 'no-store' })
+              .then(r => r.json())
+              .then(data => {
+                const profileCid = data?.user?.collegeId || data?.user?.institutionId || data?.user?.college_id || data?.user?.institution_id || data?.user?.organizationId
+                if (profileCid) setUserCollegeId(profileCid)
+              })
+          }
+        }
+
+        return (
+          <InvigilationShell user={user} title="Admin · Invigilation">
+            <div className="min-h-screen min-w-0 max-w-full bg-slate-50">
+              {/* ── Page Header ── */}
+              <div className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 sm:py-5">
+                <div className="mx-auto flex max-w-screen-2xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600">
+                      <Shield size={22} className="text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-lg leading-none font-black text-slate-800">
+                        Invigilation Management
+                      </h1>
+                      <p className="mt-1 text-xs text-slate-400">
+                        Generate schedules · Assign duties · Track availability
+                      </p>
+                    </div>
+                  </div>
+                  <Btn
+                    variant="outline"
+                    onClick={() => fetchAll(filters)}
+                    loading={loading}
+                    className="w-full justify-center sm:w-auto"
                   >
-                    {t.icon}
-                    {t.label}
-                    {t.badge ? (
-                      <span
-                        className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${activeTab === t.id ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-600'}`}
-                      >
-                        {t.badge}
-                      </span>
-                    ) : null}
-                  </button>
-                ))}
+                    <RefreshCw size={14} />
+                    Refresh
+                  </Btn>
+                </div>
+
+                {/* Tab Navigation */}
+                <div className="mx-auto mt-4 flex max-w-screen-2xl gap-1 overflow-x-auto pb-1">
+                  {tabs.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setActiveTab(t.id)}
+                      className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold transition-all sm:px-4 ${activeTab === t.id ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
+                    >
+                      {t.icon}
+                      {t.label}
+                      {t.badge ? (
+                        <span
+                          className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${activeTab === t.id ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-600'}`}
+                        >
+                          {t.badge}
+                        </span>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* ── Tab Content ── */}
-            <div className="mx-auto max-w-screen-2xl space-y-5 p-4 sm:space-y-6 sm:p-6">
-              {/* ══════════ OVERVIEW TAB ══════════ */}
-              {activeTab === 'overview' && (
-                <>
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-                    <StatCard
-                      label="Lecturers"
-                      value={lecturers.length}
-                      icon={<Users size={16} />}
-                      color="blue"
-                    />
-                    <StatCard
-                      label="Rooms"
-                      value={rooms.length}
-                      icon={<School size={16} />}
-                      color="emerald"
-                    />
-                    <StatCard
-                      label="Exam Slots"
-                      value={exams.length}
-                      icon={<Calendar size={16} />}
-                      color="indigo"
-                    />
-                    <StatCard
-                      label="Duties"
-                      value={duties.length}
-                      icon={<ClipboardCheck size={16} />}
-                      color="violet"
-                    />
-                  </div>
-
-                  <div className="grid gap-4 sm:gap-5 xl:grid-cols-3">
-                    {/* Quick assign */}
-                    <Card className="xl:col-span-1">
-                      <SectionHeader
-                        icon={<ClipboardCheck size={16} />}
-                        title="Manual Duty Assignment"
-                        subtitle="Map a lecturer to an exam slot"
+              {/* ── Tab Content ── */}
+              <div className="mx-auto max-w-screen-2xl space-y-5 p-4 sm:space-y-6 sm:p-6">
+                {/* ══════════ OVERVIEW TAB ══════════ */}
+                {activeTab === 'overview' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+                      <StatCard
+                        label="Lecturers"
+                        value={lecturers.length}
+                        icon={<Users size={16} />}
+                        color="blue"
                       />
-                      <form onSubmit={onAssignDuty} className="space-y-4 p-4 sm:p-5">
-                        <Field label="Exam Slot">
-                          <Select
-                            icon={<Calendar size={14} />}
-                            required
-                            value={dutyForm.examScheduleId}
-                            onChange={e =>
-                              setDutyForm(s => ({ ...s, examScheduleId: e.target.value }))
-                            }
-                          >
-                            <option value="">Choose exam slot…</option>
-                            {exams.map(e => (
-                              <option key={e._id} value={e._id}>
-                                {formatDate(e.date)} · {e.session} ·{' '}
-                                {formatExamType(e.examType || e.subject)} · Hall {e.hallNo}
-                              </option>
-                            ))}
-                          </Select>
-                        </Field>
-                        <Field label="Lecturer">
-                          <Select
-                            icon={<GraduationCap size={14} />}
-                            required
-                            value={dutyForm.lecturerId}
-                            onChange={e => setDutyForm(s => ({ ...s, lecturerId: e.target.value }))}
-                          >
-                            <option value="">Choose lecturer…</option>
-
-                            {lecturers.map((l, i) => (
-                              <option key={l._id || l.id || i} value={l._id || l.id}>
-                                {l.name}
-                              </option>
-                            ))}
-                          </Select>
-                        </Field>
-                        <Btn type="submit" variant="violet" className="w-full justify-center">
-                          <ClipboardCheck size={14} />
-                          Assign Duty
-                        </Btn>
-                      </form>
-                    </Card>
-
-                    {/* Room management */}
-                    <Card className="xl:col-span-2">
-                      <SectionHeader
+                      <StatCard
+                        label="Rooms"
+                        value={rooms.length}
                         icon={<School size={16} />}
-                        title="Room Management"
-                        subtitle="Add and manage exam halls"
+                        color="emerald"
                       />
-                      <form onSubmit={onCreateRoom} className="space-y-4 p-4 sm:p-5">
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <Field label="Room Name">
-                            <Input
-                              placeholder="e.g. Hall A"
-                              required
-                              value={roomForm.name}
-                              onChange={e => setRoomForm(s => ({ ...s, name: e.target.value }))}
-                            />
-                          </Field>
-                          <Field label="Block">
-                            <Input
-                              placeholder="e.g. Main Block"
-                              value={roomForm.block}
-                              onChange={e => setRoomForm(s => ({ ...s, block: e.target.value }))}
-                            />
-                          </Field>
-                          <Field label="Capacity">
-                            <Input
-                              placeholder="e.g. 30"
-                              type="number"
-                              min="1"
-                              value={roomForm.capacity}
-                              onChange={e => setRoomForm(s => ({ ...s, capacity: e.target.value }))}
-                            />
-                          </Field>
-                        </div>
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                          <Btn type="submit" variant="emerald">
-                            <School size={14} />
-                            {editingRoomId ? 'Update Room' : 'Add Room'}
-                          </Btn>
-                          {editingRoomId && (
-                            <Btn
-                              variant="outline"
-                              onClick={() => {
-                                setEditingRoomId('')
-                                setRoomForm({ name: '', block: '', capacity: '' })
-                              }}
-                            >
-                              Cancel
-                            </Btn>
-                          )}
-                        </div>
-                      </form>
+                      <StatCard
+                        label="Exam Slots"
+                        value={exams.length}
+                        icon={<Calendar size={16} />}
+                        color="indigo"
+                      />
+                      <StatCard
+                        label="Duties"
+                        value={duties.length}
+                        icon={<ClipboardCheck size={16} />}
+                        color="violet"
+                      />
+                    </div>
 
-                      {rooms.length > 0 && (
-                        <div className="overflow-x-auto border-t border-slate-100">
-                          <table className="min-w-full text-sm">
-                            <TableHead cols={['Room', 'Block', 'Capacity', 'Actions']} />
-                            <tbody className="divide-y divide-slate-50">
-                              {rooms.map((room, i) => (
-                                <tr
-                                  key={room._id}
-                                  className={`transition-colors hover:bg-slate-50 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
-                                >
-                                  <td className="px-5 py-3 font-semibold text-slate-700">
-                                    {room.name}
-                                  </td>
-                                  <td className="px-5 py-3 text-slate-500">{room.block || '—'}</td>
-                                  <td className="px-5 py-3 text-slate-500">
-                                    {room.capacity || '—'}
-                                  </td>
-                                  <td className="px-5 py-3">
-                                    <div className="flex gap-1.5">
-                                      <button
-                                        type="button"
-                                        onClick={() => onEditRoom(room)}
-                                        className="rounded-lg p-1.5 text-amber-600 transition hover:bg-amber-50"
-                                      >
-                                        <Pencil size={13} />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => onDeleteRoom(room)}
-                                        disabled={actionLoading === `room-delete-${room._id}`}
-                                        className="rounded-lg p-1.5 text-rose-600 transition hover:bg-rose-50 disabled:opacity-40"
-                                      >
-                                        <Trash2 size={13} />
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
+                    <div className="grid gap-4 sm:gap-5 xl:grid-cols-3">
+                      {/* Quick assign */}
+                      <Card className="xl:col-span-1">
+                        <SectionHeader
+                          icon={<ClipboardCheck size={16} />}
+                          title="Manual Duty Assignment"
+                          subtitle="Map a lecturer to an exam slot"
+                        />
+                        <form onSubmit={onAssignDuty} className="space-y-4 p-4 sm:p-5">
+                          <Field label="Exam Slot">
+                            <Select
+                              icon={<Calendar size={14} />}
+                              required
+                              value={dutyForm.examScheduleId}
+                              onChange={e =>
+                                setDutyForm(s => ({ ...s, examScheduleId: e.target.value }))
+                              }
+                            >
+                              <option value="">Choose exam slot…</option>
+                              {exams.map(e => (
+                                <option key={e._id} value={e._id}>
+                                  {formatDate(e.date)} · {e.session} ·{' '}
+                                  {formatExamType(e.examType || e.subject)} · Hall {e.hallNo}
+                                </option>
                               ))}
-                            </tbody>
-                          </table>
+                            </Select>
+                          </Field>
+                          <Field label="Lecturer">
+                            <Select
+                              icon={<GraduationCap size={14} />}
+                              required
+                              value={dutyForm.lecturerId}
+                              onChange={e =>
+                                setDutyForm(s => ({ ...s, lecturerId: e.target.value }))
+                              }
+                            >
+                              <option value="">Choose lecturer…</option>
+
+                              {lecturers.map((l, i) => (
+                                <option key={l._id || l.id || i} value={l._id || l.id}>
+                                  {l.name}
+                                </option>
+                              ))}
+                            </Select>
+                          </Field>
+                          <Btn type="submit" variant="violet" className="w-full justify-center">
+                            <ClipboardCheck size={14} />
+                            Assign Duty
+                          </Btn>
+                        </form>
+                      </Card>
+
+                      {/* Room management */}
+                      <Card className="xl:col-span-2">
+                        <SectionHeader
+                          icon={<School size={16} />}
+                          title="Room Management"
+                          subtitle="Add and manage exam halls"
+                        />
+                        <form onSubmit={onCreateRoom} className="space-y-4 p-4 sm:p-5">
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <Field label="Room Name">
+                              <Input
+                                placeholder="e.g. Hall A"
+                                required
+                                value={roomForm.name}
+                                onChange={e => setRoomForm(s => ({ ...s, name: e.target.value }))}
+                              />
+                            </Field>
+                            <Field label="Block">
+                              <Input
+                                placeholder="e.g. Main Block"
+                                value={roomForm.block}
+                                onChange={e => setRoomForm(s => ({ ...s, block: e.target.value }))}
+                              />
+                            </Field>
+                            <Field label="Capacity">
+                              <Input
+                                placeholder="e.g. 30"
+                                type="number"
+                                min="1"
+                                value={roomForm.capacity}
+                                onChange={e =>
+                                  setRoomForm(s => ({ ...s, capacity: e.target.value }))
+                                }
+                              />
+                            </Field>
+                          </div>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <Btn type="submit" variant="emerald">
+                              <School size={14} />
+                              {editingRoomId ? 'Update Room' : 'Add Room'}
+                            </Btn>
+                            {editingRoomId && (
+                              <Btn
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingRoomId('')
+                                  setRoomForm({ name: '', block: '', capacity: '' })
+                                }}
+                              >
+                                Cancel
+                              </Btn>
+                            )}
+                          </div>
+                        </form>
+
+                        {rooms.length > 0 && (
+                          <div className="overflow-x-auto border-t border-slate-100">
+                            <table className="min-w-full text-sm">
+                              <TableHead cols={['Room', 'Block', 'Capacity', 'Actions']} />
+                              <tbody className="divide-y divide-slate-50">
+                                {rooms.map((room, i) => (
+                                  <tr
+                                    key={room._id}
+                                    className={`transition-colors hover:bg-slate-50 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                                  >
+                                    <td className="px-5 py-3 font-semibold text-slate-700">
+                                      {room.name}
+                                    </td>
+                                    <td className="px-5 py-3 text-slate-500">{room.block || '—'}</td>
+                                    <td className="px-5 py-3 text-slate-500">
+                                      {room.capacity || '—'}
+                                    </td>
+                                    <td className="px-5 py-3">
+                                      <div className="flex gap-1.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => onEditRoom(room)}
+                                          className="rounded-lg p-1.5 text-amber-600 transition hover:bg-amber-50"
+                                        >
+                                          <Pencil size={13} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => onDeleteRoom(room)}
+                                          disabled={actionLoading === `room-delete-${room._id}`}
+                                          className="rounded-lg p-1.5 text-rose-600 transition hover:bg-rose-50 disabled:opacity-40"
+                                        >
+                                          <Trash2 size={13} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </Card>
+                    </div>
+                  </>
+                )}
+
+                {/* ══════════ SCHEDULE TAB ══════════ */}
+                {activeTab === 'schedule' && (
+                  <Card>
+                    <SectionHeader
+                      icon={<CalendarRange size={16} />}
+                      title="Generate Exam Schedule"
+                      subtitle="Bulk-create exam slots across all selected rooms and date range"
+                    />
+                    <form onSubmit={onCreateSchedule} className="space-y-6 p-4 sm:p-6">
+                      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <Field label="From Date">
+                          <Input
+                            icon={<Calendar size={14} />}
+                            type="date"
+                            required
+                            value={scheduleForm.fromDate}
+                            onChange={e => setScheduleForm(s => ({ ...s, fromDate: e.target.value }))}
+                          />
+                        </Field>
+                        <Field label="To Date">
+                          <Input
+                            icon={<Calendar size={14} />}
+                            type="date"
+                            required
+                            value={scheduleForm.toDate}
+                            onChange={e => setScheduleForm(s => ({ ...s, toDate: e.target.value }))}
+                          />
+                          {scheduleForm.fromDate && scheduleForm.toDate && (
+                            <p className="mt-1 flex items-center gap-1 text-[10px] text-slate-500">
+                              <Info size={10} /> Sundays & 2nd Saturdays excluded:{' '}
+                              {totalDays - validDaysCount} day
+                              {totalDays - validDaysCount !== 1 ? 's' : ''}
+                            </p>
+                          )}
+                        </Field>
+                        {!userCollegeId && colleges.length > 0 && (
+                          <Field label="College">
+                            <Select
+                              icon={<School size={14} />}
+                              value={scheduleForm.collegeId}
+                              onChange={e => setScheduleForm(s => ({ ...s, collegeId: e.target.value }))}
+                              required
+                            >
+                              <option value="">Select College</option>
+                              {colleges.map(c => (
+                                <option key={c._id || c.id} value={c._id || c.id}>
+                                  {c.name || c.collegeName}
+                                </option>
+                              ))}
+                            </Select>
+                          </Field>
+                        )}
+                        <Field label="Exam Type">
+                          <Select
+                            icon={<BookOpen size={14} />}
+                            value={scheduleForm.examType}
+                            onChange={e => setScheduleForm(s => ({ ...s, examType: e.target.value }))}
+                          >
+                            {EXAM_TYPES.map(t => (
+                              <option key={t} value={t}>
+                                {formatExamType(t)}
+                              </option>
+                            ))}
+                          </Select>
+                        </Field>
+                        <Field label="Session">
+                          <Select
+                            icon={<Clock size={14} />}
+                            value={scheduleForm.session}
+                            onChange={e => setScheduleForm(s => ({ ...s, session: e.target.value }))}
+                          >
+                            <option value="FN+AN">FN+AN · Both</option>
+                            <option value="FN">FN · Forenoon</option>
+                            <option value="AN">AN · Afternoon</option>
+                            <option value="EN">EN · Evening</option>
+                          </Select>
+                        </Field>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Max Duties Per Lecturer">
+                          <Input
+                            icon={<Users size={14} />}
+                            type="number"
+                            min="1"
+                            value={scheduleForm.maxDutiesPerLecturer}
+                            onChange={e =>
+                              setScheduleForm(s => ({ ...s, maxDutiesPerLecturer: e.target.value }))
+                            }
+                          />
+                        </Field>
+                        <Field label=" ">
+                          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <input
+                              type="checkbox"
+                              checked={scheduleForm.sameDayNoRepeat}
+                              onChange={e =>
+                                setScheduleForm(s => ({ ...s, sameDayNoRepeat: e.target.checked }))
+                              }
+                              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <span>
+                              <span className="block text-sm font-semibold text-slate-700">
+                                FN/AN Same Day No Repeat
+                              </span>
+                              <span className="block text-xs text-slate-400">
+                                One duty per lecturer per day across all sessions
+                              </span>
+                            </span>
+                          </label>
+                        </Field>
+                      </div>
+
+                      <RoomPicker
+                        rooms={rooms}
+                        selectedRoomIds={scheduleForm.roomIds}
+                        onToggleRoom={toggleRoom}
+                        onSelectAll={toggleAllRooms}
+                      />
+
+                      {/* Preview metrics */}
+                      <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
+                        {[
+                          {
+                            label: 'Selected Rooms',
+                            value: scheduleForm.roomIds.length,
+                            color: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                          },
+                          {
+                            label: 'Total Days',
+                            value: totalDays,
+                            color: 'bg-blue-50 text-blue-700 border-blue-100',
+                          },
+                          {
+                            label: 'Valid Days',
+                            value: validDaysCount,
+                            color: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                          },
+                          {
+                            label: 'Excluded',
+                            value: totalDays - validDaysCount,
+                            color: 'bg-amber-50 text-amber-700 border-amber-100',
+                          },
+                          {
+                            label: 'Schedules to Create',
+                            value: schedulePreviewCount,
+                            color: 'bg-violet-50 text-violet-700 border-violet-100',
+                          },
+                          {
+                            label: 'Lecturer Coverage',
+                            value: lecturerCoverage,
+                            color: hasCoverageGap
+                              ? 'bg-rose-50 text-rose-700 border-rose-100'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                          },
+                        ].map(m => (
+                          <div key={m.label} className={`rounded-2xl border p-4 ${m.color}`}>
+                            <p className="text-xs font-semibold opacity-70">{m.label}</p>
+                            <p className="mt-1 text-2xl font-black">{m.value}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {hasCoverageGap && (
+                        <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                          <AlertCircle size={16} /> Coverage gap detected — add more lecturers or
+                          reduce workload limit. (Sundays & 2nd Saturdays excluded)
                         </div>
                       )}
-                    </Card>
-                  </div>
-                </>
-              )}
 
-              {/* ══════════ SCHEDULE TAB ══════════ */}
-              {activeTab === 'schedule' && (
-                <Card>
-                  <SectionHeader
-                    icon={<CalendarRange size={16} />}
-                    title="Generate Exam Schedule"
-                    subtitle="Bulk-create exam slots across all selected rooms and date range"
-                  />
-                  <form onSubmit={onCreateSchedule} className="space-y-6 p-4 sm:p-6">
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="flex flex-wrap gap-3">
+                        <Btn type="submit" variant="primary" loading={scheduleLoading} size="lg">
+                          <Layers3 size={15} />
+                          Generate Schedule
+                        </Btn>
+                      </div>
+                    </form>
+                  </Card>
+                )}
+
+                {/* ══════════ DUTIES TAB ══════════ */}
+                {activeTab === 'duties' && (
+                  <Card>
+                    {/* Filters bar */}
+                    <div className="flex flex-wrap items-end gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-4">
                       <Field label="From Date">
                         <Input
-                          icon={<Calendar size={14} />}
+                          icon={<Calendar size={13} />}
                           type="date"
-                          required
-                          value={scheduleForm.fromDate}
-                          onChange={e => setScheduleForm(s => ({ ...s, fromDate: e.target.value }))}
+                          value={filters.fromDate}
+                          onChange={e => setFilters(s => ({ ...s, fromDate: e.target.value }))}
                         />
                       </Field>
                       <Field label="To Date">
                         <Input
-                          icon={<Calendar size={14} />}
+                          icon={<Calendar size={13} />}
                           type="date"
-                          required
-                          value={scheduleForm.toDate}
-                          onChange={e => setScheduleForm(s => ({ ...s, toDate: e.target.value }))}
+                          value={filters.toDate}
+                          onChange={e => setFilters(s => ({ ...s, toDate: e.target.value }))}
                         />
                       </Field>
-                      <Field label="Exam Type">
+
+                      <Field label="Lecturer">
                         <Select
-                          icon={<BookOpen size={14} />}
-                          value={scheduleForm.examType}
-                          onChange={e => setScheduleForm(s => ({ ...s, examType: e.target.value }))}
+                          icon={<Users size={13} />}
+                          value={filters.lecturerId}
+                          onChange={e => setFilters(s => ({ ...s, lecturerId: e.target.value }))}
                         >
-                          {EXAM_TYPES.map(t => (
-                            <option key={t} value={t}>
-                              {formatExamType(t)}
+                          <option value="">All Lecturers</option>
+                          {lecturers.map(l => (
+                            <option key={l.id} value={l.id}>
+                              {l.name}
                             </option>
                           ))}
                         </Select>
                       </Field>
                       <Field label="Session">
                         <Select
-                          icon={<Clock size={14} />}
-                          value={scheduleForm.session}
-                          onChange={e => setScheduleForm(s => ({ ...s, session: e.target.value }))}
+                          icon={<Clock size={13} />}
+                          value={filters.session}
+                          onChange={e => setFilters(s => ({ ...s, session: e.target.value }))}
                         >
-                          <option value="FN+AN">FN+AN · Both</option>
-                          <option value="FN">FN · Forenoon</option>
-                          <option value="AN">AN · Afternoon</option>
-                          <option value="EN">EN · Evening</option>
+                          <option value="">All Sessions</option>
+                          <option value="FN">FN</option>
+                          <option value="AN">AN</option>
+                          <option value="EN">EN</option>
                         </Select>
                       </Field>
-                    </div>
+                      <Btn variant="ghost" onClick={() => fetchAll(filters)}>
+                        <Search size={14} />
+                        Apply
+                      </Btn>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Max Duties Per Lecturer">
+                      <Field label="Max Duties">
                         <Input
-                          icon={<Users size={14} />}
                           type="number"
                           min="1"
                           value={scheduleForm.maxDutiesPerLecturer}
-                          onChange={e =>
-                            setScheduleForm(s => ({ ...s, maxDutiesPerLecturer: e.target.value }))
-                          }
-                        />
-                      </Field>
-                      <Field label=" ">
-                        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                          <input
-                            type="checkbox"
-                            checked={scheduleForm.sameDayNoRepeat}
-                            onChange={e =>
-                              setScheduleForm(s => ({ ...s, sameDayNoRepeat: e.target.checked }))
-                            }
-                            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                          />
-                          <span>
-                            <span className="block text-sm font-semibold text-slate-700">
-                              FN/AN Same Day No Repeat
-                            </span>
-                            <span className="block text-xs text-slate-400">
-                              One duty per lecturer per day across all sessions
-                            </span>
-                          </span>
-                        </label>
-                      </Field>
-                    </div>
-
-                    <RoomPicker
-                      rooms={rooms}
-                      selectedRoomIds={scheduleForm.roomIds}
-                      onToggleRoom={toggleRoom}
-                      onSelectAll={toggleAllRooms}
-                    />
-
-                    {/* Preview metrics */}
-                    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-                      {[
-                        {
-                          label: 'Selected Rooms',
-                          value: scheduleForm.roomIds.length,
-                          color: 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                        },
-                        {
-                          label: 'Total Days',
-                          value: totalDays,
-                          color: 'bg-blue-50 text-blue-700 border-blue-100',
-                        },
-                        {
-                          label: 'Schedules to Create',
-                          value: schedulePreviewCount,
-                          color: 'bg-violet-50 text-violet-700 border-violet-100',
-                        },
-                        {
-                          label: 'Lecturer Coverage',
-                          value: lecturerCoverage,
-                          color: hasCoverageGap
-                            ? 'bg-rose-50 text-rose-700 border-rose-100'
-                            : 'bg-emerald-50 text-emerald-700 border-emerald-100',
-                        },
-                      ].map(m => (
-                        <div key={m.label} className={`rounded-2xl border p-4 ${m.color}`}>
-                          <p className="text-xs font-semibold opacity-70">{m.label}</p>
-                          <p className="mt-1 text-2xl font-black">{m.value}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {hasCoverageGap && (
-                      <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-                        <AlertCircle size={16} /> Coverage gap detected — add more lecturers or
-                        reduce workload limit.
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap gap-3">
-                      <Btn type="submit" variant="primary" loading={scheduleLoading} size="lg">
-                        <Layers3 size={15} />
-                        Generate Schedule
-                      </Btn>
-                    </div>
-                  </form>
-                </Card>
-              )}
-
-              {/* ══════════ DUTIES TAB ══════════ */}
-              {activeTab === 'duties' && (
-                <Card>
-                  {/* Filters bar */}
-                  <div className="flex flex-wrap items-end gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-4">
-                    <Field label="From Date">
-                      <Input
-                        icon={<Calendar size={13} />}
-                        type="date"
-                        value={filters.fromDate}
-                        onChange={e => setFilters(s => ({ ...s, fromDate: e.target.value }))}
-                      />
-                    </Field>
-                    <Field label="To Date">
-                      <Input
-                        icon={<Calendar size={13} />}
-                        type="date"
-                        value={filters.toDate}
-                        onChange={e => setFilters(s => ({ ...s, toDate: e.target.value }))}
-                      />
-                    </Field>
-
-                    <Field label="Lecturer">
-                      <Select
-                        icon={<Users size={13} />}
-                        value={filters.lecturerId}
-                        onChange={e => setFilters(s => ({ ...s, lecturerId: e.target.value }))}
-                      >
-                        <option value="">All Lecturers</option>
-                        {lecturers.map(l => (
-                          <option key={l.id} value={l.id}>
-                            {l.name}
-                          </option>
-                        ))}
-                      </Select>
-                    </Field>
-                    <Field label="Session">
-                      <Select
-                        icon={<Clock size={13} />}
-                        value={filters.session}
-                        onChange={e => setFilters(s => ({ ...s, session: e.target.value }))}
-                      >
-                        <option value="">All Sessions</option>
-                        <option value="FN">FN</option>
-                        <option value="AN">AN</option>
-                        <option value="EN">EN</option>
-                      </Select>
-                    </Field>
-                    <Btn variant="ghost" onClick={() => fetchAll(filters)}>
-                      <Search size={14} />
-                      Apply
-                    </Btn>
-
-                    <Field label="Max Duties">
-                      <Input
-                        type="number"
-                        min="1"
-                        value={scheduleForm.maxDutiesPerLecturer}
                         onChange={e =>
                           setScheduleForm(s => ({ ...s, maxDutiesPerLecturer: e.target.value }))
                         }
@@ -2093,6 +2262,11 @@ export default function AdminInvigilationDashboardPage() {
                           }
                           required
                         />
+                        {singleScheduleForm.date && isExcludedDay(parseDateKey(singleScheduleForm.date)) && (
+                          <p className="text-xs text-rose-600 flex items-center gap-1 mt-1">
+                            <AlertCircle size={11} /> This date is a {new Date(parseDateKey(singleScheduleForm.date)).getDay() === 0 ? 'Sunday' : '2nd Saturday'} — exams are typically not scheduled
+                          </p>
+                        )}
                       </Field>
                       <Field label="Session">
                         <Select
@@ -2387,6 +2561,7 @@ export default function AdminInvigilationDashboardPage() {
           </div>
         </InvigilationShell>
       )}
+      }
     </InvigilationGuard>
   )
 }

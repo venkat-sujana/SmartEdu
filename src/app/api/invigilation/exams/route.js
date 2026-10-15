@@ -6,6 +6,8 @@ import InvigilationRoom from "@/models/InvigilationRoom";
 import DutyAssignment from "@/models/DutyAssignment";
 import { requireOsraAuth } from "@/lib/osra-api-guard";
 
+import { isExcludedExamDay } from "@/lib/examHolidays";
+
 const EXAM_TYPES = ["UNIT-1", "UNIT-2", "UNIT-3", "UNIT-4", "QUARTERLY", "HALFYEARLY", "PRE-PUBLIC-1", "PRE-PUBLIC-2"];
 
 function parseDateOnly(value) {
@@ -53,89 +55,96 @@ function formatExamLabel(examType) {
   return examType.replace(/-/g, " ");
 }
 
+
 function getDateRange(fromDate, toDate) {
   const dates = [];
   const cursor = new Date(fromDate);
   cursor.setHours(0, 0, 0, 0);
+
   const end = new Date(toDate);
   end.setHours(0, 0, 0, 0);
 
   while (cursor <= end) {
-    dates.push(new Date(cursor));
+    if (!isExcludedExamDay(cursor)) {
+      dates.push(new Date(cursor));
+    }
+
     cursor.setDate(cursor.getDate() + 1);
   }
 
   return dates;
 }
 
+
+
 export async function GET(req) {
-  const { user, error } = await requireOsraAuth(req, ["admin", "lecturer", "principal"]);
+  const { user, error } = await requireOsraAuth(req, [
+    "admin",
+    "lecturer",
+    "principal",
+  ]);
+
   if (error) return error;
 
-  await connectInvigilationDB();
-  const { searchParams } = new URL(req.url);
-  const date = searchParams.get("date");
-  const session = searchParams.get("session");
-  const examType = searchParams.get("examType");
+  try {
+    await connectInvigilationDB();
 
-  const filter = {};
-  if (user.collegeId) {
-    // Older invigilation schedules were created before collegeId was stored.
-    // Lecturers must still be able to mark availability against those slots.
-    filter.$or = [
-      { collegeId: user.collegeId },
-      { collegeId: { $exists: false } },
-      { collegeId: null },
-    ];
-  }
-  if (date) {
-    const start = parseDateOnly(date);
-    const end = parseDateOnly(date);
-    if (!start || !end) {
-      return NextResponse.json({ message: "Invalid date" }, { status: 400 });
+    const { searchParams } = new URL(req.url);
+    const date = searchParams.get("date");
+    const session = searchParams.get("session");
+    const examType = searchParams.get("examType");
+
+    const filter = {};
+
+    if (user.collegeId) {
+      filter.$or = [
+        { collegeId: user.collegeId },
+        { collegeId: { $exists: false } },
+        { collegeId: null },
+      ];
     }
-    end.setDate(end.getDate() + 1);
-    filter.date = { $gte: start, $lt: end };
-  }
-  if (session) filter.session = session;
 
-if (examType) {
-  filter.examType = examType
-}
+    if (date) {
+      const start = parseDateOnly(date);
 
-  const exams = await ExamSchedule.find(filter)
-  
+      if (!start || Number.isNaN(start.getTime())) {
+        return NextResponse.json(
+          { message: "Invalid date" },
+          { status: 400 }
+        );
+      }
+
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+
+      filter.date = { $gte: start, $lt: end };
+    }
+
+    if (session) filter.session = session;
+    if (examType) filter.examType = examType;
+
+    const exams = await ExamSchedule.find(filter)
   .sort({ date: 1, session: 1 })
-    .populate("createdBy", "name role")
-    .populate("roomId", "name block capacity")
-    .lean();
-console.log("LECTURER SESSION COLLEGE:", user.collegeId);
-console.log("EXAM FILTER:", filter);
-
-console.log(
-  "EXAM COLLEGE IDS:",
-  exams.map((exam) => ({
-    id: exam._id,
-    collegeId: exam.collegeId,
-  }))
-);
-
-
-const roomIds = [...new Set(
-  exams.map((exam) => String(exam.roomId?._id || exam.roomId))
-)];
-
-const rooms = await InvigilationRoom.find({
-  _id: { $in: roomIds },
-})
-  .select("_id name block collegeId")
   .lean();
 
-console.log("ROOM COLLEGE IDS:", rooms);
+    return NextResponse.json({
+      role: user.role,
+      data: exams,
+    });
+  } catch (err) {
+    console.error("GET EXAMS ERROR:", err);
 
-
-  return NextResponse.json({ role: user.role, data: exams });
+    return NextResponse.json(
+      {
+        message: "Failed to load exam schedules",
+        error: err.message || "Unknown server error",
+      },
+      { status: 500 }
+    );
+  }
 }
+
+
 
 
 
@@ -148,26 +157,47 @@ export async function POST(req) {
 
   try {
     await connectInvigilationDB();
-    const payload = await req.json();
-    const { date, session, subject, hallNo, collegeId, examType, fromDate, toDate, roomIds } = payload;
-    const resolvedCollegeId = user.collegeId || collegeId || undefined;
-    
-console.log("ADMIN SESSION COLLEGE:", user.collegeId);
-console.log("REQUEST COLLEGE ID:", collegeId);
-console.log("RESOLVED COLLEGE ID:", resolvedCollegeId);
 
+    const payload = await req.json();
+
+    const {
+      date,
+      session,
+      subject,
+      hallNo,
+      collegeId,
+      examType,
+      fromDate,
+      toDate,
+      roomIds,
+    } = payload;
+
+    const resolvedCollegeId = user.collegeId || collegeId || undefined;
     const normalizedExamType = normalizeExamType(examType);
 
-    if (!session || !normalizedExamType || !EXAM_TYPES.includes(normalizedExamType)) {
-      return NextResponse.json({ message: "Valid exam type and session are required" }, { status: 400 });
+    if (!session || !EXAM_TYPES.includes(normalizedExamType)) {
+      return NextResponse.json(
+        { message: "Valid exam type and session are required" },
+        { status: 400 }
+      );
     }
 
+    // BULK SCHEDULE
     if (Array.isArray(roomIds) && roomIds.length > 0 && fromDate && toDate) {
       const startDate = parseDateOnly(fromDate);
       const endDate = parseDateOnly(toDate);
 
-      if (!startDate || !endDate || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate > endDate) {
-        return NextResponse.json({ message: "Invalid date range" }, { status: 400 });
+      if (
+        !startDate ||
+        !endDate ||
+        Number.isNaN(startDate.getTime()) ||
+        Number.isNaN(endDate.getTime()) ||
+        startDate > endDate
+      ) {
+        return NextResponse.json(
+          { message: "Invalid date range" },
+          { status: 400 }
+        );
       }
 
       const rooms = await InvigilationRoom.find({
@@ -176,10 +206,24 @@ console.log("RESOLVED COLLEGE ID:", resolvedCollegeId);
       }).lean();
 
       if (rooms.length === 0) {
-        return NextResponse.json({ message: "Select at least one valid room" }, { status: 400 });
+        return NextResponse.json(
+          { message: "Select at least one valid room" },
+          { status: 400 }
+        );
       }
 
+      // Sundays, second Saturdays and configured holidays are excluded.
       const dates = getDateRange(startDate, endDate);
+
+      if (dates.length === 0) {
+        return NextResponse.json({
+          message: "No valid exam dates in the selected range",
+          createdCount: 0,
+          skippedCount: rooms.length,
+        });
+      }
+
+      // Fetch existing schedules before inserting new ones.
       const existingSchedules = await ExamSchedule.find({
         date: { $in: dates },
         session,
@@ -191,10 +235,13 @@ console.log("RESOLVED COLLEGE ID:", resolvedCollegeId);
         .lean();
 
       const existingKeys = new Set(
-        existingSchedules.map((item) => `${toDateKey(item.date)}::${item.hallNo}`)
+        existingSchedules.map(
+          (item) => `${toDateKey(item.date)}::${item.hallNo}`
+        )
       );
 
       const docs = [];
+
       for (const room of rooms) {
         for (const scheduleDate of dates) {
           const dateKey = toDateKey(scheduleDate);
@@ -214,33 +261,80 @@ console.log("RESOLVED COLLEGE ID:", resolvedCollegeId);
             ...(resolvedCollegeId ? { collegeId: resolvedCollegeId } : {}),
             createdBy: user._id,
           });
+
+          // Avoid duplicates within this request as well.
+          existingKeys.add(compositeKey);
         }
       }
 
+      const skippedCount = rooms.length * dates.length - docs.length;
+
       if (docs.length === 0) {
         return NextResponse.json({
-          message: "All selected room schedules already exist for this range",
+          message: "All selected room schedules already exist",
           createdCount: 0,
-          skippedCount: rooms.length * dates.length,
+          skippedCount,
         });
       }
 
-      const created = await ExamSchedule.insertMany(docs, { ordered: false });
+      const created = await ExamSchedule.insertMany(docs);
 
       return NextResponse.json({
         message: "Bulk exam schedule created",
         data: created,
         createdCount: created.length,
-        skippedCount: rooms.length * dates.length - created.length,
+        skippedCount,
       });
     }
 
+    // SINGLE-DATE SCHEDULE
     if (!date || !hallNo?.trim()) {
-      return NextResponse.json({ message: "Date and hall are required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Date and hall are required" },
+        { status: 400 }
+      );
+    }
+
+    const parsedDate = parseDateOnly(date);
+
+    if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
+      return NextResponse.json(
+        { message: "Invalid exam date" },
+        { status: 400 }
+      );
+    }
+
+    if (isExcludedExamDay(parsedDate)) {
+      return NextResponse.json(
+        {
+          message:
+            "Exam schedule cannot be created on Sundays, second Saturdays, or configured public holidays",
+        },
+        { status: 400 }
+      );
+    }
+
+    const existingSchedule = await ExamSchedule.findOne({
+      date: parsedDate,
+      session,
+      hallNo: hallNo.trim(),
+      examType: normalizedExamType,
+      ...(resolvedCollegeId ? { collegeId: resolvedCollegeId } : {}),
+    });
+
+    if (existingSchedule) {
+      return NextResponse.json(
+        {
+          message: "This exam schedule already exists",
+          duplicate: true,
+          data: existingSchedule,
+        },
+        { status: 200 }
+      );
     }
 
     const created = await ExamSchedule.create({
-      date: parseDateOnly(date),
+      date: parsedDate,
       session,
       examType: normalizedExamType,
       subject: subject?.trim() || formatExamLabel(normalizedExamType),
@@ -249,11 +343,34 @@ console.log("RESOLVED COLLEGE ID:", resolvedCollegeId);
       createdBy: user._id,
     });
 
-    return NextResponse.json({ message: "Exam schedule created", data: created });
+    return NextResponse.json({
+      message: "Exam schedule created",
+      data: created,
+    });
   } catch (err) {
-    return NextResponse.json({ message: err.message || "Failed to create exam" }, { status: 500 });
+    console.error("CREATE EXAM ERROR:", err);
+
+    if (err?.code === 11000) {
+      return NextResponse.json(
+        {
+          message: "This exam schedule already exists",
+          duplicate: true,
+        },
+        { status: 409 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        message: err.message || "Failed to create exam",
+        code: err.code || null,
+        name: err.name || null,
+      },
+      { status: 500 }
+    );
   }
 }
+
 
 export async function DELETE(req) {
   const { user, error } = await requireOsraAuth(req, ["admin"]);

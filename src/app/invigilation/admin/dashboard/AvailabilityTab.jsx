@@ -79,8 +79,8 @@ function StatusCell({ status, onClick, loading }) {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function AvailabilityTab() {
-  const [applying, setApplying] = useState(false)
-  const [lecturers, setLecturers] = useState([]) // ✅ internal fetch
+const [applying, setApplying] = useState(false)
+  const [lecturers, setLecturers] = useState([])
   const [examSlots, setExamSlots] = useState([])
   const [availMap, setAvailMap] = useState({})
   const [loading, setLoading] = useState(false)
@@ -93,6 +93,7 @@ export default function AvailabilityTab() {
   const [bulkStatus, setBulkStatus] = useState('available')
   const [selectedLecturer, setSelectedLecturer] = useState('')
   const [previewMap, setPreviewMap] = useState({})
+  const [deletingAll, setDeletingAll] = useState(false)
 
   // ── Load all data internally ──────────────────────────────────────────────────
   const loadAll = useCallback(async () => {
@@ -287,6 +288,78 @@ export default function AvailabilityTab() {
       toast.error(err.message || 'Bulk update failed')
     } finally {
       setApplying(false)
+    }
+  }
+
+  const deleteAllAvailability = async () => {
+    if (!examType) {
+      toast.error('Select exam type first')
+      return
+    }
+    if (!fromDate || !toDate) {
+      toast.error('Select date range')
+      return
+    }
+    if (!window.confirm(`Delete availability for ${examType} (${fromDate} to ${toDate})? This cannot be undone.`)) return
+    setDeletingAll(true)
+    try {
+      // 1. Fetch exam slots for this exam type + date range
+      const examRes = await fetch(`/api/invigilation/exams?examType=${examType}&fromDate=${fromDate}&toDate=${toDate}`, { cache: 'no-store' })
+      const examData = await examRes.json()
+      if (!examRes.ok) throw new Error(examData.message)
+
+      // 2. Build set of date_session keys to delete
+      const targetKeys = new Set()
+      ;(examData.data || []).forEach(e => {
+        const dateStr = formatDate(e.date)
+        targetKeys.add(`${dateStr}_${e.session}`)
+      })
+
+      if (targetKeys.size === 0) {
+        toast.error('No exam slots found for selected filters')
+        setDeletingAll(false)
+        return
+      }
+
+      // 3. Fetch all availability records (for selected lecturer or all)
+      const availUrl = selectedLecturer && selectedLecturer !== 'ALL'
+        ? `/api/invigilation/availability?lecturerId=${selectedLecturer}`
+        : '/api/invigilation/availability'
+      const availRes = await fetch(availUrl, { cache: 'no-store' })
+      const availData = await availRes.json()
+      if (!availRes.ok) throw new Error(availData.message)
+
+      // 4. Filter records matching exam type + date range
+      const recordsToDelete = (availData.data || []).filter(r => {
+        const dateStr = formatDate(r.date)
+        const key = `${dateStr}_${r.session}`
+        return targetKeys.has(key)
+      })
+
+      if (recordsToDelete.length === 0) {
+        toast('No availability records to delete')
+        setDeletingAll(false)
+        return
+      }
+
+      // 5. Delete each record individually
+      let deletedCount = 0
+      for (const record of recordsToDelete) {
+        const id = record._id
+        if (!id) continue
+        const delRes = await fetch(`/api/invigilation/availability/${id}`, { method: 'DELETE' })
+        if (delRes.ok) deletedCount++
+      }
+
+      toast.success(`Deleted ${deletedCount} availability records`)
+      setAvailMap({})
+      setPreviewMap({})
+      await loadAll()
+    } catch (err) {
+      console.error('Delete error:', err)
+      toast.error(err.message || 'Failed to delete availability')
+    } finally {
+      setDeletingAll(false)
     }
   }
 
@@ -510,6 +583,21 @@ export default function AvailabilityTab() {
               </>
             ) : (
               'Apply'
+            )}
+          </button>
+
+          <button
+            onClick={deleteAllAvailability}
+            disabled={deletingAll || applying}
+            className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
+          >
+            {deletingAll ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                Deleting...
+              </>
+            ) : (
+              'Delete All'
             )}
           </button>
         </div>
