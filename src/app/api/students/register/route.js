@@ -39,13 +39,16 @@ export async function POST(req) {
     const collegeId = formData.get("collegeId");
     const photoUrl = formData.get("photoUrl") || "";
 
-    const normalizedDateOfJoining = dateOfJoining
-      ? new Date(dateOfJoining)
-      : new Date();
+    
+const isSecondYear = yearOfStudy === "Second Year";
 
-    // ✅ Bug 1 Fix — yearOfStudy based గా admissionNo check
-    const isSecondYear = yearOfStudy === "Second Year";
+const normalizedDateOfJoining =
+  !isSecondYear && dateOfJoining
+    ? new Date(dateOfJoining)
+    : undefined;
 
+
+    
     // Common required fields
     if (!name || !fatherName || !mobile || !parentMobile || !group || !address || !collegeId) {
       return NextResponse.json(
@@ -76,25 +79,24 @@ export async function POST(req) {
     const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
 
     // ✅ Bug 2 Fix — dob తీసేశాం, dateOfJoining మాత్రమే
-    const student = new Student({
-      name,
-      fatherName,
-      mobile,
-      parentMobile,
-      admissionNo,
-      group,
-      caste,
-      gender,
-      yearOfStudy,
-      admissionYear,
-      dateOfJoining: normalizedDateOfJoining,
-      // ❌ dob: normalizedDateOfJoining  — తీసేశాం
-      address,
-      collegeId: new mongoose.Types.ObjectId(collegeId),
-      password: hashedPassword,
-      status: "Active",
-      photo: photoUrl,
-    });
+  const student = new Student({
+  name,
+  fatherName,
+  mobile,
+  parentMobile,
+  admissionNo,
+  group,
+  caste,
+  gender,
+  yearOfStudy,
+  admissionYear,
+  dateOfJoining: normalizedDateOfJoining,
+  address,
+  collegeId: new mongoose.Types.ObjectId(collegeId),
+  password: hashedPassword,
+  status: "Active",
+  photo: photoUrl,
+});
 
     await student.save();
 

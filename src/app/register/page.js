@@ -215,19 +215,10 @@ export default function RegisterPage() {
 
   const currentYear = useMemo(() => new Date().getFullYear(), [])
   const isSecondYear = formData.yearOfStudy === 'Second Year'
-  const derivedSecondYearJoiningDate = useMemo(() => {
-    const year = Number(formData.admissionYear)
-
-    if (!Number.isInteger(year) || year < 2000) {
-      return ''
-    }
-
-    return `${year}-06-01`
-  }, [formData.admissionYear])
-
+  
   const effectiveDateOfJoining = isSecondYear
-    ? derivedSecondYearJoiningDate
-    : formData.dateOfJoining
+  ? ''
+  : formData.dateOfJoining
 
   useEffect(() => {
     if (!isSecondYear) return
@@ -547,20 +538,25 @@ export default function RegisterPage() {
                   <label className="mb-1 block text-sm font-medium text-slate-700">
                     Date of Joining *
                   </label>
-                  <input
-                    type="date"
-                    name="dateOfJoining"
-                    value={effectiveDateOfJoining}
-                    onChange={handleChange}
-                    disabled={isSecondYear}
-                    className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
-                    required={!isSecondYear}
-                  />
-                  {isSecondYear ? (
-                    <p className="mt-1.5 text-xs font-medium text-slate-500">
-                      Date of joining is auto-set from admission year for second-year students.
-                    </p>
-                  ) : null}
+                  
+<input
+  type="date"
+  name="dateOfJoining"
+  value={isSecondYear ? '' : formData.dateOfJoining}
+  onChange={handleChange}
+  disabled={isSecondYear}
+  className={`${modernInputClass} ${
+    isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''
+  }`}
+  required={!isSecondYear}
+/>
+
+{isSecondYear && (
+  <p className="mt-1.5 text-xs font-medium text-slate-500">
+    Not applicable for second-year students.
+  </p>
+)}
+
                 </div>
               </div>
             </section>
@@ -578,24 +574,25 @@ export default function RegisterPage() {
                   <label className="mb-1 block text-sm font-medium text-slate-700">
                     Admission Number *
                   </label>
-                  <input
-                    name="admissionNo"
-                    value={formData.admissionNo}
-                    onChange={handleChange}
-                    placeholder="e.g., 24MPC018"
-                    disabled={isSecondYear}
-                    className={`${modernInputClass} ${isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''}`}
-                    required={!isSecondYear}
-                  />
-                  {isSecondYear ? (
-                    <p className="mt-1.5 text-xs font-medium text-slate-500">
-                      Admission number applies only to first-year students.
-                    </p>
-                  ) : (
-                    <p className="mt-1.5 text-xs font-medium text-slate-500">
-                      Enter the admission number issued by the college.
-                    </p>
-                  )}
+                  
+<input
+  name="admissionNo"
+  value={isSecondYear ? '' : formData.admissionNo}
+  onChange={handleChange}
+  placeholder="e.g., 24MPC018"
+  disabled={isSecondYear}
+  className={`${modernInputClass} ${
+    isSecondYear ? 'cursor-not-allowed bg-slate-100 text-slate-500' : ''
+  }`}
+  required={!isSecondYear}
+/>
+
+{!isSecondYear && (
+  <p className="mt-1.5 text-xs font-medium text-slate-500">
+    Enter the admission number issued by the college.
+  </p>
+)}
+
                 </div>
 
                 <div>

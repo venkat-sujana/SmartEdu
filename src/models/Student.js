@@ -67,25 +67,22 @@ const studentSchema = new mongoose.Schema(
     default: "Active"
   },
 
-  admissionYear: {
-    type: Number,
-    required: true,
-    min: 2000,
-    max: new Date().getFullYear() + 1
-  },
-
+  dateOfJoining: {
+  type: Date,
+  default: undefined
+},
   dateOfJoining: { type: Date, default: Date.now },
 
   address: { type: String, required: true, trim: true },
 
   admissionNo: {
-    type: String,
-    required: function requiredAdmissionNo() {
-      return this.yearOfStudy !== "Second Year";
-    },
-    trim: true,
-    uppercase: true
+  type: String,
+  required: function requiredAdmissionNo() {
+    return this.yearOfStudy === "First Year";
   },
+  trim: true,
+  uppercase: true
+},
 
   photo: { type: String, default: "" },
 
