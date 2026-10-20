@@ -13,7 +13,7 @@ const LOGIN_PATHS = [
 
 function getRoleHome(role) {
   if (role === "admin") return "/admin-panel";
-  if (role === "lecturer") return "/dashboards";
+  if (role === "lecturer") return "/lecturer/dashboard";
   if (role === "office") return "/office/dashboard";
   if (role === "principal") return "/principal/dashboard";
   if (role === "student") return "/student/dashboard";

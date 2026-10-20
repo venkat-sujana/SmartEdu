@@ -1,5 +1,3 @@
-import { getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
-
 const GROUP_DASHBOARD_ROUTES = {
   MPC: "/dashboards/mpc",
   BiPC: "/dashboards/bipc",
@@ -16,8 +14,6 @@ export function getDashboardRouteForGroup(groupName) {
   return GROUP_DASHBOARD_ROUTES[groupName] || "/dashboards";
 }
 
-export function getDashboardRouteForLecturerSubject(subject) {
-  if (!subject) return "/dashboards";
-  const groupName = getLecturerGroupFromSubject(subject);
-  return getDashboardRouteForGroup(groupName);
+export function getDashboardRouteForLecturerSubject() {
+  return "/lecturer/dashboard";
 }

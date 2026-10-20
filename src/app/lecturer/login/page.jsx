@@ -25,7 +25,7 @@ export default function LecturerLogin() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboards");
+      router.push("/lecturer/dashboard");
     }
   }, [status, router]);
 
@@ -57,7 +57,7 @@ export default function LecturerLogin() {
       }
     }
 
-    router.push("/dashboards");
+    router.push("/lecturer/dashboard");
   };
 
   return (
