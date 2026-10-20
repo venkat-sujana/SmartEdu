@@ -73,7 +73,10 @@ function resolveAttendanceFilterOptions(groupOrDate, maybeDate) {
     return { group: undefined, date: groupOrDate };
   }
 
-  return { group: groupOrDate, date: maybeDate || new Date() };
+  return {
+    group: groupOrDate,
+    date: maybeDate || new Date(),
+  };
 }
 
 export async function getTodayAttendancePercent(collegeId) {
@@ -228,7 +231,17 @@ export async function getTodayAbsentees(collegeId, groupOrDate, maybeDate) {
   const todayRecords = await Attendance.find({
     collegeId,
     date: { $gte: start, $lte: end },
-    ...(group ? { group } : {}),
+    ...(Array.isArray(group)
+  ? {
+      group: {
+        $in: group
+          .map((value) => String(value || "").trim())
+          .filter(Boolean),
+      },
+    }
+  : group
+    ? { group }
+    : {}),
     ...buildAttendanceSessionReadFilter(),
   })
     .populate("studentId", "name yearOfStudy group")
@@ -990,14 +1003,20 @@ Try one of these!`;
 
 export async function getConsecutiveAbsentees(
   collegeId,
-  minimumDays = 2
+  minimumDays = 3,
+  groups
 ) {
   await connectMongoDB();
 
-  const students = await Student.find({
-    collegeId,
-    status: "Active",
-  })
+const students = await Student.find({
+  collegeId,
+  status: "Active",
+  ...(Array.isArray(groups)
+    ? { group: { $in: groups } }
+    : groups
+      ? { group: groups }
+      : {}),
+})
     .select(
       "name admissionNo group yearOfStudy parentMobile"
     )

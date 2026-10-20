@@ -391,6 +391,8 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
             <Image
               src={formData.photo}
               alt="Student preview"
+              width={96}
+              height={96}
               className="mt-3 h-24 w-24 rounded-xl border border-slate-200 object-cover"
             />
           )}

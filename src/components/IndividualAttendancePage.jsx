@@ -8,7 +8,7 @@ import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import AttendanceEditForm from "@/app/attendance-edit-form/page";
-import AttendanceTable from "@/app/components/AttendanceTable";
+import AttendanceTable from "@/components/attendance/AttendanceTable";
 const years = ["First Year", "Second Year"];
 
 export default function IndividualAttendancePage({ fixedGroup }) {

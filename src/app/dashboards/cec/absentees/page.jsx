@@ -1,3 +1,4 @@
+//src/app/dashboards/cec/absentees/page.jsx
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { useSession } from 'next-auth/react'

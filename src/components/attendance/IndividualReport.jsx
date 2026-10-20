@@ -1,3 +1,4 @@
+//src/components/attendance/IndividualReport.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -37,6 +38,17 @@ export default function IndividualReport({
 
   const { data: session, status } = useSession();
 
+  const [mappedGroups, setMappedGroups] = useState([]);
+
+  console.log("IndividualReport debug:", {
+  role: session?.user?.role,
+  status,
+  mappedGroups,
+  groupName,
+});
+
+
+
   useEffect(() => {
     if (session?.user?.collegeName) setCollegeName(session.user.collegeName);
   }, [session]);
@@ -44,6 +56,47 @@ export default function IndividualReport({
   useEffect(() => {
     if (groupName) setGroup(groupName);
   }, [groupName]);
+
+
+  useEffect(() => {
+  if (status !== "authenticated") return;
+
+  if (session?.user?.role !== "lecturer") {
+    setMappedGroups([]);
+    return;
+  }
+
+  let cancelled = false;
+
+  const fetchMappedGroups = async () => {
+    try {
+      const res = await fetch("/api/lecturer/group-mapping", {
+        cache: "no-store",
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json?.success || !Array.isArray(json.groups)) {
+        throw new Error("Unable to load mapped groups");
+      }
+
+      if (!cancelled) {
+        setMappedGroups(json.groups);
+      }
+    } catch (error) {
+      if (!cancelled) {
+        setMappedGroups([]);
+        toast.error("Unable to load your mapped groups");
+      }
+    }
+  };
+
+  fetchMappedGroups();
+
+  return () => {
+    cancelled = true;
+  };
+}, [status, session?.user?.role]);
 
   const fetchData = async () => {
     if (status === "loading") { toast.error("Session loading..."); return; }
@@ -216,7 +269,11 @@ export default function IndividualReport({
                   className="appearance-none rounded-lg border border-slate-200 bg-slate-50 pl-3 pr-8 py-2 text-sm font-medium text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-60"
                 >
                   <option value="">Select Group</option>
-                  {groups.map((g) => <option key={g} value={g}>{g}</option>)}
+
+                  {(session?.user?.role === "lecturer" ? mappedGroups : groups).map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                   ))}
+
                 </select>
                 <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-2.5 text-slate-400" />
               </div>

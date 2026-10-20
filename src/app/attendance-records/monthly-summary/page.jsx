@@ -1,381 +1,191 @@
-//src/app/attendance-records/monthly-summary/page.jsx
+
 'use client'
-import {useState,useEffect} from 'react'
-import {
-  CalendarDays,
-  ClipboardCheck,
-  FileText,
-  LayoutDashboard,
-  Menu,
-  Settings,
-  Users,
-  X,
-} from 'lucide-react'
 
-const sidebarLinks = [
-  { label: 'Dashboard', icon: LayoutDashboard },
-  { label: 'Students', icon: Users },
-  { label: 'Attendance', icon: ClipboardCheck },
-  { label: 'Reports', icon: FileText },
-  { label: 'Settings', icon: Settings },
-]
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { ArrowLeft, Users } from 'lucide-react'
+import GroupAttendanceSummary from '@/components/attendance/GroupAttendanceSummary'
 
-const monthOptions = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
-const yearOptions = ["First Year", "Second Year"]
 const groupOptions = ['MPC', 'BiPC', 'CEC', 'HEC', 'MLT', 'CET', 'M&AT']
-const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
-function Sidebar({ collapsed, mobileOpen, onToggleCollapsed, onCloseMobile }) {
-  return (
-    <>
-      {mobileOpen ? (
-        <button
-          type="button"
-          className="fixed inset-0 z-30 bg-slate-950/40 lg:hidden"
-          onClick={onCloseMobile}
-          aria-label="Close sidebar"
-        />
-      ) : null}
-
-      <aside
-        className={[
-          'fixed top-0 left-0 z-40 h-screen border-r border-slate-200 bg-white transition-all duration-300',
-          collapsed ? 'w-20' : 'w-64',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-        ].join(' ')}
-      >
-        <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
-          <div className={collapsed ? 'hidden' : 'block'}>
-            <p className="text-xs uppercase tracking-wide text-slate-500">Academic</p>
-            <h1 className="text-sm font-semibold text-slate-900">Monthly Calendar</h1>
-          </div>
-          <button
-            type="button"
-            onClick={onToggleCollapsed}
-            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
-            aria-label="Toggle sidebar"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-        </div>
-
-        <nav className="space-y-1 p-3">
-          {sidebarLinks.map(item => {
-            const Icon = item.icon
-            return (
-              <button
-                key={item.label}
-                type="button"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className={collapsed ? 'hidden' : 'inline'}>{item.label}</span>
-              </button>
-            )
-          })}
-        </nav>
-      </aside>
-    </>
-  )
-}
-
-function getAttendanceColor(percent, hasData) {
-  if (!hasData) return 'bg-slate-100 border-slate-200 text-slate-500'
-  if (percent >= 75) return 'bg-emerald-50 border-emerald-200 text-emerald-800'
-  if (percent >= 50) return 'bg-amber-50 border-amber-200 text-amber-800'
-  return 'bg-rose-50 border-rose-200 text-rose-800'
-}
-
+const yearOptions = ['First Year', 'Second Year']
 
 export default function MonthlySummaryPage() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-
-  const now = new Date()
-  const [selectedMonth, setSelectedMonth] = useState(monthOptions[now.getMonth()])
-  const [selectedYear, setSelectedYear] = useState("First Year")
-  const [selectedGroup, setSelectedGroup] = useState(groupOptions[0])
-  const [selectedDate, setSelectedDate] = useState(null)
-
-  const [attendanceUpdated, setAttendanceUpdated] = useState(false);
-
-
-  
+  const [userRole, setUserRole] = useState('')
+  const [mappedGroups, setMappedGroups] = useState([])
+  const [selectedGroup, setSelectedGroup] = useState('')
+  const [mappingLoaded, setMappingLoaded] = useState(false)
+  const [mappingError, setMappingError] = useState('')
 
   useEffect(() => {
-    if (attendanceUpdated) {
-      // Trigger re-computation of calendarData
-      setAttendanceUpdated(false);
+    let cancelled = false
+
+    async function loadGroups() {
+      try {
+        setMappingError('')
+
+        const sessionRes = await fetch('/api/auth/session', {
+          cache: 'no-store',
+        })
+
+        if (!sessionRes.ok) {
+          throw new Error('Unable to load login session.')
+        }
+
+        const sessionData = await sessionRes.json()
+        const role = sessionData?.user?.role || ''
+
+        if (cancelled) return
+
+        setUserRole(role)
+
+        if (role !== 'lecturer') {
+          setMappedGroups(groupOptions)
+          setSelectedGroup(groupOptions[0])
+          return
+        }
+
+        const mappingRes = await fetch('/api/lecturer/group-mapping', {
+          cache: 'no-store',
+        })
+
+        const mappingData = await mappingRes.json()
+
+        if (
+          !mappingRes.ok ||
+          !mappingData?.success ||
+          !Array.isArray(mappingData.groups)
+        ) {
+          throw new Error('Unable to load lecturer group mapping.')
+        }
+
+        if (cancelled) return
+
+        const groups = mappingData.groups.filter(group =>
+          groupOptions.includes(group)
+        )
+
+        setMappedGroups(groups)
+        setSelectedGroup(current =>
+          groups.includes(current) ? current : (groups[0] || '')
+        )
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Monthly Attendance mapping error:', error)
+          setMappedGroups([])
+          setSelectedGroup('')
+          setMappingError(error.message || 'Unable to load groups.')
+        }
+      } finally {
+        if (!cancelled) {
+          setMappingLoaded(true)
+        }
+      }
     }
-  }, [attendanceUpdated]);
 
-useEffect(() => {
-  const fetchMonthlyData = async () => {
-    try {
-      const month = monthOptions.indexOf(selectedMonth) + 1;
+    loadGroups()
 
-      const res = await fetch(
-        `/api/attendance/monthly-summary?month=${month}&year=${selectedYear}&group=${selectedGroup}`
-      );
-
-      const data = await res.json();
-
-      console.log("Monthly API:", data);
-
-      setCalendarData(data.data || []);
-    } catch (err) {
-      console.error("Monthly fetch error:", err);
-      setCalendarData([]);
+    return () => {
+      cancelled = true
     }
-  };
-
-  fetchMonthlyData();
-}, [selectedMonth, selectedYear, selectedGroup]);
-
-
-
-
-
-const [calendarData, setCalendarData] = useState([]);
-console.log("calendarData:", calendarData);
-  const filledDays = calendarData.filter(item => !item.empty && item.hasData)
-  const monthAverage =
-    filledDays.length > 0
-      ? (filledDays.reduce((sum, day) => sum + day.percent, 0) / filledDays.length).toFixed(1)
-      : '0.0'
-  const totalWorkingDays = filledDays.length
-  const bestDay = filledDays.reduce((best, day) => (day.percent > (best?.percent ?? -1) ? day : best), null)
-  const lowestDay = filledDays.reduce((low, day) => (day.percent < (low?.percent ?? 101) ? day : low), null)
-
-  const contentPadding = sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
-
-  
+  }, [])
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-100 text-sm">
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        mobileOpen={mobileSidebarOpen}
-        onToggleCollapsed={() => setSidebarCollapsed(prev => !prev)}
-        onCloseMobile={() => setMobileSidebarOpen(false)}
-      />
+    <main className="min-h-screen bg-slate-100 px-3 py-4 sm:px-5">
+      <div className="mx-auto w-full max-w-7xl space-y-4">
 
-      <div className={[contentPadding, 'flex h-full flex-col transition-all duration-300'].join(' ')}>
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setMobileSidebarOpen(true)}
-              className="rounded-lg border border-slate-200 p-2 text-slate-600 lg:hidden"
-              aria-label="Open sidebar"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-
-            <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700">
-              <CalendarDays className="h-4 w-4 text-blue-700" />
-              <span>Monthly Attendance</span>
-            </div>
-
-            <div className="ml-auto flex flex-wrap gap-2">
-              <select
-                value={selectedMonth}
-                onChange={e => setSelectedMonth(e.target.value)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-              >
-                {monthOptions.map(month => (
-                  <option key={month} value={month}>
-                    {month}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={selectedYear}
-                onChange={e => setSelectedYear(e.target.value)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-              >
-                {yearOptions.map(year => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={selectedGroup}
-                onChange={e => setSelectedGroup(e.target.value)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
-              >
-                {groupOptions.map(group => (
-                  <option key={group} value={group}>
-                    {group}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <header className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Lecturer Dashboard
+            </p>
+            <h1 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">
+              Monthly Attendance
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Student-wise attendance register
+            </p>
           </div>
+
+          <Link
+            href="/lecturer/dashboard"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Link>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 py-4">
-          <div className="mx-auto w-full max-w-7xl space-y-4">
-            <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <article className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                <p className="text-xs text-slate-500">Month Average %</p>
-                <p className="mt-1 text-lg font-semibold text-blue-700">{monthAverage}%</p>
-              </article>
-              <article className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                <p className="text-xs text-slate-500">Total Working Days</p>
-                <p className="mt-1 text-lg font-semibold text-slate-900">{totalWorkingDays}</p>
-              </article>
-              <article className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                <p className="text-xs text-slate-500">Best Attendance Day</p>
-                <p className="mt-1 text-sm font-semibold text-emerald-700">
-                  {bestDay ? `${bestDay.dateLabel} (${bestDay.percent}%)` : 'N/A'}
-                </p>
-              </article>
-              <article className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                <p className="text-xs text-slate-500">Lowest Attendance Day</p>
-                <p className="mt-1 text-sm font-semibold text-rose-700">
-                  {lowestDay ? `${lowestDay.dateLabel} (${lowestDay.percent}%)` : 'N/A'}
-                </p>
-              </article>
-            </section>
+        <section className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 text-sm font-bold text-slate-700">
+            <Users className="h-5 w-5" />
+            Select Group
+          </div>
 
-            <p className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-800">
-              Historical context: attendance reports use the year saved in each attendance record.
+          <select
+            value={selectedGroup}
+            onChange={event => setSelectedGroup(event.target.value)}
+            disabled={!mappingLoaded || mappedGroups.length === 0}
+            className="min-h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-blue-500 disabled:bg-slate-100 sm:w-64"
+          >
+            {!mappingLoaded && <option value="">Loading groups...</option>}
+
+            {mappingLoaded && mappedGroups.length === 0 && (
+              <option value="">No mapped groups</option>
+            )}
+
+            {mappedGroups.map(group => (
+              <option key={group} value={group}>
+                {group}
+              </option>
+            ))}
+          </select>
+
+          {userRole === 'lecturer' && (
+            <p className="text-xs text-slate-500">
+              Only your mapped groups are available.
             </p>
+          )}
+        </section>
 
-            <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-              <div className="mb-2 hidden grid-cols-7 gap-2 md:grid">
-                {weekDays.map(day => (
-                  <div key={day} className="rounded-lg bg-slate-100 px-2 py-2 text-center text-xs font-medium text-slate-600">
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 md:grid-cols-7">
-                {calendarData.map(item => {
-                  if (item.empty) {
-                    return <div key={item.id} className="hidden md:block" />
-                  }
-
-                  const colorClass = getAttendanceColor(item.percent, item.hasData)
-
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setSelectedDate(item)}
-                      className={[
-                        'group relative min-h-28 rounded-lg border px-2 py-2 text-left shadow-sm transition hover:-translate-y-0.5',
-                        colorClass,
-                      ].join(' ')}
-                    >
-                      <p className="text-right text-[11px] font-medium">{item.day}</p>
-                      <div className="mt-1 space-y-1 text-[11px]">
-                        <p>Present: <span className="font-semibold">{item.presentCount}</span></p>
-                        <p>Absent: <span className="font-semibold">{item.absentCount}</span></p>
-                        <p>Attendance: <span className="font-semibold">{item.hasData ? `${item.percent}%` : 'No data'}</span></p>
-                      </div>
-
-                      <div className="pointer-events-none absolute top-2 left-2 z-20 hidden w-44 rounded-lg border border-slate-200 bg-white p-2 text-[11px] text-slate-700 shadow-sm group-hover:block">
-                        <p className="font-semibold text-slate-900">{item.dateLabel}</p>
-                        <p>Total: {item.totalStudents}</p>
-                        <p>Present: {item.presentCount}</p>
-                        <p>Absent: {item.absentCount}</p>
-                        <p>Attendance: {item.hasData ? `${item.percent}%` : 'No data'}</p>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
+        {mappingError && (
+          <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            {mappingError}
           </div>
-        </main>
-      </div>
+        )}
 
-      {selectedDate ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4">
-          <div className="w-full max-w-2xl rounded-lg border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900">Attendance Details - {selectedDate.dateLabel}</h3>
-                <p className="text-xs text-slate-500">Group: {selectedGroup}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedDate(null)}
-                className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
-                aria-label="Close modal"
+        {!mappingLoaded ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+            Loading lecturer groups...
+          </div>
+        ) : mappedGroups.length === 0 ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
+            {userRole === 'lecturer'
+              ? 'No groups are mapped to this lecturer. Please check the lecturer group mapping.'
+              : 'Unable to load groups. Please refresh the page or sign in again.'}
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {yearOptions.map(year => (
+              <section
+                key={`${selectedGroup}-${year}`}
+                className="space-y-3"
               >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+                <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+                  <h2 className="text-base font-bold text-slate-900">
+                    {selectedGroup} — {year}
+                  </h2>
+                </div>
 
-            <div className="grid grid-cols-2 gap-2 border-b border-slate-200 px-4 py-3 text-xs">
-              <div className="rounded-lg bg-emerald-50 px-3 py-2 text-emerald-700">
-                Present: <span className="font-semibold">{selectedDate.presentCount}</span>
-              </div>
-              <div className="rounded-lg bg-rose-50 px-3 py-2 text-rose-700">
-                Absent: <span className="font-semibold">{selectedDate.absentCount}</span>
-              </div>
-            </div>
-
-            <div className="max-h-80 overflow-y-auto px-4 py-3">
-              {!selectedDate.students || selectedDate.students.length === 0 ? (
-                <p className="text-xs text-slate-500">No student-wise data for this date.</p>
-              ) : (
-                <table className="min-w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-600">
-                      <th className="px-2 py-2 text-left font-medium">S.No</th>
-                      <th className="px-2 py-2 text-left font-medium">Student Name</th>
-                      <th className="px-2 py-2 text-left font-medium">Roll No</th>
-                      <th className="px-2 py-2 text-left font-medium">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedDate.students?.map((student, index) =>(
-                      <tr key={student.id} className="border-b border-slate-100">
-                        <td className="px-2 py-2">{index + 1}</td>
-                        <td className="px-2 py-2">{student.name}</td>
-                        <td className="px-2 py-2">{student.rollNo}</td>
-                        <td className="px-2 py-2">
-                          <span
-                            className={[
-                              'rounded-full px-2 py-0.5 text-[10px] font-medium',
-                              student.status === 'Present'
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : 'bg-rose-100 text-rose-700',
-                            ].join(' ')}
-                          >
-                            {student.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+                <GroupAttendanceSummary
+                  key={`${selectedGroup}-${year}`}
+                  group={selectedGroup}
+                  yearOfStudy={year}
+                />
+              </section>
+            ))}
           </div>
-        </div>
-      ) : null}
-    </div>
+        )}
+      </div>
+    </main>
   )
 }

@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+const allGroupOptions = ["MPC", "BiPC", "CEC", "HEC", "M&AT", "MLT", "CET"];
+
 // ─── Student Card (mobile view) ───────────────────────────────────────────────
 function StudentCard({ s, idx, onEdit, onDelete }) {
   const [expanded, setExpanded] = useState(false);
@@ -151,6 +153,7 @@ function StudentCard({ s, idx, onEdit, onDelete }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
+  const [mappedGroups, setMappedGroups] = useState(null);
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [filters, setFilters] = useState({
@@ -172,24 +175,120 @@ export default function StudentsPage() {
   const tableRef = useRef();
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchStudents = async () => {
       try {
         if (!session?.user?.collegeId) return;
         setIsLoading(true);
-        const res = await fetch(`/api/students?collegeId=${session.user.collegeId}`);
-        const result = await res.json();
-        setStudents(Array.isArray(result.data) ? result.data : []);
+        const pageSize = 100;
+        const firstResponse = await fetch(
+          `/api/students?collegeId=${session.user.collegeId}&page=1&limit=${pageSize}`
+        );
+        const firstResult = await firstResponse.json();
+
+        if (!firstResponse.ok) {
+          throw new Error(firstResult?.message || "Failed to load students");
+        }
+
+        const remainingPages = Array.from(
+          { length: Math.max((firstResult.totalPages || 1) - 1, 0) },
+          (_, index) => index + 2
+        );
+        const remainingResults = await Promise.all(
+          remainingPages.map(async (page) => {
+            const response = await fetch(
+              `/api/students?collegeId=${session.user.collegeId}&page=${page}&limit=${pageSize}`
+            );
+            const result = await response.json();
+
+            if (!response.ok) {
+              throw new Error(result?.message || "Failed to load students");
+            }
+
+            return result;
+          })
+        );
+
+        if (!cancelled) {
+          setStudents(
+            [firstResult, ...remainingResults].flatMap((result) =>
+              Array.isArray(result.data) ? result.data : []
+            )
+          );
+        }
       } catch (err) {
         console.error("Error fetching students:", err);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
     if (status !== "loading") fetchStudents();
+
+    return () => {
+      cancelled = true;
+    };
   }, [session?.user?.collegeId, status]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadMappedGroups = async () => {
+      if (status === "loading") return;
+
+      if (session?.user?.role !== "lecturer") {
+        setMappedGroups(null);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/lecturer/group-mapping");
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result?.message || "Unable to load mapped groups");
+        }
+
+        if (!cancelled) {
+          setMappedGroups(Array.isArray(result.groups) ? result.groups : []);
+        }
+      } catch (error) {
+        console.error("Error fetching mapped groups:", error);
+        if (!cancelled) setMappedGroups([]);
+      }
+    };
+
+    loadMappedGroups();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.user?.role, status]);
+
+  const groupOptions = useMemo(() => {
+    if (session?.user?.role !== "lecturer") return allGroupOptions;
+    if (!Array.isArray(mappedGroups)) return [];
+
+    return [...new Set(mappedGroups.map((group) => String(group).trim()).filter(Boolean))];
+  }, [mappedGroups, session?.user?.role]);
+
+  const visibleStudents = useMemo(() => {
+    if (session?.user?.role !== "lecturer") return students;
+    if (!Array.isArray(mappedGroups)) return [];
+
+    const normalizedMappedGroups = new Set(
+      mappedGroups.map((group) => String(group).trim().toUpperCase())
+    );
+
+    return students.filter((student) => {
+      const group = String(student.group || "").trim().toUpperCase();
+      return normalizedMappedGroups.has(group) ||
+        (group === "BIPC" && normalizedMappedGroups.has("BIPC"));
+    });
+  }, [mappedGroups, session?.user?.role, students]);
+
   const filteredStudents = useMemo(() => {
-    let filtered = students;
+    let filtered = visibleStudents;
     if (deferredSearch) {
       filtered = filtered.filter((s) =>
         s.name.toLowerCase().includes(deferredSearch.toLowerCase())
@@ -203,7 +302,7 @@ export default function StudentsPage() {
         (s) => String(s.yearOfStudy) === String(filters.yearOfStudy)
       );
     return filtered;
-  }, [students, deferredSearch, filters]);
+  }, [visibleStudents, deferredSearch, filters]);
 
   useEffect(() => {
     setCurrentPage(0);
@@ -214,31 +313,120 @@ export default function StudentsPage() {
     setFilters((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.text(collegeName.toUpperCase(), 105, 15, { align: "center" });
+  const handleExportPDF = async () => {
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    const loadPhoto = async (photoUrl) => {
+      if (!photoUrl) return null;
+
+      try {
+        const response = await fetch(photoUrl, { cache: "no-store" });
+        if (!response.ok) return null;
+
+        const blob = await response.blob();
+        if (!blob.type.startsWith("image/")) return null;
+
+        return await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.warn("Unable to add student photo to PDF:", error);
+        return null;
+      }
+    };
+
+    const studentsWithPhotos = await Promise.all(
+      filteredStudents.map(async (student) => ({
+        ...student,
+        photoData: await loadPhoto(student.photo),
+      }))
+    );
+
+    doc.setFontSize(12);
+    doc.text(collegeName.toUpperCase(), pageWidth / 2, 10, { align: "center" });
+    doc.setFontSize(7);
+    doc.text(`Student Records | Total: ${filteredStudents.length}`, pageWidth / 2, 15, {
+      align: "center",
+    });
+
     autoTable(doc, {
-      startY: 25,
+      startY: 19,
       head: [
         [
-          "S.No","Name","Father Name","Mobile","Caste","Group",
-          "Gender","Year of Study","Admission Year","Date Of Joining","Address",
+          "S.No", "Photo", "Name", "Father Name", "Mobile", "Parent Mobile", "Group",
+          "Caste", "Gender", "Year", "Adm. No", "DOB", "Joining", "Adm. Year", "Address", "Status",
         ],
       ],
-      body: filteredStudents.map((s, idx) => [
+      body: studentsWithPhotos.map((s, idx) => [
         idx + 1,
-        s.name,
-        s.fatherName,
-        s.mobile,
-        s.caste,
-        s.group,
-        s.gender,
-        s.yearOfStudy === "First Year" ? "First Year" : "Second Year",
-        s.admissionYear,
-        s.dateOfJoining,
-        s.address,
+        "",
+        s.name || "-",
+        s.fatherName || "-",
+        s.mobile || "-",
+        s.parentMobile || "-",
+        s.group || "-",
+        s.caste || "-",
+        s.gender || "-",
+        s.yearOfStudy || "-",
+        s.admissionNo || "-",
+        s.dob ? new Date(s.dob).toLocaleDateString("en-GB") : "-",
+        s.dateOfJoining ? new Date(s.dateOfJoining).toLocaleDateString("en-GB") : "-",
+        s.admissionYear || "-",
+        s.address || "-",
+        s.status || "Active",
       ]),
+      theme: "grid",
+      margin: { top: 19, right: 5, bottom: 8, left: 5 },
+      styles: {
+        fontSize: 5.5,
+        cellPadding: 0.8,
+        valign: "middle",
+        overflow: "linebreak",
+        minCellHeight: 12,
+      },
+      headStyles: {
+        fillColor: [31, 41, 55],
+        textColor: 255,
+        fontStyle: "bold",
+        halign: "center",
+      },
+      columnStyles: {
+        0: { cellWidth: 7, halign: "center" },
+        1: { cellWidth: 12 },
+        2: { cellWidth: 21 },
+        3: { cellWidth: 21 },
+        4: { cellWidth: 17 },
+        5: { cellWidth: 17 },
+        6: { cellWidth: 14 },
+        7: { cellWidth: 11 },
+        8: { cellWidth: 11 },
+        9: { cellWidth: 15 },
+        10: { cellWidth: 17 },
+        11: { cellWidth: 15 },
+        12: { cellWidth: 15 },
+        13: { cellWidth: 14 },
+        14: { cellWidth: 29 },
+        15: { cellWidth: 12 },
+      },
+      didDrawCell: (data) => {
+        if (data.section !== "body" || data.column.index !== 1) return;
+
+        const photoData = studentsWithPhotos[data.row.index]?.photoData;
+        if (!photoData) return;
+
+        const photoSize = 9;
+        doc.addImage(
+          photoData,
+          data.cell.x + (data.cell.width - photoSize) / 2,
+          data.cell.y + (data.cell.height - photoSize) / 2,
+          photoSize,
+          photoSize
+        );
+      },
     });
     doc.save("students.pdf");
   };
@@ -345,7 +533,7 @@ export default function StudentsPage() {
   ));
 
   return (
-    <div className="px-3 sm:px-4 md:px-6 max-w-screen-2xl mx-auto mt-24 pb-10">
+    <div className="mx-auto mt-20 max-w-screen-2xl px-3 pb-8 sm:mt-24 sm:px-4 sm:pb-10 md:px-6">
 
       {/* ── College Header ── */}
       <div className="flex flex-col items-center mb-5">
@@ -354,20 +542,20 @@ export default function StudentsPage() {
           bg-linear-to-r from-blue-50 via-white to-green-50
           px-4 py-3 shadow-xl w-full sm:w-auto text-center">
           <School className="w-7 h-7 text-blue-600 shrink-0" />
-          <span className="text-base sm:text-lg md:text-xl font-bold text-gray-800">
+          <span className="break-words text-base font-bold text-gray-800 sm:text-lg md:text-xl">
             {collegeName}
           </span>
         </div>
       </div>
 
       {/* ── Filters ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+      <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <input
           type="text"
           placeholder="🔍 Search by Name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="col-span-2 sm:col-span-1 border p-2 rounded font-bold text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          className="border p-2 rounded font-bold text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 sm:col-span-2 lg:col-span-1"
         />
         <select
           name="group"
@@ -376,13 +564,11 @@ export default function StudentsPage() {
           className="border p-2 rounded font-bold text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
           <option value="">All Groups</option>
-          <option value="MPC">MPC</option>
-          <option value="BiPC">BiPC</option>
-          <option value="CEC">CEC</option>
-          <option value="HEC">HEC</option>
-          <option value="M&AT">M&AT</option>
-          <option value="MLT">MLT</option>
-          <option value="CET">CET</option>
+          {groupOptions.map((group) => (
+            <option key={group} value={group}>
+              {group}
+            </option>
+          ))}
         </select>
         <select
           name="caste"
@@ -424,30 +610,30 @@ export default function StudentsPage() {
       </div>
 
       {/* ── Action Buttons ── */}
-      <div className="flex flex-wrap gap-2 sm:gap-3 mb-5">
+      <div className="mb-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
         <button
           onClick={handleExportPDF}
-          className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 flex items-center gap-1.5 rounded font-bold cursor-pointer text-sm"
+          className="flex min-h-10 items-center justify-center gap-1.5 rounded bg-red-500 px-3 py-2 text-sm font-bold text-white hover:bg-red-600 sm:min-h-0"
         >
           <FileSpreadsheet className="w-4 h-4" />
           <span className="hidden xs:inline">Export </span>PDF
         </button>
         <button
           onClick={handleExportExcel}
-          className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 flex items-center gap-1.5 rounded font-bold cursor-pointer text-sm"
+          className="flex min-h-10 items-center justify-center gap-1.5 rounded bg-green-500 px-3 py-2 text-sm font-bold text-white hover:bg-green-600 sm:min-h-0"
         >
           <FileDown className="w-4 h-4" />
           <span className="hidden xs:inline">Export </span>Excel
         </button>
         <button
           onClick={handlePrint}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 flex items-center gap-1.5 rounded font-bold cursor-pointer text-sm"
+          className="flex min-h-10 items-center justify-center gap-1.5 rounded bg-blue-500 px-3 py-2 text-sm font-bold text-white hover:bg-blue-600 sm:min-h-0"
         >
           <Printer className="w-4 h-4" />
           <span className="hidden xs:inline">Print </span>Table
         </button>
         <Link href="/lecturer/dashboard">
-          <button className="bg-green-600 text-white px-3 py-2 rounded font-bold hover:bg-green-700 flex items-center gap-1.5 cursor-pointer text-sm">
+          <button className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded bg-green-600 px-3 py-2 text-sm font-bold text-white hover:bg-green-700 sm:min-h-0 sm:w-auto">
             <Users2 className="w-4 h-4" /> Dashboard
           </button>
         </Link>
@@ -477,8 +663,8 @@ export default function StudentsPage() {
       </div>
 
       {/* ── DESKTOP: Table View (hidden on mobile) ── */}
-      <div className="hidden md:block overflow-x-auto" ref={tableRef}>
-        <table className="min-w-full table-auto border rounded-lg shadow-md font-semibold text-sm">
+      <div className="hidden overflow-x-auto rounded-xl border border-gray-200 shadow-md md:block" ref={tableRef}>
+        <table className="min-w-[1700px] table-auto font-semibold text-sm">
           <thead className="bg-gray-100 text-left text-gray-700 uppercase tracking-wide">
             <tr>
               <th className="px-4 py-2 border-r border-gray-300 w-12 text-center">S.No</th>
@@ -590,8 +776,8 @@ export default function StudentsPage() {
 
       {/* ── Edit Modal ── */}
       {editingStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-lg bg-white p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
+          <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-lg bg-white p-4 sm:p-6">
             <StudentEditForm
               student={editingStudent}
               onSave={handleUpdate}
@@ -602,7 +788,7 @@ export default function StudentsPage() {
       )}
 
       {/* ── Pagination ── */}
-      <div className="mt-6 flex justify-center">
+      <div className="mt-5 flex justify-center sm:mt-6">
         <ReactPaginate
           previousLabel={<span className="font-bold">&larr; Prev</span>}
           nextLabel={<span className="font-bold">Next &rarr;</span>}

@@ -26,8 +26,10 @@ const sidebarLinks = [
   { label: 'Settings', icon: Settings },
 ]
 
+
 const groupOptions = ['MPC', 'BiPC', 'CEC', 'HEC', 'MLT', 'CET', 'M&AT']
 const yearOptions = ['First Year', 'Second Year']
+
 const sessionOptions = ['FN', 'AN']
 const subjectOptions = ['English', 'Maths', 'Physics', 'Chemistry', 'Botany', 'Zoology', 'Commerce']
 
@@ -114,12 +116,110 @@ export default function AttendanceFormPage() {
   const { data: session } = useSession()
   const searchParams = useSearchParams()
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [mappedGroups, setMappedGroups] = useState([])
+const [mappingLoaded, setMappingLoaded] = useState(false)
 
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10))
-  const [selectedGroup, setSelectedGroup] = useState(groupOptions[0])
+useEffect(() => {
+  if (session?.user?.role !== 'lecturer') {
+    setMappingLoaded(true)
+    return
+  }
+
+  let cancelled = false
+
+  const fetchMappedGroups = async () => {
+    try {
+      const res = await fetch('/api/lecturer/group-mapping', {
+        cache: 'no-store',
+      })
+      const json = await res.json()
+
+      if (!res.ok || !json?.success || !Array.isArray(json.groups)) {
+        throw new Error(json?.message || 'Failed to load group mapping')
+      }
+
+      if (!cancelled) {
+        setMappedGroups(json.groups)
+      }
+    } catch (error) {
+      if (!cancelled) {
+        setMappedGroups([])
+        setFeedback({
+          type: 'error',
+          message: error.message || 'Unable to load your group mapping.',
+        })
+      }
+    } finally {
+      if (!cancelled) setMappingLoaded(true)
+    }
+  }
+
+  fetchMappedGroups()
+
+  return () => {
+    cancelled = true
+  }
+}, [session?.user?.role])
+
+  
+const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10))
+
+const [selectedGroup, setSelectedGroup] = useState(
+  groupOptions[0]
+)
+
+const requestedGroups = useMemo(() => {
+  return (searchParams.get('groups') || '')
+    .split(',')
+    .map(group => {
+      const value = group.trim().toUpperCase()
+      return groupOptions.find(
+        option => option.toUpperCase() === value
+      )
+    })
+    .filter(Boolean)
+}, [searchParams])
+
+
+const availableGroupOptions = useMemo(() => {
+  if (session?.user?.role === 'lecturer') {
+    if (!mappingLoaded) return []
+
+    const mapped = groupOptions.filter(option =>
+      mappedGroups.some(
+        group => String(group).trim().toUpperCase() === option.toUpperCase()
+      )
+    )
+
+    return requestedGroups.length
+      ? mapped.filter(group => requestedGroups.includes(group))
+      : mapped
+  }
+
+  return requestedGroups.length
+    ? groupOptions.filter(group => requestedGroups.includes(group))
+    : groupOptions
+}, [session?.user?.role, mappingLoaded, mappedGroups, requestedGroups])
+
+
+
+useEffect(() => {
+  if (availableGroupOptions.length === 0) {
+    setSelectedGroup('')
+    return
+  }
+
+  if (!availableGroupOptions.includes(selectedGroup)) {
+    setSelectedGroup(availableGroupOptions[0])
+  }
+}, [availableGroupOptions, selectedGroup])
+
+
   const [selectedYear, setSelectedYear] = useState(yearOptions[0])
+
+  
+
+  
   const [selectedSession, setSelectedSession] = useState(sessionOptions[0])
   const [selectedSubject, setSelectedSubject] = useState(subjectOptions[0])
 
@@ -152,6 +252,16 @@ export default function AttendanceFormPage() {
   useEffect(() => {
     const fetchStudents = async () => {
       if (!selectedGroup) return
+
+if (
+  session?.user?.role === 'lecturer' &&
+  (!mappingLoaded || !availableGroupOptions.includes(selectedGroup))
+) {
+  setStudents([])
+  setAttendanceMap({})
+  setLoadingStudents(false)
+  return
+}
       try {
         setLoadingStudents(true)
         setFeedback({ type: '', message: '' })
@@ -188,7 +298,14 @@ export default function AttendanceFormPage() {
     }
 
     fetchStudents()
-  }, [selectedGroup, selectedYear])
+  }, [
+  selectedGroup,
+  selectedYear,
+  mappingLoaded,
+  session?.user?.role,
+  mappedGroups,
+  availableGroupOptions,
+])
 
   const totalStudents = students.length
   const presentCount = Object.values(attendanceMap).filter(status => status === 'Present').length
@@ -345,7 +462,7 @@ export default function AttendanceFormPage() {
                     onChange={e => setSelectedGroup(e.target.value)}
                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-500"
                   >
-                    {groupOptions.map(group => (
+                    {availableGroupOptions.map(group => (
                       <option key={group} value={group}>
                         {group}
                       </option>

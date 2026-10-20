@@ -5,7 +5,9 @@ import cloudinary from "@/lib/cloudinary";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
+import mongoose from "mongoose";
+import { getCaretakerLecturerGroupAccess } from "@/lib/caretakerGroupAccess";
+import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
 function getPublicIdFromUrl(url) {
   if (!url) return null;
   try {
@@ -30,20 +32,45 @@ function normalizeAdmissionNo(value) {
 // ✅ Session + CollegeId ఆధారంగా చెక్ చేసే helper
 async function getStudentByIdWithAuth(id) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+
+  if (!session?.user?.collegeId) {
     return { error: "Unauthorized", status: 401 };
   }
 
   await connectMongoDB();
 
-  // ⚡️ ఇప్పుడు populate చేయండి
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return { error: "Invalid student ID", status: 400 };
+  }
+
   const student = await Student.findOne({
     _id: id,
-    collegeId: session.user.collegeId, // 🛡️ కాలేజీ ఫిల్టర్
-  }).populate("collegeId", "name code"); // name, code మాత్రమే తీసుకుందాం
+    collegeId: session.user.collegeId,
+  }).populate("collegeId", "name code");
 
   if (!student) {
     return { error: "Student not found", status: 404 };
+  }
+
+  if (session.user.role === "lecturer") {
+    const access = await getCaretakerLecturerGroupAccess(session);
+
+    if (
+      !access.authorized ||
+      !access.groups.length ||
+      String(access.collegeId) !== String(session.user.collegeId)
+    ) {
+      return { error: "Forbidden: no authorized group mapping", status: 403 };
+    }
+
+    const normalize = (value) => normalizeAttendanceGroup(value);
+
+    const allowedGroups = access.groups.map(normalize);
+    const studentGroup = normalize(student.group);
+
+    if (!allowedGroups.includes(studentGroup)) {
+      return { error: "Forbidden: student group access denied", status: 403 };
+    }
   }
 
   return { student, session };
@@ -74,11 +101,44 @@ export async function PUT(req, context) {
   try {
   
     const { id } = await context.params;
-    const { student: existingStudent, error, status } = await getStudentByIdWithAuth(id);
+    const {
+  student: existingStudent,
+  error,
+  status,
+  session,
+} = await getStudentByIdWithAuth(id);
 
     if (error) return NextResponse.json({ message: error }, { status });
 
     let body = await req.json();
+
+    // Restrict lecturer updates to permitted student fields.
+if (existingStudent && error === undefined) {
+  // The helper above has already verified the lecturer's group access.
+}
+
+// Lecturers can update only these fields.
+// Other roles retain the existing update behavior.
+if (existingStudent && (await getServerSession(authOptions))?.user?.role === "lecturer") {
+  const allowedFields = [
+    "name",
+    "fatherName",
+    "mobile",
+    "parentMobile",
+    "caste",
+    "dob",
+    "gender",
+    "address",
+    "photo",
+  ];
+
+  body = Object.fromEntries(
+    Object.entries(body).filter(([key]) => allowedFields.includes(key))
+  );
+}
+
+
+
       // 📅 dateOfJoining ఉంటే Date object గా మార్చడం
     if (body.dateOfJoining) {
       body.dateOfJoining = new Date(body.dateOfJoining);
@@ -147,6 +207,14 @@ const updatedStudent = await Student.findOneAndUpdate(
 export async function DELETE(req, context) {
   try {
     const { id } = await context.params;
+    const session = await getServerSession(authOptions);
+
+if (session?.user?.role === "lecturer") {
+  return NextResponse.json(
+    { message: "Lecturers are not allowed to delete students." },
+    { status: 403 }
+  );
+}
     const { student, error, status } = await getStudentByIdWithAuth(id);
     if (error) return NextResponse.json({ message: error }, { status });
 

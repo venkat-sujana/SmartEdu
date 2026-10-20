@@ -1,3 +1,4 @@
+//src/app/dashboards/cec/consecutive-absentees/page.jsx
 'use client'
 
 import Link from 'next/link'
@@ -30,11 +31,11 @@ export default function ConsecutiveAbsenteesPage() {
   const collegeName = session?.user?.collegeName || 'College'
 
   const { data: consecutiveData, error, isLoading } = useSWR(
-    collegeId
-      ? `/api/attendance/consecutive-absentees?collegeId=${collegeId}`
-      : null,
-    fetcher
-  )
+  collegeId
+   ? `/api/attendance/consecutive-absentees?collegeId=${collegeId}&group=${encodeURIComponent(groupName)}`
+    : null,
+  fetcher
+)
 
   const consecutiveAbsentees = (consecutiveData?.absentees || []).filter(
     student => student.group === groupName

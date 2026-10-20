@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import Attendance from '@/models/Attendance'
 import Student from '@/models/Student'
 import connectMongoDB from '@/lib/mongodb'
+import { getCaretakerLecturerGroupAccess } from '@/lib/caretakerGroupAccess'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../auth/[...nextauth]/route'
 import mongoose from 'mongoose'
@@ -92,6 +93,19 @@ export async function GET(req) {
   if (!group || !year) {
     return NextResponse.json({ data: [], message: 'Missing group/year' }, { status: 400 })
   }
+
+  if (
+  lecturerAllowedGroups &&
+  !lecturerAllowedGroups.includes(group)
+) {
+  return NextResponse.json(
+    {
+      status: "error",
+      message: "You are not authorized to access this group",
+    },
+    { status: 403 }
+  );
+}
 
   const query = {
     collegeId,

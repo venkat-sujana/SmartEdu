@@ -523,6 +523,25 @@ const ENTITY_CONFIG = {
       { key: 'college', label: 'College', render: item => item.collegeId?.name || '-' },
     ],
   },
+
+caretakerGroupMapping: {
+    label: 'Caretaker Group Mapping',
+    singularLabel: 'Caretaker Group Mapping',
+    icon: GraduationCap,
+    route: '/admin-panel/caretaker-group-mapping',
+    hasCollegeFilter: true,
+    hideTable: true,
+    hideAddButton: true,
+    accent: {
+      badge: 'bg-teal-100 text-teal-800 border-teal-200',
+      button: 'bg-teal-600 hover:bg-teal-700',
+      soft: 'from-teal-500/20 via-cyan-500/10 to-white',
+      icon: 'bg-teal-500/15 text-teal-700',
+      activeCard: 'border-teal-300 bg-teal-50 text-teal-950 shadow-teal-100',
+    },
+  },
+
+
 }
 
 const INITIAL_FORM = {

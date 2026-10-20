@@ -7,7 +7,8 @@ import connectMongoDB from "@/lib/mongodb";
 import Attendance from "@/models/Attendance";
 import Student from "@/models/Student";
 import { buildAttendanceSessionReadFilter } from "@/validations/attendanceValidation";
-import { canLecturerAccessGroup, getLecturerGroupFromSubject } from "@/lib/lecturerGroupAccess";
+import { getCaretakerLecturerGroupAccess } from "@/lib/caretakerGroupAccess";
+import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
 import { isNonWorkingDay } from "@/lib/attendanceCalendar";
 
 const MONTHS = [
@@ -101,20 +102,40 @@ export async function GET(req) {
       );
     }
 
-    if (session?.user?.role === "lecturer") {
-      if (requestedGroup && !canLecturerAccessGroup(session, requestedGroup)) {
-        console.error("Error: Lecturer cannot access the requested group.");
-        return NextResponse.json(
-          { error: "You can only view monthly attendance for your assigned group." },
-          { status: 403 }
-        );
-      }
-    }
+ let group = requestedGroup;
 
-    const group =
-      session?.user?.role === "lecturer"
-        ? getLecturerGroupFromSubject(session.user.subject)
-        : requestedGroup;
+if (session?.user?.role === "lecturer") {
+  const access = await getCaretakerLecturerGroupAccess(session);
+
+  if (!access.authorized || !access.groups.length) {
+    return NextResponse.json(
+      {
+        status: "error",
+        message: "No authorized group mapping found for this lecturer",
+      },
+      { status: 403 }
+    );
+  }
+
+  const normalizedRequestedGroup = normalizeAttendanceGroup(requestedGroup);
+
+  const allowedGroups = access.groups.map(normalizeAttendanceGroup);
+
+  if (
+    !normalizedRequestedGroup ||
+    !allowedGroups.includes(normalizedRequestedGroup)
+  ) {
+    return NextResponse.json(
+      {
+        status: "error",
+        message: "You are not authorized to access this group",
+      },
+      { status: 403 }
+    );
+  }
+
+  group = normalizedRequestedGroup;
+}
 
     const collegeObjectId = mongoose.Types.ObjectId.isValid(effectiveCollegeId)
       ? new mongoose.Types.ObjectId(effectiveCollegeId)

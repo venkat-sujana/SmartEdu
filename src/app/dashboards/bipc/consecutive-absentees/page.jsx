@@ -31,7 +31,7 @@ export default function ConsecutiveAbsenteesPage() {
 
   const { data: consecutiveData, error, isLoading } = useSWR(
     collegeId
-      ? `/api/attendance/consecutive-absentees?collegeId=${collegeId}`
+      ? `/api/attendance/consecutive-absentees?collegeId=${collegeId}&group=${encodeURIComponent(groupName)}`
       : null,
     fetcher
   )
