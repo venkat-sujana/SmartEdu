@@ -1,28 +1,12 @@
 // app/students/[id]/route.js
 import connectMongoDB from "@/lib/mongodb";
 import Student from "@/models/Student";
-import cloudinary from "@/lib/cloudinary";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
 import { getCaretakerLecturerGroupAccess } from "@/lib/caretakerGroupAccess";
 import { normalizeAttendanceGroup } from "@/utils/attendanceGroup";
-function getPublicIdFromUrl(url) {
-  if (!url) return null;
-  try {
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split("/");
-    if (pathParts.length >= 3) {
-      const folder = pathParts[pathParts.length - 2];
-      const filename = pathParts[pathParts.length - 1];
-      return `${folder}/${filename.split(".")[0]}`;
-    }
-    return null;
-  } catch (e) {
-    return null;
-  }
-}
 
 function normalizeAdmissionNo(value) {
   if (value == null) return "";
@@ -175,18 +159,6 @@ if (existingStudent && (await getServerSession(authOptions))?.user?.role === "le
     }
 
 
-    // 🖼️ ఫోటో మారితే పాత ఫోటోని Cloudinary లో డిలీట్ చేయడం
-    if (body.photo && existingStudent.photo !== body.photo) {
-      const publicId = getPublicIdFromUrl(existingStudent.photo);
-      if (publicId) {
-        try {
-          await cloudinary.uploader.destroy(publicId);
-        } catch (e) {
-          console.error("Failed to delete old image:", e);
-        }
-      }
-    }
-
     // 🔄 Student update చేయడం
 const updatedStudent = await Student.findOneAndUpdate(
   { _id: id, collegeId: existingStudent.collegeId },
@@ -217,18 +189,6 @@ if (session?.user?.role === "lecturer") {
 }
     const { student, error, status } = await getStudentByIdWithAuth(id);
     if (error) return NextResponse.json({ message: error }, { status });
-
-    // Cloudinary నుండి ఫోటోని డిలీట్ చేయండి
-    if (student.photo) {
-      const publicId = getPublicIdFromUrl(student.photo);
-      if (publicId) {
-        try {
-          await cloudinary.uploader.destroy(publicId);
-        } catch (e) {
-          console.error("Failed to delete image:", e);
-        }
-      }
-    }
 
     await Student.findByIdAndDelete(student._id);
 

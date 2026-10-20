@@ -37,7 +37,6 @@ export async function POST(req) {
     const password = String(formData.get("password") || "").trim();
     const address = formData.get("address");
     const collegeId = formData.get("collegeId");
-    const photoUrl = formData.get("photoUrl") || "";
 
     
 const isSecondYear = yearOfStudy === "Second Year";
@@ -95,7 +94,6 @@ const normalizedDateOfJoining =
   collegeId: new mongoose.Types.ObjectId(collegeId),
   password: hashedPassword,
   status: "Active",
-  photo: photoUrl,
 });
 
     await student.save();

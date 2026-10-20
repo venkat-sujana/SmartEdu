@@ -85,7 +85,6 @@ async function authenticateLecturer(email, password) {
     collegeId: lecturer.collegeId?.toString() || null,
     collegeName: lecturer.collegeName || null,
     subject: lecturer.subject,
-    photo: lecturer.photo || "",
   };
 }
 
@@ -130,7 +129,6 @@ async function authenticateStudent(admissionNo, password) {
     collegeId: student.collegeId?._id?.toString() || null,
     collegeName: student.collegeId?.name || null,
     yearOfStudy: student.yearOfStudy,
-    photo: student.photo,
     group: student.group,
     fatherName: student.fatherName,
     mobile: student.mobile,
@@ -177,7 +175,6 @@ async function authenticatePrincipal(email, password) {
     role: "principal",
     collegeId: principal.collegeId?._id?.toString() || null,
     collegeName: principal.collegeId?.name || null,
-    photo: principal.photo,
   };
 }
 
@@ -227,8 +224,6 @@ async function authenticateOfficeStaff(email, password) {
     collegeId: office.collegeId?._id?.toString() || null,
 
     collegeName: office.collegeId?.name || null,
-
-    photo: office.photo || '',
   }
 }
 
@@ -269,7 +264,6 @@ async function authenticateInvigilationLecturer(email, password) {
     collegeId: lecturer.collegeId?.toString() || null,
     collegeName: null,
     subject: "",
-    photo: "",
   };
 }
 
@@ -389,7 +383,6 @@ CredentialsProvider({
         if (user.role === "student") {
           token.admissionNo = user.admissionNo;
           token.yearOfStudy = user.yearOfStudy;
-          token.photo = user.photo;
           token.group = user.group;
           token.fatherName = user.fatherName;
           token.mobile = user.mobile;
@@ -401,12 +394,9 @@ CredentialsProvider({
 
         if (user.role === "lecturer") {
           token.subject = user.subject;
-          token.photo = user.photo;
         }
-        if (user.role === "principal") token.photo = user.photo;
         if (user.role === "office") {
   token.designation = user.designation;
-  token.photo = user.photo;
 }
       }
 
@@ -421,7 +411,6 @@ CredentialsProvider({
       if (token.role === "student") {
         session.user.admissionNo = token.admissionNo;
         session.user.yearOfStudy = token.yearOfStudy;
-        session.user.photo = token.photo;
         session.user.group = token.group;
         session.user.fatherName = token.fatherName;
         session.user.mobile = token.mobile;
@@ -433,13 +422,10 @@ CredentialsProvider({
 
       if (token.role === "lecturer") {
         session.user.subject = token.subject;
-        session.user.photo = token.photo;
       }
-      if (token.role === "principal") session.user.photo = token.photo;
 
       if (token.role === "office") {
       session.user.designation = token.designation;
-      session.user.photo = token.photo;
       }
 
       return session;

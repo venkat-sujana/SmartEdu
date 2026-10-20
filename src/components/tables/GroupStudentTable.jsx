@@ -530,43 +530,11 @@ const loadImage = async url => {
     }
   };
 
-  const uploadToCloudinary = async file => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const result = await response.json().catch(() => ({}));
-      throw new Error(result.message || "Photo upload failed");
-    }
-
-    const result = await response.json();
-    return result.url;
-  };
-
   const handleUpdate = async updatedStudent => {
     setIsUpdating(true);
     try {
-      let photoUrl = updatedStudent.photo || "";
-
-      if (updatedStudent.file) {
-        const toastId = toast.loading("Uploading photo...");
-        try {
-          photoUrl = await uploadToCloudinary(updatedStudent.file);
-          toast.success("Photo uploaded successfully", { id: toastId });
-        } catch (error) {
-          toast.error(error.message || "Photo upload failed", { id: toastId });
-          return;
-        }
-      }
-
       const payload = {
         ...updatedStudent,
-        photo: photoUrl,
       };
 
       delete payload.file;

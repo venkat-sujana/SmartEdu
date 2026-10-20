@@ -3,7 +3,6 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { useSession } from 'next-auth/react'
 import {
@@ -14,7 +13,6 @@ import {
   IdCard,
   CalendarCheck2,
   MapPin,
-  ImageUp,
   School,
   Save,
   X,
@@ -52,8 +50,6 @@ const createFormState = student => ({
   admissionYear: student?.admissionYear || '',
   password: student?.password || '',
   address: student?.address || '',
-  photo: student?.photo || '',
-  file: null,
 })
 
 const Field = ({ icon: Icon, iconClassName, label, children, className = '' }) => (
@@ -68,7 +64,6 @@ const Field = ({ icon: Icon, iconClassName, label, children, className = '' }) =
 
 const StudentEditForm = ({ student, onCancel, onSave }) => {
   const [formData, setFormData] = useState(createFormState(student))
-  const [isUploading, setIsUploading] = useState(false)
   const [availableGroups, setAvailableGroups] = useState(DEFAULT_COLLEGE_GROUPS)
   const { data: session } = useSession()
 
@@ -114,60 +109,16 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
     : formData.dateOfJoining
 
   const handleChange = e => {
-    const { name, value, files } = e.target
-
-    if (name === 'file') {
-      const file = files?.[0] || null
-      setFormData(prev => ({
-        ...prev,
-        file,
-        photo: file ? URL.createObjectURL(file) : student?.photo || '',
-      }))
-      return
-    }
-
     setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [e.target.name]: e.target.value,
     }))
-  }
-
-  const uploadToCloudinary = async file => {
-    const payload = new FormData()
-    payload.append('file', file)
-
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: payload,
-    })
-
-    if (!res.ok) {
-      const result = await res.json().catch(() => ({}))
-      throw new Error(result.message || 'Photo upload failed')
-    }
-
-    const data = await res.json()
-    return data.url
   }
 
   const handleSubmit = async e => {
     e.preventDefault()
-    setIsUploading(true)
 
     try {
-      let photoUrl = formData.photo
-
-      if (formData.file) {
-        const toastId = toast.loading('Uploading photo...')
-        try {
-          photoUrl = await uploadToCloudinary(formData.file)
-          toast.success('Photo uploaded successfully', { id: toastId })
-        } catch (err) {
-          toast.error(err.message || 'Photo upload failed', { id: toastId })
-          return
-        }
-      }
-
       const updateData = {
         name: formData.name,
         fatherName: formData.fatherName,
@@ -184,7 +135,6 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
         admissionYear: Number(formData.admissionYear),
         password: formData.password?.trim() || undefined,
         address: formData.address,
-        photo: photoUrl,
         _id: student._id,
       }
 
@@ -201,8 +151,6 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
       toast.success('Student updated successfully')
     } catch (err) {
       toast.error(`Update failed: ${err.message}`)
-    } finally {
-      setIsUploading(false)
     }
   }
 
@@ -378,25 +326,6 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
             required
           />
         </Field>
-
-        <Field icon={ImageUp} iconClassName="text-blue-700" label="Upload Photo" className="md:col-span-2">
-          <input
-            type="file"
-            name="file"
-            accept="image/*"
-            onChange={handleChange}
-            className="block w-full cursor-pointer rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-cyan-700 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-cyan-800"
-          />
-          {formData.photo && (
-            <Image
-              src={formData.photo}
-              alt="Student preview"
-              width={96}
-              height={96}
-              className="mt-3 h-24 w-24 rounded-xl border border-slate-200 object-cover"
-            />
-          )}
-        </Field>
       </div>
 
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -410,11 +339,10 @@ const StudentEditForm = ({ student, onCancel, onSave }) => {
         </button>
         <button
           type="submit"
-          disabled={isUploading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-cyan-700 to-emerald-700 px-5 py-2.5 text-sm font-bold text-white shadow-lg transition hover:from-cyan-800 hover:to-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-cyan-700 to-emerald-700 px-5 py-2.5 text-sm font-bold text-white shadow-lg transition hover:from-cyan-800 hover:to-emerald-800"
         >
           <Save className="h-4 w-4" />
-          {isUploading ? 'Saving...' : 'Save Changes'}
+          Save Changes
         </button>
       </div>
     </form>

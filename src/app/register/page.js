@@ -2,7 +2,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
@@ -19,7 +18,6 @@ import {
   IdCard,
   PlusCircle,
   School,
-  ImageUp,
   Loader2,
 } from 'lucide-react'
 import { DEFAULT_COLLEGE_GROUPS } from '@/utils/collegeGroups'
@@ -122,8 +120,6 @@ export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
-  const [photo, setPhoto] = useState(null)
-  const [photoPreview, setPhotoPreview] = useState('')
   const [formData, setFormData] = useState(emptyForm)
   const [collegeName, setCollegeName] = useState('')
   const [availableGroups, setAvailableGroups] = useState(DEFAULT_COLLEGE_GROUPS)
@@ -234,35 +230,6 @@ export default function RegisterPage() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const uploadPhoto = async file => {
-    const payload = new FormData()
-    payload.append('file', file)
-
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: payload,
-    })
-
-    const result = await parseResponseBody(res)
-    if (!res.ok) {
-      throw new Error(result.message || 'Photo upload failed')
-    }
-
-    return result.url
-  }
-
-  useEffect(() => {
-    if (!photo) {
-      setPhotoPreview('')
-      return
-    }
-
-    const previewUrl = URL.createObjectURL(photo)
-    setPhotoPreview(previewUrl)
-
-    return () => URL.revokeObjectURL(previewUrl)
-  }, [photo])
-
   const handleSubmit = async e => {
     e.preventDefault()
     setIsLoading(true)
@@ -297,18 +264,6 @@ export default function RegisterPage() {
     form.append('lecturerId', session.user.id)
 
     try {
-      if (photo) {
-        const toastId = toast.loading('Uploading photo...')
-        try {
-          const photoUrl = await uploadPhoto(photo)
-          form.append('photoUrl', photoUrl)
-          toast.success('Photo uploaded successfully', { id: toastId })
-        } catch (error) {
-          toast.error(error.message || 'Photo upload failed', { id: toastId })
-          return
-        }
-      }
-
       const res = await fetch('/api/students/register', {
         method: 'POST',
         body: form,
@@ -324,8 +279,6 @@ export default function RegisterPage() {
       toast.success('Student registered successfully')
       const redirectPath = returnUrl || groupDashboardRoutes[formData.group] || '/dashboards'
       setFormData(emptyForm)
-      setPhoto(null)
-      setPhotoPreview('')
       router.push(redirectPath)
     } catch (err) {
       toast.error('Something went wrong.')
@@ -654,48 +607,6 @@ export default function RegisterPage() {
                     className={`${modernInputClass} resize-vertical min-h-[90px]`}
                     required
                   />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    Profile Photo (Optional)
-                  </label>
-                  <div className="group">
-                    <input
-                      id="photo"
-                      name="photo"
-                      type="file"
-                      accept="image/*"
-                      onChange={e => setPhoto(e.target.files?.[0] || null)}
-                      className="block w-full cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300 file:hidden hover:border-cyan-400 hover:bg-cyan-50/50 hover:shadow-md"
-                    />
-                    <label htmlFor="photo" className="cursor-pointer">
-                      <div className="flex flex-col items-center justify-center p-2 transition-all group-hover:scale-[1.02]">
-                        <ImageUp className="h-6 w-6 text-slate-400 group-hover:text-cyan-600" />
-                        <p className="mt-1.5 text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                          Click to upload student photo
-                        </p>
-                        <p className="text-xs text-slate-400">PNG, JPG up to 5MB</p>
-                      </div>
-                    </label>
-                  </div>
-                  {photoPreview && (
-                    <div className="mt-3 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                      <Image
-                        src={photoPreview}
-                        alt="Student preview"
-                        width={72}
-                        height={72}
-                        className="h-18 w-18 rounded-xl object-cover shadow-sm"
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-800">
-                          {photo?.name}
-                        </p>
-                        <p className="text-xs text-slate-500">Preview ready for upload</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </section>

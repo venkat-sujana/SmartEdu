@@ -6,7 +6,6 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import {
   AcademicCapIcon,
-  ArrowUpTrayIcon,
   BuildingOffice2Icon,
   EnvelopeIcon,
   UserCircleIcon,
@@ -19,9 +18,6 @@ export default function LecturerInfoCard({ user, groupName }) {
   const { data: session } = useSession()
   const isLecturer = session?.user?.role === 'lecturer'
   const [profile, setProfile] = useState(user || {})
-  const [isUploading, setIsUploading] = useState(false)
-  const [photoMessage, setPhotoMessage] = useState('')
-  const [photoError, setPhotoError] = useState('')
 
   useEffect(() => {
     setProfile(user || {})
@@ -70,55 +66,7 @@ export default function LecturerInfoCard({ user, groupName }) {
     [profile]
   )
 
-  const uploadToCloudinary = async file => {
-    const payload = new FormData()
-    payload.append('file', file)
-
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: payload,
-    })
-
-    const result = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      throw new Error(result.message || 'Photo upload failed')
-    }
-
-    return result.url
-  }
-
-  const handlePhotoChange = async event => {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
-
-    setIsUploading(true)
-    setPhotoMessage('')
-    setPhotoError('')
-
-    try {
-      const photoUrl = await uploadToCloudinary(file)
-      const res = await fetch('/api/lecturers/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo: photoUrl }),
-      })
-      const result = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        throw new Error(result.error || 'Failed to save lecturer photo')
-      }
-
-      setProfile(prev => ({ ...prev, ...(result.data || {}), photo: photoUrl }))
-      setPhotoMessage('Photo updated successfully')
-    } catch (err) {
-      console.error(err)
-      setPhotoError(err.message || 'Photo upload failed')
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
- return (
+  return (
   <motion.section
     whileHover={{ y: -2 }}
     transition={{ type: 'spring', stiffness: 240, damping: 20 }}
@@ -141,20 +89,6 @@ export default function LecturerInfoCard({ user, groupName }) {
               <UserCircleIcon className="h-12 w-12 text-white" />
             )}
           </div>
-
-          {isLecturer && (
-            <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-white/10 px-2 py-1 text-[10px] font-semibold text-white transition hover:bg-white/20">
-              <ArrowUpTrayIcon className="h-3 w-3" />
-              {isUploading ? 'Uploading...' : 'Upload'}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handlePhotoChange}
-                disabled={isUploading}
-              />
-            </label>
-          )}
         </div>
 
         {/* Lecturer Info */}
@@ -173,18 +107,6 @@ export default function LecturerInfoCard({ user, groupName }) {
         </div>
       </div>
     </div>
-
-    {(photoMessage || photoError) && (
-      <div
-        className={`m-3 rounded-lg border px-3 py-2 text-sm ${
-          photoError
-            ? 'border-red-200 bg-red-50 text-red-700'
-            : 'border-emerald-200 bg-emerald-50 text-emerald-700'
-        }`}
-      >
-        {photoError || photoMessage}
-      </div>
-    )}
   </motion.section>
 )
 }

@@ -13,7 +13,7 @@ export async function GET() {
 
     await connectMongoDB();
     const lecturer = await Lecturer.findById(session.user.id)
-      .select("name email subject collegeName collegeId photo")
+      .select("name email subject collegeName collegeId")
       .populate("collegeId", "name")
       .lean();
 
@@ -29,7 +29,6 @@ export async function GET() {
         subject: lecturer.subject,
         collegeId: lecturer.collegeId?._id ? String(lecturer.collegeId._id) : String(lecturer.collegeId || ""),
         collegeName: lecturer.collegeName || lecturer.collegeId?.name || "",
-        photo: lecturer.photo || "",
       },
     });
   } catch (error) {
@@ -39,46 +38,5 @@ export async function GET() {
 }
 
 export async function PUT(req) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id || session.user.role !== "lecturer") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await req.json();
-    const photo = String(body?.photo || "").trim();
-    if (!photo) {
-      return NextResponse.json({ error: "Photo URL is required" }, { status: 400 });
-    }
-
-    await connectMongoDB();
-    const lecturer = await Lecturer.findByIdAndUpdate(
-      session.user.id,
-      { photo },
-      { new: true, runValidators: true }
-    )
-      .select("name email subject collegeName collegeId photo")
-      .populate("collegeId", "name")
-      .lean();
-
-    if (!lecturer) {
-      return NextResponse.json({ error: "Lecturer not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({
-      message: "Lecturer photo updated",
-      data: {
-        id: String(lecturer._id),
-        name: lecturer.name,
-        email: lecturer.email,
-        subject: lecturer.subject,
-        collegeId: lecturer.collegeId?._id ? String(lecturer.collegeId._id) : String(lecturer.collegeId || ""),
-        collegeName: lecturer.collegeName || lecturer.collegeId?.name || "",
-        photo: lecturer.photo || "",
-      },
-    });
-  } catch (error) {
-    console.error("Lecturer profile PUT error:", error);
-    return NextResponse.json({ error: "Failed to update lecturer photo" }, { status: 500 });
-  }
+  return NextResponse.json({ error: "Photo updates are no longer supported" }, { status: 400 });
 }
