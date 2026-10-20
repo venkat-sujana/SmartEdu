@@ -95,7 +95,7 @@ function ToggleSwitch({ checked, onChange, color = 'green' }) {
       type="button"
       onClick={onChange}
       className={[
-        'relative inline-flex h-6 w-11 items-center rounded-full transition',
+        'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2',
         bgClass,
       ].join(' ')}
       aria-pressed={checked}
@@ -406,8 +406,8 @@ if (
       
 
       <div className="flex h-full flex-col">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
-          <div className="flex items-center justify-between gap-3">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-3 py-2 shadow-sm sm:px-4 sm:py-3">
+          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-between sm:gap-3">
             <button
               type="button"
               onClick={() => setMobileSidebarOpen(true)}
@@ -417,35 +417,36 @@ if (
               <Menu className="h-5 w-5" />
             </button>
 
-            <div className="ml-auto inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700">
+            <div className="order-3 flex w-full items-center gap-2 sm:order-none sm:ml-auto sm:w-auto sm:rounded-lg sm:border sm:border-slate-200 sm:bg-slate-50 sm:px-3 sm:py-2">
               <Link
                 href={dashboardReturnUrl}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-white transition hover:bg-blue-700"
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm text-white transition hover:bg-blue-700 sm:flex-none"
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span>Back to Dashboard</span>
+                <span className="sm:hidden">Dashboard</span>
+                <span className="hidden sm:inline">Back to Dashboard</span>
               </Link>
-              <Link className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-white transition hover:bg-blue-700"
+              <Link className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm text-white transition hover:bg-blue-700 sm:flex-none"
               href="/late-entry">Late Entry</Link>
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700">
+            <div className="ml-auto hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700 sm:inline-flex">
               <CalendarDays className="h-4 w-4 text-blue-700" />
               <span>{todayDateLabel}</span>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 py-4">
-          <div className="w-full space-y-4">
-            <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-              <div className="flex flex-wrap items-end gap-3">
-                <div className="min-w-[150px]">
+        <main className="flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
+          <div className="mx-auto w-full max-w-screen-2xl space-y-3 sm:space-y-4">
+            <section className="rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-sm sm:px-4">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(150px,1.2fr)_minmax(150px,1fr)_minmax(140px,1fr)_minmax(140px,1fr)_minmax(120px,0.8fr)_auto] lg:items-end">
+                <div>
                   <h1 className="text-base font-semibold text-slate-900">Mark Attendance</h1>
                   <p className="mt-1 text-xs text-slate-500">{todayDateLabel}</p>
                 </div>
 
-                <div className="min-w-[150px]">
+                <div>
                   <label className="mb-1 block text-xs font-medium text-slate-600">Date</label>
                   <input
                     type="date"
@@ -455,7 +456,7 @@ if (
                   />
                 </div>
 
-                <div className="min-w-[140px] flex-1">
+                <div>
                   <label className="mb-1 block text-xs font-medium text-slate-600">Group</label>
                   <select
                     value={selectedGroup}
@@ -470,7 +471,7 @@ if (
                   </select>
                 </div>
 
-                <div className="min-w-[140px] flex-1">
+                <div>
                   <label className="mb-1 block text-xs font-medium text-slate-600">Year</label>
                   <select
                     value={selectedYear}
@@ -485,7 +486,7 @@ if (
                   </select>
                 </div>
 
-                <div className="min-w-[120px] flex-1">
+                <div>
                   <label className="mb-1 block text-xs font-medium text-slate-600">Session</label>
                   <select
                     value={selectedSession}
@@ -502,12 +503,12 @@ if (
 
                
 
-                <div className="ml-auto">
+                <div className="sm:col-span-2 lg:col-span-1">
                   <button
                     type="button"
                     onClick={submitAttendance}
                     disabled={submitting || loadingStudents}
-                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                    className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                   >
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                     Submit
@@ -559,13 +560,13 @@ if (
               ) : null}
             </section>
 
-            <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
+            <section className="rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-sm sm:px-4">
+              <div className="mb-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
                 <button
                   type="button"
                   onClick={markAllPresent}
                   disabled={students.length === 0}
-                  className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="min-h-10 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Mark All Present
                 </button>
@@ -573,7 +574,7 @@ if (
                   type="button"
                   onClick={markAllAbsent}
                   disabled={students.length === 0}
-                  className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="min-h-10 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Mark All Absent
                 </button>
@@ -581,30 +582,29 @@ if (
                   type="button"
                   onClick={clearSelection}
                   disabled={students.length === 0}
-                  className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="min-h-10 rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Clear Selection
                 </button>
-                <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">
+                <span className="col-span-2 rounded-lg bg-slate-100 px-3 py-2 text-center text-xs font-medium text-slate-600 sm:col-span-1">
                   Selected: {markedCount} / {totalStudents}
                 </span>
               </div>
 
-              <div className="overflow-x-auto rounded-lg border border-slate-200">
-                <table className="min-w-full text-sm">
+              <div className="overflow-hidden rounded-lg border border-slate-200">
+                <table className="w-full table-fixed text-sm">
                   <thead className="sticky top-0 z-10 bg-slate-50 text-slate-600">
                     <tr className="border-b border-slate-200">
-                      <th className="px-3 py-2 text-left font-medium">S.No</th>
-                      <th className="px-3 py-2 text-left font-medium">Student Name</th>
-                      <th className="px-3 py-2 text-left font-medium">Roll Number</th>
-                      <th className="px-3 py-2 text-center font-medium">Present</th>
-                      <th className="px-3 py-2 text-center font-medium">Absent</th>
+                      <th className="w-11 px-2 py-2 text-left font-medium sm:w-14 sm:px-3">S.No</th>
+                      <th className="px-2 py-2 text-left font-medium sm:px-3">Student Name</th>
+                      <th className="w-16 px-1 py-2 text-center font-medium sm:w-24 sm:px-3">Present</th>
+                      <th className="w-16 px-1 py-2 text-center font-medium sm:w-24 sm:px-3">Absent</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loadingStudents ? (
                       <tr>
-                        <td colSpan={5} className="px-3 py-6 text-center text-slate-500">
+                        <td colSpan={4} className="px-3 py-6 text-center text-slate-500">
                           <span className="inline-flex items-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin" /> Loading students...
                           </span>
@@ -612,7 +612,7 @@ if (
                       </tr>
                     ) : students.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-3 py-6 text-center text-slate-500">
+                        <td colSpan={4} className="px-3 py-6 text-center text-slate-500">
                           No students found for selected group and year.
                         </td>
                       </tr>
@@ -624,19 +624,18 @@ if (
                             key={student._id}
                             className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                           >
-                            <td className="px-3 py-2">{index + 1}</td>
-                            <td className="px-3 py-2 font-medium">{student.name}</td>
-                            <td className="px-3 py-2">
-                              {student.admissionNo || student.rollNumber || 'N/A'}
+                            <td className="px-2 py-2 text-center sm:px-3">{index + 1}</td>
+                            <td className="px-2 py-2 font-medium sm:px-3">
+                              <span className="block truncate">{student.name}</span>
                             </td>
-                            <td className="px-3 py-2 text-center">
+                            <td className="px-1 py-2 text-center sm:px-3">
                               <ToggleSwitch
                                 checked={current === 'Present'}
                                 color="green"
                                 onChange={() => setStudentStatus(student._id, 'Present')}
                               />
                             </td>
-                            <td className="px-3 py-2 text-center">
+                            <td className="px-1 py-2 text-center sm:px-3">
                               <ToggleSwitch
                                 checked={current === 'Absent'}
                                 color="red"
@@ -652,8 +651,8 @@ if (
               </div>
             </section>
 
-            <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+            <section className="rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-sm sm:px-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                 <div className="rounded-lg bg-slate-50 px-3 py-2">
                   <p className="text-xs text-slate-500">Total Students</p>
                   <p className="mt-1 font-semibold text-slate-900">{totalStudents}</p>
@@ -670,7 +669,7 @@ if (
                   <p className="text-xs text-slate-600">N/A Count</p>
                   <p className="mt-1 font-semibold text-slate-800">{naCount}</p>
                 </div>
-                <div className="rounded-lg bg-blue-50 px-3 py-2">
+                <div className="col-span-2 rounded-lg bg-blue-50 px-3 py-2 sm:col-span-1">
                   <p className="text-xs text-blue-700">Marked Attendance %</p>
                   <p className="mt-1 font-semibold text-blue-800">{attendancePercentage}%</p>
                 </div>
