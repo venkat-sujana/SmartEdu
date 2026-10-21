@@ -76,7 +76,7 @@ function getGroupQuickActions(groupName) {
     {
       label: 'Update Attendance',
       icon: RefreshCw,
-      href: '/attendance-edit-form',
+      href: '/attendance-records/individual',
     },
     {
       label: 'Monthly Attendance',

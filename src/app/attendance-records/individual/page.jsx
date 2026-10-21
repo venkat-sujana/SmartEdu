@@ -1,4 +1,4 @@
-// app/attendance-records/individual/page.jsx
+// src/app/attendance-records/individual/page.jsx
 
 import IndividualReport from "@/components/attendance/IndividualReport";
 

@@ -94,18 +94,22 @@ export async function GET(req) {
     return NextResponse.json({ data: [], message: 'Missing group/year' }, { status: 400 })
   }
 
+  const groupAccess = await getCaretakerLecturerGroupAccess(session)
+  const lecturerAllowedGroups = groupAccess.groups
+
   if (
-  lecturerAllowedGroups &&
-  !lecturerAllowedGroups.includes(group)
-) {
-  return NextResponse.json(
-    {
-      status: "error",
-      message: "You are not authorized to access this group",
-    },
-    { status: 403 }
-  );
-}
+    session.user.role === 'lecturer' &&
+    lecturerAllowedGroups &&
+    !lecturerAllowedGroups.includes(group)
+  ) {
+    return NextResponse.json(
+      {
+        status: "error",
+        message: "You are not authorized to access this group",
+      },
+      { status: 403 }
+    );
+  }
 
   const query = {
     collegeId,
