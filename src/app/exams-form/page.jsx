@@ -15,7 +15,7 @@ const publicExams = ["QUARTERLY", "HALFYEARLY", "PRE-PUBLIC-1", "PRE-PUBLIC-2"];
 const validYearsOfStudy = ["First Year", "Second Year"];
 
 function buildSubjectPayload(subjects, examType) {
-  const maxMarks = unitExams.includes(examType)
+  const maxMarks = unitExams.includes(examType) || examType === "QUARTERLY"
     ? 25
     : publicExams.includes(examType)
       ? 50

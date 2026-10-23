@@ -66,11 +66,11 @@ function getPdfSubjectColumns(stream) {
 
 
 function isUnitExam(examType) {
-  return UNIT_EXAMS.includes(examType)
+  return UNIT_EXAMS.includes(examType) || examType === 'QUARTERLY'
 }
 
 function isPublicExam(examType) {
-  return PUBLIC_EXAMS.includes(examType)
+  return PUBLIC_EXAMS.includes(examType) && examType !== 'QUARTERLY'
 }
 
 function normalizeStreamValue(value) {
@@ -291,14 +291,27 @@ function getSubjectWiseStats(rows) {
     .sort((a, b) => a.subject.localeCompare(b.subject))
 }
 
-function SubjectWiseExamTable({ examType, rows }) {
+function SubjectWiseExamTable({ examType, rows, onExport }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-indigo-100 bg-white/80">
       <div className="flex items-center justify-between border-b border-indigo-100 bg-indigo-50/70 px-3 py-2">
         <h3 className="text-sm font-semibold text-indigo-900">{formatExamLabel(examType)}</h3>
-        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-indigo-700">
-          {rows.length} Subjects
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-indigo-700">
+            {rows.length} Subjects
+          </span>
+          {onExport && rows.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onExport({ examType, rows })}
+              className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-indigo-700"
+              title="Export this exam to PDF"
+            >
+              <FileText className="h-3 w-3" />
+              PDF
+            </button>
+          )}
+        </div>
       </div>
       <table className="min-w-full text-sm">
         <thead>
@@ -1092,6 +1105,133 @@ doc.text('Lecturer Signature', 196, signatureY, { align: 'right' })
       }))
   }, [filteredReports])
 
+  const handleExportSubjectWisePdf = useCallback(() => {
+    if (!subjectWiseStatsByExam.length) return
+
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+    const academicYearLabel = academicYear === 'all' ? 'All Academic Years' : formatAcademicYearLabel(academicYear)
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(16)
+    doc.text(collegeName, 148.5, 12, { align: 'center' })
+
+    doc.setFontSize(14)
+    doc.text('Subject-wise Pass Percentage Report', 148.5, 20, { align: 'center' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.text(`Academic Year: ${academicYearLabel}`, 148.5, 27, { align: 'center' })
+    doc.text(`Generated On: ${new Date().toLocaleDateString('en-CA')}`, 148.5, 32, { align: 'center' })
+
+    let startY = 38
+
+    subjectWiseStatsByExam.forEach(({ examType, rows }) => {
+      if (rows.length === 0) return
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(11)
+      doc.text(formatExamLabel(examType), 14, startY)
+      startY += 6
+
+      autoTable(doc, {
+        startY: startY,
+        head: [['S.No', 'Subject', 'Appeared', 'Pass', 'Fail', 'Absent', 'Pass %']],
+        body: rows.map((item, index) => [
+          index + 1,
+          item.subject,
+          item.appeared,
+          item.pass,
+          item.fail,
+          item.absent,
+          item.passPercentage.toFixed(2) + '%',
+        ]),
+        theme: 'grid',
+        styles: {
+          fontSize: 8,
+          halign: 'center',
+          valign: 'middle',
+          lineColor: [203, 213, 225],
+          lineWidth: 0.2,
+        },
+        headStyles: {
+          fillColor: [30, 64, 175],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+        },
+        columnStyles: {
+          0: { cellWidth: 15 },
+          1: { cellWidth: 60, halign: 'left' },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 25 },
+          5: { cellWidth: 25 },
+          6: { cellWidth: 30 },
+        },
+      })
+
+      startY = (doc.lastAutoTable?.finalY || startY) + 8
+    })
+
+    const fileName = `subject-wise-pass-percentage-${academicYearLabel.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`
+    doc.save(fileName)
+  }, [academicYear, collegeName, subjectWiseStatsByExam])
+
+  const handleExportSingleSubjectWisePdf = useCallback(({ examType, rows }) => {
+    if (!rows.length) return
+
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+    const academicYearLabel = academicYear === 'all' ? 'All Academic Years' : formatAcademicYearLabel(academicYear)
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(16)
+    doc.text(collegeName, 148.5, 12, { align: 'center' })
+
+    doc.setFontSize(14)
+    doc.text('Subject-wise Pass Percentage Report', 148.5, 20, { align: 'center' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.text(`Exam: ${formatExamLabel(examType)} | Academic Year: ${academicYearLabel}`, 148.5, 27, { align: 'center' })
+    doc.text(`Generated On: ${new Date().toLocaleDateString('en-CA')}`, 148.5, 32, { align: 'center' })
+
+    autoTable(doc, {
+      startY: 38,
+      head: [['S.No', 'Subject', 'Appeared', 'Pass', 'Fail', 'Absent', 'Pass %']],
+      body: rows.map((item, index) => [
+        index + 1,
+        item.subject,
+        item.appeared,
+        item.pass,
+        item.fail,
+        item.absent,
+        item.passPercentage.toFixed(2) + '%',
+      ]),
+      theme: 'grid',
+      styles: {
+        fontSize: 8,
+        halign: 'center',
+        valign: 'middle',
+        lineColor: [203, 213, 225],
+        lineWidth: 0.2,
+      },
+      headStyles: {
+        fillColor: [30, 64, 175],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: { cellWidth: 15 },
+        1: { cellWidth: 60, halign: 'left' },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 25 },
+        6: { cellWidth: 30 },
+      },
+    })
+
+    const fileName = `subject-wise-pass-${formatExamLabel(examType).replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${academicYearLabel.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`
+    doc.save(fileName)
+  }, [academicYear, collegeName])
+
   const summaryCards = useMemo(
     () => [
       {
@@ -1626,9 +1766,20 @@ doc.text('Lecturer Signature', 196, signatureY, { align: 'right' })
                     Pass % = Subject Pass ÷ Subject Appeared × 100. Absent students are excluded.
                   </p>
                 </div>
-                <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-semibold text-indigo-700">
-                  {subjectWiseStatsByExam.length} Exams
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-semibold text-indigo-700">
+                    {subjectWiseStatsByExam.length} Exams
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleExportSubjectWisePdf}
+                    disabled={subjectWiseStatsByExam.length === 0}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    Export PDF
+                  </button>
+                </div>
               </div>
 
               {subjectWiseStatsByExam.length === 0 ? (
@@ -1637,9 +1788,14 @@ doc.text('Lecturer Signature', 196, signatureY, { align: 'right' })
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {subjectWiseStatsByExam.map(({ examType, rows }) => (
-                    <SubjectWiseExamTable key={examType} examType={examType} rows={rows} />
-                  ))}
+{subjectWiseStatsByExam.map(({ examType, rows }) => (
+                      <SubjectWiseExamTable
+                        key={examType}
+                        examType={examType}
+                        rows={rows}
+                        onExport={handleExportSingleSubjectWisePdf}
+                      />
+                    ))}
                 </div>
               )}
             </section>

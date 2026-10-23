@@ -69,22 +69,18 @@ export function isReportPass(report) {
 
     if (!Number.isFinite(numericMark)) return false;
 
-    // UNIT Exams
-    if (UNIT_EXAMS.includes(report.examType)) {
+    // UNIT Exams & Quarterly
+    if (UNIT_EXAMS.includes(report.examType) || report.examType === "QUARTERLY") {
       if (numericMark < 9) return false;
     }
 
-    // Quarterly / Half Yearly
-    if (
-      ["QUARTERLY", "HALFYEARLY"].includes(report.examType)
-    ) {
+    // Half Yearly
+    if (report.examType === "HALFYEARLY") {
       if (numericMark < 18) return false;
     }
 
     // Pre Public
-    if (
-      ["PRE-PUBLIC-1", "PRE-PUBLIC-2"].includes(report.examType)
-    ) {
+    if (["PRE-PUBLIC-1", "PRE-PUBLIC-2"].includes(report.examType)) {
       if (isVocational(report.stream)) {
         if (numericMark < 18) return false;
       } else {

@@ -224,7 +224,7 @@ export default function EditExamForm({ examData, onClose, onUpdated }) {
       return;
     }
 
-    const maxMarks = UNIT_EXAMS.includes(formData.examType) ? 25 : 50;
+    const maxMarks = UNIT_EXAMS.includes(formData.examType) || formData.examType === "QUARTERLY" ? 25 : 50;
     const subjectsArray = Object.entries(formData.subjects)
       .filter(([, marks]) => marks !== "" && marks !== undefined)
       .map(([subject, marks]) => ({
